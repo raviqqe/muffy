@@ -18,17 +18,20 @@ pub async fn validate_link(
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
-    let permit = context.request_semaphore().acquire().await?;
     let response = context
         .cache()
         .get_or_set(url.to_string(), async {
+            eprintln!("requesting {url}");
+            let permit = context.request_semaphore().acquire().await.unwrap();
             let response = reqwest::get(url.as_str()).await.map_err(Arc::new)?;
-
-            Ok(Response::new(
+            eprintln!("response! {url}");
+            let response = Response::new(
                 response.status(),
                 response.headers().clone(),
                 response.bytes().await?.to_vec(),
-            ))
+            );
+            drop(permit);
+            Ok(response)
         })
         .await
         .map_err(|source| Error::Get {
@@ -52,7 +55,6 @@ pub async fn validate_link(
     }
 
     let body = str::from_utf8(response.body())?;
-    drop(permit);
 
     let futures = validate_document(
         context.clone(),
