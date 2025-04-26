@@ -14,7 +14,7 @@ pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     base: Arc<Url>,
-) -> Result<(), Error> {
+) -> Result<Response, Error> {
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
@@ -48,7 +48,7 @@ pub async fn validate_link(
         .unwrap_or_default()
         || !url.to_string().starts_with(context.origin())
     {
-        return Ok(());
+        return Ok(response);
     } else if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus {
             url: url.to_string(),
@@ -60,7 +60,7 @@ pub async fn validate_link(
         .await
         .is_err()
     {
-        return Ok(());
+        return Ok(response);
     }
 
     let mut futures = vec![];
@@ -81,14 +81,14 @@ pub async fn validate_link(
 
     render(&context, &url, &results).await?;
 
-    Ok(())
+    Ok(response)
 }
 
 fn validate_node(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<JoinHandle<Result<(), Error>>>,
+    futures: &mut Vec<JoinHandle<Result<Response, Error>>>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
