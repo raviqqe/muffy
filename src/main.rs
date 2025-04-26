@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+mod cache;
 mod context;
 mod error;
 mod page;
