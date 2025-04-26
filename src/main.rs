@@ -4,8 +4,8 @@ extern crate alloc;
 
 mod cache;
 mod context;
-mod full_http_client;
 mod error;
+mod full_http_client;
 mod http_client;
 mod page;
 mod render;
@@ -32,9 +32,11 @@ struct Arguments {
 async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
     let context = Arc::new(Context::new(
-        FullHttpClient::new(ReqwestHttpClient::new()),
+        FullHttpClient::new(
+            ReqwestHttpClient::new(),
+            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+        ),
         url.clone(),
-        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
