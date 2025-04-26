@@ -12,7 +12,7 @@ impl<T: Clone> Cache<T> {
     }
 
     pub async fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> T {
-        match self.map.entry_async(key.to_string()).await {
+        match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
                 let value = future.await;
