@@ -26,16 +26,14 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
-            Self::Get(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => {
                 write!(formatter, "invalid status {status} at {url}")
             }
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
-            Self::UrlParse { url, source } => {
-                write!(formatter, "failed to parse URL {url}: {source}")
-            }
+            Self::Reqwest(error) => write!(formatter, "{error}"),
+            Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
     }
