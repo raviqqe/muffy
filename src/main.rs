@@ -1,3 +1,5 @@
+//! A web validator for static websites.
+
 mod context;
 mod error;
 mod page;
