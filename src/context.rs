@@ -17,6 +17,7 @@ impl Context {
         }
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub fn origin(&self) -> &str {
         &self.origin
     }

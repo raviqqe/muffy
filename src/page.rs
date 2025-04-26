@@ -11,13 +11,12 @@ use url::Url;
 
 pub async fn validate_link(
     context: Arc<Context>,
-    url_string: String,
+    url: String,
     base: Arc<Url>,
 ) -> Result<(), Error> {
-    let url = base.join(&url_string).map_err(|source| Error::UrlParse {
-        url: url_string.clone(),
-        source,
-    })?;
+    let url = base
+        .join(&url)
+        .map_err(|source| Error::UrlParse { url, source })?;
     let response = reqwest::get(url.as_str())
         .await
         .map_err(|source| Error::Get {
@@ -34,7 +33,7 @@ pub async fn validate_link(
         context.clone(),
         &url,
         &parse_html(&body).map_err(|source| Error::HtmlParse {
-            url: url_string.into(),
+            url: url.to_string(),
             source,
         })?,
     )?;
