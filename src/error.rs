@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::error;
 use core::fmt::{self, Display, Formatter};
 use core::str::Utf8Error;
@@ -11,24 +10,12 @@ use url::ParseError;
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
-    Get {
-        url: String,
-        source: Arc<reqwest::Error>,
-    },
-    HtmlParse {
-        url: String,
-        source: io::Error,
-    },
-    InvalidStatus {
-        url: String,
-        status: StatusCode,
-    },
+    Reqwest(reqwest::Error),
+    HtmlParse(io::Error),
+    InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
-    UrlParse {
-        url: String,
-        source: ParseError,
-    },
+    UrlParse(ParseError),
     Utf8(Utf8Error),
 }
 
