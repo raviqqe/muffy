@@ -35,7 +35,7 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    let handle = spawn(validate_page(context.clone(), response.clone()));
+    let handle = spawn(validate_document(context.clone(), response.clone()));
     context
         .job_sender()
         .send(Box::new(async move {
@@ -47,7 +47,7 @@ pub async fn validate_link(
     Ok(response)
 }
 
-async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
     let url = response.url();
     let mut futures = vec![];
 
