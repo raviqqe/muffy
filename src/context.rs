@@ -6,13 +6,20 @@ use tokio::{
 #[derive(Debug)]
 pub struct Context {
     stdout: Mutex<Stdout>,
+    origin: String,
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new(origin: String) -> Self {
         Self {
+            origin,
             stdout: stdout().into(),
         }
+    }
+
+    #[allow(clippy::missing_const_for_fn)]
+    pub fn origin(&self) -> &str {
+        &self.origin
     }
 
     pub const fn stdout(&self) -> &Mutex<Stdout> {

@@ -2,6 +2,7 @@ use core::error;
 use core::fmt::{self, Display, Formatter};
 use std::io;
 use tokio::task::JoinError;
+use url::ParseError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -9,6 +10,7 @@ pub enum Error {
     HtmlParse { url: String, source: io::Error },
     Io(io::Error),
     Join(JoinError),
+    UrlParse { url: String, source: ParseError },
 }
 
 impl error::Error for Error {}
@@ -24,6 +26,9 @@ impl Display for Error {
             }
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
+            Self::UrlParse { url, source } => {
+                write!(formatter, "failed to parse URL {url}: {source}")
+            }
         }
     }
 }
