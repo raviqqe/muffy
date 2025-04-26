@@ -1,5 +1,6 @@
 use crate::context::Context;
 use crate::error::Error;
+use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
 
@@ -10,12 +11,12 @@ pub async fn render(
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
-    render_line(&mut stdout, &url.to_string()).await?;
+    render_line(&mut stdout, &url.to_string().yellow()).await?;
 
     for result in results {
         match result {
-            Ok(()) => render_line(&mut stdout, "  OK").await?,
-            Err(error) => render_line(&mut stdout, &format!("  ERROR {error}")).await?,
+            Ok(()) => render_line(&mut stdout, &"  OK".green()).await?,
+            Err(error) => render_line(&mut stdout, &format!("  {} {error}", "ERROR".red())).await?,
         }
     }
 
