@@ -1,6 +1,5 @@
 use scc::{HashMap, hash_map::Entry};
 
-#[derive(Default)]
 pub struct Cache<T> {
     map: HashMap<String, T>,
 }
@@ -8,7 +7,7 @@ pub struct Cache<T> {
 impl<T: Clone> Cache<T> {
     pub fn new() -> Self {
         Self {
-            map: HashMap::with_capacity(1 << 20),
+            map: HashMap::new(),
         }
     }
 
@@ -21,5 +20,11 @@ impl<T: Clone> Cache<T> {
                 value
             }
         }
+    }
+}
+
+impl<T: Clone> Default for Cache<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }

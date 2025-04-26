@@ -15,12 +15,7 @@ pub async fn validate_link(
     base: Arc<Url>,
 ) -> Result<Response, Error> {
     let url = base.join(&url)?;
-    let response = context
-        .request_cache()
-        .get_or_set(url.to_string(), async {
-            context.http_client().get(&context, &url).await
-        })
-        .await?;
+    let response = context.http_client().get(&context, &url).await?;
 
     if response
         .headers()
