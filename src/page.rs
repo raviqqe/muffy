@@ -37,8 +37,12 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    // TODO Spawn this continuation as a future.
+    spawn(validate_page());
 
+    Ok(response)
+}
+
+async fn valdiate_page(context: &Context,, url:&Url) -> Result<(), Error> {
     let mut futures = vec![];
 
     validate_node(
@@ -54,7 +58,7 @@ pub async fn validate_link(
 
     render(&context, &url, &results).await?;
 
-    Ok(response)
+    Ok(())
 }
 
 fn validate_node(
