@@ -13,7 +13,7 @@ const CACHE_CAPACITY: usize = 1 << 16;
 
 pub struct FullHttpClient {
     client: Arc<dyn HttpClient>,
-    cache: MemoryCache<Result<Arc<Response>, HttpClientError>>,
+    cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Arc<Semaphore>,
 }
 
@@ -21,7 +21,7 @@ impl FullHttpClient {
     pub fn new(client: impl HttpClient + 'static, concurrency: usize) -> Self {
         Self {
             client: Arc::new(client),
-            cache: MemoryCache::new(CACHE_CAPACITY),
+            cache: Box::new(MemoryCache::new(CACHE_CAPACITY)),
             semaphore: Semaphore::new(concurrency).into(),
         }
     }

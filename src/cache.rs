@@ -2,12 +2,8 @@ use async_trait::async_trait;
 use scc::{HashMap, hash_map::Entry};
 
 #[async_trait]
-pub trait Cache<T: Clone> {
-    fn get_or_set(
-        &self,
-        key: String,
-        future: Box<dyn Future<Output = T> + Send>,
-    ) -> impl Future<Output = T>;
+pub trait Cache<T: Clone>: Send + Sync {
+    async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T;
 }
 
 pub struct MemoryCache<T> {
@@ -22,7 +18,8 @@ impl<T> MemoryCache<T> {
     }
 }
 
-impl<T: Clone> Cache<T> for MemoryCache<T> {
+#[async_trait]
+impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
     async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T {
         match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
