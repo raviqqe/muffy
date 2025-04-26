@@ -1,13 +1,14 @@
+use crate::cache::Cache;
 use tokio::{
     io::{Stdout, stdout},
     sync::{Mutex, Semaphore},
 };
 
-#[derive(Debug)]
 pub struct Context {
     stdout: Mutex<Stdout>,
     origin: String,
     request_semaphore: Semaphore,
+    cache: Cache<String>,
 }
 
 impl Context {
@@ -16,6 +17,7 @@ impl Context {
             origin,
             stdout: stdout().into(),
             request_semaphore: Semaphore::new(8),
+            cache: Default::default(),
         }
     }
 
@@ -30,5 +32,9 @@ impl Context {
 
     pub const fn request_semaphore(&self) -> &Semaphore {
         &self.request_semaphore
+    }
+
+    pub const fn cache(&self) -> &Cache<String> {
+        &self.cache
     }
 }

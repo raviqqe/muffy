@@ -1,6 +1,6 @@
 use dashmap::DashMap;
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Cache<T> {
     map: DashMap<String, T>,
 }
