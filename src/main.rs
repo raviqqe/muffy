@@ -1,4 +1,8 @@
+mod context;
+
+use tokio::spawn;
+
 #[tokio::main]
 async fn main() {
-    foo
+    validate_page().await?;
 }
