@@ -1,10 +1,8 @@
+use alloc::sync::Arc;
 use async_trait::async_trait;
 use core::error::Error;
 use reqwest::{StatusCode, header::HeaderMap};
-use std::{
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{self, Display, Formatter};
 use url::Url;
 
 #[async_trait]
