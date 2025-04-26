@@ -6,7 +6,14 @@ use alloc::sync::Arc;
 use reqwest::get;
 use url::Url;
 
+#[derive(Debug, Default)]
 pub struct ReqwestHttpClient {}
+
+impl ReqwestHttpClient {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl HttpClient for ReqwestHttpClient {
     async fn get(&self, url: &Url) -> Result<BareResponse, Error> {

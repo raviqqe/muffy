@@ -1,4 +1,7 @@
-use crate::{cache::Cache, response::Response};
+use crate::{
+    cache::Cache, enriched_http_client::EnrichedHttpClient, http_client::HttpClient,
+    response::Response,
+};
 use alloc::sync::Arc;
 use scc::HashSet;
 use tokio::{
@@ -6,7 +9,8 @@ use tokio::{
     sync::{Mutex, Semaphore},
 };
 
-pub struct Context {
+pub struct Context<T: HttpClient> {
+    http_client: EnrichedHttpClient<T>,
     stdout: Mutex<Stdout>,
     origin: String,
     file_semaphore: Semaphore,
@@ -14,15 +18,20 @@ pub struct Context {
     checks: HashSet<String>,
 }
 
-impl Context {
-    pub fn new(origin: String, file_limit: usize) -> Self {
+impl<T: HttpClient> Context<T> {
+    pub fn new(http_client: EnrichedHttpClient<T>, origin: String, file_limit: usize) -> Self {
         Self {
+            http_client,
             origin,
             stdout: stdout().into(),
             file_semaphore: Semaphore::new(file_limit),
             request_cache: Cache::new(),
             checks: HashSet::with_capacity(1 << 10),
         }
+    }
+
+    pub fn http_client(&self) -> &EnrichedHttpClient<T> {
+        &self.http_client
     }
 
     #[allow(clippy::missing_const_for_fn)]

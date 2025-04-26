@@ -15,6 +15,8 @@ mod response;
 use self::{context::Context, error::Error, page::validate_link};
 use alloc::sync::Arc;
 use clap::Parser;
+use enriched_http_client::EnrichedHttpClient;
+use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use url::Url;
 
@@ -30,6 +32,7 @@ struct Arguments {
 async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
     let context = Arc::new(Context::new(
+        EnrichedHttpClient::new(ReqwestHttpClient::new()),
         url.clone(),
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
