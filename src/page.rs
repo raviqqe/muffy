@@ -22,7 +22,10 @@ pub async fn validate_link(
         .cache()
         .get_or_set(url.to_string(), async {
             let permit = context.request_semaphore().acquire().await.unwrap();
-            eprintln!("requesting {url}");
+            eprintln!(
+                "requesting {url} {}",
+                context.request_semaphore().available_permits()
+            );
             let response = reqwest::get(url.as_str()).await.map_err(Arc::new)?;
             eprintln!("response! {url}");
             let response = Response::new(
