@@ -5,6 +5,7 @@ use crate::{
     response::Response,
 };
 use alloc::sync::Arc;
+use core::str;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
@@ -34,7 +35,13 @@ impl FullHttpClient {
 
             response.status().is_redirection()
         } {
-            url = response.url().clone();
+            url = Url::parse(str::from_utf8(
+                &response
+                    .headers()
+                    .get("location")
+                    .ok_or_else(|| Error::RedirectLocation)?
+                    .as_bytes(),
+            )?)?;
         }
 
         Ok(response)
