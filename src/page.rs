@@ -13,7 +13,7 @@ pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     base: Arc<Url>,
-) -> Result<Response, Error> {
+) -> Result<Arc<Response>, Error> {
     let url = base.join(&url)?;
     let response = context.http_client().get(&url).await?;
 
@@ -61,7 +61,7 @@ fn validate_node(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<JoinHandle<Result<Response, Error>>>,
+    futures: &mut Vec<JoinHandle<Result<Arc<Response>, Error>>>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
