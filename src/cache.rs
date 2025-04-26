@@ -1,24 +1,24 @@
-use std::collections::HashMap;
+use dashmap::DashMap;
 
+#[derive(Debug, Default)]
 pub struct Cache<T> {
-    data: DashMap<String, T>,
+    map: DashMap<String, T>,
 }
 
-impl Cache {
+impl<T> Cache<T> {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            map: Default::default(),
+        }
     }
 
-    pub async get_or_set<F, T>(&mut self, key: String, f: F) -> &T
-    where
-        F: FnOnce() -> T,
-        T: Clone,
-    {
-        if let Some(value) = self.data.get(&key) {
-            value;
-        }else{
-        let value = f();
-        self.data.insert(key.clone(), value.clone());
-        value}
+    pub async fn get_or_set(&mut self, key: String, get: impl AsyncFnOnce() -> T) -> T {
+        if let Some(value) = self.map.get(&key) {
+            value.clone()
+        } else {
+            let value = get();
+            self.data.insert(key.clone(), value.clone());
+            value
+        }
     }
 }
