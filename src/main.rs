@@ -10,7 +10,7 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Args {
+struct Arguments {
     /// An origin URL.
     #[arg()]
     url: String,
@@ -18,9 +18,10 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    let arguments = Arguments::parse();
     let context = Context::new();
 
-    validate_page(&context).await?;
+    validate_page(&context, &arguments.url).await?;
 
     Ok(())
 }
