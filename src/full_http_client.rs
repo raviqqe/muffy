@@ -29,6 +29,7 @@ impl FullHttpClient {
             .get_or_set(url.to_string(), async {
                 let permit = self.semaphore.acquire().await.unwrap();
                 let start = Instant::now();
+                // TODO Redirect manually and cache intermediate responses.
                 let response = self.client.get(url).await?;
                 let duration = Instant::now().duration_since(start);
                 drop(permit);
