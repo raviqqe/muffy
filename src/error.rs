@@ -3,6 +3,7 @@ use core::fmt::{self, Display, Formatter};
 use core::str::Utf8Error;
 use reqwest::StatusCode;
 use std::io;
+use std::sync::Arc;
 use tokio::sync::AcquireError;
 use tokio::task::JoinError;
 use url::ParseError;
@@ -10,11 +11,11 @@ use url::ParseError;
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
-    Reqwest(reqwest::Error),
     HtmlParse(io::Error),
     InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
+    Reqwest(Arc<reqwest::Error>),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -25,13 +26,9 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
-            Self::Get { url, source } => {
-                write!(formatter, "failed to GET {url}: {source}")
-            }
-            Self::HtmlParse { url, source } => {
-                write!(formatter, "failed to parse HTML from {url}: {source}")
-            }
-            Self::InvalidStatus { url, status } => {
+            Self::Get(error) => write!(formatter, "{error}"),
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::InvalidStatus(status) => {
                 write!(formatter, "invalid status {status} at {url}")
             }
             Self::Io(error) => write!(formatter, "{error}"),
