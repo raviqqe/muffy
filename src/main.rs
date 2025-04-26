@@ -5,8 +5,10 @@ extern crate alloc;
 mod cache;
 mod context;
 mod error;
+mod http_client;
 mod page;
 mod render;
+mod reqwest_http_client;
 mod response;
 
 use self::{context::Context, error::Error, page::validate_link};
