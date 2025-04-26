@@ -2,10 +2,12 @@
 
 extern crate alloc;
 
+mod cache;
 mod context;
 mod error;
 mod page;
 mod render;
+mod response;
 
 use self::context::Context;
 use self::{error::Error, page::validate_link};
