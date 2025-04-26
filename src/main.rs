@@ -18,6 +18,7 @@ use clap::Parser;
 use full_http_client::FullHttpClient;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
+use std::process::exit;
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -30,7 +31,14 @@ struct Arguments {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn core::error::Error>> {
+async fn main() {
+    if let Err(error) = foo() {
+        eprintln!("{error}");
+        exit(1)
+    }
+}
+
+async fn run() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
     let (sender, mut receiver) = channel(1024);
     let context = Arc::new(Context::new(
@@ -50,9 +58,5 @@ async fn main() -> Result<(), Box<dyn core::error::Error>> {
         error = error || Box::into_pin(future).await.is_err();
     }
 
-    if error {
-        Err("validation failed")
-    } else {
-        Ok(())
-    }
+    if error { Err(Error::Page) } else { Ok(()) }
 }
