@@ -37,7 +37,7 @@ impl FullHttpClient {
             }
 
             url = url.join(str::from_utf8(
-                &response
+                response
                     .headers()
                     .get("location")
                     .ok_or_else(|| Error::RedirectLocation)?
