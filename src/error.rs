@@ -55,6 +55,18 @@ impl From<JoinError> for Error {
     }
 }
 
+impl From<url::ParseError> for Error {
+    fn from(error: url::ParseError) -> Self {
+        Self::UrlParse(error)
+    }
+}
+
+impl From<Arc<reqwest::Error>> for Error {
+    fn from(error: Arc<reqwest::Error>) -> Self {
+        Self::Reqwest(error)
+    }
+}
+
 impl From<Utf8Error> for Error {
     fn from(error: Utf8Error) -> Self {
         Self::Utf8(error)

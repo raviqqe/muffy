@@ -28,17 +28,7 @@ async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
     let context = Arc::new(Context::new(url.clone()));
 
-    validate_link(
-        context,
-        url.clone(),
-        Url::parse(&url)
-            .map_err(|source| Error::UrlParse {
-                url: url.clone(),
-                source,
-            })?
-            .into(),
-    )
-    .await?;
+    validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
 
     Ok(())
 }
