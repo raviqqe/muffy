@@ -37,7 +37,14 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    spawn(validate_page(context.clone(), response.clone()));
+    let handle = spawn(validate_page(context.clone(), response.clone()));
+    context
+        .job_sender()
+        .send(Box::new(async move {
+            handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
+        }))
+        .await
+        .unwrap();
 
     Ok(response)
 }
