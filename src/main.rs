@@ -30,7 +30,7 @@ struct Arguments {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), Box<dyn core::error::Error>> {
     let Arguments { url } = Arguments::parse();
     let (sender, mut receiver) = channel(1024);
     let context = Arc::new(Context::new(
@@ -44,9 +44,15 @@ async fn main() -> Result<(), Error> {
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
 
+    let mut error = false;
+
     while let Some(future) = receiver.recv().await {
-        Box::into_pin(future).await?;
+        error = error || Box::into_pin(future).await.is_err();
     }
 
-    Ok(())
+    if error {
+        Err("validation failed")
+    } else {
+        Ok(())
+    }
 }
