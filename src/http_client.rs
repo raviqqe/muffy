@@ -4,7 +4,7 @@ use core::{
     error::Error,
     fmt::{self, Display, Formatter},
 };
-use reqwest::{StatusCode, header::HeaderMap};
+use hyper::{StatusCode, header::HeaderMap};
 use url::Url;
 
 #[async_trait]

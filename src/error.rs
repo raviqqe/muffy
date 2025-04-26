@@ -3,7 +3,7 @@ use core::{
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
-use reqwest::StatusCode;
+use hyper::StatusCode;
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
