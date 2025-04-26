@@ -3,6 +3,7 @@ use crate::{
     http_client::{HttpClient, HttpClientError},
     response::Response,
 };
+use alloc::sync::Arc;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
@@ -23,7 +24,7 @@ impl FullHttpClient {
         }
     }
 
-    pub async fn get(&self, url: &Url) -> Result<Response, HttpClientError> {
+    pub async fn get(&self, url: &Url) -> Result<Arc<Response>, HttpClientError> {
         self.cache
             .get_or_set(url.to_string(), async {
                 let permit = self.semaphore.acquire().await.unwrap();
@@ -32,7 +33,7 @@ impl FullHttpClient {
                 let duration = Instant::now().duration_since(start);
                 drop(permit);
 
-                Ok(Response::from_bare(response, duration))
+                Ok(Response::from_bare(response, duration).into())
             })
             .await
     }
