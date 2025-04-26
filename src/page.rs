@@ -7,14 +7,14 @@ use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use reqwest::StatusCode;
 use std::io;
-use tokio::{spawn, task::JoinHandle};
+use tokio::{spawn, task::JoinHandle, time::Instant};
 use url::Url;
 
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     base: Arc<Url>,
-) -> Result<(), Error> {
+) -> Result<Response, Error> {
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
@@ -22,14 +22,18 @@ pub async fn validate_link(
         .request_cache()
         .get_or_set(url.to_string(), async {
             let permit = context.request_semaphore().acquire().await.unwrap();
-            let response = reqwest::get(url.as_str()).await.map_err(Arc::new)?;
-            let response = Response::new(
-                response.status(),
-                response.headers().clone(),
-                response.bytes().await?.to_vec(),
-            );
+
+            let start = Instant::now();
+            let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;
+            let url = response.url().clone();
+            let status = response.status();
+            let headers = response.headers().clone();
+            let body = response.bytes().await?.to_vec();
+            let duration = Instant::now().duration_since(start);
+
             drop(permit);
-            Ok(response)
+
+            Ok(Response::new(url, status, headers, body, duration))
         })
         .await
         .map_err(|source| Error::Get {
@@ -43,8 +47,9 @@ pub async fn validate_link(
         .map(|value| !value.as_bytes().starts_with(b"text/html"))
         .unwrap_or_default()
         || !url.to_string().starts_with(context.origin())
+        || !["http", "https"].contains(&url.scheme())
     {
-        return Ok(());
+        return Ok(response);
     } else if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus {
             url: url.to_string(),
@@ -56,8 +61,10 @@ pub async fn validate_link(
         .await
         .is_err()
     {
-        return Ok(());
+        return Ok(response);
     }
+
+    // TODO Spawn this continuation as a future.
 
     let mut futures = vec![];
 
@@ -77,14 +84,14 @@ pub async fn validate_link(
 
     render(&context, &url, &results).await?;
 
-    Ok(())
+    Ok(response)
 }
 
 fn validate_node(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<JoinHandle<Result<(), Error>>>,
+    futures: &mut Vec<JoinHandle<Result<Response, Error>>>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
