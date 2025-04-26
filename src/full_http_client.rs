@@ -9,20 +9,22 @@ use core::str;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
-const CACHE_CAPACITY: usize = 1 << 16;
-
 pub struct FullHttpClient {
-    client: Box<dyn HttpClient>,
-    cache: Cache<Result<Arc<Response>, HttpClientError>>,
-    semaphore: Semaphore,
+    client: Arc<dyn HttpClient>,
+    cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+    semaphore: Arc<Semaphore>,
 }
 
 impl FullHttpClient {
-    pub fn new(client: impl HttpClient + 'static, concurrency: usize) -> Self {
+    pub fn new(
+        client: impl HttpClient + 'static,
+        cache: impl Cache<Result<Arc<Response>, HttpClientError>> + 'static,
+        concurrency: usize,
+    ) -> Self {
         Self {
-            client: Box::new(client),
-            cache: Cache::new(CACHE_CAPACITY),
-            semaphore: Semaphore::new(concurrency),
+            client: Arc::new(client),
+            cache: Box::new(cache),
+            semaphore: Semaphore::new(concurrency).into(),
         }
     }
 
@@ -49,14 +51,20 @@ impl FullHttpClient {
     async fn get_single(&self, url: &Url) -> Result<Arc<Response>, Error> {
         Ok(self
             .cache
-            .get_or_set(url.to_string(), async {
-                let permit = self.semaphore.acquire().await.unwrap();
-                let start = Instant::now();
-                let response = self.client.get(url).await?;
-                let duration = Instant::now().duration_since(start);
-                drop(permit);
+            .get_or_set(url.to_string(), {
+                let client = self.client.clone();
+                let semaphore = self.semaphore.clone();
+                let url = url.clone();
 
-                Ok(Response::from_bare(response, duration).into())
+                Box::new(async move {
+                    let permit = semaphore.acquire().await.unwrap();
+                    let start = Instant::now();
+                    let response = client.get(&url).await?;
+                    let duration = Instant::now().duration_since(start);
+                    drop(permit);
+
+                    Ok(Response::from_bare(response, duration).into())
+                })
             })
             .await?)
     }
