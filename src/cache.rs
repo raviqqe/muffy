@@ -1,4 +1,8 @@
 use dashmap::{DashMap, Entry};
+use std::time::Duration;
+use tokio::time::sleep;
+
+const LOCK_DELAY: Duration = Duration::from_millis(1);
 
 #[derive(Default)]
 pub struct Cache<T> {
@@ -13,13 +17,19 @@ impl<T: Clone> Cache<T> {
     }
 
     pub async fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> T {
-        match self.map.entry(key.to_string()) {
-            Entry::Occupied(entry) => entry.get().clone(),
-            Entry::Vacant(entry) => {
-                let value = future.await;
-                entry.insert(value.clone());
-                value
+        loop {
+            if let Some(entry) = self.map.try_entry(key.to_string()) {
+                return match entry {
+                    Entry::Occupied(entry) => entry.get().clone(),
+                    Entry::Vacant(entry) => {
+                        let value = future.await;
+                        entry.insert(value.clone());
+                        value
+                    }
+                };
             }
+
+            sleep(LOCK_DELAY).await;
         }
     }
 }
