@@ -28,13 +28,14 @@ impl FullHttpClient {
 
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
         let mut url = url.clone();
-        let mut response;
 
-        while {
-            response = self.get_single(&url).await?;
+        loop {
+            let response = self.get_single(&url).await?;
 
-            response.status().is_redirection()
-        } {
+            if !response.status().is_redirection() {
+                return Ok(response);
+            }
+
             url = url.join(str::from_utf8(
                 &response
                     .headers()
@@ -43,8 +44,6 @@ impl FullHttpClient {
                     .as_bytes(),
             )?)?;
         }
-
-        Ok(response)
     }
 
     async fn get_single(&self, url: &Url) -> Result<Arc<Response>, Error> {
