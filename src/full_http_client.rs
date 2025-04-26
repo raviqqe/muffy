@@ -11,7 +11,7 @@ const CACHE_CAPACITY: usize = 1 << 16;
 
 pub struct FullHttpClient {
     client: Box<dyn HttpClient>,
-    cache: Cache<Result<Response, HttpClientError>>,
+    cache: Cache<Result<Arc<Response>, HttpClientError>>,
     semaphore: Semaphore,
 }
 

@@ -1,4 +1,5 @@
 use crate::{context::Context, error::Error, response::Response};
+use alloc::sync::Arc;
 use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
@@ -6,7 +7,7 @@ use url::Url;
 pub async fn render(
     context: &Context,
     url: &Url,
-    results: &[Result<Response, Error>],
+    results: &[Result<Arc<Response>, Error>],
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
