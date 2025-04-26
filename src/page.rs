@@ -64,7 +64,11 @@ async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result
 
     render(&context, url, &results).await?;
 
-    Ok(())
+    if results.iter().any(Result::is_err) {
+        Err(Error::Page)
+    } else {
+        Ok(())
+    }
 }
 
 fn validate_node(
