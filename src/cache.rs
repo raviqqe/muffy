@@ -5,9 +5,9 @@ pub struct Cache<T> {
 }
 
 impl<T: Clone> Cache<T> {
-    pub fn new() -> Self {
+    pub fn new(capacity: usize) -> Self {
         Self {
-            map: HashMap::new(),
+            map: HashMap::with_capacity(capacity),
         }
     }
 
@@ -20,11 +20,5 @@ impl<T: Clone> Cache<T> {
                 value
             }
         }
-    }
-}
-
-impl<T: Clone> Default for Cache<T> {
-    fn default() -> Self {
-        Self::new()
     }
 }

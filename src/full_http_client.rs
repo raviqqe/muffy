@@ -6,6 +6,8 @@ use crate::{
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
+const CACHE_CAPACITY: usize = 1 << 16;
+
 pub struct FullHttpClient {
     client: Box<dyn HttpClient>,
     cache: Cache<Result<Response, HttpClientError>>,
@@ -16,7 +18,7 @@ impl FullHttpClient {
     pub fn new(client: impl HttpClient + 'static, concurrency: usize) -> Self {
         Self {
             client: Box::new(client),
-            cache: Default::default(),
+            cache: Cache::new(CACHE_CAPACITY),
             semaphore: Semaphore::new(concurrency),
         }
     }
