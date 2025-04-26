@@ -21,7 +21,7 @@ async fn main() -> Result<(), Error> {
     let arguments = Arguments::parse();
     let context = Context::new();
 
-    validate_link(&context, &arguments.url).await?;
+    validate_link(&context, arguments.url).await?;
 
     Ok(())
 }
