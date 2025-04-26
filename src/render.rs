@@ -8,6 +8,8 @@ pub async fn render(
     url: &Url,
     results: &[Result<(), Error>],
 ) -> Result<(), Error> {
+    let mut stdout = context.stdout().lock().await;
+
     for result in results {
         match result {
             Ok(()) => render_line("OK").await?,
@@ -18,13 +20,8 @@ pub async fn render(
     Ok(())
 }
 
-async fn render_line(context: &Context, string: &str) -> Result<(), Error> {
-    context
-        .stdout()
-        .lock()
-        .await
-        .write_all(format!("{}\n", string).as_bytes())
-        .await?;
+async fn render_line(stdout: &mut Stdout, string: &str) -> Result<(), Error> {
+    stdout.write_all(format!("{}\n", string).as_bytes()).await?;
 
     Ok(())
 }
