@@ -8,7 +8,7 @@ use std::{
 use url::Url;
 
 #[async_trait]
-pub trait HttpClient {
+pub trait HttpClient: Send + Sync {
     async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError>;
 }
 

@@ -7,11 +7,11 @@ use tokio::time::Instant;
 use url::Url;
 
 pub struct EnrichedHttpClient {
-    client: Box<dyn HttpClient + Send + Sync>,
+    client: Box<dyn HttpClient>,
 }
 
 impl EnrichedHttpClient {
-    pub fn new(client: impl HttpClient + Send + Sync + 'static) -> Self {
+    pub fn new(client: impl HttpClient + 'static) -> Self {
         Self {
             client: Box::new(client),
         }
