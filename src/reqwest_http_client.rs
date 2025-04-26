@@ -1,20 +1,22 @@
-use crate::{error::Error, http_client::HttpClient, response::Response};
+use crate::{
+    error::Error,
+    http_client::{BareResponse, HttpClient},
+};
+use alloc::sync::Arc;
 use reqwest::get;
-use tokio::time::Instant;
 use url::Url;
 
 pub struct ReqwestHttpClient {}
 
 impl HttpClient for ReqwestHttpClient {
-    async fn get(url: &Url) -> Result<Response, Error> {
-        let start = Instant::now();
-        let response = get(url.clone()).await?;
-        let url = response.url().clone();
-        let status = response.status();
-        let headers = response.headers().clone();
-        let body = response.bytes().await?.to_vec();
-        let duration = Instant::now().duration_since(start);
+    async fn get(&self, url: &Url) -> Result<BareResponse, Error> {
+        let response = get(url.clone()).await.map_err(Arc::new)?;
 
-        Ok(Response::new(url, status, headers, body, duration))
+        Ok(BareResponse {
+            url: response.url().clone(),
+            status: response.status(),
+            headers: response.headers().clone(),
+            body: response.bytes().await.map_err(Arc::new)?.to_vec(),
+        })
     }
 }

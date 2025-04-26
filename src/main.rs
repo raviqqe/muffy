@@ -4,6 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod context;
+mod enriched_http_client;
 mod error;
 mod http_client;
 mod page;
