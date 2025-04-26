@@ -1,6 +1,6 @@
 # Muffin
 
-![](icon.svg)
+![](https://raviqqe.s3.amazonaws.com/muffin/icon.png)
 
 The web crawler.
 
