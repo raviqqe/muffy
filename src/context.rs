@@ -28,7 +28,7 @@ impl Context {
         &self.stdout
     }
 
-    pub fn request_semaphore(&self) -> &Semaphore {
+    pub const fn request_semaphore(&self) -> &Semaphore {
         &self.request_semaphore
     }
 }

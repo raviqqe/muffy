@@ -24,7 +24,8 @@ pub async fn render(
 }
 
 async fn render_line(stdout: &mut Stdout, string: &str) -> Result<(), Error> {
-    stdout.write_all(format!("{}\n", string).as_bytes()).await?;
+    stdout.write_all(string.as_bytes()).await?;
+    stdout.write_all(b"\n").await?;
 
     Ok(())
 }
