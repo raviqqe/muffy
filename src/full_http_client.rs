@@ -6,11 +6,11 @@ use crate::{
 use tokio::time::Instant;
 use url::Url;
 
-pub struct EnrichedHttpClient {
+pub struct FullHttpClient {
     client: Box<dyn HttpClient>,
 }
 
-impl EnrichedHttpClient {
+impl FullHttpClient {
     pub fn new(client: impl HttpClient + 'static) -> Self {
         Self {
             client: Box::new(client),

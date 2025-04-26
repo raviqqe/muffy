@@ -1,5 +1,5 @@
 use crate::{
-    cache::Cache, enriched_http_client::EnrichedHttpClient, http_client::HttpClientError,
+    cache::Cache, full_http_client::FullHttpClient, http_client::HttpClientError,
     response::Response,
 };
 use scc::HashSet;
@@ -9,7 +9,7 @@ use tokio::{
 };
 
 pub struct Context {
-    http_client: EnrichedHttpClient,
+    http_client: FullHttpClient,
     stdout: Mutex<Stdout>,
     origin: String,
     file_semaphore: Semaphore,
@@ -18,7 +18,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(http_client: EnrichedHttpClient, origin: String, file_limit: usize) -> Self {
+    pub fn new(http_client: FullHttpClient, origin: String, file_limit: usize) -> Self {
         Self {
             http_client,
             origin,
@@ -29,7 +29,7 @@ impl Context {
         }
     }
 
-    pub fn http_client(&self) -> &EnrichedHttpClient {
+    pub fn http_client(&self) -> &FullHttpClient {
         &self.http_client
     }
 
