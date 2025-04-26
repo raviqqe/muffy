@@ -42,12 +42,13 @@ pub async fn validate_link(
     Ok(response)
 }
 
-async fn valdiate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+    let url = response.url();
     let mut futures = vec![];
 
     validate_node(
         &context,
-        &response.url().clone().into(),
+        &url.clone().into(),
         &parse_html(str::from_utf8(response.body())?)
             .map_err(Error::HtmlParse)?
             .document,
@@ -56,7 +57,7 @@ async fn valdiate_page(context: Arc<Context>, response: Arc<Response>) -> Result
 
     let results = try_join_all(futures).await?;
 
-    render(&context, &url, &results).await?;
+    render(&context, url, &results).await?;
 
     Ok(())
 }
