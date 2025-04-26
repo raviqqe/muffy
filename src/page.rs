@@ -47,7 +47,7 @@ pub async fn validate_link(
         .map(|value| !value.as_bytes().starts_with(b"text/html"))
         .unwrap_or_default()
         || !url.to_string().starts_with(context.origin())
-        || ["http", "https"].contains(&url.scheme())
+        || !["http", "https"].contains(&url.scheme())
     {
         return Ok(response);
     } else if response.status() != StatusCode::OK {
