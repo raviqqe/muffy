@@ -17,7 +17,9 @@ pub async fn validate_link(
     let url = base.join(&url)?;
     let response = context.http_client().get(&url).await?;
 
-    if response
+    if response.status() != StatusCode::OK {
+        return Err(Error::InvalidStatus(response.status()));
+    } else if response
         .headers()
         .get("content-type")
         .map(|value| !value.as_bytes().starts_with(b"text/html"))
@@ -26,8 +28,6 @@ pub async fn validate_link(
         || !["http", "https"].contains(&url.scheme())
     {
         return Ok(response);
-    } else if response.status() != StatusCode::OK {
-        return Err(Error::InvalidStatus(response.status()));
     } else if context
         .checks()
         .insert_async(response.url().to_string())
