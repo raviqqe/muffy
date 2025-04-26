@@ -16,21 +16,27 @@ pub async fn validate_link(
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
-    let _permit = context.request_semaphore().acquire().await?;
-    let response = {
-        reqwest::get(url.as_str())
-            .await
-            .map_err(|source| Error::Get {
-                url: url.to_string(),
-                source,
-            })?
-    };
+    let permit = context.request_semaphore().acquire().await?;
+    let response = reqwest::get(url.as_str())
+        .await
+        .map_err(|source| Error::Get {
+            url: url.to_string(),
+            source,
+        })?;
 
-    if !url.to_string().starts_with(context.origin()) {
+    if response
+        .headers()
+        .get("content-type")
+        .map(|value| !value.as_bytes().starts_with(b"text/html"))
+        .unwrap_or_default()
+        || !url.to_string().starts_with(context.origin())
+    {
         return Ok(());
     }
 
     let body = response.text().await.unwrap();
+    drop(permit);
+
     let futures = validate_document(
         context.clone(),
         &url,
@@ -39,6 +45,7 @@ pub async fn validate_link(
             source,
         })?,
     )?;
+
     let results = try_join_all(futures).await?;
 
     render(&context, &url, &results).await?;
