@@ -1,35 +1,25 @@
-use dashmap::{DashMap, Entry};
-use std::time::Duration;
-use tokio::time::sleep;
-
-const LOCK_DELAY: Duration = Duration::from_millis(1);
+use scc::{HashMap, hash_map::Entry};
 
 #[derive(Default)]
 pub struct Cache<T> {
-    map: DashMap<String, T>,
+    map: HashMap<String, T>,
 }
 
 impl<T: Clone> Cache<T> {
     pub fn new() -> Self {
         Self {
-            map: DashMap::new(),
+            map: Default::default(),
         }
     }
 
     pub async fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> T {
-        loop {
-            if let Some(entry) = self.map.try_entry(key.to_string()) {
-                return match entry {
-                    Entry::Occupied(entry) => entry.get().clone(),
-                    Entry::Vacant(entry) => {
-                        let value = future.await;
-                        entry.insert(value.clone());
-                        value
-                    }
-                };
+        match self.map.entry_async(key.to_string()).await {
+            Entry::Occupied(entry) => entry.get().clone(),
+            Entry::Vacant(entry) => {
+                let value = future.await;
+                entry.insert_entry(value.clone());
+                value
             }
-
-            sleep(LOCK_DELAY).await;
         }
     }
 }
