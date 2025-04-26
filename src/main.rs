@@ -18,7 +18,9 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    validate_page().await?;
+    let context = Context::new();
+
+    validate_page(&context).await?;
 
     Ok(())
 }
