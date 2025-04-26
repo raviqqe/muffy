@@ -10,8 +10,8 @@ pub async fn render(
 ) -> Result<(), Error> {
     for result in results {
         match result {
-            Ok(()) => render_line(format!("{error}", result))?,
-            Err(error) => render_line(error.to_string())?,
+            Ok(()) => render_line("OK").await?,
+            Err(error) => render_line(format!("ERROR {error}")).await?,
         }
     }
 
