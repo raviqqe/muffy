@@ -1,10 +1,12 @@
-use tokio::io::Stdout;
+use tokio::io::{Stdout, stdout};
 
-#[derive(Debug, Default)]
-pub struct Context {}
+#[derive(Debug)]
+pub struct Context {
+    stdout: Stdout,
+}
 
 impl Context {
-    pub const fn new() -> Self {
-        Self { stdout: Stdout }
+    pub fn new() -> Self {
+        Self { stdout: stdout() }
     }
 }
