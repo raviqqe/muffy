@@ -4,6 +4,7 @@ use futures::future::try_join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
+use tokio::io::AsyncWriteExt;
 use tokio::{spawn, task::JoinHandle};
 
 pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Error> {
@@ -15,10 +16,15 @@ pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Err
         })?;
 
     let body = response.text().await.unwrap();
-    let futures = validate_document(context, &parse_html(&body, &url)?)?;
+    let futures = validate_document(context.clone(), &parse_html(&body, &url)?)?;
     let results = try_join_all(futures).await?;
 
-    println!("{:?}", &results);
+    context
+        .stdout()
+        .lock()
+        .await
+        .write_all(format!("{:?}\n", &results).as_bytes())
+        .await?;
 
     Ok(())
 }

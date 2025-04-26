@@ -7,6 +7,7 @@ use tokio::task::JoinError;
 pub enum Error {
     Get { url: String, source: reqwest::Error },
     HtmlParse { url: String, source: io::Error },
+    Io(io::Error),
     Join(JoinError),
 }
 
@@ -21,8 +22,15 @@ impl Display for Error {
             Self::HtmlParse { url, source } => {
                 write!(formatter, "failed to parse HTML from {url}: {source}")
             }
+            Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
     }
 }
 
