@@ -5,7 +5,7 @@ pub struct Cache<T> {
     map: DashMap<String, T>,
 }
 
-impl<T> Cache<T> {
+impl<T: Clone> Cache<T> {
     pub fn new() -> Self {
         Self {
             map: Default::default(),
@@ -16,8 +16,8 @@ impl<T> Cache<T> {
         if let Some(value) = self.map.get(&key) {
             value.clone()
         } else {
-            let value = get();
-            self.data.insert(key.clone(), value.clone());
+            let value = get().await;
+            self.map.insert(key.clone(), value.clone());
             value
         }
     }
