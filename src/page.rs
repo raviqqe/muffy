@@ -37,8 +37,20 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    // TODO Spawn this continuation as a future.
+    let handle = spawn(validate_page(context.clone(), response.clone()));
+    context
+        .job_sender()
+        .send(Box::new(async move {
+            handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
+        }))
+        .await
+        .unwrap();
 
+    Ok(response)
+}
+
+async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+    let url = response.url();
     let mut futures = vec![];
 
     validate_node(
@@ -52,9 +64,9 @@ pub async fn validate_link(
 
     let results = try_join_all(futures).await?;
 
-    render(&context, &url, &results).await?;
+    render(&context, url, &results).await?;
 
-    Ok(response)
+    Ok(())
 }
 
 fn validate_node(

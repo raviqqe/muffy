@@ -1,5 +1,6 @@
 use crate::{
     cache::Cache,
+    error::Error,
     http_client::{HttpClient, HttpClientError},
     response::Response,
 };
@@ -24,8 +25,9 @@ impl FullHttpClient {
         }
     }
 
-    pub async fn get(&self, url: &Url) -> Result<Arc<Response>, HttpClientError> {
-        self.cache
+    pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
+        Ok(self
+            .cache
             .get_or_set(url.to_string(), async {
                 let permit = self.semaphore.acquire().await.unwrap();
                 let start = Instant::now();
@@ -36,6 +38,6 @@ impl FullHttpClient {
 
                 Ok(Response::from_bare(response, duration).into())
             })
-            .await
+            .await?)
     }
 }

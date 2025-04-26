@@ -18,6 +18,7 @@ use clap::Parser;
 use full_http_client::FullHttpClient;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
+use tokio::sync::mpsc::channel;
 use url::Url;
 
 #[derive(Parser, Debug)]
@@ -31,15 +32,21 @@ struct Arguments {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
+    let (sender, mut receiver) = channel(1024);
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
+        sender,
         url.clone(),
     ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
+
+    while let Some(future) = receiver.recv().await {
+        Box::into_pin(future).await?;
+    }
 
     Ok(())
 }
