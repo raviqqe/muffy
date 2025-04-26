@@ -5,6 +5,7 @@ extern crate alloc;
 mod context;
 mod error;
 mod page;
+mod render;
 
 use self::context::Context;
 use self::{error::Error, page::validate_link};

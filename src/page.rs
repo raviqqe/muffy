@@ -1,11 +1,10 @@
-use crate::{context::Context, error::Error};
+use crate::{context::Context, error::Error, render::render};
 use alloc::sync::Arc;
 use futures::future::try_join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
 use std::io;
-use tokio::io::AsyncWriteExt;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -17,6 +16,7 @@ pub async fn validate_link(
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
+    let permit = context.request_semaphore().acquire().await?;
     let response = reqwest::get(url.as_str())
         .await
         .map_err(|source| Error::Get {
@@ -24,11 +24,19 @@ pub async fn validate_link(
             source,
         })?;
 
-    if !url.to_string().starts_with(context.origin()) {
+    if response
+        .headers()
+        .get("content-type")
+        .map(|value| !value.as_bytes().starts_with(b"text/html"))
+        .unwrap_or_default()
+        || !url.to_string().starts_with(context.origin())
+    {
         return Ok(());
     }
 
     let body = response.text().await.unwrap();
+    drop(permit);
+
     let futures = validate_document(
         context.clone(),
         &url,
@@ -37,14 +45,10 @@ pub async fn validate_link(
             source,
         })?,
     )?;
+
     let results = try_join_all(futures).await?;
 
-    context
-        .stdout()
-        .lock()
-        .await
-        .write_all(format!("{:?}\n", &results).as_bytes())
-        .await?;
+    render(&context, &url, &results).await?;
 
     Ok(())
 }
