@@ -1,11 +1,10 @@
-use crate::{context::Context, error::Error};
+use crate::{context::Context, error::Error, render::render};
 use alloc::sync::Arc;
 use futures::future::try_join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
 use std::io;
-use tokio::io::AsyncWriteExt;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -39,12 +38,7 @@ pub async fn validate_link(
     )?;
     let results = try_join_all(futures).await?;
 
-    context
-        .stdout()
-        .lock()
-        .await
-        .write_all(format!("{:?}\n", &results).as_bytes())
-        .await?;
+    render(&context, &url, &results).await?;
 
     Ok(())
 }

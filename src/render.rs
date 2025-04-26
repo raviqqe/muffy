@@ -1,6 +1,6 @@
 use crate::context::Context;
 use crate::error::Error;
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
 
 pub async fn render(
@@ -10,10 +10,12 @@ pub async fn render(
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
+    render_line(&mut stdout, &url.to_string()).await?;
+
     for result in results {
         match result {
-            Ok(()) => render_line("OK").await?,
-            Err(error) => render_line(format!("ERROR {error}")).await?,
+            Ok(()) => render_line(&mut stdout, "  OK").await?,
+            Err(error) => render_line(&mut stdout, &format!("  ERROR {error}")).await?,
         }
     }
 
