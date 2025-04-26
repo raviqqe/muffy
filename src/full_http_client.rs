@@ -1,5 +1,5 @@
 use crate::{
-    cache::Cache,
+    cache::{Cache, MemoryCache},
     error::Error,
     http_client::{HttpClient, HttpClientError},
     response::Response,
@@ -13,7 +13,7 @@ const CACHE_CAPACITY: usize = 1 << 16;
 
 pub struct FullHttpClient {
     client: Box<dyn HttpClient>,
-    cache: Cache<Result<Arc<Response>, HttpClientError>>,
+    cache: MemoryCache<Result<Arc<Response>, HttpClientError>>,
     semaphore: Semaphore,
 }
 
@@ -21,7 +21,7 @@ impl FullHttpClient {
     pub fn new(client: impl HttpClient + 'static, concurrency: usize) -> Self {
         Self {
             client: Box::new(client),
-            cache: Cache::new(CACHE_CAPACITY),
+            cache: MemoryCache::new(CACHE_CAPACITY),
             semaphore: Semaphore::new(concurrency),
         }
     }
