@@ -8,7 +8,7 @@ use url::Url;
 pub struct ReqwestHttpClient {}
 
 impl ReqwestHttpClient {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }

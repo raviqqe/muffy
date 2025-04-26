@@ -22,7 +22,7 @@ impl Context {
         }
     }
 
-    pub fn http_client(&self) -> &FullHttpClient {
+    pub const fn http_client(&self) -> &FullHttpClient {
         &self.http_client
     }
 
