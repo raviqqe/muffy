@@ -1,13 +1,15 @@
 //! The static website validator.
 
+extern crate alloc;
+
 mod context;
 mod error;
 mod page;
 
 use self::context::Context;
 use self::{error::Error, page::validate_link};
+use alloc::sync::Arc;
 use clap::Parser;
-use std::sync::Arc;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -22,7 +24,7 @@ async fn main() -> Result<(), Error> {
     let arguments = Arguments::parse();
     let context = Arc::new(Context::new());
 
-    validate_link(context, arguments.url.into()).await?;
+    validate_link(context, arguments.url).await?;
 
     Ok(())
 }
