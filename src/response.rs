@@ -1,8 +1,10 @@
 use reqwest::{StatusCode, header::HeaderMap};
 use std::time::Duration;
+use url::Url;
 
 #[derive(Debug, Clone)]
 pub struct Response {
+    url: Url,
     status: StatusCode,
     headers: HeaderMap,
     body: Vec<u8>,
@@ -11,17 +13,23 @@ pub struct Response {
 
 impl Response {
     pub const fn new(
+        url: Url,
         status: StatusCode,
         headers: HeaderMap,
         body: Vec<u8>,
         duration: Duration,
     ) -> Self {
         Self {
+            url,
             status,
             headers,
             body,
             duration,
         }
+    }
+
+    pub const fn url(&self) -> &Url {
+        &self.url
     }
 
     pub const fn status(&self) -> StatusCode {

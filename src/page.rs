@@ -25,6 +25,7 @@ pub async fn validate_link(
 
             let start = Instant::now();
             let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;
+            let url = response.url().clone();
             let status = response.status();
             let headers = response.headers().clone();
             let body = response.bytes().await?.to_vec();
@@ -32,7 +33,7 @@ pub async fn validate_link(
 
             drop(permit);
 
-            Ok(Response::new(status, headers, body, duration))
+            Ok(Response::new(url, status, headers, body, duration))
         })
         .await
         .map_err(|source| Error::Get {
