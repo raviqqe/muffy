@@ -26,13 +26,11 @@ pub async fn validate_link(
         .unwrap_or_default()
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
-    {
-        return Ok(response);
-    } else if context
-        .checks()
-        .insert_async(response.url().to_string())
-        .await
-        .is_err()
+        || context
+            .checks()
+            .insert_async(response.url().to_string())
+            .await
+            .is_err()
     {
         return Ok(response);
     }
