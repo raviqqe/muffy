@@ -1,8 +1,7 @@
 use crate::http_client::{BareResponse, HttpClient, HttpClientError};
-use alloc::sync::Arc;
 use async_trait::async_trait;
 use http::Request;
-use http_body_util::Empty;
+use http_body_util::{BodyExt, Empty};
 use hyper::body::Bytes;
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpStream;
@@ -26,10 +25,11 @@ impl HttpClient for ReqwestHttpClient {
             url.port().unwrap_or(80)
         ))
         .await?;
-        let (mut sender, conn) =
+        let (mut sender, _conn) =
             hyper::client::conn::http1::handshake(TokioIo::new(stream)).await?;
+        dbg!(url);
 
-        let response = sender
+        let mut response = sender
             .send_request(
                 Request::builder()
                     .uri(url.to_string())
@@ -37,17 +37,20 @@ impl HttpClient for ReqwestHttpClient {
             )
             .await?;
 
+        let mut body = vec![];
+
+        while let Some(frame) = response.frame().await {
+            if let Some(chunk) = frame?.data_ref() {
+                body.extend(chunk);
+            }
+        }
+        dbg!(&body);
+
         Ok(BareResponse {
-            url: response.url().clone(),
+            url: url.clone(),
             status: response.status(),
             headers: response.headers().clone(),
-            body: response.bytes().await?.to_vec(),
+            body,
         })
-    }
-}
-
-impl From<hyper::Error> for HttpClientError {
-    fn from(error: hyper::Error) -> Self {
-        Self::new(Arc::new(error))
     }
 }

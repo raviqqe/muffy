@@ -45,6 +45,12 @@ impl From<http::Error> for HttpClientError {
     }
 }
 
+impl From<hyper::Error> for HttpClientError {
+    fn from(error: hyper::Error) -> Self {
+        Self::Hyper(Arc::new(error))
+    }
+}
+
 impl From<io::Error> for HttpClientError {
     fn from(error: io::Error) -> Self {
         Self::Io(error.into())
