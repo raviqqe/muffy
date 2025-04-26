@@ -19,7 +19,7 @@ pub async fn render(
                 render_line(
                     &mut stdout,
                     &format!(
-                        "  {} {}\t{}",
+                        "\t{}\t{}\t{}",
                         response.status().to_string().green(),
                         response.url(),
                         format!("{} ms", response.duration().as_millis()).yellow()
@@ -27,7 +27,9 @@ pub async fn render(
                 )
                 .await?
             }
-            Err(error) => render_line(&mut stdout, &format!("  {} {error}", "ERROR".red())).await?,
+            Err(error) => {
+                render_line(&mut stdout, &format!("\t{}\t{error}", "ERROR".red())).await?
+            }
         }
     }
 
