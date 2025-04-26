@@ -1,5 +1,6 @@
 use crate::{cache::Cache, response::Response};
 use alloc::sync::Arc;
+use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
     sync::{Mutex, Semaphore},
@@ -9,7 +10,8 @@ pub struct Context {
     stdout: Mutex<Stdout>,
     origin: String,
     request_semaphore: Semaphore,
-    cache: Cache<Result<Response, Arc<reqwest::Error>>>,
+    request_cache: Cache<Result<Response, Arc<reqwest::Error>>>,
+    checks: HashSet<String>,
 }
 
 impl Context {
@@ -18,7 +20,8 @@ impl Context {
             origin,
             stdout: stdout().into(),
             request_semaphore: Semaphore::new(8),
-            cache: Cache::new(),
+            request_cache: Cache::new(),
+            checks: HashSet::with_capacity(1 << 10),
         }
     }
 
@@ -35,7 +38,11 @@ impl Context {
         &self.request_semaphore
     }
 
-    pub const fn cache(&self) -> &Cache<Result<Response, Arc<reqwest::Error>>> {
-        &self.cache
+    pub const fn request_cache(&self) -> &Cache<Result<Response, Arc<reqwest::Error>>> {
+        &self.request_cache
+    }
+
+    pub const fn checks(&self) -> &HashSet<String> {
+        &self.checks
     }
 }
