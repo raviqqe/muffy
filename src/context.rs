@@ -15,7 +15,7 @@ impl Context {
         Self {
             origin,
             stdout: stdout().into(),
-            request_semaphore: Semaphore::new(1),
+            request_semaphore: Semaphore::new(8),
         }
     }
 
