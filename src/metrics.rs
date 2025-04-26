@@ -1,10 +1,10 @@
 pub struct Metrics {
-    document: CategoryMetrics
-    link: CategoryMetrics,
+    document: CategoryMetrics,
+    element: CategoryMetrics,
 }
 
 impl Metrics {
-    pub fn new() -> Self {
+    pub fn new(document: CategoryMetrics, link: CategoryMetrics) -> Self {
         Self {}
     }
 
@@ -20,10 +20,7 @@ pub struct CategoryMetrics {
 
 impl CategoryMetrics {
     pub fn new(success: usize, error: usize) -> Self {
-        CategoryMetrics {
-            success,
-            error,
-        }
+        CategoryMetrics { success, error }
     }
 
     pub fn success(&self) -> usize {
