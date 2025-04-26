@@ -1,39 +1,44 @@
 use crate::{context::Context, error::Error};
-use futures::future::join_all;
+use futures::future::try_join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
 use std::sync::Arc;
+use tokio::{spawn, task::JoinHandle};
 
-pub async fn validate_link(context: &Context, url: String) -> Result<(), Error> {
-    let response = reqwest::get(&url).await.map_err(|source| Error::Get {
-        url: url.clone(),
-        source,
-    })?;
+pub async fn validate_link(context: Arc<Context>, url: Arc<String>) -> Result<(), Error> {
+    let response = reqwest::get(url.as_str())
+        .await
+        .map_err(|source| Error::Get {
+            url: url.to_string(),
+            source,
+        })?;
 
     let body = response.text().await.unwrap();
-    let document = Arc::new(parse_html(&body, &url)?);
-
-    let results = validate_node(context, document).await?;
+    let futures = validate_node(context, &parse_html(&body, &url)?)?;
+    let results = try_join_all(futures).await?;
 
     println!("{:?}", &results);
 
     Ok(())
 }
 
-async fn validate_node(
-    context: &Context,
-    node: Arc<RcDom>,
-) -> Result<Vec<Result<(), Error>>, Error> {
+fn validate_node(
+    context: Arc<Context>,
+    dom: &RcDom,
+) -> Result<Vec<JoinHandle<Result<(), Error>>>, Error> {
     let mut futures = vec![];
-    let mut nodes = vec![node.document.clone()];
+    let mut nodes = vec![dom.document.clone()];
 
     while let Some(node) = nodes.pop() {
         if let NodeData::Element { name, attrs, .. } = &node.data {
             for attribute in attrs.borrow().iter() {
                 match (name.local.as_ref(), attribute.name.local.as_ref()) {
                     ("a", "href") => {
-                        futures.push(validate_link(context, attribute.value.to_string()));
+                        let context = context.clone();
+                        let url = attribute.value.to_string().into();
+
+                        futures.push(spawn(validate_link(context, url)));
                     }
                     _ => {}
                 }
@@ -43,7 +48,7 @@ async fn validate_node(
         nodes.extend(node.children.borrow().iter().cloned());
     }
 
-    Ok(join_all(futures).await)
+    Ok(futures)
 }
 
 fn parse_html(text: &str, url: &str) -> Result<RcDom, Error> {
