@@ -3,7 +3,11 @@ use scc::{HashMap, hash_map::Entry};
 
 #[async_trait]
 pub trait Cache<T: Clone> {
-    fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> impl Future<Output = T>;
+    fn get_or_set(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send>,
+    ) -> impl Future<Output = T>;
 }
 
 pub struct MemoryCache<T> {
@@ -19,11 +23,11 @@ impl<T> MemoryCache<T> {
 }
 
 impl<T: Clone> Cache<T> for MemoryCache<T> {
-    async fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> T {
+    async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T {
         match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
-                let value = future.await;
+                let value = Box::into_pin(future).await;
                 entry.insert_entry(value.clone());
                 value
             }
