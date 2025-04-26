@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::full_http_client::FullHttpClient;
+use crate::{error::Error, full_http_client::FullHttpClient};
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},

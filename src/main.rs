@@ -4,16 +4,16 @@ extern crate alloc;
 
 mod cache;
 mod context;
+mod document;
 mod error;
 mod full_http_client;
 mod http_client;
 mod metrics;
-mod page;
 mod render;
 mod reqwest_http_client;
 mod response;
 
-use self::{context::Context, error::Error, page::validate_link};
+use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::MemoryCache;
 use clap::Parser;
@@ -63,5 +63,5 @@ async fn run() -> Result<(), Error> {
         error = error || Box::into_pin(future).await.is_err();
     }
 
-    if error { Err(Error::Page) } else { Ok(()) }
+    if error { Err(Error::Document) } else { Ok(()) }
 }

@@ -65,7 +65,7 @@ async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Re
     render(&context, url, &results).await?;
 
     if results.iter().any(Result::is_err) {
-        Err(Error::Page)
+        Err(Error::Document)
     } else {
         Ok(())
     }
