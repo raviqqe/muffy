@@ -16,9 +16,8 @@ pub async fn validate_link(
     let url = base
         .join(&url)
         .map_err(|source| Error::UrlParse { url, source })?;
+    let _permit = context.request_semaphore().acquire().await?;
     let response = {
-        let _ = context.request_semaphore().acquire().await?;
-
         reqwest::get(url.as_str())
             .await
             .map_err(|source| Error::Get {
