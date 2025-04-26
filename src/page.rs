@@ -59,13 +59,12 @@ pub async fn validate_link(
         return Ok(());
     }
 
-    let body = str::from_utf8(response.body())?;
-
     let mut futures = vec![];
+
     validate_node(
         &context,
         &url.clone().into(),
-        &parse_html(&body)
+        &parse_html(str::from_utf8(response.body())?)
             .map_err(|source| Error::HtmlParse {
                 url: url.to_string(),
                 source,

@@ -8,7 +8,7 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new(status: StatusCode, headers: HeaderMap, body: Vec<u8>) -> Self {
+    pub const fn new(status: StatusCode, headers: HeaderMap, body: Vec<u8>) -> Self {
         Self {
             status,
             headers,
@@ -24,6 +24,7 @@ impl Response {
         &self.headers
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub fn body(&self) -> &[u8] {
         &self.body
     }

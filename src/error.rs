@@ -1,9 +1,9 @@
+use alloc::sync::Arc;
 use core::error;
 use core::fmt::{self, Display, Formatter};
 use core::str::Utf8Error;
 use reqwest::StatusCode;
 use std::io;
-use std::sync::Arc;
 use tokio::sync::AcquireError;
 use tokio::task::JoinError;
 use url::ParseError;
