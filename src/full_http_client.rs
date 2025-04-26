@@ -18,12 +18,17 @@ impl FullHttpClient {
     }
 
     pub async fn get(&self, context: &Context, url: &Url) -> Result<Response, HttpClientError> {
-        let permit = context.file_semaphore().acquire().await.unwrap();
-        let start = Instant::now();
-        let response = self.client.get(url).await?;
-        let duration = Instant::now().duration_since(start);
-        drop(permit);
+        context
+            .request_cache()
+            .get_or_set(url.to_string(), async {
+                let permit = context.file_semaphore().acquire().await.unwrap();
+                let start = Instant::now();
+                let response = self.client.get(url).await?;
+                let duration = Instant::now().duration_since(start);
+                drop(permit);
 
-        Ok(Response::from_bare(response, duration))
+                Ok(Response::from_bare(response, duration))
+            })
+            .await
     }
 }
