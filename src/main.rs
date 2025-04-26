@@ -1,9 +1,10 @@
-//! A web validator for static websites.
+//! The static website validator.
 
 mod context;
 mod error;
 mod page;
 
+use self::context::Context;
 use self::{error::Error, page::validate_page};
 use clap::Parser;
 
@@ -11,12 +12,8 @@ use clap::Parser;
 #[command(version, about, long_about = None)]
 struct Args {
     /// An origin URL.
-    #[arg(short, long)]
+    #[arg()]
     url: String,
-
-    /// Number of times to greet
-    #[arg(short, long, default_value_t = 1)]
-    count: u8,
 }
 
 #[tokio::main]
