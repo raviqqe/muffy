@@ -35,7 +35,7 @@ impl FullHttpClient {
 
             response.status().is_redirection()
         } {
-            url = Url::parse(str::from_utf8(
+            url = url.join(str::from_utf8(
                 &response
                     .headers()
                     .get("location")
