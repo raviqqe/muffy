@@ -15,6 +15,10 @@ pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Err
             source,
         })?;
 
+    if !url.starts_with(context.origin()) {
+        return Ok(());
+    }
+
     let body = response.text().await.unwrap();
     let futures = validate_document(context.clone(), &parse_html(&body, &url)?)?;
     let results = try_join_all(futures).await?;
