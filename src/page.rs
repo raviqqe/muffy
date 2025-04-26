@@ -37,17 +37,17 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    spawn(validate_page());
+    spawn(validate_page(context.clone(), response.clone()));
 
     Ok(response)
 }
 
-async fn valdiate_page(context: &Context,, url:&Url) -> Result<(), Error> {
+async fn valdiate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
     let mut futures = vec![];
 
     validate_node(
         &context,
-        &url.clone().into(),
+        &response.url().clone().into(),
         &parse_html(str::from_utf8(response.body())?)
             .map_err(Error::HtmlParse)?
             .document,
