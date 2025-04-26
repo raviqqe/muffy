@@ -5,6 +5,7 @@ use core::{
     fmt::{self, Display, Formatter},
 };
 use hyper::{StatusCode, header::HeaderMap};
+use std::io;
 use url::Url;
 
 #[async_trait]
@@ -20,18 +21,32 @@ pub struct BareResponse {
 }
 
 #[derive(Clone, Debug)]
-pub struct HttpClientError(Arc<dyn core::error::Error + Send + Sync>);
-
-impl HttpClientError {
-    pub fn new(error: Arc<dyn core::error::Error + Send + Sync>) -> Self {
-        Self(error)
-    }
+pub enum HttpClientError {
+    Http(Arc<http::Error>),
+    Hyper(Arc<dyn core::error::Error + Send + Sync>),
+    Io(Arc<io::Error>),
 }
 
 impl Error for HttpClientError {}
 
 impl Display for HttpClientError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", self.0)
+        match self {
+            Self::Http(error) => write!(formatter, "{error}"),
+            Self::Hyper(error) => write!(formatter, "{error}"),
+            Self::Io(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl From<http::Error> for HttpClientError {
+    fn from(error: http::Error) -> Self {
+        Self::Http(error.into())
+    }
+}
+
+impl From<io::Error> for HttpClientError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error.into())
     }
 }
