@@ -6,7 +6,7 @@ use html5ever::{parse_document, tendril::TendrilSink};
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use reqwest::StatusCode;
 use std::io;
-use tokio::{spawn, task::JoinHandle, time::Instant};
+use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
 pub async fn validate_link(
@@ -15,24 +15,7 @@ pub async fn validate_link(
     base: Arc<Url>,
 ) -> Result<Response, Error> {
     let url = base.join(&url)?;
-    let response = context
-        .request_cache()
-        .get_or_set(url.to_string(), async {
-            let permit = context.file_semaphore().acquire().await.unwrap();
-
-            let start = Instant::now();
-            let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;
-            let url = response.url().clone();
-            let status = response.status();
-            let headers = response.headers().clone();
-            let body = response.bytes().await?.to_vec();
-            let duration = Instant::now().duration_since(start);
-
-            drop(permit);
-
-            Ok(Response::new(url, status, headers, body, duration))
-        })
-        .await?;
+    let response = context.http_client().get(&url).await?;
 
     if response
         .headers()

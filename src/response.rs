@@ -2,6 +2,8 @@ use core::time::Duration;
 use reqwest::{StatusCode, header::HeaderMap};
 use url::Url;
 
+use crate::http_client::BareResponse;
+
 #[derive(Debug, Clone)]
 pub struct Response {
     url: Url,
@@ -26,6 +28,16 @@ impl Response {
             body,
             duration,
         }
+    }
+
+    pub fn from_bare(response: BareResponse, duration: Duration) -> Self {
+        Self::new(
+            response.url,
+            response.status,
+            response.headers,
+            response.body,
+            duration,
+        )
     }
 
     pub const fn url(&self) -> &Url {

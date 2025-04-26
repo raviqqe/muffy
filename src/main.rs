@@ -5,13 +5,18 @@ extern crate alloc;
 mod cache;
 mod context;
 mod error;
+mod full_http_client;
+mod http_client;
 mod page;
 mod render;
+mod reqwest_http_client;
 mod response;
 
 use self::{context::Context, error::Error, page::validate_link};
 use alloc::sync::Arc;
 use clap::Parser;
+use full_http_client::FullHttpClient;
+use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use url::Url;
 
@@ -27,8 +32,11 @@ struct Arguments {
 async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
     let context = Arc::new(Context::new(
+        FullHttpClient::new(
+            ReqwestHttpClient::new(),
+            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+        ),
         url.clone(),
-        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
