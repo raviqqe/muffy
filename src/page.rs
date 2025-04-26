@@ -2,8 +2,7 @@ use crate::{context::Context, error::Error, render::render, response::Response};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
-use html5ever::parse_document;
-use html5ever::tendril::TendrilSink;
+use html5ever::{parse_document, tendril::TendrilSink};
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use reqwest::StatusCode;
 use std::io;
@@ -15,13 +14,11 @@ pub async fn validate_link(
     url: String,
     base: Arc<Url>,
 ) -> Result<Response, Error> {
-    let url = base
-        .join(&url)
-        .map_err(|source| Error::UrlParse { url, source })?;
+    let url = base.join(&url)?;
     let response = context
         .request_cache()
         .get_or_set(url.to_string(), async {
-            let permit = context.request_semaphore().acquire().await.unwrap();
+            let permit = context.file_semaphore().acquire().await.unwrap();
 
             let start = Instant::now();
             let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;
@@ -35,11 +32,7 @@ pub async fn validate_link(
 
             Ok(Response::new(url, status, headers, body, duration))
         })
-        .await
-        .map_err(|source| Error::Get {
-            url: url.to_string(),
-            source,
-        })?;
+        .await?;
 
     if response
         .headers()
@@ -51,10 +44,7 @@ pub async fn validate_link(
     {
         return Ok(response);
     } else if response.status() != StatusCode::OK {
-        return Err(Error::InvalidStatus {
-            url: url.to_string(),
-            status: response.status(),
-        });
+        return Err(Error::InvalidStatus(response.status()));
     } else if context
         .checks()
         .insert_async(response.url().to_string())
@@ -72,10 +62,7 @@ pub async fn validate_link(
         &context,
         &url.clone().into(),
         &parse_html(str::from_utf8(response.body())?)
-            .map_err(|source| Error::HtmlParse {
-                url: url.to_string(),
-                source,
-            })?
+            .map_err(Error::HtmlParse)?
             .document,
         &mut futures,
     )?;

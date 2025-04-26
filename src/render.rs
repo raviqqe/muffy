@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::{context::Context, response::Response};
+use crate::{context::Context, error::Error, response::Response};
 use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;

@@ -1,34 +1,23 @@
 use alloc::sync::Arc;
-use core::error;
-use core::fmt::{self, Display, Formatter};
-use core::str::Utf8Error;
+use core::{
+    error,
+    fmt::{self, Display, Formatter},
+    str::Utf8Error,
+};
 use reqwest::StatusCode;
 use std::io;
-use tokio::sync::AcquireError;
-use tokio::task::JoinError;
+use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
 
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
-    Get {
-        url: String,
-        source: Arc<reqwest::Error>,
-    },
-    HtmlParse {
-        url: String,
-        source: io::Error,
-    },
-    InvalidStatus {
-        url: String,
-        status: StatusCode,
-    },
+    HtmlParse(io::Error),
+    InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
-    UrlParse {
-        url: String,
-        source: ParseError,
-    },
+    Reqwest(Arc<reqwest::Error>),
+    UrlParse(ParseError),
     Utf8(Utf8Error),
 }
 
@@ -38,20 +27,12 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
-            Self::Get { url, source } => {
-                write!(formatter, "failed to GET {url}: {source}")
-            }
-            Self::HtmlParse { url, source } => {
-                write!(formatter, "failed to parse HTML from {url}: {source}")
-            }
-            Self::InvalidStatus { url, status } => {
-                write!(formatter, "invalid status {status} at {url}")
-            }
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
-            Self::UrlParse { url, source } => {
-                write!(formatter, "failed to parse URL {url}: {source}")
-            }
+            Self::Reqwest(error) => write!(formatter, "{error}"),
+            Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
     }
@@ -72,6 +53,18 @@ impl From<io::Error> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<url::ParseError> for Error {
+    fn from(error: url::ParseError) -> Self {
+        Self::UrlParse(error)
+    }
+}
+
+impl From<Arc<reqwest::Error>> for Error {
+    fn from(error: Arc<reqwest::Error>) -> Self {
+        Self::Reqwest(error)
     }
 }
 
