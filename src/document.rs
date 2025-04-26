@@ -51,7 +51,7 @@ async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Re
     let url = response.url();
     let mut futures = vec![];
 
-    validate_node(
+    validate_element(
         &context,
         &url.clone().into(),
         &parse_html(str::from_utf8(response.body())?)
@@ -71,7 +71,7 @@ async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Re
     }
 }
 
-fn validate_node(
+fn validate_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
@@ -100,7 +100,7 @@ fn validate_node(
     }
 
     for node in node.children.borrow().iter() {
-        validate_node(context, base, node, futures)?;
+        validate_element(context, base, node, futures)?;
     }
 
     Ok(())
