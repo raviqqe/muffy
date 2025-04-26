@@ -15,7 +15,7 @@ pub async fn validate_link(context: Arc<Context>, url: Arc<String>) -> Result<()
         })?;
 
     let body = response.text().await.unwrap();
-    let futures = validate_node(context, &parse_html(&body, &url)?)?;
+    let futures = validate_document(context, &parse_html(&body, &url)?)?;
     let results = try_join_all(futures).await?;
 
     println!("{:?}", &results);
@@ -23,7 +23,7 @@ pub async fn validate_link(context: Arc<Context>, url: Arc<String>) -> Result<()
     Ok(())
 }
 
-fn validate_node(
+fn validate_document(
     context: Arc<Context>,
     dom: &RcDom,
 ) -> Result<Vec<JoinHandle<Result<(), Error>>>, Error> {
