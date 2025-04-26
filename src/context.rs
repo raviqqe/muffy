@@ -1,8 +1,21 @@
-#[derive(Debug, Default)]
-pub struct Context {}
+use tokio::{
+    io::{Stdout, stdout},
+    sync::Mutex,
+};
+
+#[derive(Debug)]
+pub struct Context {
+    stdout: Mutex<Stdout>,
+}
 
 impl Context {
-    pub const fn new() -> Self {
-        Self {}
+    pub fn new() -> Self {
+        Self {
+            stdout: stdout().into(),
+        }
+    }
+
+    pub const fn stdout(&self) -> &Mutex<Stdout> {
+        &self.stdout
     }
 }

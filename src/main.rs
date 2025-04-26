@@ -1,11 +1,14 @@
 //! The static website validator.
 
+extern crate alloc;
+
 mod context;
 mod error;
 mod page;
 
 use self::context::Context;
-use self::{error::Error, page::validate_page};
+use self::{error::Error, page::validate_link};
+use alloc::sync::Arc;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -19,9 +22,9 @@ struct Arguments {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let arguments = Arguments::parse();
-    let context = Context::new();
+    let context = Arc::new(Context::new());
 
-    validate_page(&context, &arguments.url).await?;
+    validate_link(context, arguments.url).await?;
 
     Ok(())
 }
