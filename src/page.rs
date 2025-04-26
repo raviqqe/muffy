@@ -7,7 +7,7 @@ use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use reqwest::StatusCode;
 use std::io;
-use tokio::{spawn, task::JoinHandle};
+use tokio::{spawn, task::JoinHandle, time::Instant};
 use url::Url;
 
 pub async fn validate_link(
@@ -22,14 +22,17 @@ pub async fn validate_link(
         .request_cache()
         .get_or_set(url.to_string(), async {
             let permit = context.request_semaphore().acquire().await.unwrap();
-            let response = reqwest::get(url.as_str()).await.map_err(Arc::new)?;
-            let response = Response::new(
-                response.status(),
-                response.headers().clone(),
-                response.bytes().await?.to_vec(),
-            );
+
+            let start = Instant::now();
+            let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;
+            let status = response.status();
+            let headers = response.headers().clone();
+            let body = response.bytes().await?.to_vec();
+            let duration = Instant::now().duration_since(start);
+
             drop(permit);
-            Ok(response)
+
+            Ok(Response::new(status, headers, body, duration))
         })
         .await
         .map_err(|source| Error::Get {
