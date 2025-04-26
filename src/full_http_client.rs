@@ -26,6 +26,21 @@ impl FullHttpClient {
     }
 
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
+        let mut url = url.clone();
+        let mut response;
+
+        while {
+            response = self.get_single(&url).await?;
+
+            response.status().is_redirection()
+        } {
+            url = response.url().clone();
+        }
+
+        Ok(response)
+    }
+
+    async fn get_single(&self, url: &Url) -> Result<Arc<Response>, Error> {
         Ok(self
             .cache
             .get_or_set(url.to_string(), async {
