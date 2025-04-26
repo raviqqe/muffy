@@ -19,7 +19,7 @@ impl Context {
         Self {
             origin,
             stdout: stdout().into(),
-            request_semaphore: Semaphore::new(8),
+            request_semaphore: Semaphore::new(512),
             request_cache: Cache::new(),
             checks: HashSet::with_capacity(1 << 10),
         }
