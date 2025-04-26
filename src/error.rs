@@ -3,7 +3,7 @@ use core::{
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
-use reqwest::StatusCode;
+use http::StatusCode;
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
@@ -18,6 +18,7 @@ pub enum Error {
     InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
+    RedirectLocation,
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -33,6 +34,7 @@ impl Display for Error {
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
+            Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }

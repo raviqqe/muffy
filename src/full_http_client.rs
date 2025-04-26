@@ -5,6 +5,7 @@ use crate::{
     response::Response,
 };
 use alloc::sync::Arc;
+use core::str;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
@@ -26,6 +27,26 @@ impl FullHttpClient {
     }
 
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
+        let mut url = url.clone();
+
+        loop {
+            let response = self.get_single(&url).await?;
+
+            if !response.status().is_redirection() {
+                return Ok(response);
+            }
+
+            url = url.join(str::from_utf8(
+                response
+                    .headers()
+                    .get("location")
+                    .ok_or_else(|| Error::RedirectLocation)?
+                    .as_bytes(),
+            )?)?;
+        }
+    }
+
+    async fn get_single(&self, url: &Url) -> Result<Arc<Response>, Error> {
         Ok(self
             .cache
             .get_or_set(url.to_string(), async {

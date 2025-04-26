@@ -1,5 +1,5 @@
 use core::time::Duration;
-use reqwest::{StatusCode, header::HeaderMap};
+use http::{StatusCode, header::HeaderMap};
 use url::Url;
 
 use crate::http_client::BareResponse;

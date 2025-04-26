@@ -3,8 +3,8 @@ use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
+use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
-use reqwest::StatusCode;
 use std::io;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
@@ -17,22 +17,20 @@ pub async fn validate_link(
     let url = base.join(&url)?;
     let response = context.http_client().get(&url).await?;
 
-    if response
+    if response.status() != StatusCode::OK {
+        return Err(Error::InvalidStatus(response.status()));
+    } else if response
         .headers()
         .get("content-type")
         .map(|value| !value.as_bytes().starts_with(b"text/html"))
         .unwrap_or_default()
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
-    {
-        return Ok(response);
-    } else if response.status() != StatusCode::OK {
-        return Err(Error::InvalidStatus(response.status()));
-    } else if context
-        .checks()
-        .insert_async(response.url().to_string())
-        .await
-        .is_err()
+        || context
+            .checks()
+            .insert_async(response.url().to_string())
+            .await
+            .is_err()
     {
         return Ok(response);
     }

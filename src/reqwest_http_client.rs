@@ -1,22 +1,33 @@
 use crate::http_client::{BareResponse, HttpClient, HttpClientError};
 use alloc::sync::Arc;
 use async_trait::async_trait;
-use reqwest::get;
+use reqwest::{Client, ClientBuilder, redirect::Policy};
 use url::Url;
 
 #[derive(Debug, Default)]
-pub struct ReqwestHttpClient {}
+pub struct ReqwestHttpClient {
+    client: Client,
+}
 
 impl ReqwestHttpClient {
-    pub const fn new() -> Self {
-        Self {}
+    pub fn new() -> Self {
+        Self {
+            client: ClientBuilder::new()
+                .tcp_keepalive(None)
+                .redirect(Policy::none())
+                .build()
+                .unwrap(),
+        }
     }
 }
 
 #[async_trait]
 impl HttpClient for ReqwestHttpClient {
     async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError> {
-        let response = get(url.clone()).await?;
+        let response = self
+            .client
+            .execute(self.client.get(url.clone()).build()?)
+            .await?;
 
         Ok(BareResponse {
             url: response.url().clone(),
