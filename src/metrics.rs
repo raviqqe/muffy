@@ -7,10 +7,6 @@ impl Metrics {
     pub fn new(document: CategoryMetrics, element: CategoryMetrics) -> Self {
         Self { document, element }
     }
-
-    pub fn log(&self, message: &str) {
-        println!("Metrics: {}", message);
-    }
 }
 
 pub struct CategoryMetrics {
