@@ -4,8 +4,8 @@ pub struct Metrics {
 }
 
 impl Metrics {
-    pub fn new(document: CategoryMetrics, link: CategoryMetrics) -> Self {
-        Self {}
+    pub fn new(document: CategoryMetrics, element: CategoryMetrics) -> Self {
+        Self { document, element }
     }
 
     pub fn log(&self, message: &str) {
