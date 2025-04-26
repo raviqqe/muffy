@@ -19,11 +19,10 @@ pub async fn render(
                 render_line(
                     &mut stdout,
                     &format!(
-                        "  {} {} {} ({} ms)",
-                        "OK".green(),
-                        response.status(),
+                        "  {} {}\t{}",
+                        response.status().to_string().green(),
                         response.url(),
-                        response.duration().as_millis()
+                        format!("{} ms", response.duration().as_millis()).yellow()
                     ),
                 )
                 .await?
