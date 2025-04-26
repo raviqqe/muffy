@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub struct Cache<T> {
-    data: HashMap<String, T>,
+    data: DashMap<String, T>,
 }
 
 impl Cache {
