@@ -21,8 +21,8 @@ pub async fn validate_link(
     let response = context
         .cache()
         .get_or_set(url.to_string(), async {
-            eprintln!("requesting {url}");
             let permit = context.request_semaphore().acquire().await.unwrap();
+            eprintln!("requesting {url}");
             let response = reqwest::get(url.as_str()).await.map_err(Arc::new)?;
             eprintln!("response! {url}");
             let response = Response::new(
