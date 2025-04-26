@@ -4,10 +4,20 @@ use futures::future::try_join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
+use std::io;
 use tokio::io::AsyncWriteExt;
 use tokio::{spawn, task::JoinHandle};
+use url::Url;
 
-pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Error> {
+pub async fn validate_link(
+    context: Arc<Context>,
+    url_string: String,
+    base: Arc<Url>,
+) -> Result<(), Error> {
+    let url = base.join(&url_string).map_err(|source| Error::UrlParse {
+        url: url_string.clone(),
+        source,
+    })?;
     let response = reqwest::get(url.as_str())
         .await
         .map_err(|source| Error::Get {
@@ -15,12 +25,19 @@ pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Err
             source,
         })?;
 
-    if !url.starts_with(context.origin()) {
+    if !url.to_string().starts_with(context.origin()) {
         return Ok(());
     }
 
     let body = response.text().await.unwrap();
-    let futures = validate_document(context.clone(), &parse_html(&body, &url)?)?;
+    let futures = validate_document(
+        context.clone(),
+        &url,
+        &parse_html(&body).map_err(|source| Error::HtmlParse {
+            url: url_string.into(),
+            source,
+        })?,
+    )?;
     let results = try_join_all(futures).await?;
 
     context
@@ -35,8 +52,10 @@ pub async fn validate_link(context: Arc<Context>, url: String) -> Result<(), Err
 
 fn validate_document(
     context: Arc<Context>,
+    base: &Url,
     dom: &RcDom,
 ) -> Result<Vec<JoinHandle<Result<(), Error>>>, Error> {
+    let base = Arc::new(base.clone());
     let mut futures = vec![];
     let mut nodes = vec![dom.document.clone()];
 
@@ -45,16 +64,18 @@ fn validate_document(
             for attribute in attrs.borrow().iter() {
                 match (name.local.as_ref(), attribute.name.local.as_ref()) {
                     ("a", "href") => {
-                        let context = context.clone();
-                        let url = attribute.value.to_string();
-
-                        futures.push(spawn(validate_link(context, url)));
+                        futures.push(spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )));
                     }
                     ("img", "src") => {
-                        let context = context.clone();
-                        let url = attribute.value.to_string();
-
-                        futures.push(spawn(validate_link(context, url)));
+                        futures.push(spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )));
                     }
                     _ => {}
                 }
@@ -67,12 +88,8 @@ fn validate_document(
     Ok(futures)
 }
 
-fn parse_html(text: &str, url: &str) -> Result<RcDom, Error> {
+fn parse_html(text: &str) -> Result<RcDom, io::Error> {
     parse_document(RcDom::default(), Default::default())
         .from_utf8()
         .read_from(&mut text.as_bytes())
-        .map_err(|source| Error::HtmlParse {
-            url: url.into(),
-            source,
-        })
 }
