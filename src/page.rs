@@ -6,7 +6,7 @@ pub async fn validate_link(_context: &Context, url: &str) -> Result<(), Error> {
         source,
     })?;
 
-    html5ever::parse_document(response.text(), opts);
+    html5ever::parse_document(response.text().await?, Default::default());
 
     Ok(())
 }
