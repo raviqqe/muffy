@@ -1,17 +1,23 @@
-use crate::{context::Context, error::Error, http_client::HttpClient, response::Response};
+use crate::{
+    context::Context,
+    http_client::{HttpClient, HttpClientError},
+    response::Response,
+};
 use tokio::time::Instant;
 use url::Url;
 
-pub struct EnrichedHttpClient<T: HttpClient> {
-    client: T,
+pub struct EnrichedHttpClient {
+    client: Box<dyn HttpClient + Send + Sync>,
 }
 
-impl<T: HttpClient> EnrichedHttpClient<T> {
-    pub fn new(client: T) -> Self {
-        Self { client }
+impl EnrichedHttpClient {
+    pub fn new(client: impl HttpClient + Send + Sync + 'static) -> Self {
+        Self {
+            client: Box::new(client),
+        }
     }
 
-    pub async fn get(&self, context: &Context<T>, url: &Url) -> Result<Response, Error> {
+    pub async fn get(&self, context: &Context, url: &Url) -> Result<Response, HttpClientError> {
         let permit = context.file_semaphore().acquire().await.unwrap();
         let start = Instant::now();
         let response = self.client.get(url).await?;

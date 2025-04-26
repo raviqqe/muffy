@@ -1,6 +1,4 @@
-use crate::{
-    context::Context, error::Error, http_client::HttpClient, render::render, response::Response,
-};
+use crate::{context::Context, error::Error, render::render, response::Response};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
@@ -11,8 +9,8 @@ use std::io;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
-pub async fn validate_link<T: HttpClient>(
-    context: Arc<Context<T>>,
+pub async fn validate_link(
+    context: Arc<Context>,
     url: String,
     base: Arc<Url>,
 ) -> Result<Response, Error> {
@@ -20,7 +18,7 @@ pub async fn validate_link<T: HttpClient>(
     let response = context
         .request_cache()
         .get_or_set(url.to_string(), async {
-            context.http_client().get(&context, &url)
+            context.http_client().get(&context, &url).await
         })
         .await?;
 
@@ -64,8 +62,8 @@ pub async fn validate_link<T: HttpClient>(
     Ok(response)
 }
 
-fn validate_node<T: HttpClient>(
-    context: &Arc<Context<T>>,
+fn validate_node(
+    context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
     futures: &mut Vec<JoinHandle<Result<Response, Error>>>,

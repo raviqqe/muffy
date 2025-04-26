@@ -1,10 +1,10 @@
-use crate::{context::Context, error::Error, http_client::HttpClient, response::Response};
+use crate::{context::Context, error::Error, response::Response};
 use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
 
-pub async fn render<T: HttpClient>(
-    context: &Context<T>,
+pub async fn render(
+    context: &Context,
     url: &Url,
     results: &[Result<Response, Error>],
 ) -> Result<(), Error> {

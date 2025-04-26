@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -9,14 +8,16 @@ use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
 
+use crate::http_client::HttpClientError;
+
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
     HtmlParse(io::Error),
+    HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
-    Reqwest(Arc<reqwest::Error>),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -28,10 +29,10 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
-            Self::Reqwest(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -50,6 +51,12 @@ impl From<io::Error> for Error {
     }
 }
 
+impl From<HttpClientError> for Error {
+    fn from(error: HttpClientError) -> Self {
+        Self::HttpClient(error)
+    }
+}
+
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
@@ -59,12 +66,6 @@ impl From<JoinError> for Error {
 impl From<url::ParseError> for Error {
     fn from(error: url::ParseError) -> Self {
         Self::UrlParse(error)
-    }
-}
-
-impl From<Arc<reqwest::Error>> for Error {
-    fn from(error: Arc<reqwest::Error>) -> Self {
-        Self::Reqwest(error)
     }
 }
 

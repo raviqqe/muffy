@@ -1,25 +1,24 @@
 use crate::{
-    cache::Cache, enriched_http_client::EnrichedHttpClient, http_client::HttpClient,
+    cache::Cache, enriched_http_client::EnrichedHttpClient, http_client::HttpClientError,
     response::Response,
 };
-use alloc::sync::Arc;
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
     sync::{Mutex, Semaphore},
 };
 
-pub struct Context<T: HttpClient> {
-    http_client: EnrichedHttpClient<T>,
+pub struct Context {
+    http_client: EnrichedHttpClient,
     stdout: Mutex<Stdout>,
     origin: String,
     file_semaphore: Semaphore,
-    request_cache: Cache<Result<Response, Arc<reqwest::Error>>>,
+    request_cache: Cache<Result<Response, HttpClientError>>,
     checks: HashSet<String>,
 }
 
-impl<T: HttpClient> Context<T> {
-    pub fn new(http_client: EnrichedHttpClient<T>, origin: String, file_limit: usize) -> Self {
+impl Context {
+    pub fn new(http_client: EnrichedHttpClient, origin: String, file_limit: usize) -> Self {
         Self {
             http_client,
             origin,
@@ -30,7 +29,7 @@ impl<T: HttpClient> Context<T> {
         }
     }
 
-    pub fn http_client(&self) -> &EnrichedHttpClient<T> {
+    pub fn http_client(&self) -> &EnrichedHttpClient {
         &self.http_client
     }
 
@@ -47,7 +46,7 @@ impl<T: HttpClient> Context<T> {
         &self.file_semaphore
     }
 
-    pub const fn request_cache(&self) -> &Cache<Result<Response, Arc<reqwest::Error>>> {
+    pub const fn request_cache(&self) -> &Cache<Result<Response, HttpClientError>> {
         &self.request_cache
     }
 
