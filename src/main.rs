@@ -14,6 +14,7 @@ mod response;
 
 use self::{context::Context, error::Error, page::validate_link};
 use alloc::sync::Arc;
+use cache::MemoryCache;
 use clap::Parser;
 use full_http_client::FullHttpClient;
 use reqwest_http_client::ReqwestHttpClient;
@@ -21,6 +22,8 @@ use rlimit::{Resource, getrlimit};
 use std::process::exit;
 use tokio::sync::mpsc::channel;
 use url::Url;
+
+const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -44,6 +47,7 @@ async fn run() -> Result<(), Error> {
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
+            MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY),
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,

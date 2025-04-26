@@ -1,5 +1,5 @@
 use crate::{
-    cache::{Cache, MemoryCache},
+    cache::Cache,
     error::Error,
     http_client::{HttpClient, HttpClientError},
     response::Response,
@@ -9,8 +9,6 @@ use core::str;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
-const CACHE_CAPACITY: usize = 1 << 16;
-
 pub struct FullHttpClient {
     client: Arc<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
@@ -18,10 +16,14 @@ pub struct FullHttpClient {
 }
 
 impl FullHttpClient {
-    pub fn new(client: impl HttpClient + 'static, concurrency: usize) -> Self {
+    pub fn new(
+        client: impl HttpClient + 'static,
+        cache: impl Cache<Result<Arc<Response>, HttpClientError>> + 'static,
+        concurrency: usize,
+    ) -> Self {
         Self {
             client: Arc::new(client),
-            cache: Box::new(MemoryCache::new(CACHE_CAPACITY)),
+            cache: Box::new(cache),
             semaphore: Semaphore::new(concurrency).into(),
         }
     }
