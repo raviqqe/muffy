@@ -27,9 +27,7 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
-            Self::InvalidStatus(status) => {
-                write!(formatter, "invalid status {status} at {url}")
-            }
+            Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Reqwest(error) => write!(formatter, "{error}"),
