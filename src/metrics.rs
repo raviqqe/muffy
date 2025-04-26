@@ -1,12 +1,11 @@
 pub struct Metrics {
-    document: success
-    link: usize,
-    error: usize,
+    document: CategoryMetrics
+    link: CategoryMetrics,
 }
 
 impl Metrics {
     pub fn new() -> Self {
-        Metrics {}
+        Self {}
     }
 
     pub fn log(&self, message: &str) {
@@ -14,16 +13,16 @@ impl Metrics {
     }
 }
 
-pub struct SubMetrics {
+pub struct CategoryMetrics {
     success: usize,
     error: usize,
 }
 
-impl SubMetrics {
-    pub fn new() -> Self {
-        SubMetrics {
-            success: 0,
-            error: 0,
+impl CategoryMetrics {
+    pub fn new(success: usize, error: usize) -> Self {
+        CategoryMetrics {
+            success,
+            error,
         }
     }
 

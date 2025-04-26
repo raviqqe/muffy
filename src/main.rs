@@ -7,6 +7,7 @@ mod context;
 mod error;
 mod full_http_client;
 mod http_client;
+mod metrics;
 mod page;
 mod render;
 mod reqwest_http_client;
