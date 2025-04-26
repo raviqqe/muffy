@@ -2,7 +2,7 @@
 
 ![](https://raviqqe.s3.amazonaws.com/muffin/cute-icon.png)
 
-The web crawler.
+The static website validator.
 
 ## License
 
