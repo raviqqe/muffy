@@ -8,7 +8,7 @@ pub struct Cache<T> {
 impl<T: Clone> Cache<T> {
     pub fn new() -> Self {
         Self {
-            map: Default::default(),
+            map: HashMap::with_capacity(1 << 20),
         }
     }
 
