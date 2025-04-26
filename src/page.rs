@@ -1,10 +1,9 @@
 use crate::{context::Context, error::Error};
-use futures::future::try_join_all;
+use futures::future::join_all;
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 use markup5ever_rcdom::{NodeData, RcDom};
 use std::sync::Arc;
-use tokio::spawn;
 
 pub async fn validate_link(context: &Context, url: String) -> Result<(), Error> {
     let response = reqwest::get(&url).await.map_err(|source| Error::Get {
@@ -34,7 +33,7 @@ async fn validate_node(
             for attribute in attrs.borrow().iter() {
                 match (name.local.as_ref(), attribute.name.local.as_ref()) {
                     ("a", "href") => {
-                        futures.push(spawn(validate_link(context, attribute.value.to_string())));
+                        futures.push(validate_link(context, attribute.value.to_string()));
                     }
                     _ => {}
                 }
@@ -44,7 +43,7 @@ async fn validate_node(
         nodes.extend(node.children.borrow().iter().cloned());
     }
 
-    Ok(try_join_all(futures).await?)
+    Ok(join_all(futures).await)
 }
 
 fn parse_html(text: &str, url: &str) -> Result<RcDom, Error> {
