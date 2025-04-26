@@ -21,10 +21,10 @@ struct Arguments {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let arguments = Arguments::parse();
-    let context = Arc::new(Context::new());
+    let Arguments { url } = Arguments::parse();
+    let context = Arc::new(Context::new(url.clone()));
 
-    validate_link(context, arguments.url).await?;
+    validate_link(context, url).await?;
 
     Ok(())
 }

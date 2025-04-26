@@ -17,7 +17,7 @@ impl Context {
         }
     }
 
-    pub const fn origin(&self) -> &str {
+    pub fn origin(&self) -> &str {
         &self.origin
     }
 
