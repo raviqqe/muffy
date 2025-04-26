@@ -57,7 +57,7 @@ pub async fn validate_link(
         });
     } else if context
         .checks()
-        .insert_async(url.to_string())
+        .insert_async(response.url().to_string())
         .await
         .is_err()
     {
