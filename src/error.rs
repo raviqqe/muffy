@@ -1,8 +1,10 @@
 use core::error;
 use core::fmt::{self, Display, Formatter};
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Error {}
+#[derive(Debug)]
+pub enum Error {
+    Get { url: String, source: reqwest::Error },
+}
 
 impl error::Error for Error {}
 
