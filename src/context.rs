@@ -9,17 +9,17 @@ use tokio::{
 pub struct Context {
     stdout: Mutex<Stdout>,
     origin: String,
-    request_semaphore: Semaphore,
+    file_semaphore: Semaphore,
     request_cache: Cache<Result<Response, Arc<reqwest::Error>>>,
     checks: HashSet<String>,
 }
 
 impl Context {
-    pub fn new(origin: String) -> Self {
+    pub fn new(origin: String, file_limit: usize) -> Self {
         Self {
             origin,
             stdout: stdout().into(),
-            request_semaphore: Semaphore::new(512),
+            file_semaphore: Semaphore::new(file_limit),
             request_cache: Cache::new(),
             checks: HashSet::with_capacity(1 << 10),
         }
@@ -34,8 +34,8 @@ impl Context {
         &self.stdout
     }
 
-    pub const fn request_semaphore(&self) -> &Semaphore {
-        &self.request_semaphore
+    pub const fn file_semaphore(&self) -> &Semaphore {
+        &self.file_semaphore
     }
 
     pub const fn request_cache(&self) -> &Cache<Result<Response, Arc<reqwest::Error>>> {

@@ -19,7 +19,7 @@ pub async fn validate_link(
     let response = context
         .request_cache()
         .get_or_set(url.to_string(), async {
-            let permit = context.request_semaphore().acquire().await.unwrap();
+            let permit = context.file_semaphore().acquire().await.unwrap();
 
             let start = Instant::now();
             let response = reqwest::get(url.clone()).await.map_err(Arc::new)?;

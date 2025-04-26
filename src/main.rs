@@ -13,6 +13,7 @@ use self::context::Context;
 use self::{error::Error, page::validate_link};
 use alloc::sync::Arc;
 use clap::Parser;
+use rlimit::{Resource, getrlimit};
 use url::Url;
 
 #[derive(Parser, Debug)]
@@ -26,7 +27,10 @@ struct Arguments {
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
-    let context = Arc::new(Context::new(url.clone()));
+    let context = Arc::new(Context::new(
+        url.clone(),
+        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+    ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
 
