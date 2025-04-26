@@ -1,4 +1,4 @@
-use dashmap::DashMap;
+use dashmap::{DashMap, Entry};
 
 #[derive(Default)]
 pub struct Cache<T> {
@@ -13,12 +13,13 @@ impl<T: Clone> Cache<T> {
     }
 
     pub async fn get_or_set(&self, key: String, future: impl Future<Output = T>) -> T {
-        if let Some(value) = self.map.get(&key) {
-            value.clone()
-        } else {
-            let value = future.await;
-            self.map.insert(key.clone(), value.clone());
-            value
+        match self.map.entry(key.to_string()) {
+            Entry::Occupied(entry) => entry.get().clone(),
+            Entry::Vacant(entry) => {
+                let value = future.await;
+                entry.insert(value.clone());
+                value
+            }
         }
     }
 }
