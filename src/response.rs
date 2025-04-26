@@ -1,5 +1,5 @@
+use core::time::Duration;
 use reqwest::{StatusCode, header::HeaderMap};
-use std::time::Duration;
 use url::Url;
 
 #[derive(Debug, Clone)]
