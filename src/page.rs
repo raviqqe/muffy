@@ -64,6 +64,7 @@ pub async fn validate_link(
         return Ok(response);
     }
 
+    // TODO Spawn this continuation as a future.
     let mut futures = vec![];
 
     validate_node(
