@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
 jobs:
-  lint:
+  clippy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cargo fmt -- --check
-  spell-check:
+  spell_check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,3 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: raviqqe/markdown-link-check@v1
+  lint:
+    needs:
+      - clippy
+      - format
+      - spell_check
+      - readme
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: for result in ${{ join(needs.*.result, ' ') }}; do [ $result = success ]; done
