@@ -1,4 +1,5 @@
-use crate::cache::Cache;
+use crate::{cache::Cache, response::Response};
+use alloc::sync::Arc;
 use tokio::{
     io::{Stdout, stdout},
     sync::{Mutex, Semaphore},
@@ -8,7 +9,7 @@ pub struct Context {
     stdout: Mutex<Stdout>,
     origin: String,
     request_semaphore: Semaphore,
-    cache: Cache<String>,
+    cache: Cache<Result<Response, Arc<reqwest::Error>>>,
 }
 
 impl Context {
@@ -17,7 +18,7 @@ impl Context {
             origin,
             stdout: stdout().into(),
             request_semaphore: Semaphore::new(8),
-            cache: Default::default(),
+            cache: Cache::new(),
         }
     }
 
@@ -34,7 +35,7 @@ impl Context {
         &self.request_semaphore
     }
 
-    pub const fn cache(&self) -> &Cache<String> {
+    pub const fn cache(&self) -> &Cache<Result<Response, Arc<reqwest::Error>>> {
         &self.cache
     }
 }
