@@ -9,8 +9,7 @@ mod page;
 mod render;
 mod response;
 
-use self::context::Context;
-use self::{error::Error, page::validate_link};
+use self::{context::Context, error::Error, page::validate_link};
 use alloc::sync::Arc;
 use clap::Parser;
 use rlimit::{Resource, getrlimit};

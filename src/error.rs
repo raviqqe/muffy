@@ -1,11 +1,12 @@
-use core::error;
-use core::fmt::{self, Display, Formatter};
-use core::str::Utf8Error;
+use alloc::sync::Arc;
+use core::{
+    error,
+    fmt::{self, Display, Formatter},
+    str::Utf8Error,
+};
 use reqwest::StatusCode;
 use std::io;
-use alloc::sync::Arc;
-use tokio::sync::AcquireError;
-use tokio::task::JoinError;
+use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
 
 #[derive(Debug)]
