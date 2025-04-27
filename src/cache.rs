@@ -1,6 +1,8 @@
 mod memory;
+mod sled;
 
 pub use self::memory::MemoryCache;
+pub use self::sled::SledCache;
 use async_trait::async_trait;
 
 #[async_trait]
