@@ -26,6 +26,7 @@ pub async fn validate_link(
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
 
+    // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
     } else if response
@@ -44,6 +45,7 @@ pub async fn validate_link(
         return Ok(response);
     }
 
+    // TODO Validate fragments.
     let handle = spawn(validate_document(context.clone(), response.clone()));
     context
         .job_sender()

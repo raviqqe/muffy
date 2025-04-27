@@ -31,6 +31,10 @@ impl FullHttpClient {
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
         let mut url = url.clone();
 
+        // TODO Configure maximum redirect counts.
+        // TODO Configure rate limits.
+        // TODO Configure timeouts.
+        // TODO Configure maximum connections.
         loop {
             let response = self.get_single(&url).await?;
 
