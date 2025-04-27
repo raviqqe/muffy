@@ -1,12 +1,15 @@
 use crate::http_client::BareResponse;
 use core::time::Duration;
 use http::{StatusCode, header::HeaderMap};
+use serde::{Deserialize, Serialize};
 use url::Url;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Response {
     url: Url,
+    #[serde(with = "http_serde::status_code")]
     status: StatusCode,
+    #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
     body: Vec<u8>,
     duration: Duration,

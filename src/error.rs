@@ -13,6 +13,7 @@ use crate::http_client::HttpClientError;
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
+    Bitcode(bitcode::Error),
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
@@ -20,6 +21,7 @@ pub enum Error {
     Join(JoinError),
     Document,
     RedirectLocation,
+    Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -30,6 +32,7 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
+            Self::Bitcode(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
@@ -37,6 +40,7 @@ impl Display for Error {
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
             Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
+            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -46,6 +50,12 @@ impl Display for Error {
 impl From<AcquireError> for Error {
     fn from(error: AcquireError) -> Self {
         Self::Acquire(error)
+    }
+}
+
+impl From<bitcode::Error> for Error {
+    fn from(error: bitcode::Error) -> Self {
+        Self::Bitcode(error)
     }
 }
 
@@ -64,6 +74,12 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<sled::Error> for Error {
+    fn from(error: sled::Error) -> Self {
+        Self::Sled(error)
     }
 }
 

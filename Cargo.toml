@@ -10,17 +10,21 @@ edition = "2024"
 
 [dependencies]
 async-trait = "0.1.88"
+bitcode = { version = "0.6.6", features = ["serde"] }
 clap = { version = "4.5.37", features = ["derive"] }
 colored = "3.0.0"
 dashmap = "6.1.0"
 futures = "0.3.31"
 html5ever = "0.27.0"
 http = "1.3.1"
+http-serde = "2.1.1"
 markup5ever = "0.16.1"
 markup5ever_rcdom = "0.3.0"
 reqwest = "0.12.15"
 rlimit = "0.10.2"
 scc = "2.3.4"
+serde = { version = "1.0.219", features = ["derive", "rc"] }
+sled = "0.34.7"
 tabled = "0.19.0"
 tokio = { version = "1.44.2", features = [
   "io-std",
@@ -29,7 +33,7 @@ tokio = { version = "1.44.2", features = [
   "rt-multi-thread",
   "sync",
 ] }
-url = "2.5.4"
+url = { version = "2.5.4", features = ["serde"] }
 
 [lints.rust]
 missing_docs = "deny"
@@ -63,3 +67,6 @@ uninlined_format_args = "deny"
 unnecessary_safety_comment = "deny"
 unused_self = "deny"
 use_self = "deny"
+
+[dev-dependencies]
+tempfile = "3.19.1"
