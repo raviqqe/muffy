@@ -103,7 +103,7 @@ fn validate_element(
                     futures.push((
                         Element::new(
                             "a".into(),
-                            vec![("href".into(), attribute.value.to_string())],
+                            vec![("src".into(), attribute.value.to_string())],
                         ),
                         spawn(validate_link(
                             context.clone(),
