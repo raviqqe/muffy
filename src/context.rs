@@ -1,5 +1,4 @@
-use crate::error::Error;
-use crate::full_http_client::FullHttpClient;
+use crate::{error::Error, full_http_client::FullHttpClient, metrics::Metrics};
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
@@ -11,13 +10,13 @@ pub struct Context {
     stdout: Mutex<Stdout>,
     origin: String,
     checks: HashSet<String>,
-    job_sender: Sender<Box<dyn Future<Output = Result<(), Error>> + Send>>,
+    job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
 }
 
 impl Context {
     pub fn new(
         http_client: FullHttpClient,
-        job_sender: Sender<Box<dyn Future<Output = Result<(), Error>> + Send>>,
+        job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
         origin: String,
     ) -> Self {
         Self {
@@ -46,7 +45,9 @@ impl Context {
         &self.checks
     }
 
-    pub const fn job_sender(&self) -> &Sender<Box<dyn Future<Output = Result<(), Error>> + Send>> {
+    pub const fn job_sender(
+        &self,
+    ) -> &Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>> {
         &self.job_sender
     }
 }

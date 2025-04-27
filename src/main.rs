@@ -4,19 +4,22 @@ extern crate alloc;
 
 mod cache;
 mod context;
+mod document;
 mod error;
 mod full_http_client;
 mod http_client;
-mod page;
+mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
 
-use self::{context::Context, error::Error, page::validate_link};
+use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::MemoryCache;
 use clap::Parser;
+use colored::Colorize;
 use full_http_client::FullHttpClient;
+use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
@@ -24,6 +27,7 @@ use tokio::sync::mpsc::channel;
 use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
+const JOB_CAPACITY: usize = 1 << 16;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -43,7 +47,7 @@ async fn main() {
 
 async fn run() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
-    let (sender, mut receiver) = channel(1024);
+    let (sender, mut receiver) = channel(JOB_CAPACITY);
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
@@ -56,11 +60,34 @@ async fn run() -> Result<(), Error> {
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
 
-    let mut error = false;
+    let mut document_metrics = Metrics::default();
+    let mut element_metrics = Metrics::default();
 
     while let Some(future) = receiver.recv().await {
-        error = error || Box::into_pin(future).await.is_err();
+        let metrics = Box::into_pin(future).await?;
+
+        document_metrics.add_error(metrics.has_error());
+        element_metrics.merge(&metrics);
     }
 
-    if error { Err(Error::Page) } else { Ok(()) }
+    eprintln!("{}", "SUMMARY".blue());
+    eprintln!("item\t\t{}\t{}\ttotal", "success".green(), "error".red());
+    eprintln!(
+        "document\t{}\t{}\t{}",
+        document_metrics.success().to_string().green(),
+        document_metrics.error().to_string().red(),
+        document_metrics.total(),
+    );
+    eprintln!(
+        "element\t\t{}\t{}\t{}",
+        element_metrics.success().to_string().green(),
+        element_metrics.error().to_string().red(),
+        element_metrics.total(),
+    );
+
+    if document_metrics.has_error() {
+        Err(Error::Document)
+    } else {
+        Ok(())
+    }
 }

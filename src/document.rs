@@ -1,4 +1,4 @@
-use crate::{context::Context, error::Error, render::render, response::Response};
+use crate::{context::Context, error::Error, metrics::Metrics, render::render, response::Response};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
@@ -35,7 +35,7 @@ pub async fn validate_link(
         return Ok(response);
     }
 
-    let handle = spawn(validate_page(context.clone(), response.clone()));
+    let handle = spawn(validate_document(context.clone(), response.clone()));
     context
         .job_sender()
         .send(Box::new(async move {
@@ -47,11 +47,14 @@ pub async fn validate_link(
     Ok(response)
 }
 
-async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+async fn validate_document(
+    context: Arc<Context>,
+    response: Arc<Response>,
+) -> Result<Metrics, Error> {
     let url = response.url();
     let mut futures = vec![];
 
-    validate_node(
+    validate_element(
         &context,
         &url.clone().into(),
         &parse_html(str::from_utf8(response.body())?)
@@ -64,14 +67,13 @@ async fn validate_page(context: Arc<Context>, response: Arc<Response>) -> Result
 
     render(&context, url, &results).await?;
 
-    if results.iter().any(Result::is_err) {
-        Err(Error::Page)
-    } else {
-        Ok(())
-    }
+    Ok(Metrics::new(
+        results.iter().filter(|result| result.is_ok()).count(),
+        results.iter().filter(|result| result.is_err()).count(),
+    ))
 }
 
-fn validate_node(
+fn validate_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
@@ -100,7 +102,7 @@ fn validate_node(
     }
 
     for node in node.children.borrow().iter() {
-        validate_node(context, base, node, futures)?;
+        validate_element(context, base, node, futures)?;
     }
 
     Ok(())
