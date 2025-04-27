@@ -20,6 +20,7 @@ pub async fn validate_link(
     base: Arc<Url>,
 ) -> Result<Arc<Response>, Error> {
     let url = base.join(&url)?;
+    // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
 
     if response.status() != StatusCode::OK {
@@ -87,6 +88,7 @@ fn validate_element(
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
+            // TODO Include all elements and properties.
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
                     futures.push((
