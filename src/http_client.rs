@@ -5,6 +5,7 @@ use core::{
     fmt::{self, Display, Formatter},
 };
 use http::{StatusCode, header::HeaderMap};
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[async_trait]
@@ -19,7 +20,7 @@ pub struct BareResponse {
     pub body: Vec<u8>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HttpClientError(Arc<str>);
 
 impl HttpClientError {
