@@ -11,6 +11,10 @@
 
 The static website validator.
 
+## References
+
+- [Validators and tools | Developers | W3C](https://www.w3.org/developers/tools/)
+
 ## License
 
 [MIT](LICENSE)
