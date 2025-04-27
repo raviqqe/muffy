@@ -92,6 +92,7 @@ fn validate_element(
             // TODO Include all elements and attributes.
             // TODO Normalize URLs in attributes.
             // TODO Allow validation of multiple attributes for each element.
+            // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
