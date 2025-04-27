@@ -1,8 +1,7 @@
 mod memory;
 mod sled;
 
-pub use self::memory::MemoryCache;
-pub use self::sled::SledCache;
+pub use self::{memory::MemoryCache, sled::SledCache};
 use crate::error::Error;
 use async_trait::async_trait;
 

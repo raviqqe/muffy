@@ -14,12 +14,16 @@ use url::Url;
 
 type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
 
+// TODO Support `sitemap.xml` as documents.
+// TODO Support `robots.txt` as a filtering database for each domain.
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     base: Arc<Url>,
 ) -> Result<Arc<Response>, Error> {
+    // TODO Validate schemes or URLs in general.
     let url = base.join(&url)?;
+    // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
 
     if response.status() != StatusCode::OK {
@@ -32,7 +36,7 @@ pub async fn validate_link(
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
-            .checks()
+            .documents()
             .insert_async(response.url().to_string())
             .await
             .is_err()
@@ -87,6 +91,11 @@ fn validate_element(
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
+            // TODO Include all elements and attributes.
+            // TODO Normalize URLs in attributes.
+            // TODO Allow validation of multiple attributes for each element.
+            // TODO Allow skipping element or attribute validation conditionally.
+            // TODO Generalize element validation.
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
                     futures.push((

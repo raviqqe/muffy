@@ -9,7 +9,7 @@ pub struct Context {
     http_client: FullHttpClient,
     stdout: Mutex<Stdout>,
     origin: String,
-    checks: HashSet<String>,
+    documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
 }
 
@@ -23,7 +23,7 @@ impl Context {
             http_client,
             origin,
             stdout: stdout().into(),
-            checks: HashSet::with_capacity(1 << 10),
+            documents: HashSet::with_capacity(1 << 10),
             job_sender,
         }
     }
@@ -41,8 +41,8 @@ impl Context {
         &self.stdout
     }
 
-    pub const fn checks(&self) -> &HashSet<String> {
-        &self.checks
+    pub const fn documents(&self) -> &HashSet<String> {
+        &self.documents
     }
 
     pub const fn job_sender(
