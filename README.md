@@ -14,6 +14,7 @@ The static website validator.
 ## References
 
 - [Validators and tools | Developers | W3C](https://www.w3.org/developers/tools/)
+- [Muffet](https://github.com/raviqqe/muffet)
 
 ## License
 
