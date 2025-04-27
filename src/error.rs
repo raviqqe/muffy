@@ -13,6 +13,7 @@ use crate::http_client::HttpClientError;
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
+    Bitcode(bitcode::Error),
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
@@ -31,6 +32,7 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
+            Self::Bitcode(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
@@ -48,6 +50,12 @@ impl Display for Error {
 impl From<AcquireError> for Error {
     fn from(error: AcquireError) -> Self {
         Self::Acquire(error)
+    }
+}
+
+impl From<bitcode::Error> for Error {
+    fn from(error: bitcode::Error) -> Self {
+        Self::Bitcode(error)
     }
 }
 

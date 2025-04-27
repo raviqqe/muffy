@@ -1,4 +1,5 @@
 use super::Cache;
+use crate::error::Error;
 use async_trait::async_trait;
 use scc::{HashMap, hash_map::Entry};
 
@@ -16,14 +17,18 @@ impl<T> MemoryCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
-    async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T {
-        match self.map.entry_async(key).await {
+    async fn get_or_set(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send>,
+    ) -> Result<T, Error> {
+        Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
                 let value = Box::into_pin(future).await;
                 entry.insert_entry(value.clone());
                 value
             }
-        }
+        })
     }
 }

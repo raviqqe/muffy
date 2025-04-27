@@ -66,6 +66,6 @@ impl FullHttpClient {
                     Ok(Response::from_bare(response, duration).into())
                 })
             })
-            .await?)
+            .await??)
     }
 }
