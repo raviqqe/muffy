@@ -1,4 +1,6 @@
-use crate::{context::Context, error::Error, render::render, response::Response};
+use crate::{
+    context::Context, error::Error, metrics::CategoryMetrics, render::render, response::Response,
+};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
@@ -47,7 +49,10 @@ pub async fn validate_link(
     Ok(response)
 }
 
-async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Result<(), Error> {
+async fn validate_document(
+    context: Arc<Context>,
+    response: Arc<Response>,
+) -> Result<CategoryMetrics, Error> {
     let url = response.url();
     let mut futures = vec![];
 
@@ -64,11 +69,10 @@ async fn validate_document(context: Arc<Context>, response: Arc<Response>) -> Re
 
     render(&context, url, &results).await?;
 
-    if results.iter().any(Result::is_err) {
-        Err(Error::Document)
-    } else {
-        Ok(())
-    }
+    Ok(CategoryMetrics::new(
+        results.iter().filter(|result| result.is_ok()).count(),
+        results.iter().filter(|result| result.is_err()).count(),
+    ))
 }
 
 fn validate_element(

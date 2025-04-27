@@ -1,23 +1,4 @@
-#[derive(Clone, Copy, Debug)]
-pub struct Metrics {
-    document: CategoryMetrics,
-    element: CategoryMetrics,
-}
-
-impl Metrics {
-    pub fn new(document: CategoryMetrics, element: CategoryMetrics) -> Self {
-        Self { document, element }
-    }
-
-    pub fn merge(&self, other: &Self) -> Self {
-        Self {
-            document: self.document.merge(&other.document),
-            element: self.element.merge(&other.element),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct CategoryMetrics {
     success: usize,
     error: usize,
@@ -33,13 +14,27 @@ impl CategoryMetrics {
     }
 
     pub fn error(&self) -> usize {
-        self.success
+        self.error
     }
 
-    pub fn merge(&self, other: &Self) -> Self {
-        Self {
-            success: self.success + other.success,
-            error: self.error + other.error,
+    pub fn total(&self) -> usize {
+        self.success + self.error
+    }
+
+    pub fn has_error(&self) -> bool {
+        self.error > 0
+    }
+
+    pub fn add_error(&mut self, error: bool) {
+        if error {
+            self.error += 1;
+        } else {
+            self.success += 1;
         }
+    }
+
+    pub fn merge(&mut self, other: &Self) {
+        self.success += other.success;
+        self.error += other.error;
     }
 }

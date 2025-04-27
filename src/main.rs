@@ -17,11 +17,13 @@ use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::MemoryCache;
 use clap::Parser;
+use colored::Colorize;
 use full_http_client::FullHttpClient;
+use metrics::CategoryMetrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
-use tokio::sync::mpsc::channel;
+use tokio::{io::AsyncWriteExt, sync::mpsc::channel};
 use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
@@ -55,13 +57,40 @@ async fn run() -> Result<(), Error> {
         url.clone(),
     ));
 
-    validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
+    validate_link(context.clone(), url.clone(), Url::parse(&url)?.into()).await?;
 
-    let mut error = false;
+    let mut document_metrics = CategoryMetrics::default();
+    let mut element_metrics = CategoryMetrics::default();
 
     while let Some(future) = receiver.recv().await {
-        error = error || Box::into_pin(future).await.is_err();
+        let metrics = Box::into_pin(future).await?;
+
+        document_metrics.add_error(metrics.has_error());
+        element_metrics.merge(&metrics);
     }
 
-    if error { Err(Error::Document) } else { Ok(()) }
+    let mut stdout = context.stdout().lock().await;
+    stdout
+        .write_all(format!("{}\n", "SUMMARY".blue()).as_bytes())
+        .await?;
+    stdout
+        .write_all(format!("item\t{}\t{}\ttotal\n", "success".green(), "error".red()).as_bytes())
+        .await?;
+    stdout
+        .write_all(
+            format!(
+                "document\t{}\t{}\t{}\n",
+                document_metrics.success().to_string().green(),
+                document_metrics.error().to_string().red(),
+                document_metrics.total(),
+            )
+            .as_bytes(),
+        )
+        .await?;
+
+    if document_metrics.has_error() {
+        Err(Error::Document)
+    } else {
+        Ok(())
+    }
 }
