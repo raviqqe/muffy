@@ -44,6 +44,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             return Ok(value);
         }
 
+        // Wait for another thread to insert a key-value pair.
         loop {
             if let Some(value) = self.db.get(&key)? {
                 if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
