@@ -32,3 +32,28 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn get_or_set() {
+        let cache = MemoryCache::new(1 << 10);
+
+        assert_eq!(
+            cache
+                .get_or_set("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_or_set("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
+    }
+}
