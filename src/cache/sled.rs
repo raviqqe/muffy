@@ -39,9 +39,9 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             )?
             .is_ok()
         {
-            let value = Some(Box::into_pin(future).await);
-            self.db.insert(key, bitcode::serialize(&value)?)?;
-            return Ok(value.unwrap());
+            let value = Box::into_pin(future).await;
+            self.db.insert(key, bitcode::serialize(&Some(&value))?)?;
+            return Ok(value);
         }
 
         loop {
