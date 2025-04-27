@@ -44,6 +44,7 @@ pub async fn validate_link(
         return Ok(response);
     }
 
+    // TODO Validate fragments.
     let handle = spawn(validate_document(context.clone(), response.clone()));
     context
         .job_sender()
