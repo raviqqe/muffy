@@ -27,6 +27,7 @@ use tokio::{io::AsyncWriteExt, sync::mpsc::channel};
 use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
+const JOB_CAPACITY: usize = 1 << 16;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -46,7 +47,7 @@ async fn main() {
 
 async fn run() -> Result<(), Error> {
     let Arguments { url } = Arguments::parse();
-    let (sender, mut receiver) = channel(1024);
+    let (sender, mut receiver) = channel(JOB_CAPACITY);
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
