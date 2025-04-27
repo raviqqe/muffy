@@ -22,7 +22,7 @@ use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
-use std::process::exit;
+use std::{env::temp_dir, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -62,7 +62,7 @@ async fn run() -> Result<(), Error> {
         FullHttpClient::new(
             ReqwestHttpClient::new(),
             if persistent_cache {
-                Box::new(SledCache::new(sled::open(".muffin.db")?))
+                Box::new(SledCache::new(sled::open(&temp_dir().join("muffin"))?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
