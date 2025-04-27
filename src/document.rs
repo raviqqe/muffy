@@ -1,4 +1,7 @@
-use crate::{context::Context, error::Error, metrics::Metrics, render::render, response::Response};
+use crate::{
+    context::Context, element::Element, error::Error, metrics::Metrics, render::render,
+    response::Response,
+};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
@@ -63,7 +66,7 @@ async fn validate_document(
         &mut futures,
     )?;
 
-    let (elements, futures) = futures.unzip();
+    let (elements, futures) = futures.into_iter().unzip::<Vec<_>, Vec<_>, _, _>();
     let results = try_join_all(futures).await?;
 
     render(&context, url, &results).await?;

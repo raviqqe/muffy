@@ -4,7 +4,7 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(name: String, attributes: Vec<(String, Strng)>) -> Self {
+    pub fn new(name: String, attributes: Vec<(String, String)>) -> Self {
         Self { name, attributes }
     }
 
