@@ -1,10 +1,10 @@
 use super::Cache;
 use crate::error::Error;
 use async_trait::async_trait;
+use core::marker::PhantomData;
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use sled::Db;
-use core::marker::PhantomData;
 use tokio::time::sleep;
 
 const DELAY: Duration = Duration::from_millis(10);
