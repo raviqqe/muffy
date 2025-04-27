@@ -1,12 +1,12 @@
 #[derive(Clone, Copy, Debug, Default)]
-pub struct CategoryMetrics {
+pub struct Metrics {
     success: usize,
     error: usize,
 }
 
-impl CategoryMetrics {
+impl Metrics {
     pub fn new(success: usize, error: usize) -> Self {
-        CategoryMetrics { success, error }
+        Metrics { success, error }
     }
 
     pub fn success(&self) -> usize {

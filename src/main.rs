@@ -19,7 +19,7 @@ use cache::MemoryCache;
 use clap::Parser;
 use colored::Colorize;
 use full_http_client::FullHttpClient;
-use metrics::CategoryMetrics;
+use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
@@ -59,8 +59,8 @@ async fn run() -> Result<(), Error> {
 
     validate_link(context.clone(), url.clone(), Url::parse(&url)?.into()).await?;
 
-    let mut document_metrics = CategoryMetrics::default();
-    let mut element_metrics = CategoryMetrics::default();
+    let mut document_metrics = Metrics::default();
+    let mut element_metrics = Metrics::default();
 
     while let Some(future) = receiver.recv().await {
         let metrics = Box::into_pin(future).await?;
