@@ -39,9 +39,9 @@ struct Arguments {
     /// An origin URL.
     #[arg()]
     url: String,
-    /// Uses persistent cache.
+    /// Persists cache.
     #[arg(long)]
-    persistent_cache: bool,
+    persist_cache: bool,
 }
 
 #[tokio::main]
@@ -53,15 +53,12 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Error> {
-    let Arguments {
-        url,
-        persistent_cache,
-    } = Arguments::parse();
+    let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
-            if persistent_cache {
+            if persist_cache {
                 Box::new(SledCache::new(sled::open(&temp_dir().join("muffin"))?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
