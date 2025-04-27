@@ -59,7 +59,7 @@ async fn run() -> Result<(), Error> {
         FullHttpClient::new(
             ReqwestHttpClient::new(),
             if persist_cache {
-                Box::new(SledCache::new(sled::open(&temp_dir().join("muffin"))?))
+                Box::new(SledCache::new(sled::open(temp_dir().join("muffin"))?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },

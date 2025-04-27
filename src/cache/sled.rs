@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use sled::Db;
-use std::marker::PhantomData;
+use core::marker::PhantomData;
 use tokio::time::sleep;
 
 const DELAY: Duration = Duration::from_millis(10);
