@@ -19,6 +19,7 @@ pub async fn validate_link(
     url: String,
     base: Arc<Url>,
 ) -> Result<Arc<Response>, Error> {
+    // TODO Validate schemes or URLs in general.
     let url = base.join(&url)?;
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
