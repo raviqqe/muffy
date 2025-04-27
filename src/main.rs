@@ -75,27 +75,36 @@ async fn run() -> Result<(), Error> {
     eprintln!(
         "{}",
         Table::from_iter(
-            [
-                (
-                    "document",
-                    document_metrics.success(),
-                    document_metrics.error(),
-                    document_metrics.total()
-                ),
-                (
-                    "element",
-                    element_metrics.success(),
-                    element_metrics.error(),
-                    element_metrics.total()
-                )
-            ]
+            [vec![
+                "item".into(),
+                "success".into(),
+                "error".into(),
+                "total".into()
+            ]]
             .into_iter()
-            .map(|(item, success, error, total)| vec!(
-                item.to_string(),
-                success.to_string(),
-                error.to_string(),
-                total.to_string()
-            ))
+            .chain(
+                [
+                    (
+                        "document",
+                        document_metrics.success(),
+                        document_metrics.error(),
+                        document_metrics.total()
+                    ),
+                    (
+                        "element",
+                        element_metrics.success(),
+                        element_metrics.error(),
+                        element_metrics.total()
+                    )
+                ]
+                .into_iter()
+                .map(|(item, success, error, total)| vec!(
+                    item.to_string(),
+                    success.to_string(),
+                    error.to_string(),
+                    total.to_string()
+                ))
+            )
         ),
     );
 
