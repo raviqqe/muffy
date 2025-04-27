@@ -71,7 +71,6 @@ async fn run() -> Result<(), Error> {
         element_metrics.merge(&metrics);
     }
 
-    eprintln!("{}", "SUMMARY".blue());
     eprintln!(
         "{}",
         Table::from_iter(
