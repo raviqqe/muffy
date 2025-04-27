@@ -1,8 +1,7 @@
+use crate::http_client::BareResponse;
 use core::time::Duration;
 use http::{StatusCode, header::HeaderMap};
 use url::Url;
-
-use crate::http_client::BareResponse;
 
 #[derive(Debug, Clone)]
 pub struct Response {

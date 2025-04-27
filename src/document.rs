@@ -1,4 +1,7 @@
-use crate::{context::Context, error::Error, metrics::Metrics, render::render, response::Response};
+use crate::{
+    context::Context, element::Element, error::Error, metrics::Metrics, render::render,
+    response::Response,
+};
 use alloc::sync::Arc;
 use core::str;
 use futures::future::try_join_all;
@@ -8,6 +11,8 @@ use markup5ever_rcdom::{Node, NodeData, RcDom};
 use std::io;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
+
+type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
 
 pub async fn validate_link(
     context: Arc<Context>,
@@ -63,9 +68,10 @@ async fn validate_document(
         &mut futures,
     )?;
 
+    let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
     let results = try_join_all(futures).await?;
 
-    render(&context, url, &results).await?;
+    render(&context, url, elements.iter().zip(results.iter())).await?;
 
     Ok(Metrics::new(
         results.iter().filter(|result| result.is_ok()).count(),
@@ -77,24 +83,36 @@ fn validate_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<JoinHandle<Result<Arc<Response>, Error>>>,
+    futures: &mut Vec<ElementFuture>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
-                    futures.push(spawn(validate_link(
-                        context.clone(),
-                        attribute.value.to_string(),
-                        base.clone(),
-                    )));
+                    futures.push((
+                        Element::new(
+                            "a".into(),
+                            vec![("href".into(), attribute.value.to_string())],
+                        ),
+                        spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )),
+                    ));
                 }
                 ("img", "src") => {
-                    futures.push(spawn(validate_link(
-                        context.clone(),
-                        attribute.value.to_string(),
-                        base.clone(),
-                    )));
+                    futures.push((
+                        Element::new(
+                            "a".into(),
+                            vec![("src".into(), attribute.value.to_string())],
+                        ),
+                        spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )),
+                    ));
                 }
                 _ => {}
             }
