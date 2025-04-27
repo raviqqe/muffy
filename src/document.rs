@@ -12,6 +12,8 @@ use std::io;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
+type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
+
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
@@ -81,7 +83,7 @@ fn validate_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<(Element, JoinHandle<Result<Arc<Response>, Error>>)>,
+    futures: &mut Vec<ElementFuture>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
