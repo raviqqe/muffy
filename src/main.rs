@@ -17,12 +17,15 @@ use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::MemoryCache;
 use clap::Parser;
-use colored::Colorize;
 use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
+use tabled::{
+    Table,
+    settings::{Color, Style, themes::Colorization},
+};
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -70,19 +73,48 @@ async fn run() -> Result<(), Error> {
         element_metrics.merge(&metrics);
     }
 
-    eprintln!("{}", "SUMMARY".blue());
-    eprintln!("item\t\t{}\t{}\ttotal", "success".green(), "error".red());
+    eprintln!();
     eprintln!(
-        "document\t{}\t{}\t{}",
-        document_metrics.success().to_string().green(),
-        document_metrics.error().to_string().red(),
-        document_metrics.total(),
-    );
-    eprintln!(
-        "element\t\t{}\t{}\t{}",
-        element_metrics.success().to_string().green(),
-        element_metrics.error().to_string().red(),
-        element_metrics.total(),
+        "{}",
+        Table::from_iter(
+            [vec![
+                "item".into(),
+                "success".into(),
+                "error".into(),
+                "total".into()
+            ]]
+            .into_iter()
+            .chain(
+                [
+                    (
+                        "document",
+                        document_metrics.success(),
+                        document_metrics.error(),
+                        document_metrics.total()
+                    ),
+                    (
+                        "element",
+                        element_metrics.success(),
+                        element_metrics.error(),
+                        element_metrics.total()
+                    )
+                ]
+                .into_iter()
+                .map(|(item, success, error, total)| vec!(
+                    item.to_string(),
+                    success.to_string(),
+                    error.to_string(),
+                    total.to_string()
+                ))
+            )
+        )
+        .with(Style::markdown())
+        .with(Colorization::columns([
+            Color::FG_WHITE,
+            Color::FG_GREEN,
+            Color::FG_RED,
+            Color::FG_WHITE,
+        ])),
     );
 
     if document_metrics.has_error() {
