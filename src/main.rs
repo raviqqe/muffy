@@ -37,7 +37,7 @@ const JOB_CAPACITY: usize = 1 << 16;
 #[command(version, about, long_about = None)]
 struct Arguments {
     /// An origin URL.
-    // TODO Configure multiple origins.
+    // TODO Configure origin URLs.
     #[arg()]
     url: String,
     /// Persists cache.
