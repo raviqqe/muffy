@@ -39,7 +39,7 @@ struct Arguments {
     /// An origin URL.
     #[arg()]
     url: String,
-    /// An origin URL.
+    /// Use persistent cache.
     #[arg(long)]
     persistent_cache: bool,
 }
