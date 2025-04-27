@@ -36,7 +36,7 @@ pub async fn validate_link(
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
-            .checks()
+            .documents()
             .insert_async(response.url().to_string())
             .await
             .is_err()
