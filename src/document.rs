@@ -14,6 +14,8 @@ use url::Url;
 
 type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
 
+// TODO Support `sitemap.xml` for each website.
+// TODO Support `robots.txt` for each website.
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
