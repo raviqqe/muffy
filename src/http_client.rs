@@ -20,11 +20,11 @@ pub struct BareResponse {
 }
 
 #[derive(Clone, Debug)]
-pub struct HttpClientError(Arc<dyn core::error::Error + Send + Sync>);
+pub struct HttpClientError(Arc<str>);
 
 impl HttpClientError {
-    pub fn new(error: Arc<dyn core::error::Error + Send + Sync>) -> Self {
-        Self(error)
+    pub fn new(error: String) -> Self {
+        Self(error.into())
     }
 }
 

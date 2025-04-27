@@ -1,5 +1,4 @@
 use crate::http_client::{BareResponse, HttpClient, HttpClientError};
-use alloc::sync::Arc;
 use async_trait::async_trait;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
 use url::Url;
@@ -40,6 +39,6 @@ impl HttpClient for ReqwestHttpClient {
 
 impl From<reqwest::Error> for HttpClientError {
     fn from(error: reqwest::Error) -> Self {
-        Self::new(Arc::new(error))
+        Self::new(error.to_string())
     }
 }
