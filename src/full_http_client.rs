@@ -18,12 +18,12 @@ pub struct FullHttpClient {
 impl FullHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
-        cache: impl Cache<Result<Arc<Response>, HttpClientError>> + 'static,
+        cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self {
             client: Arc::new(client),
-            cache: Box::new(cache),
+            cache,
             semaphore: Semaphore::new(concurrency).into(),
         }
     }

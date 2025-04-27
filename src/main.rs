@@ -16,7 +16,7 @@ mod response;
 
 use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
-use cache::MemoryCache;
+use cache::{MemoryCache, SledCache};
 use clap::Parser;
 use full_http_client::FullHttpClient;
 use metrics::Metrics;
@@ -39,6 +39,9 @@ struct Arguments {
     /// An origin URL.
     #[arg()]
     url: String,
+    /// An origin URL.
+    #[arg(long)]
+    persistent_cache: bool,
 }
 
 #[tokio::main]
@@ -50,12 +53,19 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Error> {
-    let Arguments { url } = Arguments::parse();
+    let Arguments {
+        url,
+        persistent_cache,
+    } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
-            MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY),
+            if persistent_cache {
+                Box::new(SledCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+            } else {
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+            },
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,
