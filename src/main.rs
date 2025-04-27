@@ -70,16 +70,16 @@ async fn run() -> Result<(), Error> {
         element_metrics.merge(&metrics);
     }
 
-    eprintln!("{}\n", "SUMMARY".blue());
-    eprintln!("item\t\t{}\t{}\ttotal\n", "success".green(), "error".red());
+    eprintln!("{}", "SUMMARY".blue());
+    eprintln!("item\t\t{}\t{}\ttotal", "success".green(), "error".red());
     eprintln!(
-        "document\t\t{}\t{}\t{}\n",
+        "document\t{}\t{}\t{}",
         document_metrics.success().to_string().green(),
         document_metrics.error().to_string().red(),
         document_metrics.total(),
     );
     eprintln!(
-        "element\t\t{}\t{}\t{}\n",
+        "element\t\t{}\t{}\t{}",
         element_metrics.success().to_string().green(),
         element_metrics.error().to_string().red(),
         element_metrics.total(),
