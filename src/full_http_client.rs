@@ -34,7 +34,7 @@ impl FullHttpClient {
         // TODO Configure maximum redirect counts.
         // TODO Configure rate limits.
         // TODO Configure timeouts.
-        // TODO Configure maximum connctions.
+        // TODO Configure maximum connections.
         loop {
             let response = self.get_single(&url).await?;
 
