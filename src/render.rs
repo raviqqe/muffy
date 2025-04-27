@@ -17,10 +17,14 @@ pub async fn render(
         render_line(
             &mut stdout,
             &format!(
-                "\t{}\t{}\t{}",
-                response.status().to_string().green(),
-                response.url(),
-                format!("{} ms", response.duration().as_millis()).yellow()
+                "\t{} {}",
+                element.name(),
+                element
+                    .attributes()
+                    .iter()
+                    .map(|(key, value)| format!("{key}=\"{value}\""))
+                    .collect::<Vec<_>>()
+                    .join(" "),
             ),
         )
         .await?;
