@@ -24,7 +24,7 @@ use rlimit::{Resource, getrlimit};
 use std::process::exit;
 use tabled::{
     Table,
-    settings::{Color, themes::Colorization},
+    settings::{Color, Style, themes::Colorization},
 };
 use tokio::sync::mpsc::channel;
 use url::Url;
@@ -73,6 +73,7 @@ async fn run() -> Result<(), Error> {
         element_metrics.merge(&metrics);
     }
 
+    eprintln!();
     eprintln!(
         "{}",
         Table::from_iter(
@@ -107,6 +108,7 @@ async fn run() -> Result<(), Error> {
                 ))
             )
         )
+        .with(Style::markdown())
         .with(Colorization::columns([
             Color::FG_WHITE,
             Color::FG_GREEN,
