@@ -7,7 +7,9 @@ use url::Url;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Response {
     url: Url,
+    #[serde(with = "http_serde::status_code")]
     status: StatusCode,
+    #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
     body: Vec<u8>,
     duration: Duration,
