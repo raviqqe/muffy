@@ -63,7 +63,8 @@ async fn validate_document(
         &mut futures,
     )?;
 
-    let results = try_join_all(futures.into_iter().map(|(_, future)| future)).await?;
+    let (elements, futures) = futures.unzip();
+    let results = try_join_all(futures).await?;
 
     render(&context, url, &results).await?;
 
