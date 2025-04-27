@@ -74,20 +74,29 @@ async fn run() -> Result<(), Error> {
     eprintln!("{}", "SUMMARY".blue());
     eprintln!(
         "{}",
-        Table::new([
-            (
-                "document",
-                document_metrics.success(),
-                document_metrics.error(),
-                document_metrics.total()
-            ),
-            (
-                "element",
-                element_metrics.success(),
-                element_metrics.error(),
-                element_metrics.total()
-            )
-        ]),
+        Table::from_iter(
+            [
+                (
+                    "document",
+                    document_metrics.success(),
+                    document_metrics.error(),
+                    document_metrics.total()
+                ),
+                (
+                    "element",
+                    element_metrics.success(),
+                    element_metrics.error(),
+                    element_metrics.total()
+                )
+            ]
+            .into_iter()
+            .map(|(item, success, error, total)| vec!(
+                item.to_string(),
+                success.to_string(),
+                error.to_string(),
+                total.to_string()
+            ))
+        ),
     );
 
     if document_metrics.has_error() {
