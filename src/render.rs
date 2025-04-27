@@ -1,4 +1,4 @@
-use crate::{context::Context, error::Error, response::Response};
+use crate::{context::Context, element::Element, error::Error, response::Response};
 use alloc::sync::Arc;
 use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
@@ -7,13 +7,13 @@ use url::Url;
 pub async fn render(
     context: &Context,
     url: &Url,
-    results: &[Result<Arc<Response>, Error>],
+    results: impl IntoIterator<Item = (&Element, &Result<Arc<Response>, Error>)>,
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
     render_line(&mut stdout, &format!("{}", url.to_string().yellow())).await?;
 
-    for result in results {
+    for (element, result) in results {
         match result {
             Ok(response) => {
                 render_line(
