@@ -89,6 +89,8 @@ fn validate_element(
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
             // TODO Include all elements and properties.
+            // TODO Normalize URLs in attributes.
+            // TODO Generalize node validation.
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
                     futures.push((
