@@ -23,6 +23,7 @@ use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
+use tabled::Table;
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -71,18 +72,22 @@ async fn run() -> Result<(), Error> {
     }
 
     eprintln!("{}", "SUMMARY".blue());
-    eprintln!("item\t\t{}\t{}\ttotal", "success".green(), "error".red());
     eprintln!(
-        "document\t{}\t{}\t{}",
-        document_metrics.success().to_string().green(),
-        document_metrics.error().to_string().red(),
-        document_metrics.total(),
-    );
-    eprintln!(
-        "element\t\t{}\t{}\t{}",
-        element_metrics.success().to_string().green(),
-        element_metrics.error().to_string().red(),
-        element_metrics.total(),
+        "{}",
+        Table::new([
+            (
+                "document",
+                document_metrics.success(),
+                document_metrics.error(),
+                document_metrics.total()
+            ),
+            (
+                "element",
+                element_metrics.success(),
+                element_metrics.error(),
+                element_metrics.total()
+            )
+        ]),
     );
 
     if document_metrics.has_error() {
