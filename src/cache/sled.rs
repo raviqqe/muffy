@@ -2,17 +2,22 @@ use super::Cache;
 use async_trait::async_trait;
 use core::time::Duration;
 use sled::Db;
+use std::marker::PhantomData;
 use tokio::time::sleep;
 
 const DELAY: Duration = Duration::from_millis(10);
 
 pub struct SledCache<T> {
     db: Db,
+    phantom: PhantomData<T>,
 }
 
 impl<T> SledCache<T> {
     pub fn new(db: Db) -> Self {
-        Self { db }
+        Self {
+            db,
+            phantom: Default::default(),
+        }
     }
 }
 
