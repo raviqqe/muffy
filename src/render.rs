@@ -14,12 +14,23 @@ pub async fn render(
     render_line(&mut stdout, &format!("{}", url.to_string().yellow())).await?;
 
     for (element, result) in results {
+        render_line(
+            &mut stdout,
+            &format!(
+                "\t{}\t{}\t{}",
+                response.status().to_string().green(),
+                response.url(),
+                format!("{} ms", response.duration().as_millis()).yellow()
+            ),
+        )
+        .await?;
+
         match result {
             Ok(response) => {
                 render_line(
                     &mut stdout,
                     &format!(
-                        "\t{}\t{}\t{}",
+                        "\t\t{}\t{}\t{}",
                         response.status().to_string().green(),
                         response.url(),
                         format!("{} ms", response.duration().as_millis()).yellow()
@@ -28,7 +39,7 @@ pub async fn render(
                 .await?
             }
             Err(error) => {
-                render_line(&mut stdout, &format!("\t{}\t{error}", "ERROR".red())).await?
+                render_line(&mut stdout, &format!("\t\t{}\t{error}", "ERROR".red())).await?
             }
         }
     }
