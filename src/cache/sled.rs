@@ -1,29 +1,34 @@
 use super::Cache;
 use async_trait::async_trait;
-use scc::{HashMap, hash_map::Entry};
+use core::time::Duration;
+use sled::Db;
+use tokio::time::sleep;
+
+const DELAY: Duration = Duration::from_millis(10);
 
 pub struct SledCache<T> {
-    map: HashMap<String, T>,
+    db: Db,
 }
 
 impl<T> SledCache<T> {
-    pub fn new(capacity: usize) -> Self {
-        Self {
-            map: HashMap::with_capacity(capacity),
-        }
+    pub fn new(db: Db) -> Self {
+        Self { db }
     }
 }
 
 #[async_trait]
 impl<T: Clone + Send + Sync> Cache<T> for SledCache<T> {
     async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T {
-        match self.map.entry_async(key).await {
-            Entry::Occupied(entry) => entry.get().clone(),
-            Entry::Vacant(entry) => {
-                let value = Box::into_pin(future).await;
-                entry.insert_entry(value.clone());
-                value
-            }
+        let key = b"foo";
+
+        if let Ok(foo) = self.db.compare_and_swap(key, None, Some(b"v2")) {
+            return foo;
+        }
+
+        loop {
+            if let Some(foo) = self.db.get(key) {}
+
+            sleep(DELAY).await;
         }
     }
 }
