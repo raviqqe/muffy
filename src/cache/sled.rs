@@ -26,7 +26,10 @@ impl<T: Clone + Send + Sync> Cache<T> for SledCache<T> {
     async fn get_or_set(&self, key: String, future: Box<dyn Future<Output = T> + Send>) -> T {
         let key = b"foo";
 
-        if let Ok(foo) = self.db.compare_and_swap(key, None, Some(b"v2")) {
+        if let Ok(foo) = self
+            .db
+            .compare_and_swap(key, None, Some(bitcode::serialize(None)))
+        {
             return foo;
         }
 
