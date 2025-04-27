@@ -32,7 +32,9 @@ impl FullHttpClient {
         let mut url = url.clone();
 
         // TODO Configure maximum redirect counts.
-        // TODO Configure maximum connctions per target group.
+        // TODO Configure rate limits.
+        // TODO Configure timeouts.
+        // TODO Configure maximum connctions.
         loop {
             let response = self.get_single(&url).await?;
 
