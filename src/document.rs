@@ -66,7 +66,7 @@ async fn validate_document(
         &mut futures,
     )?;
 
-    let (elements, futures) = futures.into_iter().unzip::<Vec<_>, Vec<_>, _, _>();
+    let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
     let results = try_join_all(futures).await?;
 
     render(&context, url, &results).await?;
@@ -87,18 +87,30 @@ fn validate_element(
         for attribute in attrs.borrow().iter() {
             match (name.local.as_ref(), attribute.name.local.as_ref()) {
                 ("a", "href") => {
-                    futures.push(spawn(validate_link(
-                        context.clone(),
-                        attribute.value.to_string(),
-                        base.clone(),
-                    )));
+                    futures.push((
+                        Element::new(
+                            "a".into(),
+                            vec![("href".into(), attribute.value.to_string())],
+                        ),
+                        spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )),
+                    ));
                 }
                 ("img", "src") => {
-                    futures.push(spawn(validate_link(
-                        context.clone(),
-                        attribute.value.to_string(),
-                        base.clone(),
-                    )));
+                    futures.push((
+                        Element::new(
+                            "a".into(),
+                            vec![("href".into(), attribute.value.to_string())],
+                        ),
+                        spawn(validate_link(
+                            context.clone(),
+                            attribute.value.to_string(),
+                            base.clone(),
+                        )),
+                    ));
                 }
                 _ => {}
             }
