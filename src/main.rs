@@ -23,7 +23,7 @@ use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
-use tokio::{io::AsyncWriteExt, sync::mpsc::channel};
+use tokio::sync::mpsc::channel;
 use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
@@ -58,7 +58,7 @@ async fn run() -> Result<(), Error> {
         url.clone(),
     ));
 
-    validate_link(context.clone(), url.clone(), Url::parse(&url)?.into()).await?;
+    validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
 
     let mut document_metrics = Metrics::default();
     let mut element_metrics = Metrics::default();
@@ -70,24 +70,20 @@ async fn run() -> Result<(), Error> {
         element_metrics.merge(&metrics);
     }
 
-    let mut stdout = context.stdout().lock().await;
-    stdout
-        .write_all(format!("{}\n", "SUMMARY".blue()).as_bytes())
-        .await?;
-    stdout
-        .write_all(format!("item\t{}\t{}\ttotal\n", "success".green(), "error".red()).as_bytes())
-        .await?;
-    stdout
-        .write_all(
-            format!(
-                "document\t{}\t{}\t{}\n",
-                document_metrics.success().to_string().green(),
-                document_metrics.error().to_string().red(),
-                document_metrics.total(),
-            )
-            .as_bytes(),
-        )
-        .await?;
+    eprintln!("{}\n", "SUMMARY".blue());
+    eprintln!("item\t\t{}\t{}\ttotal\n", "success".green(), "error".red());
+    eprintln!(
+        "document\t\t{}\t{}\t{}\n",
+        document_metrics.success().to_string().green(),
+        document_metrics.error().to_string().red(),
+        document_metrics.total(),
+    );
+    eprintln!(
+        "element\t\t{}\t{}\t{}\n",
+        element_metrics.success().to_string().green(),
+        element_metrics.error().to_string().red(),
+        element_metrics.total(),
+    );
 
     if document_metrics.has_error() {
         Err(Error::Document)
