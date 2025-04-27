@@ -63,7 +63,7 @@ async fn validate_document(
         &mut futures,
     )?;
 
-    let results = try_join_all(futures).await?;
+    let results = try_join_all(futures.into_iter().map(|(_, future)| future)).await?;
 
     render(&context, url, &results).await?;
 
@@ -77,7 +77,7 @@ fn validate_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
-    futures: &mut Vec<JoinHandle<Result<Arc<Response>, Error>>>,
+    futures: &mut Vec<(Element, JoinHandle<Result<Arc<Response>, Error>>)>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
