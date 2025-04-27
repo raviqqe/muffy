@@ -39,20 +39,46 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             )?
             .is_ok()
         {
-            let value = Box::into_pin(future).await;
+            let value = Some(Box::into_pin(future).await);
             self.db.insert(key, bitcode::serialize(&value)?)?;
-            return Ok(value);
+            return Ok(value.unwrap());
         }
 
         loop {
             if let Some(value) = self.db.get(&key)? {
-                let value = bitcode::deserialize::<Option<T>>(&value)?;
-                if let Some(value) = value {
+                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
                     return Ok(value);
                 }
             }
 
             sleep(DELAY).await;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[tokio::test]
+    async fn get_or_set() {
+        let file = TempDir::new().unwrap();
+        let cache = SledCache::new(sled::open(file.path()).unwrap());
+
+        assert_eq!(
+            cache
+                .get_or_set("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_or_set("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
     }
 }
