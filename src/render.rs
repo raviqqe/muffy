@@ -4,6 +4,7 @@ use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
 
+// TODO Render results as JSON.
 pub async fn render(
     context: &Context,
     url: &Url,
