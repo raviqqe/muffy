@@ -41,6 +41,7 @@ struct Arguments {
     #[arg()]
     url: String,
     /// Persists cache.
+    // TODO Configure cache expiry.
     #[arg(long)]
     persist_cache: bool,
 }
