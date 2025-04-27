@@ -17,13 +17,15 @@ use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::MemoryCache;
 use clap::Parser;
-use colored::Colorize;
 use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::process::exit;
-use tabled::Table;
+use tabled::{
+    Table,
+    settings::{Color, themes::Colorization},
+};
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -104,7 +106,13 @@ async fn run() -> Result<(), Error> {
                     total.to_string()
                 ))
             )
-        ),
+        )
+        .with(Colorization::columns([
+            Color::FG_WHITE,
+            Color::FG_GREEN,
+            Color::FG_RED,
+            Color::FG_WHITE,
+        ])),
     );
 
     if document_metrics.has_error() {
