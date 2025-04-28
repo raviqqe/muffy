@@ -6,6 +6,7 @@ use crate::{
 };
 use alloc::sync::Arc;
 use core::str;
+use robotxt::Robots;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
@@ -13,17 +14,20 @@ pub struct FullHttpClient {
     client: Arc<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Arc<Semaphore>,
+    robots: Box<dyn Cache<Robots>>,
 }
 
 impl FullHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+        robots: Box<dyn Cache<Robots>>,
         concurrency: usize,
     ) -> Self {
         Self {
             client: Arc::new(client),
             cache,
+            robots,
             semaphore: Semaphore::new(concurrency).into(),
         }
     }

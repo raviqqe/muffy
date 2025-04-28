@@ -65,6 +65,11 @@ async fn run() -> Result<(), Error> {
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
+            if persist_cache {
+                Box::new(SledCache::new(sled::open(temp_dir().join("muffin"))?))
+            } else {
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+            },
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,
