@@ -1,12 +1,13 @@
+mod file_system;
 mod memory;
-mod sled;
 
-pub use self::{memory::MemoryCache, sled::FileSystemCache};
+pub use self::{file_system::FileSystemCache, memory::MemoryCache};
 use alloc::sync::Arc;
 use async_trait::async_trait;
 use core::error::Error;
 use core::fmt::{self, Display, Formatter};
 use serde::{Deserialize, Serialize};
+use std::io;
 
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
@@ -20,7 +21,7 @@ pub trait Cache<T: Clone>: Send + Sync {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum CacheError {
     Bitcode(Arc<str>),
-    Sled(Arc<str>),
+    Io(Arc<str>),
 }
 
 impl Error for CacheError {}
@@ -29,7 +30,7 @@ impl Display for CacheError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Bitcode(error) => write!(formatter, "{error}"),
-            Self::Sled(error) => write!(formatter, "{error}"),
+            Self::Io(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -40,8 +41,8 @@ impl From<bitcode::Error> for CacheError {
     }
 }
 
-impl From<::sled::Error> for CacheError {
-    fn from(error: ::sled::Error) -> Self {
-        Self::Sled(error.to_string().into())
+impl From<io::Error> for CacheError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error.to_string().into())
     }
 }
