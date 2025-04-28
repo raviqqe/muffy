@@ -32,8 +32,8 @@ impl Display for CacheError {
     }
 }
 
-impl From<sled::Error> for CacheError {
-    fn from(error: sled::Error) -> Self {
+impl From<::sled::Error> for CacheError {
+    fn from(error: ::sled::Error) -> Self {
         Self::Sled(error.to_string().into())
     }
 }
