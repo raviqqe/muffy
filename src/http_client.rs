@@ -24,6 +24,7 @@ pub struct BareResponse {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum HttpClientError {
     Cache(CacheError),
+    HostNotDefined,
     Http(Arc<str>),
     RobotsTxt,
     UrlParse(Arc<str>),
@@ -41,6 +42,7 @@ impl Display for HttpClientError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Cache(error) => write!(formatter, "{error}"),
+            Self::HostNotDefined => write!(formatter, "host not defined"),
             Self::Http(error) => write!(formatter, "{error}"),
             Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
             Self::UrlParse(error) => write!(formatter, "{error}"),

@@ -96,16 +96,21 @@ impl FullHttpClient {
     ) -> Result<Robots, HttpClientError> {
         Ok(inner
             .robots
-            .get_or_set(url.to_string(), {
-                let url = url.clone();
-                let inner = inner.clone();
+            .get_or_set(
+                url.host()
+                    .ok_or_else(|| HttpClientError::HostNotDefined)?
+                    .to_string(),
+                {
+                    let url = url.clone();
+                    let inner = inner.clone();
 
-                Box::new(async move {
-                    let response = inner.client.get(&url.join("robots.txt")?).await?;
+                    Box::new(async move {
+                        let response = inner.client.get(&url.join("robots.txt")?).await?;
 
-                    Ok(Robots::from_bytes(&response.body, USER_AGENT))
-                })
-            })
+                        Ok(Robots::from_bytes(&response.body, USER_AGENT))
+                    })
+                },
+            )
             .await??)
     }
 }
