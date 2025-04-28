@@ -1,3 +1,4 @@
+use crate::cache::CacheError;
 use alloc::sync::Arc;
 use async_trait::async_trait;
 use core::{
@@ -7,8 +8,6 @@ use core::{
 use http::{StatusCode, header::HeaderMap};
 use serde::{Deserialize, Serialize};
 use url::Url;
-
-use crate::cache::CacheError;
 
 #[async_trait]
 pub trait HttpClient: Send + Sync {
