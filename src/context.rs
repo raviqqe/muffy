@@ -1,4 +1,10 @@
-use crate::{cache::Cache, error::Error, full_http_client::FullHttpClient, metrics::Metrics};
+use crate::{
+    cache::{Cache, MemoryCache},
+    error::Error,
+    full_http_client::FullHttpClient,
+    metrics::Metrics,
+};
+use robotxt::Robots;
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
@@ -11,13 +17,14 @@ pub struct Context {
     origin: String,
     documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
-    robots: Cache<String, Foo>,
+    robots: Box<dyn Cache<Robots>>,
 }
 
 impl Context {
     pub fn new(
         http_client: FullHttpClient,
         job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
+        robots: Box<dyn Cache<Robots>,
         origin: String,
     ) -> Self {
         Self {
@@ -26,6 +33,7 @@ impl Context {
             stdout: stdout().into(),
             documents: HashSet::with_capacity(1 << 10),
             job_sender,
+            robots: MemoryCache::new(),
         }
     }
 
