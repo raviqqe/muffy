@@ -1,5 +1,6 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
+use base64::{Engine as _, engine::general_purpose::STANDARD_NO_PAD};
 use core::{marker::PhantomData, time::Duration};
 use serde::{Deserialize, Serialize};
 use sled::Tree;
