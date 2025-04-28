@@ -14,7 +14,6 @@ use crate::http_client::HttpClientError;
 #[derive(Debug)]
 pub enum Error {
     Acquire(AcquireError),
-    Bitcode(bitcode::Error),
     Cache(CacheError),
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
@@ -33,7 +32,6 @@ impl Display for Error {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
-            Self::Bitcode(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
@@ -51,12 +49,6 @@ impl Display for Error {
 impl From<AcquireError> for Error {
     fn from(error: AcquireError) -> Self {
         Self::Acquire(error)
-    }
-}
-
-impl From<bitcode::Error> for Error {
-    fn from(error: bitcode::Error) -> Self {
-        Self::Bitcode(error)
     }
 }
 
@@ -81,12 +73,6 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
-    }
-}
-
-impl From<sled::Error> for Error {
-    fn from(error: sled::Error) -> Self {
-        Self::Sled(error)
     }
 }
 
