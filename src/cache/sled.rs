@@ -28,6 +28,8 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
+        let key = STANDARD_NO_PAD.encode(key.as_bytes());
+
         if self
             .tree
             .compare_and_swap(
