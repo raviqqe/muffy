@@ -40,10 +40,6 @@ impl FullHttpClient {
     }
 
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
-        self.get_redirect(url).await
-    }
-
-    async fn get_redirect(&self, url: &Url) -> Result<Arc<Response>, Error> {
         let mut url = url.clone();
 
         // TODO Configure maximum redirect counts.
