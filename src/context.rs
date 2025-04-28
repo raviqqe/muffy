@@ -1,9 +1,4 @@
-use crate::{
-    cache::{Cache, MemoryCache},
-    error::Error,
-    full_http_client::FullHttpClient,
-    metrics::Metrics,
-};
+use crate::{cache::Cache, error::Error, full_http_client::FullHttpClient, metrics::Metrics};
 use robotxt::Robots;
 use scc::HashSet;
 use tokio::{
