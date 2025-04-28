@@ -22,6 +22,7 @@ pub enum Error {
     Join(JoinError),
     Document,
     RedirectLocation,
+    Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -40,6 +41,7 @@ impl Display for Error {
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
             Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
+            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -73,6 +75,12 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<sled::Error> for Error {
+    fn from(error: sled::Error) -> Self {
+        Self::Sled(error)
     }
 }
 
