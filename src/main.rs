@@ -16,7 +16,7 @@ mod response;
 
 use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
-use cache::{MemoryCache, SledCache};
+use cache::{FileSystemCache, MemoryCache};
 use clap::Parser;
 use full_http_client::FullHttpClient;
 use metrics::Metrics;
@@ -58,23 +58,25 @@ async fn main() {
 async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = if persist_cache {
-        let directory = temp_dir().join("muffin/v2");
-        create_dir_all(&directory).await?;
-        Some(sled::open(directory)?)
+    let directory = if persist_cache {
+        Some(temp_dir().join("muffin"))
     } else {
         None
     };
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
-            if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree("responses")?))
+            if let Some(directory) = &directory {
+                let directory = directory.join("responses");
+                create_dir_all(&directory).await?;
+                Box::new(FileSystemCache::new(directory))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
-            if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree("robots")?))
+            if let Some(directory) = &directory {
+                let directory = directory.join("robots");
+                create_dir_all(&directory).await?;
+                Box::new(FileSystemCache::new(directory))
             } else {
                 Box::new(MemoryCache::new(0))
             },
