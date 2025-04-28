@@ -30,15 +30,22 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
         let key = STANDARD_NO_PAD.encode(key.as_bytes());
+        let path = self.directory.join(key);
 
         if let Ok(file) = OpenOptions::default()
             .create_new(true)
             .write(true)
-            .open(self.directory.join(key))
+            .open(&path)
             .await
         {
             let value = Box::into_pin(future).await;
             file.write_all(&bitcode::serialize(&Some(&value))?).await?;
+            OpenOptions::default()
+                .create_new(true)
+                .write(true)
+                .open(&path.with_extension("lock"))
+                .write_all(&[])
+                .await?;
             return Ok(value);
         }
 
