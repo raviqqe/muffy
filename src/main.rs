@@ -60,7 +60,7 @@ async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if persist_cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin/v2");
+        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
