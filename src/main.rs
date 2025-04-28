@@ -22,7 +22,7 @@ use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
-use std::{env::temp_dir, process::exit};
+use std::{path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -41,10 +41,10 @@ struct Arguments {
     // TODO Configure origin URLs.
     #[arg()]
     url: String,
-    /// Persists cache.
+    /// Persists cache in a directory.
     // TODO Configure cache expiry.
     #[arg(long)]
-    persist_cache: bool,
+    persist_cache: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -58,8 +58,7 @@ async fn main() {
 async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = if persist_cache {
-        let directory = temp_dir().join("muffin/v2");
+    let db = if let Some(directory) = persist_cache {
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
