@@ -27,6 +27,7 @@ use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
+use tokio::fs::create_dir_all;
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -57,9 +58,13 @@ async fn main() {
 async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = persist_cache
-        .then(|| sled::open(temp_dir().join("muffin")))
-        .transpose()?;
+    let db = if persist_cache {
+        let directory = temp_dir().join("muffin/v2");
+        create_dir_all(&directory).await?;
+        Some(sled::open(directory)?)
+    } else {
+        None
+    };
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
