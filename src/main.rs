@@ -57,16 +57,19 @@ async fn main() {
 async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
+    let db = persist_cache
+        .then(|| sled::open(temp_dir().join("muffin")))
+        .transpose()?;
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
-            if persist_cache {
-                Box::new(SledCache::new(sled::open(temp_dir().join("muffin"))?))
+            if let Some(db) = &db {
+                Box::new(SledCache::new(db.open_tree("responses")?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
-            if persist_cache {
-                Box::new(SledCache::new(sled::open(temp_dir().join("muffin"))?))
+            if let Some(db) = &db {
+                Box::new(SledCache::new(db.open_tree("robots")?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
