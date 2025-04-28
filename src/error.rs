@@ -1,3 +1,4 @@
+use crate::cache::CacheError;
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -14,6 +15,7 @@ use crate::http_client::HttpClientError;
 pub enum Error {
     Acquire(AcquireError),
     Bitcode(bitcode::Error),
+    Cache(CacheError),
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
@@ -21,7 +23,6 @@ pub enum Error {
     Join(JoinError),
     Document,
     RedirectLocation,
-    Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -33,6 +34,7 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Bitcode(error) => write!(formatter, "{error}"),
+            Self::Cache(error) => write!(formatter, "{error}"),
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
@@ -40,7 +42,6 @@ impl Display for Error {
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
             Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
-            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -56,6 +57,12 @@ impl From<AcquireError> for Error {
 impl From<bitcode::Error> for Error {
     fn from(error: bitcode::Error) -> Self {
         Self::Bitcode(error)
+    }
+}
+
+impl From<CacheError> for Error {
+    fn from(error: CacheError) -> Self {
+        Self::Cache(error)
     }
 }
 

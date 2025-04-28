@@ -8,6 +8,8 @@ use http::{StatusCode, header::HeaderMap};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+use crate::cache::CacheError;
+
 #[async_trait]
 pub trait HttpClient: Send + Sync {
     async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError>;
@@ -22,6 +24,7 @@ pub struct BareResponse {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum HttpClientError {
+    Cache(CacheError),
     Http(Arc<str>),
     RobotsTxt,
     UrlParse(Arc<str>),
@@ -38,10 +41,17 @@ impl Error for HttpClientError {}
 impl Display for HttpClientError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Cache(error) => write!(formatter, "{error}"),
             Self::Http(error) => write!(formatter, "{error}"),
             Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl From<CacheError> for HttpClientError {
+    fn from(error: CacheError) -> Self {
+        Self::Cache(error)
     }
 }
 

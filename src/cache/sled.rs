@@ -1,5 +1,4 @@
-use super::Cache;
-use crate::error::Error;
+use super::{Cache, CacheError};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use serde::{Deserialize, Serialize};
@@ -28,7 +27,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
-    ) -> Result<T, Error> {
+    ) -> Result<T, CacheError> {
         if self
             .tree
             .compare_and_swap(

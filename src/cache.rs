@@ -2,8 +2,11 @@ mod memory;
 mod sled;
 
 pub use self::{memory::MemoryCache, sled::SledCache};
-use crate::error::Error;
+use alloc::sync::Arc;
 use async_trait::async_trait;
+use core::error::Error;
+use core::fmt::{self, Display, Formatter};
+use serde::{Deserialize, Serialize};
 
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
@@ -11,5 +14,26 @@ pub trait Cache<T: Clone>: Send + Sync {
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
-    ) -> Result<T, Error>;
+    ) -> Result<T, CacheError>;
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum CacheError {
+    Sled(Arc<str>),
+}
+
+impl Error for CacheError {}
+
+impl Display for CacheError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Sled(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl From<sled::Error> for CacheError {
+    fn from(error: sled::Error) -> Self {
+        Self::Sled(error.to_string().into())
+    }
 }

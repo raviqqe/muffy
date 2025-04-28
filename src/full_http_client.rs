@@ -101,6 +101,7 @@ impl FullHttpClient {
         Ok(inner
             .robots
             .get_or_set(url.to_string(), {
+                let url = url.clone();
                 let inner = inner.clone();
 
                 Box::new(async move {
