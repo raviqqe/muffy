@@ -6,26 +6,37 @@ use crate::{
 };
 use alloc::sync::Arc;
 use core::str;
+use robotxt::Robots;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
-pub struct FullHttpClient {
-    client: Arc<dyn HttpClient>,
+const USER_AGENT: &str = "muffin";
+
+pub struct FullHttpClient(Arc<FullHttpClientInner>);
+
+struct FullHttpClientInner {
+    client: Box<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
-    semaphore: Arc<Semaphore>,
+    semaphore: Semaphore,
+    robots: Box<dyn Cache<Result<Robots, HttpClientError>>>,
 }
 
 impl FullHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+        robots: Box<dyn Cache<Result<Robots, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
-        Self {
-            client: Arc::new(client),
-            cache,
-            semaphore: Semaphore::new(concurrency).into(),
-        }
+        Self(
+            FullHttpClientInner {
+                client: Box::new(client),
+                cache,
+                robots,
+                semaphore: Semaphore::new(concurrency),
+            }
+            .into(),
+        )
     }
 
     pub async fn get(&self, url: &Url) -> Result<Arc<Response>, Error> {
@@ -36,7 +47,7 @@ impl FullHttpClient {
         // TODO Configure timeouts.
         // TODO Configure maximum connections.
         loop {
-            let response = self.get_single(&url).await?;
+            let response = self.get_once(&url).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -52,18 +63,24 @@ impl FullHttpClient {
         }
     }
 
-    async fn get_single(&self, url: &Url) -> Result<Arc<Response>, Error> {
+    async fn get_once(&self, url: &Url) -> Result<Arc<Response>, Error> {
         Ok(self
+            .0
             .cache
             .get_or_set(url.to_string(), {
-                let client = self.client.clone();
-                let semaphore = self.semaphore.clone();
                 let url = url.clone();
+                let inner = self.0.clone();
 
                 Box::new(async move {
-                    let permit = semaphore.acquire().await.unwrap();
+                    let robot = Self::get_robot(&inner, &url).await?;
+
+                    if !robot.is_absolute_allowed(&url) {
+                        return Err(HttpClientError::RobotsTxt);
+                    }
+
+                    let permit = inner.semaphore.acquire().await.unwrap();
                     let start = Instant::now();
-                    let response = client.get(&url).await?;
+                    let response = inner.client.get(&url).await?;
                     let duration = Instant::now().duration_since(start);
                     drop(permit);
 
@@ -71,5 +88,29 @@ impl FullHttpClient {
                 })
             })
             .await??)
+    }
+
+    async fn get_robot(
+        inner: &Arc<FullHttpClientInner>,
+        url: &Url,
+    ) -> Result<Robots, HttpClientError> {
+        inner
+            .robots
+            .get_or_set(
+                url.host()
+                    .ok_or(HttpClientError::HostNotDefined)?
+                    .to_string(),
+                {
+                    let url = url.clone();
+                    let inner = inner.clone();
+
+                    Box::new(async move {
+                        let response = inner.client.get(&url.join("robots.txt")?).await?;
+
+                        Ok(Robots::from_bytes(&response.body, USER_AGENT))
+                    })
+                },
+            )
+            .await?
     }
 }

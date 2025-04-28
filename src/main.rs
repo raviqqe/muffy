@@ -27,6 +27,7 @@ use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
+use tokio::fs::create_dir_all;
 use tokio::sync::mpsc::channel;
 use url::Url;
 
@@ -57,13 +58,25 @@ async fn main() {
 async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
+    let db = if persist_cache {
+        let directory = temp_dir().join("muffin/v2");
+        create_dir_all(&directory).await?;
+        Some(sled::open(directory)?)
+    } else {
+        None
+    };
     let context = Arc::new(Context::new(
         FullHttpClient::new(
             ReqwestHttpClient::new(),
-            if persist_cache {
-                Box::new(SledCache::new(sled::open(temp_dir().join("muffin"))?))
+            if let Some(db) = &db {
+                Box::new(SledCache::new(db.open_tree("responses")?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+            },
+            if let Some(db) = &db {
+                Box::new(SledCache::new(db.open_tree("robots")?))
+            } else {
+                Box::new(MemoryCache::new(0))
             },
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),

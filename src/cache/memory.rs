@@ -1,5 +1,4 @@
-use super::Cache;
-use crate::error::Error;
+use super::{Cache, CacheError};
 use async_trait::async_trait;
 use scc::{HashMap, hash_map::Entry};
 
@@ -21,7 +20,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
-    ) -> Result<T, Error> {
+    ) -> Result<T, CacheError> {
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {

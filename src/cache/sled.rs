@@ -1,22 +1,21 @@
-use super::Cache;
-use crate::error::Error;
+use super::{Cache, CacheError};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use serde::{Deserialize, Serialize};
-use sled::Db;
+use sled::Tree;
 use tokio::time::sleep;
 
 const DELAY: Duration = Duration::from_millis(10);
 
 pub struct SledCache<T> {
-    db: Db,
+    tree: Tree,
     phantom: PhantomData<T>,
 }
 
 impl<T> SledCache<T> {
-    pub fn new(db: Db) -> Self {
+    pub fn new(tree: Tree) -> Self {
         Self {
-            db,
+            tree,
             phantom: Default::default(),
         }
     }
@@ -28,9 +27,9 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
-    ) -> Result<T, Error> {
+    ) -> Result<T, CacheError> {
         if self
-            .db
+            .tree
             .compare_and_swap(
                 &key,
                 Option::<Vec<u8>>::None,
@@ -39,13 +38,13 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             .is_ok()
         {
             let value = Box::into_pin(future).await;
-            self.db.insert(key, bitcode::serialize(&Some(&value))?)?;
+            self.tree.insert(key, bitcode::serialize(&Some(&value))?)?;
             return Ok(value);
         }
 
         // Wait for another thread to insert a key-value pair.
         loop {
-            if let Some(value) = self.db.get(&key)? {
+            if let Some(value) = self.tree.get(&key)? {
                 if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
                     return Ok(value);
                 }
@@ -64,7 +63,7 @@ mod tests {
     #[tokio::test]
     async fn get_or_set() {
         let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap());
+        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
 
         assert_eq!(
             cache
