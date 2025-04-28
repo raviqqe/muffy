@@ -21,11 +21,15 @@ pub struct BareResponse {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct HttpClientError(Arc<str>);
+pub enum HttpClientError {
+    Http(Arc<str>),
+    RobotsTxt,
+    UrlParse(Arc<str>),
+}
 
 impl HttpClientError {
     pub fn new(error: String) -> Self {
-        Self(error.into())
+        Self::Http(error.into())
     }
 }
 
@@ -33,6 +37,16 @@ impl Error for HttpClientError {}
 
 impl Display for HttpClientError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", self.0)
+        match self {
+            Self::Http(error) => write!(formatter, "{error}"),
+            Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
+            Self::UrlParse(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl From<url::ParseError> for HttpClientError {
+    fn from(error: url::ParseError) -> Self {
+        Self::UrlParse(error.to_string().into())
     }
 }
