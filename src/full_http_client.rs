@@ -15,9 +15,9 @@ const USER_AGENT: &str = "muffin";
 pub struct FullHttpClient(Arc<FullHttpClientInner>);
 
 struct FullHttpClientInner {
-    client: Arc<dyn HttpClient>,
+    client: Box<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
-    semaphore: Arc<Semaphore>,
+    semaphore: Semaphore,
     robots: Box<dyn Cache<Result<Robots, HttpClientError>>>,
 }
 
@@ -30,10 +30,10 @@ impl FullHttpClient {
     ) -> Self {
         Self(
             FullHttpClientInner {
-                client: Arc::new(client),
+                client: Box::new(client),
                 cache,
                 robots,
-                semaphore: Semaphore::new(concurrency).into(),
+                semaphore: Semaphore::new(concurrency),
             }
             .into(),
         )
