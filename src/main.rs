@@ -18,6 +18,7 @@ use self::{context::Context, document::validate_link, error::Error};
 use alloc::sync::Arc;
 use cache::{MemoryCache, SledCache};
 use clap::Parser;
+use dirs::cache_dir;
 use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
@@ -59,7 +60,7 @@ async fn run() -> Result<(), Error> {
     let Arguments { url, persist_cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if persist_cache {
-        let directory = temp_dir().join("muffin/v2");
+        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin/v2");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
