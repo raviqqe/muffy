@@ -1,4 +1,4 @@
-use crate::{error::Error, full_http_client::FullHttpClient, metrics::Metrics};
+use crate::{cache::Cache, error::Error, full_http_client::FullHttpClient, metrics::Metrics};
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
@@ -11,6 +11,7 @@ pub struct Context {
     origin: String,
     documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
+    robots: Cache<String, Foo>,
 }
 
 impl Context {
