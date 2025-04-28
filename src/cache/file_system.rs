@@ -53,7 +53,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             return Ok(value);
         }
 
-        while !try_exists(&path).await? {
+        while !try_exists(&lock_path).await? {
             sleep(DELAY).await;
         }
 
