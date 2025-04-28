@@ -94,11 +94,11 @@ impl FullHttpClient {
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
     ) -> Result<Robots, HttpClientError> {
-        Ok(inner
+        inner
             .robots
             .get_or_set(
                 url.host()
-                    .ok_or_else(|| HttpClientError::HostNotDefined)?
+                    .ok_or(HttpClientError::HostNotDefined)?
                     .to_string(),
                 {
                     let url = url.clone();
@@ -111,6 +111,6 @@ impl FullHttpClient {
                     })
                 },
             )
-            .await??)
+            .await?
     }
 }
