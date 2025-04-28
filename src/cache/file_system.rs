@@ -4,7 +4,11 @@ use base64::{Engine as _, engine::general_purpose::STANDARD_NO_PAD};
 use core::{marker::PhantomData, time::Duration};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tokio::{fs::OpenOptions, io::AsyncWriteExt, time::sleep};
+use tokio::{
+    fs::{OpenOptions, try_exists},
+    io::AsyncWriteExt,
+    time::sleep,
+};
 
 const DELAY: Duration = Duration::from_millis(10);
 
@@ -31,34 +35,29 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
     ) -> Result<T, CacheError> {
         let key = STANDARD_NO_PAD.encode(key.as_bytes());
         let path = self.directory.join(key);
+        let lock_path = path.with_extension("lock");
 
-        if let Ok(file) = OpenOptions::default()
+        if let Ok(mut file) = OpenOptions::default()
             .create_new(true)
             .write(true)
             .open(&path)
             .await
         {
             let value = Box::into_pin(future).await;
-            file.write_all(&bitcode::serialize(&Some(&value))?).await?;
+            file.write_all(&bitcode::serialize(&value)?).await?;
             OpenOptions::default()
                 .create_new(true)
                 .write(true)
-                .open(&path.with_extension("lock"))
-                .write_all(&[])
+                .open(&lock_path)
                 .await?;
             return Ok(value);
         }
 
-        // Wait for another thread to insert a key-value pair.
-        loop {
-            if let Some(value) = self.tree.get(&key)? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    return Ok(value);
-                }
-            }
-
+        while !try_exists(&path).await? {
             sleep(DELAY).await;
         }
+
+        Ok(bitcode::deserialize::<T>(&tokio::fs::read(path).await?)?)
     }
 }
 
@@ -69,9 +68,8 @@ mod tests {
 
     #[tokio::test]
     async fn get_or_set() {
-        let file = TempDir::new().unwrap();
-        let cache =
-            FileSystemCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+        let directory = TempDir::new().unwrap();
+        let cache = FileSystemCache::new(directory.path().into());
 
         assert_eq!(
             cache
