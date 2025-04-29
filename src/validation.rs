@@ -12,7 +12,7 @@ use std::io;
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
-type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
+type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
 
 // TODO Support `sitemap.xml` as documents.
 pub async fn validate_link(
@@ -74,25 +74,13 @@ async fn validate_document(
     )?;
 
     let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
-    let mut results = Vec::with_capacity(futures.len());
-
-    for futures in futures {
-        results.push(try_join_all(futures).await?);
-    }
+    let results = try_join_all(futures).await?;
 
     render(&context, url, elements.iter().zip(results.iter())).await?;
 
     Ok(Metrics::new(
-        results
-            .iter()
-            .flatten()
-            .filter(|result| result.is_ok())
-            .count(),
-        results
-            .iter()
-            .flatten()
-            .filter(|result| result.is_err())
-            .count(),
+        results.iter().filter(|result| result.is_ok()).count(),
+        results.iter().filter(|result| result.is_err()).count(),
     ))
 }
 

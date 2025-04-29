@@ -8,13 +8,13 @@ use url::Url;
 pub async fn render(
     context: &Context,
     url: &Url,
-    results: impl IntoIterator<Item = (&Element, &Vec<Result<Arc<Response>, Error>>)>,
+    results: impl IntoIterator<Item = (&Element, &Result<Arc<Response>, Error>)>,
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
     render_line(&mut stdout, &format!("{}", url.to_string().yellow())).await?;
 
-    for (element, results) in results {
+    for (element, result) in results {
         render_line(
             &mut stdout,
             &format!(
@@ -30,23 +30,21 @@ pub async fn render(
         )
         .await?;
 
-        for result in results {
-            match result {
-                Ok(response) => {
-                    render_line(
-                        &mut stdout,
-                        &format!(
-                            "\t\t{}\t{}\t{}",
-                            response.status().to_string().green(),
-                            response.url(),
-                            format!("{} ms", response.duration().as_millis()).yellow()
-                        ),
-                    )
-                    .await?
-                }
-                Err(error) => {
-                    render_line(&mut stdout, &format!("\t\t{}\t{error}", "ERROR".red())).await?
-                }
+        match result {
+            Ok(response) => {
+                render_line(
+                    &mut stdout,
+                    &format!(
+                        "\t\t{}\t{}\t{}",
+                        response.status().to_string().green(),
+                        response.url(),
+                        format!("{} ms", response.duration().as_millis()).yellow()
+                    ),
+                )
+                .await?
+            }
+            Err(error) => {
+                render_line(&mut stdout, &format!("\t\t{}\t{error}", "ERROR".red())).await?
             }
         }
     }
