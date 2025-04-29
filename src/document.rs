@@ -15,7 +15,6 @@ use url::Url;
 type ElementFuture = (Element, JoinHandle<Result<Arc<Response>, Error>>);
 
 // TODO Support `sitemap.xml` as documents.
-// TODO Support `robots.txt` as a filtering database for each domain.
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
