@@ -44,7 +44,7 @@ struct Arguments {
     url: String,
     /// Uses a persistent cache.
     #[arg(long)]
-    persist_cache: bool,
+    cache: bool,
 }
 
 #[tokio::main]
@@ -56,9 +56,9 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Error> {
-    let Arguments { url, persist_cache } = Arguments::parse();
+    let arguments = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = if persist_cache {
+    let db = if arguments.cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
@@ -76,7 +76,7 @@ async fn run() -> Result<(), Error> {
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,
-        url.clone(),
+        arguments.url.clone(),
     ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
