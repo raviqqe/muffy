@@ -42,10 +42,9 @@ struct Arguments {
     // TODO Configure origin URLs.
     #[arg()]
     url: String,
-    /// Persists cache.
-    // TODO Configure cache expiry.
+    /// Uses a persistent cache.
     #[arg(long)]
-    persist_cache: bool,
+    cache: bool,
 }
 
 #[tokio::main]
@@ -57,9 +56,9 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Error> {
-    let Arguments { url, persist_cache } = Arguments::parse();
+    let Arguments { url, cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = if persist_cache {
+    let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
