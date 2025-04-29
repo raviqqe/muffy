@@ -74,11 +74,6 @@ async fn run() -> Result<(), Error> {
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
-            if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree("robots")?))
-            } else {
-                Box::new(MemoryCache::new(0))
-            },
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,

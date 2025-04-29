@@ -18,21 +18,18 @@ struct FullHttpClientInner {
     client: Box<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
-    robots: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
 }
 
 impl FullHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
-        robots: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
             FullHttpClientInner {
                 client: Box::new(client),
                 cache,
-                robots,
                 semaphore: Semaphore::new(concurrency),
             }
             .into(),
@@ -85,10 +82,10 @@ impl FullHttpClient {
 
                 Box::new(async move {
                     if robots {
-                        let robot = Self::get_robot(&inner, &url).await?;
-
-                        if !robot.is_absolute_allowed(&url) {
-                            return Err(HttpClientError::RobotsTxt);
+                        if let Some(robot) = Self::get_robot(&inner, &url).await? {
+                            if !robot.is_absolute_allowed(&url) {
+                                return Err(HttpClientError::RobotsTxt);
+                            }
                         }
                     }
 
@@ -107,26 +104,10 @@ impl FullHttpClient {
     async fn get_robot(
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
-    ) -> Result<Robots, HttpClientError> {
-        Ok(Robots::from_bytes(
-            inner
-                .robots
-                .get_or_set(
-                    url.host()
-                        .ok_or(HttpClientError::HostNotDefined)?
-                        .to_string(),
-                    {
-                        let url = url.clone();
-                        let inner = inner.clone();
-
-                        Box::new(async move {
-                            Self::get_inner(&inner, &url.join("robots.txt")?, false).await
-                        })
-                    },
-                )
-                .await??
-                .body(),
-            USER_AGENT,
-        ))
+    ) -> Result<Option<Robots>, HttpClientError> {
+        Ok(Self::get_inner(inner, &url.join("robots.txt")?, false)
+            .await
+            .ok()
+            .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
     }
 }
