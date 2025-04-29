@@ -42,8 +42,7 @@ struct Arguments {
     // TODO Configure origin URLs.
     #[arg()]
     url: String,
-    /// Persists cache.
-    // TODO Configure cache expiry.
+    /// Uses a persistent cache.
     #[arg(long)]
     persist_cache: bool,
 }

@@ -73,6 +73,7 @@ impl FullHttpClient {
         url: &Url,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
+        // TODO Configure cache expiry.
         inner
             .cache
             .get_or_set(url.to_string(), {
