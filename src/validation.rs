@@ -109,32 +109,36 @@ fn validate_element(
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
-            match (name.local.as_ref(), attribute.name.local.as_ref()) {
-                ("a", "href") => {
-                    futures.push((
-                        Element::new(
-                            "a".into(),
-                            vec![("href".into(), attribute.value.to_string())],
-                        ),
-                        vec![spawn(validate_link(
-                            context.clone(),
-                            attribute.value.to_string(),
-                            base.clone(),
-                        ))],
-                    ));
+            match name.local.as_ref() {
+                "a" => {
+                    if attribute.name.local.as_ref() == "href" {
+                        futures.push((
+                            Element::new(
+                                "a".into(),
+                                vec![("href".into(), attribute.value.to_string())],
+                            ),
+                            vec![spawn(validate_link(
+                                context.clone(),
+                                attribute.value.to_string(),
+                                base.clone(),
+                            ))],
+                        ))
+                    }
                 }
-                ("img", "src") => {
-                    futures.push((
-                        Element::new(
-                            "a".into(),
-                            vec![("src".into(), attribute.value.to_string())],
-                        ),
-                        vec![spawn(validate_link(
-                            context.clone(),
-                            attribute.value.to_string(),
-                            base.clone(),
-                        ))],
-                    ));
+                "img" => {
+                    if attribute.name.local.as_ref() == "src" {
+                        futures.push((
+                            Element::new(
+                                "a".into(),
+                                vec![("src".into(), attribute.value.to_string())],
+                            ),
+                            vec![spawn(validate_link(
+                                context.clone(),
+                                attribute.value.to_string(),
+                                base.clone(),
+                            ))],
+                        ));
+                    }
                 }
                 _ => {}
             }
