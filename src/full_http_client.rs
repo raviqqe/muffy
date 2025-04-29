@@ -18,14 +18,14 @@ struct FullHttpClientInner {
     client: Box<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
-    robots: Box<dyn Cache<Result<Robots, HttpClientError>>>,
+    robots: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
 }
 
 impl FullHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
-        robots: Box<dyn Cache<Result<Robots, HttpClientError>>>,
+        robots: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
@@ -94,23 +94,23 @@ impl FullHttpClient {
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
     ) -> Result<Robots, HttpClientError> {
-        inner
-            .robots
-            .get_or_set(
-                url.host()
-                    .ok_or(HttpClientError::HostNotDefined)?
-                    .to_string(),
-                {
-                    let url = url.clone();
-                    let inner = inner.clone();
+        Ok(Robots::from_bytes(
+            &inner
+                .robots
+                .get_or_set(
+                    url.host()
+                        .ok_or(HttpClientError::HostNotDefined)?
+                        .to_string(),
+                    {
+                        let url = url.clone();
+                        let inner = inner.clone();
 
-                    Box::new(async move {
-                        let response = inner.client.get(&url.join("robots.txt")?).await?;
-
-                        Ok(Robots::from_bytes(&response.body, USER_AGENT))
-                    })
-                },
-            )
-            .await?
+                        Box::new(async move { inner.client.get(&url.join("robots.txt")?) })
+                    },
+                )
+                .await?
+                .body,
+            USER_AGENT,
+        ))
     }
 }
