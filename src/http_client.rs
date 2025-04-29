@@ -26,6 +26,7 @@ pub enum HttpClientError {
     Cache(CacheError),
     HostNotDefined,
     Http(Arc<str>),
+    RedirectLocation,
     RobotsTxt,
     UrlParse(Arc<str>),
 }
@@ -44,6 +45,7 @@ impl Display for HttpClientError {
             Self::Cache(error) => write!(formatter, "{error}"),
             Self::HostNotDefined => write!(formatter, "host not defined"),
             Self::Http(error) => write!(formatter, "{error}"),
+            Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
             Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
         }
