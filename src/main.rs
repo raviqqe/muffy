@@ -4,7 +4,6 @@ extern crate alloc;
 
 mod cache;
 mod context;
-mod document;
 mod document_type;
 mod element;
 mod error;
@@ -14,8 +13,9 @@ mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
+mod validation;
 
-use self::{context::Context, document::validate_link, error::Error};
+use self::{context::Context, error::Error, validation::validate_link};
 use alloc::sync::Arc;
 use cache::{MemoryCache, SledCache};
 use clap::Parser;
