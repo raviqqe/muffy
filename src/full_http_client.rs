@@ -65,7 +65,7 @@ impl FullHttpClient {
                 response
                     .headers()
                     .get("location")
-                    .ok_or_else(|| HttpClientError::RedirectLocation)?
+                    .ok_or(HttpClientError::RedirectLocation)?
                     .as_bytes(),
             )?)?;
         }
@@ -77,7 +77,7 @@ impl FullHttpClient {
         url: &Url,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        Ok(inner
+        inner
             .cache
             .get_or_set(url.to_string(), {
                 let url = url.clone();
@@ -101,7 +101,7 @@ impl FullHttpClient {
                     Ok(Response::from_bare(response, duration).into())
                 })
             })
-            .await??)
+            .await?
     }
 
     async fn get_robot(
