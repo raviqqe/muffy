@@ -63,13 +63,39 @@ impl FullHttpClient {
         }
     }
 
-    async fn get_once(&self, url: &Url) -> Result<Arc<Response>, Error> {
-        Ok(self
-            .0
+    pub async fn get_inner(
+        inner: &Arc<FullHttpClientInner>,
+        url: &Url,
+    ) -> Result<Arc<Response>, Error> {
+        let mut url = url.clone();
+
+        // TODO Configure maximum redirect counts.
+        // TODO Configure rate limits.
+        // TODO Configure timeouts.
+        // TODO Configure maximum connections.
+        loop {
+            let response = Self::get_once(inner, &url).await?;
+
+            if !response.status().is_redirection() {
+                return Ok(response);
+            }
+
+            url = url.join(str::from_utf8(
+                response
+                    .headers()
+                    .get("location")
+                    .ok_or_else(|| Error::RedirectLocation)?
+                    .as_bytes(),
+            )?)?;
+        }
+    }
+
+    async fn get_once(inner: &Arc<FullHttpClientInner>, url: &Url) -> Result<Arc<Response>, Error> {
+        Ok(inner
             .cache
             .get_or_set(url.to_string(), {
                 let url = url.clone();
-                let inner = self.0.clone();
+                let inner = inner.clone();
 
                 Box::new(async move {
                     let robot = Self::get_robot(&inner, &url).await?;
