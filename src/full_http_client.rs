@@ -121,7 +121,7 @@ impl FullHttpClient {
         url: &Url,
     ) -> Result<Robots, HttpClientError> {
         Ok(Robots::from_bytes(
-            &inner
+            inner
                 .robots
                 .get_or_set(
                     url.host()
@@ -134,8 +134,8 @@ impl FullHttpClient {
                         Box::new(async move { inner.client.get(&url.join("robots.txt")?) })
                     },
                 )
-                .await?
-                .body,
+                .await??
+                .body(),
             USER_AGENT,
         ))
     }
