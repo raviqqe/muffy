@@ -68,7 +68,6 @@ impl FullHttpClient {
         }
     }
 
-    #[async_recursion]
     async fn get_once(
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
@@ -101,6 +100,7 @@ impl FullHttpClient {
             .await?
     }
 
+    #[async_recursion]
     async fn get_robot(
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
