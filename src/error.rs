@@ -21,6 +21,7 @@ pub enum Error {
     Io(io::Error),
     Join(JoinError),
     Document,
+    Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
 }
@@ -38,6 +39,7 @@ impl Display for Error {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
+            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
