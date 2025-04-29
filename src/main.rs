@@ -5,6 +5,7 @@ extern crate alloc;
 mod cache;
 mod context;
 mod document;
+mod document_type;
 mod element;
 mod error;
 mod full_http_client;
