@@ -116,11 +116,11 @@ fn validate_element(
                             "a".into(),
                             vec![("href".into(), attribute.value.to_string())],
                         ),
-                        spawn(validate_link(
+                        vec![spawn(validate_link(
                             context.clone(),
                             attribute.value.to_string(),
                             base.clone(),
-                        )),
+                        ))],
                     ));
                 }
                 ("img", "src") => {
@@ -129,11 +129,11 @@ fn validate_element(
                             "a".into(),
                             vec![("src".into(), attribute.value.to_string())],
                         ),
-                        spawn(validate_link(
+                        vec![spawn(validate_link(
                             context.clone(),
                             attribute.value.to_string(),
                             base.clone(),
-                        )),
+                        ))],
                     ));
                 }
                 _ => {}
