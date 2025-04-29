@@ -47,7 +47,7 @@ impl FullHttpClient {
         // TODO Configure timeouts.
         // TODO Configure maximum connections.
         loop {
-            let response = self.get_once(&url).await?;
+            let response = Self::get_once(&self.0, &url).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
