@@ -56,9 +56,9 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Error> {
-    let arguments = Arguments::parse();
+    let Arguments { url, cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
-    let db = if arguments.cache {
+    let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
@@ -76,7 +76,7 @@ async fn run() -> Result<(), Error> {
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
         sender,
-        arguments.url.clone(),
+        url.clone(),
     ));
 
     validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
