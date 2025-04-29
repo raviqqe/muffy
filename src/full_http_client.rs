@@ -4,6 +4,7 @@ use crate::{
     response::Response,
 };
 use alloc::sync::Arc;
+use async_recursion::async_recursion;
 use core::str;
 use robotxt::Robots;
 use tokio::{sync::Semaphore, time::Instant};
@@ -42,7 +43,7 @@ impl FullHttpClient {
         Self::get_inner(&self.0, url, true).await
     }
 
-    pub async fn get_inner(
+    async fn get_inner(
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
         robots: bool,
@@ -70,6 +71,7 @@ impl FullHttpClient {
         }
     }
 
+    #[async_recursion]
     async fn get_once(
         inner: &Arc<FullHttpClientInner>,
         url: &Url,
