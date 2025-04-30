@@ -31,8 +31,13 @@ pub async fn validate_link(
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
-    } else if document_type.is_none()
-        || !url.to_string().starts_with(context.origin())
+    }
+
+    let Some(document_type) = document_type else {
+        return Ok(response);
+    };
+
+    if !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
@@ -63,11 +68,12 @@ pub async fn validate_link(
 async fn validate_document(
     context: Arc<Context>,
     response: Arc<Response>,
-    document_type: Option<DocumentType>,
+    document_type: DocumentType,
 ) -> Result<Metrics, Error> {
     let url = response.url();
     let mut futures = vec![];
 
+    match document_type {}
     validate_element(
         &context,
         &url.clone().into(),
