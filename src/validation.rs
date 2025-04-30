@@ -177,6 +177,7 @@ fn validate_element(
     Ok(())
 }
 
+// TODO Configure content type matchings.
 fn validate_content_type(response: &Response, document_type: Option<DocumentType>) -> bool {
     let Some(value) = response.headers().get("content-type") else {
         return false;
