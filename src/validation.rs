@@ -224,6 +224,7 @@ fn validate_sitemap(
                 })
                 .collect::<Vec<_>>()
         } else {
+            dbg!(str::from_utf8(response.body())?);
             let sitemap = Sitemap::read_from(response.body())?;
 
             sitemap
