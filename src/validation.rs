@@ -19,10 +19,15 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
-    base: Arc<Url>,
+    base: Option<Arc<Url>>,
     document_type: Option<DocumentType>,
 ) -> Result<Arc<Response>, Error> {
-    let url = base.join(&url)?;
+    // TODO Join base on a caller.
+    let url = if let Some(base) = base {
+        base.join(&url)?
+    } else {
+        Url::parse(&url)?
+    };
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
     let document_type = parse_content_type(&response, document_type)?;
@@ -87,7 +92,7 @@ async fn validate_document(
             futures
         }
 
-        DocumentType::Sitemap => validate_sitemap(&response)?,
+        DocumentType::Sitemap => validate_sitemap(&context, &response)?,
     };
 
     let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
@@ -137,7 +142,7 @@ fn validate_html_element(
                             vec![spawn(validate_link(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                base.clone(),
+                                Some(base.clone()),
                                 None,
                             ))],
                         ))
@@ -155,7 +160,7 @@ fn validate_html_element(
                             vec![spawn(validate_link(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                base.clone(),
+                                Some(base.clone()),
                                 None,
                             ))],
                         ));
@@ -176,7 +181,7 @@ fn validate_html_element(
                         vec![spawn(validate_link(
                             context.clone(),
                             value.to_string(),
-                            base.clone(),
+                            Some(base.clone()),
                             if attributes.get("rel") == Some(&"sitemap") {
                                 Some(DocumentType::Sitemap)
                             } else {
@@ -198,15 +203,46 @@ fn validate_html_element(
 }
 
 fn validate_sitemap(
+    context: &Arc<Context>,
     response: &Arc<Response>,
 ) -> Result<Vec<(Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>)>, Error> {
-    if let Ok(sitemap_index) = SiteIndex::read_from(response.body()) {
-        return Ok(vec![]);
-    }
+    Ok(
+        if let Ok(site_index) = SiteIndex::read_from(response.body()) {
+            site_index
+                .entries
+                .iter()
+                .map(|entry| {
+                    (
+                        Element::new("loc".into(), vec![]),
+                        vec![spawn(validate_link(
+                            context.clone(),
+                            entry.loc.clone(),
+                            None,
+                            None,
+                        ))],
+                    )
+                })
+                .collect::<Vec<_>>()
+        } else {
+            let sitemap = Sitemap::read_from(response.body())?;
 
-    let sitemap = Sitemap::read_from(response.body())?;
-
-    Ok(vec![])
+            sitemap
+                .entries
+                .iter()
+                .map(|entry| {
+                    (
+                        Element::new("loc".into(), vec![]),
+                        vec![spawn(validate_link(
+                            context.clone(),
+                            entry.loc.clone(),
+                            None,
+                            None,
+                        ))],
+                    )
+                })
+                .collect::<Vec<_>>()
+        },
+    )
 }
 
 // TODO Configure content type matchings.
