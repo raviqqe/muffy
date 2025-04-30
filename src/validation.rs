@@ -213,7 +213,11 @@ fn parse_content_type(
                 })
             }
         }
-        None => Ok(Some(DocumentType::Html)),
+        None => Ok(if value == "text/html" {
+            Some(DocumentType::Html)
+        } else {
+            None
+        }),
     }
 }
 
