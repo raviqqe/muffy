@@ -8,7 +8,7 @@ use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
-use std::{collections::HashMap, io, ops::Deref};
+use std::{collections::HashMap, hash::RandomState, io, ops::Deref};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -147,9 +147,9 @@ fn validate_element(
                 }
             }
             "link" => {
-                let attributes = HashMap::<_, _, _>::from_iter(
+                let attrs = attrs.borrow();
+                let attributes = HashMap::<_, _, RandomState>::from_iter(
                     attrs
-                        .borrow()
                         .iter()
                         .map(|attribute| (attribute.name.local.as_ref(), attribute.value.deref())),
                 );
