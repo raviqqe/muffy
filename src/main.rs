@@ -80,7 +80,7 @@ async fn run() -> Result<(), Error> {
         url.clone(),
     ));
 
-    validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
+    validate_link(context, url.clone(), Url::parse(&url)?.into(), None).await?;
 
     let mut document_metrics = Metrics::default();
     let mut element_metrics = Metrics::default();

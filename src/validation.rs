@@ -1,6 +1,6 @@
 use crate::{
-    context::Context, element::Element, error::Error, metrics::Metrics, render::render,
-    response::Response,
+    context::Context, document_type::DocumentType, element::Element, error::Error,
+    metrics::Metrics, render::render, response::Response,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -8,7 +8,7 @@ use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
-use std::io;
+use std::{collections::HashMap, io, ops::Deref};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -19,6 +19,7 @@ pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     base: Arc<Url>,
+    document_type: Option<DocumentType>,
 ) -> Result<Arc<Response>, Error> {
     // TODO Validate schemes or URLs in general.
     let url = base.join(&url)?;
@@ -103,14 +104,14 @@ fn validate_element(
     futures: &mut Vec<ElementFuture>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
-        for attribute in attrs.borrow().iter() {
-            // TODO Include all elements and attributes.
-            // TODO Normalize URLs in attributes.
-            // TODO Allow validation of multiple attributes for each element.
-            // TODO Allow skipping element or attribute validation conditionally.
-            // TODO Generalize element validation.
-            match name.local.as_ref() {
-                "a" => {
+        // TODO Include all elements and attributes.
+        // TODO Normalize URLs in attributes.
+        // TODO Allow validation of multiple attributes for each element.
+        // TODO Allow skipping element or attribute validation conditionally.
+        // TODO Generalize element validation.
+        match name.local.as_ref() {
+            "a" => {
+                for attribute in attrs.borrow().iter() {
                     if attribute.name.local.as_ref() == "href" {
                         futures.push((
                             Element::new(
@@ -121,11 +122,14 @@ fn validate_element(
                                 context.clone(),
                                 attribute.value.to_string(),
                                 base.clone(),
+                                None,
                             ))],
                         ))
                     }
                 }
-                "img" => {
+            }
+            "img" => {
+                for attribute in attrs.borrow().iter() {
                     if attribute.name.local.as_ref() == "src" {
                         futures.push((
                             Element::new(
@@ -136,12 +140,37 @@ fn validate_element(
                                 context.clone(),
                                 attribute.value.to_string(),
                                 base.clone(),
+                                None,
                             ))],
                         ));
                     }
                 }
-                _ => {}
             }
+            "link" => {
+                let attributes = HashMap::<_, _, _>::from_iter(
+                    attrs
+                        .borrow()
+                        .iter()
+                        .map(|attribute| (attribute.name.local.as_ref(), attribute.value.deref())),
+                );
+
+                if let Some(value) = attributes.get("href") {
+                    futures.push((
+                        Element::new("a".into(), vec![("src".into(), value.to_string())]),
+                        vec![spawn(validate_link(
+                            context.clone(),
+                            value.to_string(),
+                            base.clone(),
+                            if attributes.get("rel") == Some(&"sitemap") {
+                                Some(DocumentType::Sitemap)
+                            } else {
+                                None
+                            },
+                        ))],
+                    ));
+                }
+            }
+            _ => {}
         }
     }
 
