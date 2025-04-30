@@ -8,6 +8,7 @@ use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
+use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, io};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
@@ -71,17 +72,23 @@ async fn validate_document(
     document_type: DocumentType,
 ) -> Result<Metrics, Error> {
     let url = response.url();
-    let mut futures = vec![];
 
-    match document_type {}
-    validate_element(
-        &context,
-        &url.clone().into(),
-        &parse_html(str::from_utf8(response.body())?)
-            .map_err(Error::HtmlParse)?
-            .document,
-        &mut futures,
-    )?;
+    let futures = match document_type {
+        DocumentType::Html => {
+            let mut futures = vec![];
+            validate_html_element(
+                &context,
+                &url.clone().into(),
+                &parse_html(str::from_utf8(response.body())?)
+                    .map_err(Error::HtmlParse)?
+                    .document,
+                &mut futures,
+            )?;
+            futures
+        }
+
+        DocumentType::Sitemap => validate_sitemap(&response)?,
+    };
 
     let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
     let mut results = Vec::with_capacity(futures.len());
@@ -106,7 +113,7 @@ async fn validate_document(
     ))
 }
 
-fn validate_element(
+fn validate_html_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
@@ -184,10 +191,22 @@ fn validate_element(
     }
 
     for node in node.children.borrow().iter() {
-        validate_element(context, base, node, futures)?;
+        validate_html_element(context, base, node, futures)?;
     }
 
     Ok(())
+}
+
+fn validate_sitemap(
+    response: &Arc<Response>,
+) -> Result<Vec<(Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>)>, Error> {
+    if let Ok(sitemap_index) = SiteIndex::read_from(response.body()) {
+        return Ok(vec![]);
+    }
+
+    let sitemap = Sitemap::read_from(response.body())?;
+
+    Ok(vec![])
 }
 
 // TODO Configure content type matchings.

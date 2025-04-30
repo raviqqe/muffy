@@ -25,6 +25,7 @@ pub enum Error {
     Io(io::Error),
     Join(JoinError),
     Document,
+    Sitemap(sitemaps::error::Error),
     Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
@@ -49,6 +50,7 @@ impl Display for Error {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
+            Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
@@ -95,6 +97,12 @@ impl From<sled::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(error: url::ParseError) -> Self {
         Self::UrlParse(error)
+    }
+}
+
+impl From<sitemaps::error::Error> for Error {
+    fn from(error: sitemaps::error::Error) -> Self {
+        Self::Sitemap(error)
     }
 }
 
