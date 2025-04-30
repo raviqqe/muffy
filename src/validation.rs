@@ -44,7 +44,11 @@ pub async fn validate_link(
     }
 
     // TODO Validate fragments.
-    let handle = spawn(validate_document(context.clone(), response.clone()));
+    let handle = spawn(validate_document(
+        context.clone(),
+        response.clone(),
+        document_type,
+    ));
     context
         .job_sender()
         .send(Box::new(async move {
@@ -59,6 +63,7 @@ pub async fn validate_link(
 async fn validate_document(
     context: Arc<Context>,
     response: Arc<Response>,
+    document_type: Option<DocumentType>,
 ) -> Result<Metrics, Error> {
     let url = response.url();
     let mut futures = vec![];
