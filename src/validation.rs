@@ -8,7 +8,7 @@ use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
-use std::{collections::HashMap, io, ops::Deref};
+use std::{collections::HashMap, io};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -149,7 +149,7 @@ fn validate_element(
                 let attributes = HashMap::<_, _>::from_iter(
                     attrs
                         .iter()
-                        .map(|attribute| (attribute.name.local.as_ref(), attribute.value.deref())),
+                        .map(|attribute| (attribute.name.local.as_ref(), &*attribute.value)),
                 );
 
                 if let Some(value) = attributes.get("href") {
