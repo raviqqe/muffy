@@ -59,7 +59,7 @@ async fn run() -> Result<(), Error> {
     let Arguments { url, cache } = Arguments::parse();
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffin");
+        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
