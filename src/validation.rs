@@ -21,19 +21,15 @@ pub async fn validate_link(
     base: Arc<Url>,
     document_type: Option<DocumentType>,
 ) -> Result<Arc<Response>, Error> {
-    // TODO Validate schemes or URLs in general.
     let url = base.join(&url)?;
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
 
+    // TODO Validate schemes or URLs in general.
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
-    } else if response
-        .headers()
-        .get("content-type")
-        .map(|value| !value.as_bytes().starts_with(b"text/html"))
-        .unwrap_or_default()
+    } else if !validate_content_type(&response, document_type)
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
@@ -179,6 +175,21 @@ fn validate_element(
     }
 
     Ok(())
+}
+
+fn validate_content_type(response: &Response, document_type: Option<DocumentType>) -> bool {
+    let Some(value) = response.headers().get("content-type") else {
+        return false;
+    };
+    let Some(value) = value.as_bytes().split(|byte| *byte == b';').next() else {
+        return false;
+    };
+
+    value
+        == match document_type {
+            Some(DocumentType::Sitemap) => b"application/xml".as_slice(),
+            None => b"text/html",
+        }
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {
