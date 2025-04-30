@@ -205,7 +205,7 @@ fn validate_html_element(
 fn validate_sitemap(
     context: &Arc<Context>,
     response: &Arc<Response>,
-) -> Result<Vec<(Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>)>, Error> {
+) -> Result<Vec<ElementFuture>, Error> {
     Ok(
         if let Ok(site_index) = SiteIndex::read_from(response.body()) {
             site_index
