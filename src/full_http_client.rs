@@ -10,7 +10,7 @@ use robotxt::Robots;
 use tokio::{sync::Semaphore, time::Instant};
 use url::Url;
 
-const USER_AGENT: &str = "muffin";
+const USER_AGENT: &str = "muffy";
 
 pub struct FullHttpClient(Arc<FullHttpClientInner>);
 
