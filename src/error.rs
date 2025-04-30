@@ -15,6 +15,10 @@ use crate::http_client::HttpClientError;
 pub enum Error {
     Acquire(AcquireError),
     Cache(CacheError),
+    ContentTypeInvalid {
+        actual: String,
+        expected: &'static str,
+    },
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
@@ -33,6 +37,12 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
+            Self::ContentTypeInvalid { actual, expected } => {
+                write!(
+                    formatter,
+                    "content type expected {expected} but got {actual}"
+                )
+            }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),

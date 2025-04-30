@@ -24,13 +24,14 @@ pub async fn validate_link(
     let url = base.join(&url)?;
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
+    let document_type = parse_content_type(&response, document_type)?;
 
     // TODO Configure origin URLs.
     // TODO Validate schemes or URLs in general.
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
-    } else if !validate_content_type(&response, document_type)
+    } else if document_type.is_none()
         || !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
@@ -179,19 +180,41 @@ fn validate_element(
 }
 
 // TODO Configure content type matchings.
-fn validate_content_type(response: &Response, document_type: Option<DocumentType>) -> bool {
+fn parse_content_type(
+    response: &Response,
+    document_type: Option<DocumentType>,
+) -> Result<Option<DocumentType>, Error> {
     let Some(value) = response.headers().get("content-type") else {
-        return false;
+        return Ok(document_type);
     };
     let Some(value) = value.as_bytes().split(|byte| *byte == b';').next() else {
-        return false;
+        return Ok(document_type);
     };
+    let value = str::from_utf8(value)?;
 
-    value
-        == match document_type {
-            Some(DocumentType::Sitemap) => b"application/xml".as_slice(),
-            None => b"text/html",
+    match document_type {
+        Some(DocumentType::Sitemap) => {
+            if value == "application/xml" {
+                Ok(document_type)
+            } else {
+                Err(Error::ContentTypeInvalid {
+                    actual: value.into(),
+                    expected: "application/xml",
+                })
+            }
         }
+        Some(DocumentType::Html) => {
+            if value == "text/html" {
+                Ok(document_type)
+            } else {
+                Err(Error::ContentTypeInvalid {
+                    actual: value.into(),
+                    expected: "text/html",
+                })
+            }
+        }
+        None => Ok(Some(DocumentType::Html)),
+    }
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {
