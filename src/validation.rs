@@ -218,7 +218,7 @@ fn validate_sitemap(
                             context.clone(),
                             entry.loc.clone(),
                             None,
-                            None,
+                            Some(DocumentType::Sitemap),
                         ))],
                     )
                 })
