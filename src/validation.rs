@@ -206,24 +206,23 @@ fn validate_sitemap(
     context: &Arc<Context>,
     response: &Arc<Response>,
 ) -> Result<Vec<ElementFuture>, Error> {
-    Ok(
-        if let Ok(site_index) = SiteIndex::read_from(response.body()) {
-            site_index
-                .entries
-                .iter()
-                .map(|entry| {
-                    (
-                        Element::new("loc".into(), vec![]),
-                        vec![spawn(validate_link(
-                            context.clone(),
-                            entry.loc.clone(),
-                            None,
-                            Some(DocumentType::Sitemap),
-                        ))],
-                    )
-                })
-                .collect::<Vec<_>>()
-        } else {
+    Ok(match SiteIndex::read_from(response.body()) {
+        Ok(site_index) if !site_index.entries.is_empty() => site_index
+            .entries
+            .iter()
+            .map(|entry| {
+                (
+                    Element::new("loc".into(), vec![]),
+                    vec![spawn(validate_link(
+                        context.clone(),
+                        entry.loc.clone(),
+                        None,
+                        Some(DocumentType::Sitemap),
+                    ))],
+                )
+            })
+            .collect::<Vec<_>>(),
+        _ => {
             let sitemap = Sitemap::read_from(response.body())?;
 
             sitemap
@@ -241,8 +240,8 @@ fn validate_sitemap(
                     )
                 })
                 .collect::<Vec<_>>()
-        },
-    )
+        }
+    })
 }
 
 // TODO Configure content type matchings.
