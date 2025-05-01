@@ -17,26 +17,28 @@ mod validation;
 
 use self::cache::{MemoryCache, SledCache};
 pub use self::error::Error;
-use self::metrics::Metrics;
+pub use self::metrics::Metrics;
 use self::timer::ClockTimer;
 use self::{context::Context, validation::validate_link};
 use alloc::sync::Arc;
 use dirs::cache_dir;
+use futures::{Stream, StreamExt};
 use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
-use tabled::{
-    Table,
-    settings::{Color, Style, themes::Colorization},
-};
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
+use tokio_stream::wrappers::ReceiverStream;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
+const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 /// Runs validation.
-pub async fn validate(url: &str, cache: bool) -> Result<(), Error> {
-    let (sender, mut receiver) = channel(JOB_CAPACITY);
+pub async fn validate(
+    url: &str,
+    cache: bool,
+) -> Result<impl Stream<Item = Result<Metrics, Error>>, Error> {
+    let (sender, receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
         create_dir_all(&directory).await?;
@@ -61,63 +63,7 @@ pub async fn validate(url: &str, cache: bool) -> Result<(), Error> {
 
     validate_link(context, url.into(), None).await?;
 
-    let mut document_metrics = Metrics::default();
-    let mut element_metrics = Metrics::default();
-
-    while let Some(future) = receiver.recv().await {
-        let metrics = Box::into_pin(future).await?;
-
-        document_metrics.add_error(metrics.has_error());
-        element_metrics.merge(&metrics);
-    }
-
-    eprintln!();
-    eprintln!(
-        "{}",
-        Table::from_iter(
-            [vec![
-                "item".into(),
-                "success".into(),
-                "error".into(),
-                "total".into()
-            ]]
-            .into_iter()
-            .chain(
-                [
-                    (
-                        "document",
-                        document_metrics.success(),
-                        document_metrics.error(),
-                        document_metrics.total()
-                    ),
-                    (
-                        "element",
-                        element_metrics.success(),
-                        element_metrics.error(),
-                        element_metrics.total()
-                    )
-                ]
-                .into_iter()
-                .map(|(item, success, error, total)| vec!(
-                    item.to_string(),
-                    success.to_string(),
-                    error.to_string(),
-                    total.to_string()
-                ))
-            )
-        )
-        .with(Style::markdown())
-        .with(Colorization::columns([
-            Color::FG_WHITE,
-            Color::FG_GREEN,
-            Color::FG_RED,
-            Color::FG_WHITE,
-        ])),
-    );
-
-    if document_metrics.has_error() {
-        Err(Error::Document)
-    } else {
-        Ok(())
-    }
+    Ok(ReceiverStream::new(receiver)
+        .map(Box::into_pin)
+        .buffered(JOB_COMPLETION_BUFFER))
 }
