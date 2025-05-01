@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
+      - uses: swatinem/rust-cache@v2
       - run: cargo +nightly doc --all-features
   web_build:
     runs-on: ubuntu-latest
