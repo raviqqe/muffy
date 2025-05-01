@@ -121,6 +121,8 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::time::Duration;
 
+    const CACHE_CAPACITY: usize = 1 << 16;
+
     #[test]
     fn build_client() {
         CachedHttpClient::new(
@@ -150,7 +152,7 @@ mod tests {
                     }),
                     Ok(response.clone())
                 ]),
-                Box::new(MemoryCache::new(0)),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
             .get(&url)
