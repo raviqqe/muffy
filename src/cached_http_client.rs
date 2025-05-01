@@ -124,9 +124,9 @@ mod tests {
         cache::MemoryCache, http_client::BareResponse, stub_http_client::StubHttpClient,
         stub_timer::StubTimer,
     };
+    use core::time::Duration;
     use http::StatusCode;
     use pretty_assertions::assert_eq;
-    use core::time::Duration;
 
     const CACHE_CAPACITY: usize = 1 << 16;
 
