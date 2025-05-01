@@ -1,4 +1,4 @@
-use crate::{cached_http_client::CachedHttpClient, error::Error, metrics::Metrics};
+use crate::{error::Error, http_client::CachedHttpClient, metrics::Metrics};
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},

@@ -3,7 +3,6 @@
 extern crate alloc;
 
 mod cache;
-mod cached_http_client;
 mod context;
 mod document_type;
 mod element;
@@ -11,22 +10,18 @@ mod error;
 mod http_client;
 mod metrics;
 mod render;
-mod reqwest_http_client;
 mod response;
-#[cfg(test)]
-mod stub_http_client;
 mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
-use self::cached_http_client::CachedHttpClient;
 use self::metrics::Metrics;
 use self::timer::ClockTimer;
 use self::{context::Context, error::Error, validation::validate_link};
 use alloc::sync::Arc;
 use clap::Parser;
 use dirs::cache_dir;
-use reqwest_http_client::ReqwestHttpClient;
+use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
 use std::{env::temp_dir, process::exit};
 use tabled::{
