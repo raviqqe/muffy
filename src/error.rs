@@ -14,7 +14,7 @@ use crate::http_client::HttpClientError;
 /// An error.
 #[derive(Debug)]
 pub enum Error {
-    /// Semaphore aquirement failure.
+    /// Semaphore acquirement failure.
     Acquire(AcquireError),
     /// A cache error.
     Cache(CacheError),
@@ -29,7 +29,7 @@ pub enum Error {
     HtmlParse(io::Error),
     /// An HTTP client error.
     HttpClient(HttpClientError),
-    /// An invalid status code in an HTTP reponse.
+    /// An invalid status code in an HTTP response.
     InvalidStatus(StatusCode),
     /// An I/O error.
     Io(io::Error),
