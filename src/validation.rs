@@ -33,7 +33,6 @@ pub async fn validate_link(
     let document_type = parse_content_type(&response, document_type)?;
 
     // TODO Configure origin URLs.
-    // TODO Validate schemes or URLs in general.
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
@@ -125,6 +124,7 @@ pub async fn validate_link_with_base(
 ) -> Result<Success, Error> {
     let url = Url::parse(&url).or_else(|_| base.join(&url))?;
 
+    // TODO Configure scheme and URL validation.
     if !VALID_SCHEMES.contains(&url.scheme()) {
         return Ok(Success::new());
     }
