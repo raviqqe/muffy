@@ -20,11 +20,10 @@ use self::metrics::Metrics;
 use self::timer::ClockTimer;
 use self::{context::Context, error::Error, validation::validate_link};
 use alloc::sync::Arc;
-use clap::Parser;
 use dirs::cache_dir;
 use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
-use std::{env::temp_dir, process::exit};
+use std::env::temp_dir;
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -34,27 +33,8 @@ use tokio::{fs::create_dir_all, sync::mpsc::channel};
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Arguments {
-    /// An origin URL.
-    #[arg()]
-    url: String,
-    /// Uses a persistent cache.
-    #[arg(long)]
-    cache: bool,
-}
-
-#[tokio::main]
-async fn main() {
-    if let Err(error) = run().await {
-        eprintln!("{error}");
-        exit(1)
-    }
-}
-
-async fn run() -> Result<(), Error> {
-    let Arguments { url, cache } = Arguments::parse();
+/// Runs validation.
+pub async fn run() -> Result<(), Error> {
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
