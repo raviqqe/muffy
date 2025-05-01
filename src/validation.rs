@@ -75,7 +75,7 @@ async fn validate_document(
     document_type: DocumentType,
 ) -> Result<Metrics, Error> {
     let futures = match document_type {
-        DocumentType::Html => validate_html(context, response)?,
+        DocumentType::Html => validate_html(&context, &response)?,
         DocumentType::Sitemap => validate_sitemap(&context, &response)?,
     };
 
