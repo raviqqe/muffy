@@ -74,22 +74,8 @@ async fn validate_document(
     response: Arc<Response>,
     document_type: DocumentType,
 ) -> Result<Metrics, Error> {
-    let url = response.url();
-
     let futures = match document_type {
-        DocumentType::Html => {
-            let mut futures = vec![];
-            validate_html_element(
-                &context,
-                &url.clone().into(),
-                &parse_html(str::from_utf8(response.body())?)
-                    .map_err(Error::HtmlParse)?
-                    .document,
-                &mut futures,
-            )?;
-            futures
-        }
-
+        DocumentType::Html => validate_html(context, response)?,
         DocumentType::Sitemap => validate_sitemap(&context, &response)?,
     };
 
@@ -100,7 +86,12 @@ async fn validate_document(
         results.push(try_join_all(futures).await?);
     }
 
-    render(&context, url, elements.iter().zip(results.iter())).await?;
+    render(
+        &context,
+        response.url(),
+        elements.iter().zip(results.iter()),
+    )
+    .await?;
 
     Ok(Metrics::new(
         results
@@ -130,6 +121,24 @@ pub async fn validate_link_with_base(
     }
 
     validate_link(context, url.to_string(), document_type).await
+}
+
+fn validate_html(
+    context: &Arc<Context>,
+    response: &Arc<Response>,
+) -> Result<Vec<ElementFuture>, Error> {
+    let mut futures = vec![];
+
+    validate_html_element(
+        &context,
+        &response.url().clone().into(),
+        &parse_html(str::from_utf8(response.body())?)
+            .map_err(Error::HtmlParse)?
+            .document,
+        &mut futures,
+    )?;
+
+    Ok(futures)
 }
 
 fn validate_html_element(
