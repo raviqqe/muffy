@@ -115,10 +115,12 @@ impl CachedHttpClient {
 
 #[cfg(test)]
 mod tests {
+    use crate::test::StubHttpClient;
+
     use super::*;
 
     #[tokio::test]
-    async fn get() {
-        CachedHttpClient::new().get().await.unwrap();
+    async fn build_client() {
+        CachedHttpClient::new(StubHttpClient::new(vec![]), 1, 1);
     }
 }
