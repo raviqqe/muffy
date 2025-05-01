@@ -1,4 +1,4 @@
-use crate::{error::Error, full_http_client::FullHttpClient, metrics::Metrics};
+use crate::{cached_http_client::CachedHttpClient, error::Error, metrics::Metrics};
 use scc::HashSet;
 use tokio::{
     io::{Stdout, stdout},
@@ -6,7 +6,7 @@ use tokio::{
 };
 
 pub struct Context {
-    http_client: FullHttpClient,
+    http_client: CachedHttpClient,
     stdout: Mutex<Stdout>,
     origin: String,
     documents: HashSet<String>,
@@ -15,7 +15,7 @@ pub struct Context {
 
 impl Context {
     pub fn new(
-        http_client: FullHttpClient,
+        http_client: CachedHttpClient,
         job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
         origin: String,
     ) -> Self {
@@ -28,7 +28,7 @@ impl Context {
         }
     }
 
-    pub const fn http_client(&self) -> &FullHttpClient {
+    pub const fn http_client(&self) -> &CachedHttpClient {
         &self.http_client
     }
 

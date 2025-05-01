@@ -4,8 +4,10 @@ mod sled;
 pub use self::{memory::MemoryCache, sled::SledCache};
 use alloc::sync::Arc;
 use async_trait::async_trait;
-use core::error::Error;
-use core::fmt::{self, Display, Formatter};
+use core::{
+    error::Error,
+    fmt::{self, Display, Formatter},
+};
 use serde::{Deserialize, Serialize};
 
 #[async_trait]

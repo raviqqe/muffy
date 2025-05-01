@@ -1,10 +1,10 @@
 use crate::cache::CacheError;
 use alloc::sync::Arc;
 use async_trait::async_trait;
-use core::str::Utf8Error;
 use core::{
     error::Error,
     fmt::{self, Display, Formatter},
+    str::Utf8Error,
 };
 use http::{StatusCode, header::HeaderMap};
 use serde::{Deserialize, Serialize};
