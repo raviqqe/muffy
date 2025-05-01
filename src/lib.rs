@@ -17,7 +17,7 @@ mod validation;
 
 use self::cache::{MemoryCache, SledCache};
 pub use self::error::Error;
-use self::metrics::Metrics;
+pub use self::metrics::Metrics;
 use self::timer::ClockTimer;
 use self::{context::Context, validation::validate_link};
 use alloc::sync::Arc;
@@ -25,17 +25,13 @@ use dirs::cache_dir;
 use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
-use tabled::{
-    Table,
-    settings::{Color, Style, themes::Colorization},
-};
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
 
 /// Runs validation.
-pub async fn validate(url: &str, cache: bool) -> Result<(), Error> {
+pub async fn validate(url: &str, cache: bool) -> Result<ReceiverStream, Error> {
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
@@ -60,4 +56,6 @@ pub async fn validate(url: &str, cache: bool) -> Result<(), Error> {
     ));
 
     validate_link(context, url.into(), None).await?;
+
+    Ok(ReceiverStream::new(receiver))
 }

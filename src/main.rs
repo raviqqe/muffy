@@ -2,6 +2,10 @@
 
 use clap::Parser;
 use std::process::exit;
+use tabled::{
+    Table,
+    settings::{Color, Style, themes::Colorization},
+};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
