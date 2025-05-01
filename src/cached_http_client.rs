@@ -126,7 +126,7 @@ mod tests {
     };
     use http::StatusCode;
     use pretty_assertions::assert_eq;
-    use std::time::Duration;
+    use core::time::Duration;
 
     const CACHE_CAPACITY: usize = 1 << 16;
 

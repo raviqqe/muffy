@@ -5,7 +5,7 @@ use tokio::time::Instant;
 pub struct ClockTimer {}
 
 impl ClockTimer {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {}
     }
 }
