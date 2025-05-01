@@ -42,6 +42,7 @@ pub async fn validate_link(
         return Ok(Success::new().with_response(response));
     };
 
+    // TODO Use original URLs for origin checks?
     if !url.to_string().starts_with(context.origin())
         || context
             .documents()
