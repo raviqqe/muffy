@@ -4,6 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod cached_http_client;
+mod clock_timer;
 mod context;
 mod document_type;
 mod element;
@@ -13,6 +14,11 @@ mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
+#[cfg(test)]
+mod stub_http_client;
+#[cfg(test)]
+mod stub_timer;
+mod timer;
 mod validation;
 
 use self::{context::Context, error::Error, validation::validate_link};
@@ -20,6 +26,7 @@ use alloc::sync::Arc;
 use cache::{MemoryCache, SledCache};
 use cached_http_client::CachedHttpClient;
 use clap::Parser;
+use clock_timer::ClockTimer;
 use dirs::cache_dir;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
@@ -67,6 +74,7 @@ async fn run() -> Result<(), Error> {
     let context = Arc::new(Context::new(
         CachedHttpClient::new(
             ReqwestHttpClient::new(),
+            ClockTimer::new(),
             if let Some(db) = &db {
                 Box::new(SledCache::new(db.open_tree("responses")?))
             } else {

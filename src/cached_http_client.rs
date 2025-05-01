@@ -2,12 +2,13 @@ use crate::{
     cache::Cache,
     http_client::{HttpClient, HttpClientError},
     response::Response,
+    timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use core::str;
 use robotxt::Robots;
-use tokio::{sync::Semaphore, time::Instant};
+use tokio::sync::Semaphore;
 use url::Url;
 
 const USER_AGENT: &str = "muffy";
@@ -16,6 +17,7 @@ pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
 
 struct CachedHttpClientInner {
     client: Box<dyn HttpClient>,
+    timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
 }
@@ -23,12 +25,14 @@ struct CachedHttpClientInner {
 impl CachedHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
+        timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
             CachedHttpClientInner {
                 client: Box::new(client),
+                timer: Box::new(timer),
                 cache,
                 semaphore: Semaphore::new(concurrency),
             }
@@ -90,9 +94,9 @@ impl CachedHttpClient {
                     }
 
                     let permit = inner.semaphore.acquire().await.unwrap();
-                    let start = Instant::now();
+                    let start = inner.timer.now();
                     let response = inner.client.get(&url).await?;
-                    let duration = Instant::now().duration_since(start);
+                    let duration = inner.timer.now().duration_since(start);
                     drop(permit);
 
                     Ok(Response::from_bare(response, duration).into())
@@ -110,5 +114,60 @@ impl CachedHttpClient {
             .await
             .ok()
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        cache::MemoryCache, http_client::BareResponse, stub_http_client::StubHttpClient,
+        stub_timer::StubTimer,
+    };
+    use core::time::Duration;
+    use http::StatusCode;
+    use pretty_assertions::assert_eq;
+
+    const CACHE_CAPACITY: usize = 1 << 16;
+
+    #[test]
+    fn build_client() {
+        CachedHttpClient::new(
+            StubHttpClient::new(vec![]),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(0)),
+            1,
+        );
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        assert_eq!(
+            &*CachedHttpClient::new(
+                StubHttpClient::new(vec![
+                    Ok(BareResponse {
+                        url: url.join("robots.txt").unwrap(),
+                        status: StatusCode::OK,
+                        headers: Default::default(),
+                        body: vec![],
+                    }),
+                    Ok(response.clone())
+                ]),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&url)
+            .await
+            .unwrap(),
+            &Response::from_bare(response, Duration::from_millis(0))
+        );
     }
 }
