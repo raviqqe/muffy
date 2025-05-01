@@ -15,6 +15,8 @@ use url::Url;
 
 type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
 
+const VALID_SCHEMES: &[&str] = &["http", "https"];
+
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
@@ -42,7 +44,6 @@ pub async fn validate_link(
     };
 
     if !url.to_string().starts_with(context.origin())
-        || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
             .insert_async(response.url().to_string())
