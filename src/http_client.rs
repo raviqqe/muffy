@@ -1,3 +1,7 @@
+mod cached_http_client;
+mod reqwest_http_client;
+mod stub_http_client;
+
 use crate::cache::CacheError;
 use alloc::sync::Arc;
 use async_trait::async_trait;
