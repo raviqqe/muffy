@@ -159,6 +159,7 @@ mod tests {
                     }),
                     Ok(response.clone())
                 ]),
+                StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )

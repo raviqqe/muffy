@@ -25,6 +25,7 @@ use alloc::sync::Arc;
 use cache::{MemoryCache, SledCache};
 use cached_http_client::CachedHttpClient;
 use clap::Parser;
+use clock_timer::ClockTimer;
 use dirs::cache_dir;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
@@ -72,6 +73,7 @@ async fn run() -> Result<(), Error> {
     let context = Arc::new(Context::new(
         CachedHttpClient::new(
             ReqwestHttpClient::new(),
+            ClockTimer::new(),
             if let Some(db) = &db {
                 Box::new(SledCache::new(db.open_tree("responses")?))
             } else {
