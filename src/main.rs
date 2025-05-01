@@ -3,11 +3,11 @@
 extern crate alloc;
 
 mod cache;
+mod cached_http_client;
 mod context;
 mod document_type;
 mod element;
 mod error;
-mod full_http_client;
 mod http_client;
 mod metrics;
 mod render;
@@ -18,9 +18,9 @@ mod validation;
 use self::{context::Context, error::Error, validation::validate_link};
 use alloc::sync::Arc;
 use cache::{MemoryCache, SledCache};
+use cached_http_client::CachedHttpClient;
 use clap::Parser;
 use dirs::cache_dir;
-use full_http_client::FullHttpClient;
 use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
@@ -29,8 +29,7 @@ use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
-use tokio::fs::create_dir_all;
-use tokio::sync::mpsc::channel;
+use tokio::{fs::create_dir_all, sync::mpsc::channel};
 use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
@@ -66,7 +65,7 @@ async fn run() -> Result<(), Error> {
         None
     };
     let context = Arc::new(Context::new(
-        FullHttpClient::new(
+        CachedHttpClient::new(
             ReqwestHttpClient::new(),
             if let Some(db) = &db {
                 Box::new(SledCache::new(db.open_tree("responses")?))

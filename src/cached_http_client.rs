@@ -12,22 +12,22 @@ use url::Url;
 
 const USER_AGENT: &str = "muffy";
 
-pub struct FullHttpClient(Arc<FullHttpClientInner>);
+pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
 
-struct FullHttpClientInner {
+struct CachedHttpClientInner {
     client: Box<dyn HttpClient>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
 }
 
-impl FullHttpClient {
+impl CachedHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
-            FullHttpClientInner {
+            CachedHttpClientInner {
                 client: Box::new(client),
                 cache,
                 semaphore: Semaphore::new(concurrency),
@@ -41,7 +41,7 @@ impl FullHttpClient {
     }
 
     async fn get_inner(
-        inner: &Arc<FullHttpClientInner>,
+        inner: &Arc<CachedHttpClientInner>,
         url: &Url,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
@@ -69,7 +69,7 @@ impl FullHttpClient {
     }
 
     async fn get_once(
-        inner: &Arc<FullHttpClientInner>,
+        inner: &Arc<CachedHttpClientInner>,
         url: &Url,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
@@ -103,7 +103,7 @@ impl FullHttpClient {
 
     #[async_recursion]
     async fn get_robot(
-        inner: &Arc<FullHttpClientInner>,
+        inner: &Arc<CachedHttpClientInner>,
         url: &Url,
     ) -> Result<Option<Robots>, HttpClientError> {
         Ok(Self::get_inner(inner, &url.join("robots.txt")?, false)
