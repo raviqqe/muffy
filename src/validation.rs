@@ -21,7 +21,7 @@ pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     document_type: Option<DocumentType>,
-) -> Result<Arc<Response>, Error> {
+) -> Result<Success, Error> {
     let url = Url::parse(&url)?;
     let mut document_url = url.clone();
     document_url.set_fragment(None);
