@@ -15,7 +15,6 @@ use url::Url;
 
 type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
 
-// TODO Support `sitemap.xml` as documents.
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
