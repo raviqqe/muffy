@@ -1,4 +1,4 @@
-use crate::http_client::{BareResponse, HttpClient, HttpClientError};
+use super::{BareResponse, HttpClient, HttpClientError};
 use async_trait::async_trait;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
 use url::Url;

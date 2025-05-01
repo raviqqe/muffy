@@ -121,7 +121,7 @@ impl CachedHttpClient {
 mod tests {
     use super::*;
     use crate::{
-        cache::MemoryCache, http_client::BareResponse, stub_http_client::StubHttpClient,
+        cache::MemoryCache, http_client::BareResponse, http_client::StubHttpClient,
         timer::StubTimer,
     };
     use core::time::Duration;
