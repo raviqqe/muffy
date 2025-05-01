@@ -178,7 +178,7 @@ fn validate_html_element(
                     if attribute.name.local.as_ref() == "src" {
                         futures.push((
                             Element::new(
-                                "a".into(),
+                                "img".into(),
                                 vec![("src".into(), attribute.value.to_string())],
                             ),
                             vec![spawn(validate_link_with_base(
@@ -201,7 +201,7 @@ fn validate_html_element(
 
                 if let Some(value) = attributes.get("href") {
                     futures.push((
-                        Element::new("a".into(), vec![("src".into(), value.to_string())]),
+                        Element::new("link".into(), vec![("src".into(), value.to_string())]),
                         vec![spawn(validate_link_with_base(
                             context.clone(),
                             value.to_string(),
