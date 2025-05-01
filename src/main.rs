@@ -29,7 +29,6 @@ use tabled::{
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
-use url::Url;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
@@ -78,7 +77,7 @@ async fn run() -> Result<(), Error> {
         url.clone(),
     ));
 
-    validate_link(context, url.clone(), Some(Url::parse(&url)?.into()), None).await?;
+    validate_link(context, url.clone(), None).await?;
 
     let mut document_metrics = Metrics::default();
     let mut element_metrics = Metrics::default();

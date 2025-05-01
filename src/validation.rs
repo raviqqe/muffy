@@ -19,20 +19,16 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
-    base: Option<Arc<Url>>,
     document_type: Option<DocumentType>,
 ) -> Result<Arc<Response>, Error> {
-    // TODO Join base on a caller.
-    let url = if let Some(base) = base {
-        base.join(&url)?
-    } else {
-        Url::parse(&url)?
-    };
+    let url = Url::parse(&url)?;
+    let mut document_url = url.clone();
+    document_url.set_fragment(None);
 
     // We keep this fragment removal not configurable as otherwise we might have a lot more
     // requests for the same HTML pages, which makes crawling unacceptably inefficient.
     // TODO Configure request headers.
-    let response = context.http_client().get(&remove_fragment(&url)).await?;
+    let response = context.http_client().get(&document_url).await?;
     let document_type = parse_content_type(&response, document_type)?;
 
     // TODO Configure origin URLs.
@@ -50,7 +46,7 @@ pub async fn validate_link(
         || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
-            .insert_async(remove_fragment(response.url()).to_string())
+            .insert_async(response.url().to_string())
             .await
             .is_err()
     {
@@ -121,6 +117,15 @@ async fn validate_document(
     ))
 }
 
+pub async fn validate_link_with_base(
+    context: Arc<Context>,
+    url: String,
+    base: Arc<Url>,
+    document_type: Option<DocumentType>,
+) -> Result<Arc<Response>, Error> {
+    validate_link(context, base.join(&url)?.to_string(), document_type).await
+}
+
 fn validate_html_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
@@ -142,10 +147,10 @@ fn validate_html_element(
                                 "a".into(),
                                 vec![("href".into(), attribute.value.to_string())],
                             ),
-                            vec![spawn(validate_link(
+                            vec![spawn(validate_link_with_base(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                Some(base.clone()),
+                                base.clone(),
                                 None,
                             ))],
                         ))
@@ -160,10 +165,10 @@ fn validate_html_element(
                                 "a".into(),
                                 vec![("src".into(), attribute.value.to_string())],
                             ),
-                            vec![spawn(validate_link(
+                            vec![spawn(validate_link_with_base(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                Some(base.clone()),
+                                base.clone(),
                                 None,
                             ))],
                         ));
@@ -181,10 +186,10 @@ fn validate_html_element(
                 if let Some(value) = attributes.get("href") {
                     futures.push((
                         Element::new("a".into(), vec![("src".into(), value.to_string())]),
-                        vec![spawn(validate_link(
+                        vec![spawn(validate_link_with_base(
                             context.clone(),
                             value.to_string(),
-                            Some(base.clone()),
+                            base.clone(),
                             if attributes.get("rel") == Some(&"sitemap") {
                                 Some(DocumentType::Sitemap)
                             } else {
@@ -219,7 +224,6 @@ fn validate_sitemap(
                     vec![spawn(validate_link(
                         context.clone(),
                         entry.loc.clone(),
-                        None,
                         Some(DocumentType::Sitemap),
                     ))],
                 )
@@ -237,7 +241,6 @@ fn validate_sitemap(
                         vec![spawn(validate_link(
                             context.clone(),
                             entry.loc.clone(),
-                            None,
                             None,
                         ))],
                     )
@@ -287,12 +290,6 @@ fn parse_content_type(
             None
         }),
     }
-}
-
-fn remove_fragment(url: &Url) -> Url {
-    let mut url = url.clone();
-    url.set_fragment(None);
-    url
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {
