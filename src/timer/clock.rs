@@ -1,4 +1,4 @@
-use crate::timer::Timer;
+use super::Timer;
 use tokio::time::Instant;
 
 #[derive(Debug, Default)]

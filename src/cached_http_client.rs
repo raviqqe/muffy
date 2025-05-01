@@ -122,7 +122,7 @@ mod tests {
     use super::*;
     use crate::{
         cache::MemoryCache, http_client::BareResponse, stub_http_client::StubHttpClient,
-        stub_timer::StubTimer,
+        timer::StubTimer,
     };
     use core::time::Duration;
     use http::StatusCode;

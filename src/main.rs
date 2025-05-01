@@ -4,7 +4,6 @@ extern crate alloc;
 
 mod cache;
 mod cached_http_client;
-mod clock_timer;
 mod context;
 mod document_type;
 mod element;
@@ -16,19 +15,17 @@ mod reqwest_http_client;
 mod response;
 #[cfg(test)]
 mod stub_http_client;
-#[cfg(test)]
-mod stub_timer;
 mod timer;
 mod validation;
 
+use self::cache::{MemoryCache, SledCache};
+use self::cached_http_client::CachedHttpClient;
+use self::metrics::Metrics;
+use self::timer::ClockTimer;
 use self::{context::Context, error::Error, validation::validate_link};
 use alloc::sync::Arc;
-use cache::{MemoryCache, SledCache};
-use cached_http_client::CachedHttpClient;
 use clap::Parser;
-use clock_timer::ClockTimer;
 use dirs::cache_dir;
-use metrics::Metrics;
 use reqwest_http_client::ReqwestHttpClient;
 use rlimit::{Resource, getrlimit};
 use std::{env::temp_dir, process::exit};
