@@ -112,3 +112,13 @@ impl CachedHttpClient {
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn get() {
+        foo;
+    }
+}
