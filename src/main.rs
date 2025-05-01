@@ -24,5 +24,6 @@ async fn main() {
 
 async fn run() -> Result<(), muffy::Error> {
     let Arguments { url, cache } = Arguments::parse();
-    muffy::validate(&url, cache)
+
+    muffy::validate(&url, cache).await
 }
