@@ -14,6 +14,7 @@ mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
+#[cfg(test)]
 mod stub_timer;
 #[cfg(test)]
 mod test;
