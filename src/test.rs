@@ -1,3 +1,3 @@
-mod fake_http_client;
+mod stub_http_client;
 
-pub use fake_http_client::*;
+pub use stub_http_client::*;

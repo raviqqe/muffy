@@ -4,11 +4,11 @@ use tokio::sync::Mutex;
 use url::Url;
 
 #[derive(Debug)]
-pub struct FakeHttpClient {
+pub struct StubHttpClient {
     results: Mutex<Vec<Result<BareResponse, HttpClientError>>>,
 }
 
-impl FakeHttpClient {
+impl StubHttpClient {
     pub fn new(mut results: Vec<Result<BareResponse, HttpClientError>>) -> Self {
         results.reverse();
 
@@ -19,7 +19,7 @@ impl FakeHttpClient {
 }
 
 #[async_trait]
-impl HttpClient for FakeHttpClient {
+impl HttpClient for StubHttpClient {
     async fn get(&self, _url: &Url) -> Result<BareResponse, HttpClientError> {
         self.results.lock().await.pop().unwrap()
     }
