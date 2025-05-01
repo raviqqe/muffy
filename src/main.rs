@@ -1,6 +1,7 @@
 //! The static website validator.
 
 use clap::Parser;
+use futures::StreamExt;
 use std::process::exit;
 use tabled::{
     Table,
@@ -31,11 +32,11 @@ async fn run() -> Result<(), muffy::Error> {
 
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
+    let mut metrics = muffy::validate(&url, cache).await?;
 
-    while let Some(future) = muffy::validate(&url, cache).await {
-        let metrics = Box::into_pin(future).await?;
-
-        document_metrics.add_error(metrics.has_error());
+    while let Some(metrics) = metrics.next().await {
+        let metrics = metrics?;
+        document_metrics.add(metrics.has_error());
         element_metrics.merge(&metrics);
     }
 
@@ -84,7 +85,7 @@ async fn run() -> Result<(), muffy::Error> {
     );
 
     if document_metrics.has_error() {
-        Err(Error::Document)
+        Err(muffy::Error::Document)
     } else {
         Ok(())
     }
