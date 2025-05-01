@@ -1,4 +1,4 @@
-//! The static website validator.
+#![doc = include_str!("../README.md")]
 
 use clap::Parser;
 use futures::StreamExt;

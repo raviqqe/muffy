@@ -1,4 +1,4 @@
-//! The static website validator.
+#![doc = include_str!("../README.md")]
 
 extern crate alloc;
 
@@ -33,7 +33,7 @@ const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
-/// Runs validation.
+/// Validates websites recursively.
 pub async fn validate(
     url: &str,
     cache: bool,
