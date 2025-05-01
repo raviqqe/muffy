@@ -1,7 +1,9 @@
 mod clock;
+#[cfg(test)]
 mod stub;
 
 pub use clock::*;
+#[cfg(test)]
 pub use stub::*;
 
 use tokio::time::Instant;
