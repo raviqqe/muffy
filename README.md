@@ -18,4 +18,4 @@ The static website validator.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/raviqqe/muffy/blob/main/LICENSE)
