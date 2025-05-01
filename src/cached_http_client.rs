@@ -141,7 +141,15 @@ mod tests {
         };
         assert_eq!(
             &*CachedHttpClient::new(
-                StubHttpClient::new(vec![Ok(response.clone())]),
+                StubHttpClient::new(vec![
+                    Ok(BareResponse {
+                        url: url.join("robots.txt").unwrap(),
+                        status: StatusCode::OK,
+                        headers: Default::default(),
+                        body: vec![],
+                    }),
+                    Ok(response.clone())
+                ]),
                 Box::new(MemoryCache::new(0)),
                 1,
             )
