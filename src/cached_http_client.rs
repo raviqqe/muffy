@@ -121,7 +121,8 @@ impl CachedHttpClient {
 mod tests {
     use super::*;
     use crate::{
-        cache::MemoryCache, http_client::BareResponse, stub_timer::StubTimer, test::StubHttpClient,
+        cache::MemoryCache, http_client::BareResponse, stub_http_client::StubHttpClient,
+        stub_timer::StubTimer,
     };
     use http::StatusCode;
     use pretty_assertions::assert_eq;

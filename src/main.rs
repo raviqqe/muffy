@@ -15,9 +15,9 @@ mod render;
 mod reqwest_http_client;
 mod response;
 #[cfg(test)]
-mod stub_timer;
+mod stub_http_client;
 #[cfg(test)]
-mod test;
+mod stub_timer;
 mod timer;
 mod validation;
 
