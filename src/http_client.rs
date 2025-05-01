@@ -16,6 +16,7 @@ pub trait HttpClient: Send + Sync {
 }
 
 #[derive(Debug)]
+#[cfg_attr(test, derive(Clone))]
 pub struct BareResponse {
     pub url: Url,
     pub status: StatusCode,

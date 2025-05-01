@@ -4,7 +4,7 @@ use http::{StatusCode, header::HeaderMap};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Response {
     url: Url,
     #[serde(with = "http_serde::status_code")]

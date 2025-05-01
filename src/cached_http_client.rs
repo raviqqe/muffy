@@ -115,16 +115,40 @@ impl CachedHttpClient {
 
 #[cfg(test)]
 mod tests {
-    use crate::{cache::MemoryCache, test::StubHttpClient};
-
     use super::*;
+    use crate::{cache::MemoryCache, http_client::BareResponse, test::StubHttpClient};
+    use http::StatusCode;
+    use pretty_assertions::assert_eq;
+    use std::time::Duration;
 
-    #[tokio::test]
-    async fn build_client() {
+    #[test]
+    fn build_client() {
         CachedHttpClient::new(
             StubHttpClient::new(vec![]),
             Box::new(MemoryCache::new(0)),
             1,
+        );
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        assert_eq!(
+            &*CachedHttpClient::new(
+                StubHttpClient::new(vec![Ok(response.clone())]),
+                Box::new(MemoryCache::new(0)),
+                1,
+            )
+            .get(&url)
+            .await
+            .unwrap(),
+            &Response::from_bare(response, Duration::from_millis(0))
         );
     }
 }
