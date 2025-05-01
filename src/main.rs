@@ -4,6 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod cached_http_client;
+mod clock_timer;
 mod context;
 mod document_type;
 mod element;
@@ -13,8 +14,10 @@ mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
+mod stub_timer;
 #[cfg(test)]
 mod test;
+mod timer;
 mod validation;
 
 use self::{context::Context, error::Error, validation::validate_link};

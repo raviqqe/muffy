@@ -2,12 +2,13 @@ use crate::{
     cache::Cache,
     http_client::{HttpClient, HttpClientError},
     response::Response,
+    timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use core::str;
 use robotxt::Robots;
-use tokio::{sync::Semaphore, time::Instant};
+use tokio::sync::Semaphore;
 use url::Url;
 
 const USER_AGENT: &str = "muffy";
@@ -16,6 +17,7 @@ pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
 
 struct CachedHttpClientInner {
     client: Box<dyn HttpClient>,
+    timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
 }
@@ -23,12 +25,14 @@ struct CachedHttpClientInner {
 impl CachedHttpClient {
     pub fn new(
         client: impl HttpClient + 'static,
+        timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
             CachedHttpClientInner {
                 client: Box::new(client),
+                timer: Box::new(timer),
                 cache,
                 semaphore: Semaphore::new(concurrency),
             }
@@ -90,9 +94,9 @@ impl CachedHttpClient {
                     }
 
                     let permit = inner.semaphore.acquire().await.unwrap();
-                    let start = Instant::now();
+                    let start = inner.timer.now();
                     let response = inner.client.get(&url).await?;
-                    let duration = Instant::now().duration_since(start);
+                    let duration = inner.timer.now().duration_since(start);
                     drop(permit);
 
                     Ok(Response::from_bare(response, duration).into())
@@ -116,7 +120,9 @@ impl CachedHttpClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{cache::MemoryCache, http_client::BareResponse, test::StubHttpClient};
+    use crate::{
+        cache::MemoryCache, http_client::BareResponse, stub_timer::StubTimer, test::StubHttpClient,
+    };
     use http::StatusCode;
     use pretty_assertions::assert_eq;
     use std::time::Duration;
@@ -127,6 +133,7 @@ mod tests {
     fn build_client() {
         CachedHttpClient::new(
             StubHttpClient::new(vec![]),
+            StubTimer::new(),
             Box::new(MemoryCache::new(0)),
             1,
         );
