@@ -11,23 +11,39 @@ use url::ParseError;
 
 use crate::http_client::HttpClientError;
 
+/// An error.
 #[derive(Debug)]
 pub enum Error {
+    /// Semaphore aquirement failure.
     Acquire(AcquireError),
+    /// A cache error.
     Cache(CacheError),
+    /// An invalid content type.
     ContentTypeInvalid {
+        /// An actual content type.
         actual: String,
+        /// An expected content type.
         expected: &'static str,
     },
+    /// An HTML parse error.
     HtmlParse(io::Error),
+    /// An HTTP client error.
     HttpClient(HttpClientError),
+    /// An invalid status code in an HTTP reponse.
     InvalidStatus(StatusCode),
+    /// An I/O error.
     Io(io::Error),
+    /// An thread join error.
     Join(JoinError),
+    /// A document validation error.
     Document,
+    /// A sitemap error.
     Sitemap(sitemaps::error::Error),
+    /// A Sled database error.
     Sled(sled::Error),
+    /// A URL parse error.
     UrlParse(ParseError),
+    /// A UTF-8 error.
     Utf8(Utf8Error),
 }
 
