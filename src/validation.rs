@@ -130,7 +130,7 @@ fn validate_html(
     let mut futures = vec![];
 
     validate_html_element(
-        &context,
+        context,
         &response.url().clone().into(),
         &parse_html(str::from_utf8(response.body())?)
             .map_err(Error::HtmlParse)?
