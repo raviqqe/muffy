@@ -65,5 +65,5 @@ pub async fn validate(
 
     Ok(ReceiverStream::new(receiver)
         .map(Box::into_pin)
-        .buffered_unordered(JOB_COMPLETION_BUFFER))
+        .buffer_unordered(JOB_COMPLETION_BUFFER))
 }
