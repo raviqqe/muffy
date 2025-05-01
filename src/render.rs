@@ -34,16 +34,17 @@ pub async fn render(
                 Ok(success) => {
                     render_line(
                         &mut stdout,
-                        &if let Some(response) = success.response() {
-                            format!(
-                                "\t\t{}\t{}\t{}",
-                                response.status().to_string().green(),
-                                response.url(),
-                                format!("{} ms", response.duration().as_millis()).yellow()
-                            )
-                        } else {
-                            "\t\tvalid URL".into()
-                        },
+                        &success.response().map_or_else(
+                            || "\t\tvalid URL".into(),
+                            |response| {
+                                format!(
+                                    "\t\t{}\t{}\t{}",
+                                    response.status().to_string().green(),
+                                    response.url(),
+                                    format!("{} ms", response.duration().as_millis()).yellow()
+                                )
+                            },
+                        ),
                     )
                     .await?
                 }
