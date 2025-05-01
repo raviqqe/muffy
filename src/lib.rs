@@ -26,12 +26,13 @@ use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
+use tokio_stream::wrappers::ReceiverStream;
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
 
 /// Runs validation.
-pub async fn validate(url: &str, cache: bool) -> Result<ReceiverStream, Error> {
+pub async fn validate(url: &str, cache: bool) -> Result<ReceiverStream<Foo>, Error> {
     let (sender, mut receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
