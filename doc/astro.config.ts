@@ -45,10 +45,6 @@ export default defineConfig({
           label: "Install",
           link: "/install",
         },
-        {
-          label: "Usage",
-          link: "/usage",
-        },
       ],
     }),
   ],
