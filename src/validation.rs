@@ -28,13 +28,11 @@ pub async fn validate_link(
     } else {
         Url::parse(&url)?
     };
+
     // We keep this fragment removal not configurable as otherwise we might have a lot more
     // requests for the same HTML pages, which makes crawling unacceptably inefficient.
-    let mut document_url = url.clone();
-    document_url.set_fragment(None);
-
     // TODO Configure request headers.
-    let response = context.http_client().get(&document_url).await?;
+    let response = context.http_client().get(&remove_fragment(&url)).await?;
     let document_type = parse_content_type(&response, document_type)?;
 
     // TODO Configure origin URLs.
@@ -52,7 +50,7 @@ pub async fn validate_link(
         || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
-            .insert_async(document_url.to_string())
+            .insert_async(remove_fragment(response.url()).to_string())
             .await
             .is_err()
     {
@@ -289,6 +287,12 @@ fn parse_content_type(
             None
         }),
     }
+}
+
+fn remove_fragment(url: &Url) -> Url {
+    let mut url = url.clone();
+    url.set_fragment(None);
+    url
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {
