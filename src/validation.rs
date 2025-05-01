@@ -47,7 +47,11 @@ pub async fn validate_link(
         || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
-            .insert_async(response.url().to_string())
+            .insert_async({
+                let mut url = response.url().clone();
+                url.set_fragment(None);
+                url.to_string()
+            })
             .await
             .is_err()
     {
