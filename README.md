@@ -4,7 +4,7 @@
 
 [![GitHub Action](https://img.shields.io/github/actions/workflow/status/raviqqe/muffy/test.yaml?branch=main&style=flat-square)](https://github.com/raviqqe/muffy/actions)
 [![Crate](https://img.shields.io/crates/v/muffy.svg?style=flat-square)](https://crates.io/crates/muffy)
-[![License](https://img.shields.io/github/license/raviqqe/muffy.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/raviqqe/muffy.svg?style=flat-square)](https://github.com/raviqqe/muffy/blob/main/LICENSE)
 
 > 🚧 Under very early development! Stay tuned! 🚧
 
