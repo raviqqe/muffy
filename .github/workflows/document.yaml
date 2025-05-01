@@ -12,6 +12,12 @@ concurrency:
   group: document-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  rust_build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: cargo +nightly doc --all-features
   web_build:
     runs-on: ubuntu-latest
     defaults:
