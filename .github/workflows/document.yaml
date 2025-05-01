@@ -54,7 +54,7 @@ jobs:
       - run: npm ci
       - run: npm run build -- --site http://localhost:4321
       - run: npm run preview &
-      - run: cargo run --buffer-size 8192 http://localhost:4321/muffy/
+      - run: cargo run http://localhost:4321/muffy/
   document:
     needs:
       - web_build
