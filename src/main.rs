@@ -13,6 +13,8 @@ mod metrics;
 mod render;
 mod reqwest_http_client;
 mod response;
+#[cfg(test)]
+mod test;
 mod validation;
 
 use self::{context::Context, error::Error, validation::validate_link};

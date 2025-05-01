@@ -15,6 +15,7 @@ pub trait HttpClient: Send + Sync {
     async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError>;
 }
 
+#[derive(Debug)]
 pub struct BareResponse {
     pub url: Url,
     pub status: StatusCode,
