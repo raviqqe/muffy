@@ -1,6 +1,6 @@
 use crate::{
     context::Context, document_type::DocumentType, element::Element, error::Error,
-    metrics::Metrics, render::render, response::Response,
+    metrics::Metrics, render::render, response::Response, success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -13,13 +13,15 @@ use std::{collections::HashMap, io};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
-type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
+type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
+
+const VALID_SCHEMES: &[&str] = &["http", "https"];
 
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
     document_type: Option<DocumentType>,
-) -> Result<Arc<Response>, Error> {
+) -> Result<Success, Error> {
     let url = Url::parse(&url)?;
     let mut document_url = url.clone();
     document_url.set_fragment(None);
@@ -38,18 +40,17 @@ pub async fn validate_link(
     }
 
     let Some(document_type) = document_type else {
-        return Ok(response);
+        return Ok(Success::new().with_response(response));
     };
 
     if !url.to_string().starts_with(context.origin())
-        || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
             .insert_async(response.url().to_string())
             .await
             .is_err()
     {
-        return Ok(response);
+        return Ok(Success::new().with_response(response));
     }
 
     // TODO Validate fragments.
@@ -66,7 +67,7 @@ pub async fn validate_link(
         .await
         .unwrap();
 
-    Ok(response)
+    Ok(Success::new().with_response(response))
 }
 
 async fn validate_document(
@@ -121,8 +122,14 @@ pub async fn validate_link_with_base(
     url: String,
     base: Arc<Url>,
     document_type: Option<DocumentType>,
-) -> Result<Arc<Response>, Error> {
-    validate_link(context, base.join(&url)?.to_string(), document_type).await
+) -> Result<Success, Error> {
+    let url = Url::parse(&url).or_else(|_| base.join(&url))?;
+
+    if !VALID_SCHEMES.contains(&url.scheme()) {
+        return Ok(Success::new());
+    }
+
+    validate_link(context, url.to_string(), document_type).await
 }
 
 fn validate_html_element(

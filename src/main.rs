@@ -11,6 +11,7 @@ mod http_client;
 mod metrics;
 mod render;
 mod response;
+mod success;
 mod timer;
 mod validation;
 

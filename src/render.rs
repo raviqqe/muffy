@@ -1,5 +1,4 @@
-use crate::{context::Context, element::Element, error::Error, response::Response};
-use alloc::sync::Arc;
+use crate::{context::Context, element::Element, error::Error, success::Success};
 use colored::Colorize;
 use tokio::io::{AsyncWriteExt, Stdout};
 use url::Url;
@@ -8,7 +7,7 @@ use url::Url;
 pub async fn render(
     context: &Context,
     url: &Url,
-    results: impl IntoIterator<Item = (&Element, &Vec<Result<Arc<Response>, Error>>)>,
+    results: impl IntoIterator<Item = (&Element, &Vec<Result<Success, Error>>)>,
 ) -> Result<(), Error> {
     let mut stdout = context.stdout().lock().await;
 
@@ -32,14 +31,19 @@ pub async fn render(
 
         for result in results {
             match result {
-                Ok(response) => {
+                Ok(success) => {
                     render_line(
                         &mut stdout,
-                        &format!(
-                            "\t\t{}\t{}\t{}",
-                            response.status().to_string().green(),
-                            response.url(),
-                            format!("{} ms", response.duration().as_millis()).yellow()
+                        &success.response().map_or_else(
+                            || "\t\tvalid URL".into(),
+                            |response| {
+                                format!(
+                                    "\t\t{}\t{}\t{}",
+                                    response.status().to_string().green(),
+                                    response.url(),
+                                    format!("{} ms", response.duration().as_millis()).yellow()
+                                )
+                            },
                         ),
                     )
                     .await?
