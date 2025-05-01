@@ -119,6 +119,6 @@ mod tests {
 
     #[tokio::test]
     async fn get() {
-        foo;
+        CachedHttpClient::new().get().await.unwrap();
     }
 }
