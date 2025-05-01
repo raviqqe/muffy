@@ -1,6 +1,6 @@
 use crate::{
-    context::Context, element::Element, error::Error, metrics::Metrics, render::render,
-    response::Response,
+    context::Context, document_type::DocumentType, element::Element, error::Error,
+    metrics::Metrics, render::render, response::Response,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -8,7 +8,8 @@ use futures::future::try_join_all;
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
-use std::io;
+use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
+use std::{collections::HashMap, io};
 use tokio::{spawn, task::JoinHandle};
 use url::Url;
 
@@ -18,22 +19,31 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Arc<Response>, Error>>>);
 pub async fn validate_link(
     context: Arc<Context>,
     url: String,
-    base: Arc<Url>,
+    base: Option<Arc<Url>>,
+    document_type: Option<DocumentType>,
 ) -> Result<Arc<Response>, Error> {
-    // TODO Validate schemes or URLs in general.
-    let url = base.join(&url)?;
+    // TODO Join base on a caller.
+    let url = if let Some(base) = base {
+        base.join(&url)?
+    } else {
+        Url::parse(&url)?
+    };
     // TODO Configure request headers.
     let response = context.http_client().get(&url).await?;
+    let document_type = parse_content_type(&response, document_type)?;
 
+    // TODO Configure origin URLs.
+    // TODO Validate schemes or URLs in general.
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
-    } else if response
-        .headers()
-        .get("content-type")
-        .map(|value| !value.as_bytes().starts_with(b"text/html"))
-        .unwrap_or_default()
-        || !url.to_string().starts_with(context.origin())
+    }
+
+    let Some(document_type) = document_type else {
+        return Ok(response);
+    };
+
+    if !url.to_string().starts_with(context.origin())
         || !["http", "https"].contains(&url.scheme())
         || context
             .documents()
@@ -45,7 +55,11 @@ pub async fn validate_link(
     }
 
     // TODO Validate fragments.
-    let handle = spawn(validate_document(context.clone(), response.clone()));
+    let handle = spawn(validate_document(
+        context.clone(),
+        response.clone(),
+        document_type,
+    ));
     context
         .job_sender()
         .send(Box::new(async move {
@@ -60,18 +74,26 @@ pub async fn validate_link(
 async fn validate_document(
     context: Arc<Context>,
     response: Arc<Response>,
+    document_type: DocumentType,
 ) -> Result<Metrics, Error> {
     let url = response.url();
-    let mut futures = vec![];
 
-    validate_element(
-        &context,
-        &url.clone().into(),
-        &parse_html(str::from_utf8(response.body())?)
-            .map_err(Error::HtmlParse)?
-            .document,
-        &mut futures,
-    )?;
+    let futures = match document_type {
+        DocumentType::Html => {
+            let mut futures = vec![];
+            validate_html_element(
+                &context,
+                &url.clone().into(),
+                &parse_html(str::from_utf8(response.body())?)
+                    .map_err(Error::HtmlParse)?
+                    .document,
+                &mut futures,
+            )?;
+            futures
+        }
+
+        DocumentType::Sitemap => validate_sitemap(&context, &response)?,
+    };
 
     let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
     let mut results = Vec::with_capacity(futures.len());
@@ -96,21 +118,21 @@ async fn validate_document(
     ))
 }
 
-fn validate_element(
+fn validate_html_element(
     context: &Arc<Context>,
     base: &Arc<Url>,
     node: &Node,
     futures: &mut Vec<ElementFuture>,
 ) -> Result<(), Error> {
     if let NodeData::Element { name, attrs, .. } = &node.data {
-        for attribute in attrs.borrow().iter() {
-            // TODO Include all elements and attributes.
-            // TODO Normalize URLs in attributes.
-            // TODO Allow validation of multiple attributes for each element.
-            // TODO Allow skipping element or attribute validation conditionally.
-            // TODO Generalize element validation.
-            match name.local.as_ref() {
-                "a" => {
+        // TODO Include all elements and attributes.
+        // TODO Normalize URLs in attributes.
+        // TODO Allow validation of multiple attributes for each element.
+        // TODO Allow skipping element or attribute validation conditionally.
+        // TODO Generalize element validation.
+        match name.local.as_ref() {
+            "a" => {
+                for attribute in attrs.borrow().iter() {
                     if attribute.name.local.as_ref() == "href" {
                         futures.push((
                             Element::new(
@@ -120,12 +142,15 @@ fn validate_element(
                             vec![spawn(validate_link(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                base.clone(),
+                                Some(base.clone()),
+                                None,
                             ))],
                         ))
                     }
                 }
-                "img" => {
+            }
+            "img" => {
+                for attribute in attrs.borrow().iter() {
                     if attribute.name.local.as_ref() == "src" {
                         futures.push((
                             Element::new(
@@ -135,21 +160,130 @@ fn validate_element(
                             vec![spawn(validate_link(
                                 context.clone(),
                                 attribute.value.to_string(),
-                                base.clone(),
+                                Some(base.clone()),
+                                None,
                             ))],
                         ));
                     }
                 }
-                _ => {}
             }
+            "link" => {
+                let attrs = attrs.borrow();
+                let attributes = HashMap::<_, _>::from_iter(
+                    attrs
+                        .iter()
+                        .map(|attribute| (attribute.name.local.as_ref(), &*attribute.value)),
+                );
+
+                if let Some(value) = attributes.get("href") {
+                    futures.push((
+                        Element::new("a".into(), vec![("src".into(), value.to_string())]),
+                        vec![spawn(validate_link(
+                            context.clone(),
+                            value.to_string(),
+                            Some(base.clone()),
+                            if attributes.get("rel") == Some(&"sitemap") {
+                                Some(DocumentType::Sitemap)
+                            } else {
+                                None
+                            },
+                        ))],
+                    ));
+                }
+            }
+            _ => {}
         }
     }
 
     for node in node.children.borrow().iter() {
-        validate_element(context, base, node, futures)?;
+        validate_html_element(context, base, node, futures)?;
     }
 
     Ok(())
+}
+
+fn validate_sitemap(
+    context: &Arc<Context>,
+    response: &Arc<Response>,
+) -> Result<Vec<ElementFuture>, Error> {
+    Ok(match SiteIndex::read_from(response.body()) {
+        Ok(site_index) if !site_index.entries.is_empty() => site_index
+            .entries
+            .iter()
+            .map(|entry| {
+                (
+                    Element::new("loc".into(), vec![]),
+                    vec![spawn(validate_link(
+                        context.clone(),
+                        entry.loc.clone(),
+                        None,
+                        Some(DocumentType::Sitemap),
+                    ))],
+                )
+            })
+            .collect::<Vec<_>>(),
+        _ => {
+            let sitemap = Sitemap::read_from(response.body())?;
+
+            sitemap
+                .entries
+                .iter()
+                .map(|entry| {
+                    (
+                        Element::new("loc".into(), vec![]),
+                        vec![spawn(validate_link(
+                            context.clone(),
+                            entry.loc.clone(),
+                            None,
+                            None,
+                        ))],
+                    )
+                })
+                .collect::<Vec<_>>()
+        }
+    })
+}
+
+// TODO Configure content type matchings.
+fn parse_content_type(
+    response: &Response,
+    document_type: Option<DocumentType>,
+) -> Result<Option<DocumentType>, Error> {
+    let Some(value) = response.headers().get("content-type") else {
+        return Ok(document_type);
+    };
+    let Some(value) = value.as_bytes().split(|byte| *byte == b';').next() else {
+        return Ok(document_type);
+    };
+    let value = str::from_utf8(value)?;
+
+    match document_type {
+        Some(DocumentType::Sitemap) => {
+            if value == "application/xml" {
+                Ok(document_type)
+            } else {
+                Err(Error::ContentTypeInvalid {
+                    actual: value.into(),
+                    expected: "application/xml",
+                })
+            }
+        }
+        Some(DocumentType::Html) => {
+            if value == "text/html" {
+                Ok(document_type)
+            } else {
+                Err(Error::ContentTypeInvalid {
+                    actual: value.into(),
+                    expected: "text/html",
+                })
+            }
+        }
+        None => Ok(if value == "text/html" {
+            Some(DocumentType::Html)
+        } else {
+            None
+        }),
+    }
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {

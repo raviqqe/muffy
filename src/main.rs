@@ -4,6 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod context;
+mod document_type;
 mod element;
 mod error;
 mod full_http_client;
@@ -39,7 +40,6 @@ const JOB_CAPACITY: usize = 1 << 16;
 #[command(version, about, long_about = None)]
 struct Arguments {
     /// An origin URL.
-    // TODO Configure origin URLs.
     #[arg()]
     url: String,
     /// Uses a persistent cache.
@@ -79,7 +79,7 @@ async fn run() -> Result<(), Error> {
         url.clone(),
     ));
 
-    validate_link(context, url.clone(), Url::parse(&url)?.into()).await?;
+    validate_link(context, url.clone(), Some(Url::parse(&url)?.into()), None).await?;
 
     let mut document_metrics = Metrics::default();
     let mut element_metrics = Metrics::default();

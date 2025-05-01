@@ -15,12 +15,17 @@ use crate::http_client::HttpClientError;
 pub enum Error {
     Acquire(AcquireError),
     Cache(CacheError),
+    ContentTypeInvalid {
+        actual: String,
+        expected: &'static str,
+    },
     HtmlParse(io::Error),
     HttpClient(HttpClientError),
     InvalidStatus(StatusCode),
     Io(io::Error),
     Join(JoinError),
     Document,
+    Sitemap(sitemaps::error::Error),
     Sled(sled::Error),
     UrlParse(ParseError),
     Utf8(Utf8Error),
@@ -33,12 +38,19 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
+            Self::ContentTypeInvalid { actual, expected } => {
+                write!(
+                    formatter,
+                    "content type expected {expected} but got {actual}"
+                )
+            }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
+            Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
@@ -85,6 +97,12 @@ impl From<sled::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(error: url::ParseError) -> Self {
         Self::UrlParse(error)
+    }
+}
+
+impl From<sitemaps::error::Error> for Error {
+    fn from(error: sitemaps::error::Error) -> Self {
+        Self::Sitemap(error)
     }
 }
 
