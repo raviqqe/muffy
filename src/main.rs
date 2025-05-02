@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use futures::StreamExt;
-use muffy::RenderOptions;
+use muffy::{RenderFormat, RenderOptions};
 use std::process::exit;
 use tabled::{
     Table,
@@ -22,6 +22,8 @@ struct Arguments {
     /// Becomes verbose.
     #[arg(long)]
     verbose: bool,
+    #[arg(long)]
+    format: RenderFormat,
 }
 
 #[tokio::main]
@@ -36,6 +38,7 @@ async fn run() -> Result<(), muffy::Error> {
     let Arguments {
         url,
         cache,
+        format,
         verbose,
     } = Arguments::parse();
     let mut output = stdout();
@@ -49,7 +52,9 @@ async fn run() -> Result<(), muffy::Error> {
 
         muffy::render_document(
             &document,
-            &RenderOptions::default().set_verbose(verbose),
+            &RenderOptions::default()
+                .set_format(format)
+                .set_verbose(verbose),
             &mut output,
         )
         .await?;

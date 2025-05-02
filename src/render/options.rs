@@ -1,5 +1,5 @@
 /// A rendering format.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, clap::ValueEnum)]
 pub enum RenderFormat {
     /// Human-readable text.
     #[default]
