@@ -74,7 +74,7 @@ async fn validate_document(
     context: Arc<Context>,
     response: Arc<Response>,
     document_type: DocumentType,
-) -> Result<Metrics, Error> {
+) -> Result<Document, Error> {
     let futures = match document_type {
         DocumentType::Html => validate_html(&context, &response)?,
         DocumentType::Sitemap => validate_sitemap(&context, &response)?,
@@ -94,18 +94,7 @@ async fn validate_document(
     )
     .await?;
 
-    Ok(Metrics::new(
-        results
-            .iter()
-            .flatten()
-            .filter(|result| result.is_ok())
-            .count(),
-        results
-            .iter()
-            .flatten()
-            .filter(|result| result.is_err())
-            .count(),
-    ))
+    Ok(metrics)
 }
 
 pub async fn validate_link_with_base(
