@@ -4,6 +4,6 @@ set -e
 
 (
   echo '```text'
-  cargo run --help
+  cargo run -- --help
   echo '```'
 ) >src/components/Help.md
