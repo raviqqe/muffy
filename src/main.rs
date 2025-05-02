@@ -18,6 +18,9 @@ struct Arguments {
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
+    /// Becomes verbose.
+    #[arg(long)]
+    verbose: bool,
 }
 
 #[tokio::main]
@@ -29,7 +32,11 @@ async fn main() {
 }
 
 async fn run() -> Result<(), muffy::Error> {
-    let Arguments { url, cache } = Arguments::parse();
+    let Arguments {
+        url,
+        cache,
+        verbose,
+    } = Arguments::parse();
     let mut output = stdout();
 
     let mut document_metrics = muffy::Metrics::default();
@@ -39,7 +46,7 @@ async fn run() -> Result<(), muffy::Error> {
     while let Some(document) = documents.next().await {
         let document = document?;
 
-        muffy::render_document(&document, &mut output).await?;
+        muffy::render_document(&document, verbose, &mut output).await?;
         document_metrics.add(document.metrics().has_error());
         element_metrics.merge(&document.metrics());
     }
