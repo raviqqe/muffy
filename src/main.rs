@@ -19,11 +19,12 @@ struct Arguments {
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
+    /// Sets an ouitput format.
+    #[arg(long)]
+    format: RenderFormat,
     /// Becomes verbose.
     #[arg(long)]
     verbose: bool,
-    #[arg(long)]
-    format: RenderFormat,
 }
 
 #[tokio::main]
