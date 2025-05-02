@@ -17,6 +17,8 @@ pub async fn render_document(
             .all(|element| element.results().all(Result::is_ok))
     {
         return Ok(());
+    } else if options.format() == RenderFormat::Json {
+        return render_json_document(document, options, &mut writer);
     }
 
     render_line(
@@ -77,6 +79,13 @@ pub async fn render_document(
     }
 
     Ok(())
+}
+
+pub async fn render_json_document(
+    document: &DocumentOutput,
+    options: &RenderOptions,
+    mut writer: (impl AsyncWrite + Unpin),
+) -> Result<(), Error> {
 }
 
 async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Result<(), Error> {
