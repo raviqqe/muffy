@@ -90,7 +90,7 @@ pub async fn render_json_document(
         return render_line(&serde_json::to_string(document)?, writer).await;
     }
 
-    Ok(())
+    todo!();
 }
 
 async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Result<(), Error> {
