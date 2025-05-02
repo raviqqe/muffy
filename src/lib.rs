@@ -4,7 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod context;
-mod document;
+mod document_output;
 mod document_type;
 mod element;
 mod element_output;
@@ -18,7 +18,7 @@ mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
-pub use self::document::Document;
+pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
@@ -41,7 +41,7 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 pub async fn validate(
     url: &str,
     cache: bool,
-) -> Result<impl Stream<Item = Result<Document, Error>>, Error> {
+) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
     let (sender, receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");

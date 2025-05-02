@@ -1,13 +1,13 @@
 mod options;
 
 pub use self::options::{RenderFormat, RenderOptions};
-use crate::{Document, error::Error};
+use crate::{DocumentOutput, error::Error};
 use colored::Colorize;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: &Document,
+    document: &DocumentOutput,
     options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {

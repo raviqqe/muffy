@@ -2,16 +2,16 @@ use crate::{Metrics, element_output::ElementOutput};
 use serde::Serialize;
 use url::Url;
 
-/// A document.
+/// A document output.
 #[derive(Serialize)]
-pub struct Document {
+pub struct DocumentOutput {
     url: Url,
     elements: Vec<ElementOutput>,
     metrics: Metrics,
 }
 
-impl Document {
-    /// Creates a document.
+impl DocumentOutput {
+    /// Creates a document output.
     pub fn new(url: Url, elements: Vec<ElementOutput>) -> Self {
         Self {
             url,
