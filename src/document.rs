@@ -6,7 +6,7 @@ use url::Url;
 #[derive(Serialize)]
 pub struct Document {
     url: Url,
-    elements: Vec<(Element, Vec<Result<Success, Error>>)>,
+    elements: Vec<ElementOutput>,
     metrics: Metrics,
 }
 

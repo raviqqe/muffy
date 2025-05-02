@@ -7,6 +7,7 @@ mod context;
 mod document;
 mod document_type;
 mod element;
+mod element_output;
 mod error;
 mod http_client;
 mod metrics;
