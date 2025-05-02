@@ -1,7 +1,9 @@
 use crate::{Metrics, element::Element, error::Error, success::Success};
+use serde::Serialize;
 use url::Url;
 
 /// A document.
+#[derive(Serialize)]
 pub struct Document {
     url: Url,
     elements: Vec<(Element, Vec<Result<Success, Error>>)>,

@@ -1,3 +1,6 @@
+use serde::Serialize;
+
+#[derive(Serialize)]
 pub struct Element {
     name: String,
     attributes: Vec<(String, String)>,
