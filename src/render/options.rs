@@ -8,7 +8,7 @@ pub enum RenderFormat {
 }
 
 /// Rendering options.
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug)]
 pub struct RenderOptions {
     format: RenderFormat,
     verbose: bool,

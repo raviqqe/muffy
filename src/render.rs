@@ -8,10 +8,10 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 /// Renders a result of document validation.
 pub async fn render_document(
     document: &Document,
-    verbose: bool,
+    options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    if !verbose
+    if !options.verbose()
         && document
             .elements()
             .all(|(_, results)| results.iter().all(Result::is_ok))
@@ -26,7 +26,7 @@ pub async fn render_document(
     .await?;
 
     for (element, results) in document.elements() {
-        if !verbose && results.iter().all(Result::is_ok) {
+        if !options.verbose() && results.iter().all(Result::is_ok) {
             continue;
         }
 
@@ -48,7 +48,7 @@ pub async fn render_document(
         for result in results {
             match result {
                 Ok(success) => {
-                    if !verbose {
+                    if !options.verbose() {
                         continue;
                     }
 
