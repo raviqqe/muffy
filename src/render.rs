@@ -18,7 +18,7 @@ pub async fn render_document(
     {
         return Ok(());
     } else if options.format() == RenderFormat::Json {
-        return render_json_document(document, options, &mut writer);
+        return render_json_document(document, options, &mut writer).await;
     }
 
     render_line(
@@ -87,7 +87,7 @@ pub async fn render_json_document(
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
     if options.verbose() {
-        return render_line(&serde_json::to_string(document), writer).await;
+        return render_line(&serde_json::to_string(document)?, writer).await;
     }
 
     Ok(())

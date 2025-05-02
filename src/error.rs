@@ -35,6 +35,8 @@ pub enum Error {
     Io(io::Error),
     /// An thread join error.
     Join(JoinError),
+    /// A JSON serialization error.
+    Json(serde_json::Error),
     /// A document validation error.
     Document,
     /// A sitemap error.
@@ -65,6 +67,7 @@ impl Display for Error {
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
+            Self::Json(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
@@ -107,6 +110,12 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Self::Json(error)
     }
 }
 
