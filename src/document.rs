@@ -1,4 +1,6 @@
-use crate::{Metrics, element::Element, error::Error, success::Success};
+use crate::{
+    Metrics, element::Element, element_output::ElementOutput, error::Error, success::Success,
+};
 use serde::Serialize;
 use url::Url;
 
@@ -12,18 +14,18 @@ pub struct Document {
 
 impl Document {
     /// Creates a document.
-    pub fn new(url: Url, elements: Vec<(Element, Vec<Result<Success, Error>>)>) -> Self {
+    pub fn new(url: Url, elements: Vec<ElementOutput>) -> Self {
         Self {
             url,
             metrics: Metrics::new(
                 elements
                     .iter()
-                    .flat_map(|(_, results)| results)
+                    .flat_map(ElementOutput::results)
                     .filter(|result| result.is_ok())
                     .count(),
                 elements
                     .iter()
-                    .flat_map(|(_, results)| results)
+                    .flat_map(ElementOutput::results)
                     .filter(|result| result.is_err())
                     .count(),
             ),
@@ -37,7 +39,7 @@ impl Document {
     }
 
     /// Returns elements with their validation results.
-    pub fn elements(&self) -> impl Iterator<Item = &(Element, Vec<Result<Success, Error>>)> {
+    pub fn elements(&self) -> impl Iterator<Item = &ElementOutput> {
         self.elements.iter()
     }
 
