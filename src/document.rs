@@ -1,23 +1,23 @@
-use crate::{element::Element, error::Error, success::Success, Metrics};
+use crate::{Metrics, element::Element, error::Error, success::Success};
 
 pub struct Document {
     elements: Vec<(Element, Vec<Result<Success, Error>>)>,
-    metrics: Metrics
+    metrics: Metrics,
 }
 
 impl Document {
-    pub fn new(results: Vec<(Element, Vec<Result<Success, Error>>) -> Self {
+    pub fn new(elements: Vec<(Element, Vec<Result<Success, Error>>)>) -> Self {
         Self {
             metrics: Metrics::new(
-                results
+                elements
                     .iter()
-                    .map(|(_, results), results)
+                    .map(|(_, results)| results)
                     .flatten()
                     .filter(|result| result.is_ok())
                     .count(),
-                results
+                elements
                     .iter()
-                    .map(|(_, results), results)
+                    .map(|(_, results)| results)
                     .flatten()
                     .filter(|result| result.is_err())
                     .count(),
