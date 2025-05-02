@@ -7,6 +7,7 @@ use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
+use tokio::io::stdout;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -29,15 +30,18 @@ async fn main() {
 
 async fn run() -> Result<(), muffy::Error> {
     let Arguments { url, cache } = Arguments::parse();
+    let mut output = stdout();
 
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
-    let mut metrics = muffy::validate(&url, cache).await?;
+    let mut documents = muffy::validate(&url, cache).await?;
 
-    while let Some(metrics) = metrics.next().await {
-        let metrics = metrics?;
-        document_metrics.add(metrics.has_error());
-        element_metrics.merge(&metrics);
+    while let Some(document) = documents.next().await {
+        let document = document?;
+
+        muffy::render_document(&document, &mut output).await?;
+        document_metrics.add(document.metrics().has_error());
+        element_metrics.merge(&document.metrics());
     }
 
     eprintln!();

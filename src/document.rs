@@ -1,15 +1,18 @@
 use crate::{Metrics, element::Element, error::Error, success::Success};
+use url::Url;
 
 /// A document.
 pub struct Document {
+    url: Url,
     elements: Vec<(Element, Vec<Result<Success, Error>>)>,
     metrics: Metrics,
 }
 
 impl Document {
     /// Creates a document.
-    pub fn new(elements: Vec<(Element, Vec<Result<Success, Error>>)>) -> Self {
+    pub fn new(url: Url, elements: Vec<(Element, Vec<Result<Success, Error>>)>) -> Self {
         Self {
+            url,
             metrics: Metrics::new(
                 elements
                     .iter()
@@ -26,6 +29,11 @@ impl Document {
             ),
             elements,
         }
+    }
+
+    /// Returns a URL.
+    pub fn url(&self) -> &Url {
+        &self.url
     }
 
     /// Returns elements with their validation results.

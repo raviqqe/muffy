@@ -1,6 +1,6 @@
 use crate::{
-    context::Context, document_type::DocumentType, element::Element, error::Error,
-    metrics::Metrics, render::render, response::Response, success::Success,
+    context::Context, document::Document, document_type::DocumentType, element::Element,
+    error::Error, response::Response, success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -87,14 +87,10 @@ async fn validate_document(
         results.push(try_join_all(futures).await?);
     }
 
-    render(
-        &context,
-        response.url(),
-        elements.iter().zip(results.iter()),
-    )
-    .await?;
-
-    Ok(metrics)
+    Ok(Document::new(
+        response.url().clone(),
+        elements.into_iter().zip(results).collect(),
+    ))
 }
 
 pub async fn validate_link_with_base(

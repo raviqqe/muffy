@@ -1,21 +1,21 @@
-use crate::{context::Context, element::Element, error::Error, success::Success};
+use crate::{Document, error::Error};
 use colored::Colorize;
-use tokio::io::{AsyncWriteExt, Stdout};
-use url::Url;
+use tokio::io::{AsyncWrite, AsyncWriteExt};
 
+/// Renders a result of document validation.
 // TODO Render results as JSON.
-pub async fn render(
-    context: &Context,
-    url: &Url,
-    results: impl IntoIterator<Item = (&Element, &Vec<Result<Success, Error>>)>,
+pub async fn render_document(
+    document: &Document,
+    mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    let mut stdout = context.stdout().lock().await;
+    render_line(
+        &format!("{}", document.url().to_string().yellow()),
+        &mut writer,
+    )
+    .await?;
 
-    render_line(&mut stdout, &format!("{}", url.to_string().yellow())).await?;
-
-    for (element, results) in results {
+    for (element, results) in document.elements() {
         render_line(
-            &mut stdout,
             &format!(
                 "\t{} {}",
                 element.name(),
@@ -26,6 +26,7 @@ pub async fn render(
                     .collect::<Vec<_>>()
                     .join(" "),
             ),
+            &mut writer,
         )
         .await?;
 
@@ -33,7 +34,6 @@ pub async fn render(
             match result {
                 Ok(success) => {
                     render_line(
-                        &mut stdout,
                         &success.response().map_or_else(
                             || "\t\tvalid URL".into(),
                             |response| {
@@ -45,11 +45,12 @@ pub async fn render(
                                 )
                             },
                         ),
+                        &mut writer,
                     )
                     .await?
                 }
                 Err(error) => {
-                    render_line(&mut stdout, &format!("\t\t{}\t{error}", "ERROR".red())).await?
+                    render_line(&format!("\t\t{}\t{error}", "ERROR".red()), &mut writer).await?
                 }
             }
         }
@@ -58,9 +59,9 @@ pub async fn render(
     Ok(())
 }
 
-async fn render_line(stdout: &mut Stdout, string: &str) -> Result<(), Error> {
-    stdout.write_all(string.as_bytes()).await?;
-    stdout.write_all(b"\n").await?;
+async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Result<(), Error> {
+    writer.write_all(string.as_bytes()).await?;
+    writer.write_all(b"\n").await?;
 
     Ok(())
 }
