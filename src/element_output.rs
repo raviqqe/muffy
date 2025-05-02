@@ -22,7 +22,7 @@ impl ElementOutput {
     }
 
     /// Returns validation results.
-    pub fn results(&self) -> impl Iterator<Item = Result<Success, Error>> {
-        &self.results
+    pub fn results(&self) -> impl Iterator<Item = &Result<Success, Error>> {
+        self.results.iter()
     }
 }

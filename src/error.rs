@@ -1,15 +1,15 @@
 use crate::cache::CacheError;
+use crate::http_client::HttpClientError;
 use core::{
     error,
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
 use http::StatusCode;
+use serde::Serialize;
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
-
-use crate::http_client::HttpClientError;
 
 /// An error.
 #[derive(Debug)]

@@ -1,6 +1,8 @@
 use crate::response::Response;
 use alloc::sync::Arc;
+use serde::Serialize;
 
+#[derive(Debug, Serialize)]
 pub struct Success {
     response: Option<Arc<Response>>,
 }
