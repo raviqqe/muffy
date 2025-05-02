@@ -1,6 +1,4 @@
-use crate::{
-    Metrics, element::Element, element_output::ElementOutput, error::Error, success::Success,
-};
+use crate::{Metrics, element_output::ElementOutput};
 use serde::Serialize;
 use url::Url;
 

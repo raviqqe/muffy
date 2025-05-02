@@ -9,11 +9,8 @@ pub struct ElementOutput {
 }
 
 impl ElementOutput {
-    pub fn new(element: Element) -> Self {
-        Self {
-            element,
-            results: Vec::new(),
-        }
+    pub fn new(element: Element, results: Vec<Result<Success, Error>>) -> Self {
+        Self { element, results }
     }
 
     /// Returns an element.

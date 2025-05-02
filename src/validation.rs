@@ -1,6 +1,6 @@
 use crate::{
     context::Context, document::Document, document_type::DocumentType, element::Element,
-    error::Error, response::Response, success::Success,
+    element_output::ElementOutput, error::Error, response::Response, success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -89,7 +89,11 @@ async fn validate_document(
 
     Ok(Document::new(
         response.url().clone(),
-        elements.into_iter().zip(results).collect(),
+        elements
+            .into_iter()
+            .zip(results)
+            .map(|(element, results)| ElementOutput::new(element, results))
+            .collect(),
     ))
 }
 

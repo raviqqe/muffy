@@ -14,7 +14,7 @@ pub async fn render_document(
     if !options.verbose()
         && document
             .elements()
-            .all(|(_, results)| results.iter().all(Result::is_ok))
+            .all(|element| element.results().all(Result::is_ok))
     {
         return Ok(());
     }
@@ -25,16 +25,17 @@ pub async fn render_document(
     )
     .await?;
 
-    for (element, results) in document.elements() {
-        if !options.verbose() && results.iter().all(Result::is_ok) {
+    for output in document.elements() {
+        if !options.verbose() && output.results().all(Result::is_ok) {
             continue;
         }
 
         render_line(
             &format!(
                 "\t{} {}",
-                element.name(),
-                element
+                output.element().name(),
+                output
+                    .element()
                     .attributes()
                     .iter()
                     .map(|(key, value)| format!("{key}=\"{value}\""))
@@ -45,7 +46,7 @@ pub async fn render_document(
         )
         .await?;
 
-        for result in results {
+        for result in output.results() {
             match result {
                 Ok(success) => {
                     if !options.verbose() {

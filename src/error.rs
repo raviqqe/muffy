@@ -6,7 +6,7 @@ use core::{
     str::Utf8Error,
 };
 use http::StatusCode;
-use serde::Serialize;
+use serde::{Serialize, Serializer};
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
@@ -71,6 +71,12 @@ impl Display for Error {
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl Serialize for Error {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
     }
 }
 
