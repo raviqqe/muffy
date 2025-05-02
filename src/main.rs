@@ -19,7 +19,7 @@ struct Arguments {
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
-    /// Sets an ouitput format.
+    /// Sets an output format.
     #[arg(long)]
     format: RenderFormat,
     /// Becomes verbose.
