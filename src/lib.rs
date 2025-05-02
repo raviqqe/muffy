@@ -20,7 +20,7 @@ use self::cache::{MemoryCache, SledCache};
 pub use self::document::Document;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
-pub use self::render::{RenderFormat, render_document};
+pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
 use self::{context::Context, validation::validate_link};
 use alloc::sync::Arc;

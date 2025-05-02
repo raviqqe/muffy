@@ -1,23 +1,24 @@
 /// A rendering format.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub enum RenderFormat {
-    // JSON.
-    Json,
-    // Human-readable text.
+    /// Human-readable text.
+    #[default]
     Text,
+    /// JSON.
+    Json,
 }
 
 /// Rendering options.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RenderOptions {
     format: RenderFormat,
     verbose: bool,
 }
 
 impl RenderOptions {
-    /// Creates a new `RenderOptions` instance.
-    pub fn new(format: RenderFormat, verbose: bool) -> Self {
-        Self { format, verbose }
+    /// Creates rendering options.
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Returns the rendering format.

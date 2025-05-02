@@ -2,6 +2,7 @@
 
 use clap::Parser;
 use futures::StreamExt;
+use muffy::RenderOptions;
 use std::process::exit;
 use tabled::{
     Table,
@@ -46,7 +47,12 @@ async fn run() -> Result<(), muffy::Error> {
     while let Some(document) = documents.next().await {
         let document = document?;
 
-        muffy::render_document(&document, verbose, &mut output).await?;
+        muffy::render_document(
+            &document,
+            &RenderOptions::default().set_verbose(verbose),
+            &mut output,
+        )
+        .await?;
         document_metrics.add(document.metrics().has_error());
         element_metrics.merge(&document.metrics());
     }
