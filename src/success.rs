@@ -39,7 +39,7 @@ impl From<Success> for SerializedSuccess {
         Self {
             response: success
                 .response
-                .map(|response| SerializedResponse::from_response(&*response)),
+                .map(|response| SerializedResponse::from_response(&response)),
         }
     }
 }
