@@ -1,5 +1,5 @@
 /// A rendering format.
-#[derive(Clone, Copy, Debug, Default, clap::ValueEnum)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, clap::ValueEnum)]
 pub enum RenderFormat {
     /// Human-readable text.
     #[default]
@@ -9,7 +9,7 @@ pub enum RenderFormat {
 }
 
 /// Rendering options.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub struct RenderOptions {
     format: RenderFormat,
     verbose: bool,
