@@ -16,14 +16,12 @@ impl Document {
             metrics: Metrics::new(
                 elements
                     .iter()
-                    .map(|(_, results)| results)
-                    .flatten()
+                    .flat_map(|(_, results)| results)
                     .filter(|result| result.is_ok())
                     .count(),
                 elements
                     .iter()
-                    .map(|(_, results)| results)
-                    .flatten()
+                    .flat_map(|(_, results)| results)
                     .filter(|result| result.is_err())
                     .count(),
             ),
@@ -32,7 +30,7 @@ impl Document {
     }
 
     /// Returns a URL.
-    pub fn url(&self) -> &Url {
+    pub const fn url(&self) -> &Url {
         &self.url
     }
 
@@ -42,7 +40,7 @@ impl Document {
     }
 
     /// Returns metrics of document validation.
-    pub fn metrics(&self) -> Metrics {
+    pub const fn metrics(&self) -> Metrics {
         self.metrics
     }
 }

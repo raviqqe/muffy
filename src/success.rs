@@ -5,6 +5,12 @@ pub struct Success {
     response: Option<Arc<Response>>,
 }
 
+impl Default for Success {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Success {
     pub const fn new() -> Self {
         Self { response: None }
