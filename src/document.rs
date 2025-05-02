@@ -26,6 +26,10 @@ impl Document {
         }
     }
 
+    pub fn elements(&self) -> impl Iterator<Item = &(Element, Vec<Result<Success, Error>>)> {
+        self.elements.iter()
+    }
+
     pub fn metrics(&self) -> Metrics {
         self.metrics
     }
