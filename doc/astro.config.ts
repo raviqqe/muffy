@@ -7,7 +7,7 @@ export default defineConfig({
   integrations: [
     sitemap(),
     starlight({
-      title: "muffy",
+      title: "Muffy",
       customCss: ["./src/index.css"],
       favicon: "/icon.svg",
       head: [
