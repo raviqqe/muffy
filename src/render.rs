@@ -6,6 +6,7 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 // TODO Render results as JSON.
 pub async fn render_document(
     document: &Document,
+    verbose: bool,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
     render_line(
@@ -33,6 +34,10 @@ pub async fn render_document(
         for result in results {
             match result {
                 Ok(success) => {
+                    if !verbose {
+                        continue;
+                    }
+
                     render_line(
                         &success.response().map_or_else(
                             || "\t\tvalid URL".into(),
