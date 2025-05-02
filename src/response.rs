@@ -65,7 +65,7 @@ impl Response {
 }
 
 #[derive(Serialize)]
-pub struct SerializedResponse {
+pub(crate) struct SerializedResponse {
     url: Url,
     #[serde(with = "http_serde::status_code")]
     status: StatusCode,
@@ -73,7 +73,7 @@ pub struct SerializedResponse {
 }
 
 impl SerializedResponse {
-    pub fn from_response(response: &Response) -> Self {
+    pub(crate) fn from_response(response: &Response) -> Self {
         Self {
             url: response.url.clone(),
             status: response.status,
