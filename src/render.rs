@@ -2,7 +2,38 @@ use crate::{Document, error::Error};
 use colored::Colorize;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
-// TODO Render results as JSON.
+/// A rendering format.
+#[derive(Clone, Copy, Debug)]
+pub enum RenderFormat {
+    // JSON.
+    Json,
+    // Human-readable text.
+    Text,
+}
+
+/// Rendering options.
+#[derive(Clone, Copy, Debug)]
+pub struct RenderOptions {
+    format: RenderFormat,
+    verbose: bool,
+}
+
+impl RenderOptions {
+    /// Creates a new `RenderOptions` instance.
+    pub fn new(format: RenderFormat, verbose: bool) -> Self {
+        Self { format, verbose }
+    }
+
+    /// Returns the rendering format.
+    pub fn format(&self) -> &RenderFormat {
+        &self.format
+    }
+
+    /// Returns whether verbose output is enabled.
+    pub fn verbose(&self) -> bool {
+        self.verbose
+    }
+}
 
 /// Renders a result of document validation.
 pub async fn render_document(
