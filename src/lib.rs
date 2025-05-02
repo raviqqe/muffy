@@ -4,6 +4,7 @@ extern crate alloc;
 
 mod cache;
 mod context;
+mod document;
 mod document_type;
 mod element;
 mod error;
@@ -16,6 +17,7 @@ mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
+pub use self::document::Document;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
 use self::timer::ClockTimer;
@@ -24,6 +26,7 @@ use alloc::sync::Arc;
 use dirs::cache_dir;
 use futures::{Stream, StreamExt};
 use http_client::{CachedHttpClient, ReqwestHttpClient};
+pub use render::render_document;
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
@@ -37,7 +40,7 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 pub async fn validate(
     url: &str,
     cache: bool,
-) -> Result<impl Stream<Item = Result<Metrics, Error>>, Error> {
+) -> Result<impl Stream<Item = Result<Document, Error>>, Error> {
     let (sender, receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");

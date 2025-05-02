@@ -1,28 +1,23 @@
-use crate::{error::Error, http_client::CachedHttpClient, metrics::Metrics};
+use crate::{document::Document, error::Error, http_client::CachedHttpClient};
 use scc::HashSet;
-use tokio::{
-    io::{Stdout, stdout},
-    sync::{Mutex, mpsc::Sender},
-};
+use tokio::sync::mpsc::Sender;
 
 pub struct Context {
     http_client: CachedHttpClient,
-    stdout: Mutex<Stdout>,
     origin: String,
     documents: HashSet<String>,
-    job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
+    job_sender: Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>>,
 }
 
 impl Context {
     pub fn new(
         http_client: CachedHttpClient,
-        job_sender: Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>>,
+        job_sender: Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>>,
         origin: String,
     ) -> Self {
         Self {
             http_client,
             origin,
-            stdout: stdout().into(),
             documents: HashSet::with_capacity(1 << 10),
             job_sender,
         }
@@ -37,17 +32,13 @@ impl Context {
         &self.origin
     }
 
-    pub const fn stdout(&self) -> &Mutex<Stdout> {
-        &self.stdout
-    }
-
     pub const fn documents(&self) -> &HashSet<String> {
         &self.documents
     }
 
     pub const fn job_sender(
         &self,
-    ) -> &Sender<Box<dyn Future<Output = Result<Metrics, Error>> + Send>> {
+    ) -> &Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>> {
         &self.job_sender
     }
 }
