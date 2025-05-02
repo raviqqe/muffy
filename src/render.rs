@@ -2,13 +2,22 @@ use crate::{Document, error::Error};
 use colored::Colorize;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
-/// Renders a result of document validation.
 // TODO Render results as JSON.
+
+/// Renders a result of document validation.
 pub async fn render_document(
     document: &Document,
     verbose: bool,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
+    if !verbose
+        && document
+            .elements()
+            .all(|(_, results)| results.iter().all(Result::is_ok))
+    {
+        return Ok(());
+    }
+
     render_line(
         &format!("{}", document.url().to_string().yellow()),
         &mut writer,
@@ -16,6 +25,10 @@ pub async fn render_document(
     .await?;
 
     for (element, results) in document.elements() {
+        if !verbose && results.iter().all(Result::is_ok) {
+            continue;
+        }
+
         render_line(
             &format!(
                 "\t{} {}",
