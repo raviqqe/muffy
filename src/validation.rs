@@ -1,6 +1,7 @@
 use crate::{
-    context::Context, document::Document, document_type::DocumentType, element::Element,
-    error::Error, response::Response, success::Success,
+    context::Context, document_output::DocumentOutput, document_type::DocumentType,
+    element::Element, element_output::ElementOutput, error::Error, response::Response,
+    success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -74,7 +75,7 @@ async fn validate_document(
     context: Arc<Context>,
     response: Arc<Response>,
     document_type: DocumentType,
-) -> Result<Document, Error> {
+) -> Result<DocumentOutput, Error> {
     let futures = match document_type {
         DocumentType::Html => validate_html(&context, &response)?,
         DocumentType::Sitemap => validate_sitemap(&context, &response)?,
@@ -87,9 +88,13 @@ async fn validate_document(
         results.push(try_join_all(futures).await?);
     }
 
-    Ok(Document::new(
+    Ok(DocumentOutput::new(
         response.url().clone(),
-        elements.into_iter().zip(results).collect(),
+        elements
+            .into_iter()
+            .zip(results)
+            .map(|(element, results)| ElementOutput::new(element, results))
+            .collect(),
     ))
 }
 

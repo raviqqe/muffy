@@ -1,27 +1,29 @@
-use crate::{Metrics, element::Element, error::Error, success::Success};
+use crate::{Metrics, element_output::ElementOutput};
+use serde::Serialize;
 use url::Url;
 
-/// A document.
-pub struct Document {
+/// A document output.
+#[derive(Serialize)]
+pub struct DocumentOutput {
     url: Url,
-    elements: Vec<(Element, Vec<Result<Success, Error>>)>,
+    elements: Vec<ElementOutput>,
     metrics: Metrics,
 }
 
-impl Document {
-    /// Creates a document.
-    pub fn new(url: Url, elements: Vec<(Element, Vec<Result<Success, Error>>)>) -> Self {
+impl DocumentOutput {
+    /// Creates a document output.
+    pub fn new(url: Url, elements: Vec<ElementOutput>) -> Self {
         Self {
             url,
             metrics: Metrics::new(
                 elements
                     .iter()
-                    .flat_map(|(_, results)| results)
+                    .flat_map(ElementOutput::results)
                     .filter(|result| result.is_ok())
                     .count(),
                 elements
                     .iter()
-                    .flat_map(|(_, results)| results)
+                    .flat_map(ElementOutput::results)
                     .filter(|result| result.is_err())
                     .count(),
             ),
@@ -35,12 +37,18 @@ impl Document {
     }
 
     /// Returns elements with their validation results.
-    pub fn elements(&self) -> impl Iterator<Item = &(Element, Vec<Result<Success, Error>>)> {
+    pub fn elements(&self) -> impl Iterator<Item = &ElementOutput> {
         self.elements.iter()
     }
 
     /// Returns metrics of document validation.
     pub const fn metrics(&self) -> Metrics {
         self.metrics
+    }
+
+    pub(crate) fn retain_error(&mut self) {
+        for element in &mut self.elements {
+            element.retain_error();
+        }
     }
 }

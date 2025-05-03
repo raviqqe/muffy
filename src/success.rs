@@ -1,6 +1,9 @@
-use crate::response::Response;
+use crate::response::{Response, SerializedResponse};
 use alloc::sync::Arc;
+use serde::Serialize;
 
+#[derive(Clone, Debug, Serialize)]
+#[serde(into = "SerializedSuccess")]
 pub struct Success {
     response: Option<Arc<Response>>,
 }
@@ -23,5 +26,20 @@ impl Success {
     pub fn with_response(mut self, response: Arc<Response>) -> Self {
         self.response = Some(response);
         self
+    }
+}
+
+#[derive(Serialize)]
+struct SerializedSuccess {
+    response: Option<SerializedResponse>,
+}
+
+impl From<Success> for SerializedSuccess {
+    fn from(success: Success) -> Self {
+        Self {
+            response: success
+                .response
+                .map(|response| SerializedResponse::from_response(&response)),
+        }
     }
 }

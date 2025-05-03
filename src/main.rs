@@ -2,6 +2,7 @@
 
 use clap::Parser;
 use futures::StreamExt;
+use muffy::{RenderFormat, RenderOptions};
 use std::process::exit;
 use tabled::{
     Table,
@@ -18,6 +19,9 @@ struct Arguments {
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
+    /// Sets an output format.
+    #[arg(long)]
+    format: RenderFormat,
     /// Becomes verbose.
     #[arg(long)]
     verbose: bool,
@@ -35,6 +39,7 @@ async fn run() -> Result<(), muffy::Error> {
     let Arguments {
         url,
         cache,
+        format,
         verbose,
     } = Arguments::parse();
     let mut output = stdout();
@@ -46,9 +51,17 @@ async fn run() -> Result<(), muffy::Error> {
     while let Some(document) = documents.next().await {
         let document = document?;
 
-        muffy::render_document(&document, verbose, &mut output).await?;
         document_metrics.add(document.metrics().has_error());
         element_metrics.merge(&document.metrics());
+
+        muffy::render_document(
+            document,
+            &RenderOptions::default()
+                .set_format(format)
+                .set_verbose(verbose),
+            &mut output,
+        )
+        .await?;
     }
 
     eprintln!();

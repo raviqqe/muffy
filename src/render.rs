@@ -1,21 +1,24 @@
-use crate::{Document, error::Error};
+mod options;
+
+pub use self::options::{RenderFormat, RenderOptions};
+use crate::{DocumentOutput, error::Error};
 use colored::Colorize;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
-// TODO Render results as JSON.
-
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: &Document,
-    verbose: bool,
+    document: DocumentOutput,
+    options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    if !verbose
+    if !options.verbose()
         && document
             .elements()
-            .all(|(_, results)| results.iter().all(Result::is_ok))
+            .all(|element| element.results().all(Result::is_ok))
     {
         return Ok(());
+    } else if options.format() == RenderFormat::Json {
+        return render_json_document(document, options, &mut writer).await;
     }
 
     render_line(
@@ -24,16 +27,17 @@ pub async fn render_document(
     )
     .await?;
 
-    for (element, results) in document.elements() {
-        if !verbose && results.iter().all(Result::is_ok) {
+    for output in document.elements() {
+        if !options.verbose() && output.results().all(Result::is_ok) {
             continue;
         }
 
         render_line(
             &format!(
                 "\t{} {}",
-                element.name(),
-                element
+                output.element().name(),
+                output
+                    .element()
                     .attributes()
                     .iter()
                     .map(|(key, value)| format!("{key}=\"{value}\""))
@@ -44,10 +48,10 @@ pub async fn render_document(
         )
         .await?;
 
-        for result in results {
+        for result in output.results() {
             match result {
                 Ok(success) => {
-                    if !verbose {
+                    if !options.verbose() {
                         continue;
                     }
 
@@ -75,6 +79,18 @@ pub async fn render_document(
     }
 
     Ok(())
+}
+
+pub async fn render_json_document(
+    mut document: DocumentOutput,
+    options: &RenderOptions,
+    writer: &mut (impl AsyncWrite + Unpin),
+) -> Result<(), Error> {
+    if !options.verbose() {
+        document.retain_error();
+    }
+
+    render_line(&serde_json::to_string(&document)?, writer).await
 }
 
 async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Result<(), Error> {

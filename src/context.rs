@@ -1,4 +1,4 @@
-use crate::{document::Document, error::Error, http_client::CachedHttpClient};
+use crate::{document_output::DocumentOutput, error::Error, http_client::CachedHttpClient};
 use scc::HashSet;
 use tokio::sync::mpsc::Sender;
 
@@ -6,13 +6,13 @@ pub struct Context {
     http_client: CachedHttpClient,
     origin: String,
     documents: HashSet<String>,
-    job_sender: Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>>,
+    job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
 }
 
 impl Context {
     pub fn new(
         http_client: CachedHttpClient,
-        job_sender: Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>>,
+        job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
         origin: String,
     ) -> Self {
         Self {
@@ -38,7 +38,7 @@ impl Context {
 
     pub const fn job_sender(
         &self,
-    ) -> &Sender<Box<dyn Future<Output = Result<Document, Error>> + Send>> {
+    ) -> &Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>> {
         &self.job_sender
     }
 }

@@ -1,15 +1,15 @@
 use crate::cache::CacheError;
+use crate::http_client::HttpClientError;
 use core::{
     error,
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
 use http::StatusCode;
+use serde::{Serialize, Serializer};
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
 use url::ParseError;
-
-use crate::http_client::HttpClientError;
 
 /// An error.
 #[derive(Debug)]
@@ -35,6 +35,8 @@ pub enum Error {
     Io(io::Error),
     /// An thread join error.
     Join(JoinError),
+    /// A JSON serialization error.
+    Json(serde_json::Error),
     /// A document validation error.
     Document,
     /// A sitemap error.
@@ -65,12 +67,19 @@ impl Display for Error {
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
+            Self::Json(error) => write!(formatter, "{error}"),
             Self::Document => write!(formatter, "document validation failed"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl Serialize for Error {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -101,6 +110,12 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Self {
+        Self::Json(error)
     }
 }
 
