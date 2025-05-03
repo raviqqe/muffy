@@ -202,6 +202,46 @@ mod tests {
 
             assert_snapshot!(str::from_utf8(&string).unwrap());
         }
+
+        #[tokio::test]
+        async fn render_successful_element() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                DocumentOutput::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    vec![
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Ok(Success::default().with_response(
+                                Response::new(
+                                    Url::parse("https://foo.com").unwrap(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                )
+                                .into(),
+                            ))],
+                        ),
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Err(Error::HtmlParse(io::Error::new(
+                                ErrorKind::NotFound,
+                                "foo",
+                            )))],
+                        ),
+                    ],
+                ),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
     }
 
     mod json {
