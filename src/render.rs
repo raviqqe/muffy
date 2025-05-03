@@ -7,18 +7,24 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: DocumentOutput,
+    mut document: DocumentOutput,
     options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
+    if !options.verbose() {
+        document.retain_error();
+    }
+
     if !options.verbose()
         && document
             .elements()
             .all(|element| element.results().all(Result::is_ok))
     {
         return Ok(());
-    } else if options.format() == RenderFormat::Json {
-        return render_json_document(document, options, &mut writer).await;
+    }
+
+    if options.format() == RenderFormat::Json {
+        return render_json_document(document, &mut writer).await;
     }
 
     render_line(
@@ -28,10 +34,6 @@ pub async fn render_document(
     .await?;
 
     for output in document.elements() {
-        if !options.verbose() && output.results().all(Result::is_ok) {
-            continue;
-        }
-
         render_line(
             &format!(
                 "\t{} {}",
@@ -51,10 +53,6 @@ pub async fn render_document(
         for result in output.results() {
             match result {
                 Ok(success) => {
-                    if !options.verbose() {
-                        continue;
-                    }
-
                     render_line(
                         &success.response().map_or_else(
                             || "\t\tvalid URL".into(),
@@ -82,14 +80,9 @@ pub async fn render_document(
 }
 
 pub async fn render_json_document(
-    mut document: DocumentOutput,
-    options: &RenderOptions,
+    document: DocumentOutput,
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    if !options.verbose() {
-        document.retain_error();
-    }
-
     render_line(&serde_json::to_string(&document)?, writer).await
 }
 
