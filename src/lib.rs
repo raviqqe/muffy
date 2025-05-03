@@ -398,7 +398,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 0))
+            (Metrics::new(1, 0), Metrics::new(1, 0))
         );
     }
 }
