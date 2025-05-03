@@ -80,6 +80,7 @@ mod tests {
     use super::*;
     use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
     use timer::StubTimer;
     use url::Url;
@@ -368,7 +369,14 @@ mod tests {
                     url: Url::parse("https://foo.com/robots.txt").unwrap(),
                     status: StatusCode::OK,
                     headers: Default::default(),
-                    body: Default::default(),
+                    body: indoc!(
+                        "
+                        User-agent: *
+                        Disallow: /
+                        "
+                    )
+                    .as_bytes()
+                    .to_vec(),
                 }),
                 Ok(BareResponse {
                     url: Url::parse("https://foo.com").unwrap(),
