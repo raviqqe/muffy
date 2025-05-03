@@ -103,8 +103,12 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        element::Element, element_output::ElementOutput, response::Response, success::Success,
+    };
     use core::str;
     use insta::assert_snapshot;
+    use std::io::{self, ErrorKind};
     use url::Url;
 
     #[tokio::test]
@@ -112,8 +116,26 @@ mod tests {
         let mut string = vec![];
 
         render_document(
-            DocumentOutput::new(Url::parse("https://foo.com").unwrap(), vec![]),
-            &RenderOptions::default().set_verbose(true),
+            DocumentOutput::new(
+                Url::parse("https://foo.com").unwrap(),
+                vec![ElementOutput::new(
+                    Element::new("a".into(), vec![]),
+                    vec![
+                        Ok(Success::default().with_response(
+                            Response::new(
+                                Url::parse("https://foo.com").unwrap(),
+                                Default::default(),
+                                Default::default(),
+                                Default::default(),
+                                Default::default(),
+                            )
+                            .into(),
+                        )),
+                        Err(Error::HtmlParse(io::Error::new(ErrorKind::NotFound, "foo"))),
+                    ],
+                )],
+            ),
+            &RenderOptions::default(),
             &mut string,
         )
         .await
