@@ -111,7 +111,7 @@ mod tests {
     use std::io::{self, ErrorKind};
     use url::Url;
 
-    fn stub_document_output() -> DocumentOutput {
+    fn mixed_document_output() -> DocumentOutput {
         DocumentOutput::new(
             Url::parse("https://foo.com").unwrap(),
             vec![ElementOutput::new(
@@ -133,67 +133,110 @@ mod tests {
         )
     }
 
-    #[tokio::test]
-    async fn render_in_text() {
-        colored::control::set_override(false);
-        let mut string = vec![];
-
-        render_document(
-            stub_document_output(),
-            &RenderOptions::default(),
-            &mut string,
+    fn success_document_output() -> DocumentOutput {
+        DocumentOutput::new(
+            Url::parse("https://foo.com").unwrap(),
+            vec![ElementOutput::new(
+                Element::new("a".into(), vec![]),
+                vec![Ok(Success::default().with_response(
+                    Response::new(
+                        Url::parse("https://foo.com").unwrap(),
+                        Default::default(),
+                        Default::default(),
+                        Default::default(),
+                        Default::default(),
+                    )
+                    .into(),
+                ))],
+            )],
         )
-        .await
-        .unwrap();
-
-        assert_snapshot!(str::from_utf8(&string).unwrap());
     }
 
-    #[tokio::test]
-    async fn render_in_text_with_verbose_option() {
-        colored::control::set_override(false);
-        let mut string = vec![];
+    mod text {
+        use super::*;
 
-        render_document(
-            stub_document_output(),
-            &RenderOptions::default().set_verbose(true),
-            &mut string,
-        )
-        .await
-        .unwrap();
+        #[tokio::test]
+        async fn render_in_text() {
+            colored::control::set_override(false);
+            let mut string = vec![];
 
-        assert_snapshot!(str::from_utf8(&string).unwrap());
+            render_document(
+                mixed_document_output(),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_in_text_with_verbose_option() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                mixed_document_output(),
+                &RenderOptions::default().set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_successful_document() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                success_document_output(),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
     }
 
-    #[tokio::test]
-    async fn render_in_json() {
-        let mut string = vec![];
+    mod json {
+        use super::*;
 
-        render_document(
-            stub_document_output(),
-            &RenderOptions::default().set_format(RenderFormat::Json),
-            &mut string,
-        )
-        .await
-        .unwrap();
+        #[tokio::test]
+        async fn render_in_json() {
+            let mut string = vec![];
 
-        assert_snapshot!(str::from_utf8(&string).unwrap());
-    }
+            render_document(
+                mixed_document_output(),
+                &RenderOptions::default().set_format(RenderFormat::Json),
+                &mut string,
+            )
+            .await
+            .unwrap();
 
-    #[tokio::test]
-    async fn render_in_json_with_verbose_option() {
-        let mut string = vec![];
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
 
-        render_document(
-            stub_document_output(),
-            &RenderOptions::default()
-                .set_format(RenderFormat::Json)
-                .set_verbose(true),
-            &mut string,
-        )
-        .await
-        .unwrap();
+        #[tokio::test]
+        async fn render_in_json_with_verbose_option() {
+            let mut string = vec![];
 
-        assert_snapshot!(str::from_utf8(&string).unwrap());
+            render_document(
+                mixed_document_output(),
+                &RenderOptions::default()
+                    .set_format(RenderFormat::Json)
+                    .set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
     }
 }
