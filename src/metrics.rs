@@ -55,6 +55,13 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
+    fn values() {
+        assert_eq!(Metrics::new(42, 7).success(), 42);
+        assert_eq!(Metrics::new(42, 7).error(), 7);
+        assert_eq!(Metrics::new(42, 7).total(), 49);
+    }
+
+    #[test]
     fn add() {
         let mut metrics = Metrics::default();
 
