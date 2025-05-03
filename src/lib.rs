@@ -78,8 +78,11 @@ pub async fn validate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::http_client::HttpClient;
+    use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
+    use http::StatusCode;
+    use pretty_assertions::assert_eq;
     use timer::StubTimer;
+    use url::Url;
 
     async fn validate(
         client: impl HttpClient + 'static,
@@ -102,5 +105,49 @@ mod tests {
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
             .buffer_unordered(JOB_COMPLETION_BUFFER))
+    }
+
+    async fn collect_metrics(
+        documents: &mut (impl Stream<Item = Result<DocumentOutput, Error>> + Unpin),
+    ) -> (Metrics, Metrics) {
+        let mut document_metrics = Metrics::default();
+        let mut element_metrics = Metrics::default();
+
+        while let Some(document) = documents.next().await {
+            let document = document.unwrap();
+
+            document_metrics.add(document.metrics().has_error());
+            element_metrics.merge(&document.metrics());
+        }
+
+        (document_metrics, element_metrics)
+    }
+
+    #[tokio::test]
+    async fn validate_page() {
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 0))
+        );
     }
 }

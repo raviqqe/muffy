@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 /// Validation metrics.
-#[derive(Clone, Copy, Debug, Default, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
 pub struct Metrics {
     success: usize,
     error: usize,
