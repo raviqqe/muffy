@@ -74,3 +74,208 @@ pub async fn validate(
         .map(Box::into_pin)
         .buffer_unordered(JOB_COMPLETION_BUFFER))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
+    use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+    use pretty_assertions::assert_eq;
+    use timer::StubTimer;
+    use url::Url;
+
+    async fn validate(
+        client: impl HttpClient + 'static,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let (sender, receiver) = channel(JOB_CAPACITY);
+        let context = Arc::new(Context::new(
+            CachedHttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            sender,
+            url.into(),
+        ));
+
+        validate_link(context, url.into(), None).await?;
+
+        Ok(ReceiverStream::new(receiver)
+            .map(Box::into_pin)
+            .buffer_unordered(JOB_COMPLETION_BUFFER))
+    }
+
+    async fn collect_metrics(
+        documents: &mut (impl Stream<Item = Result<DocumentOutput, Error>> + Unpin),
+    ) -> (Metrics, Metrics) {
+        let mut document_metrics = Metrics::default();
+        let mut element_metrics = Metrics::default();
+
+        while let Some(document) = documents.next().await {
+            let document = document.unwrap();
+
+            document_metrics.add(document.metrics().has_error());
+            element_metrics.merge(&document.metrics());
+        }
+
+        (document_metrics, element_metrics)
+    }
+
+    #[tokio::test]
+    async fn validate_page() {
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: HeaderMap::from_iter([(
+                        HeaderName::from_static("content-type"),
+                        HeaderValue::from_static("text/html"),
+                    )]),
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_two_pages() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers,
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_two_links_in_page() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"
+                        <a href="https://foo.com/bar"/>
+                        <a href="https://foo.com/baz"/>
+                    "#
+                    .as_bytes()
+                    .to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/baz").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers,
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(2, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_links_recursively() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(2, 0))
+        );
+    }
+}

@@ -3,7 +3,7 @@ use serde::Serialize;
 use url::Url;
 
 /// A document output.
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct DocumentOutput {
     url: Url,
     elements: Vec<ElementOutput>,
