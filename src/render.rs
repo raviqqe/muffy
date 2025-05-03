@@ -193,7 +193,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                success_document_output(),
+                successful_document_output(),
                 &RenderOptions::default(),
                 &mut string,
             )
