@@ -40,8 +40,12 @@ impl CachedHttpClient {
         )
     }
 
-    pub async fn get(&self, url: &Url) -> Result<Arc<Response>, HttpClientError> {
-        Self::get_inner(&self.0, url, true).await
+    pub async fn get(&self, url: &Url) -> Result<Option<Arc<Response>>, HttpClientError> {
+        match Self::get_inner(&self.0, url, true).await {
+            Ok(response) => Ok(Some(response)),
+            Err(HttpClientError::RobotsTxt) => Ok(None),
+            Err(error) => Err(error),
+        }
     }
 
     async fn get_inner(
@@ -150,7 +154,7 @@ mod tests {
             body: vec![],
         };
         assert_eq!(
-            &*CachedHttpClient::new(
+            CachedHttpClient::new(
                 StubHttpClient::new(vec![
                     Ok(BareResponse {
                         url: url.join("robots.txt").unwrap(),
@@ -167,7 +171,7 @@ mod tests {
             .get(&url)
             .await
             .unwrap(),
-            &Response::from_bare(response, Duration::from_millis(0))
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
     }
 }

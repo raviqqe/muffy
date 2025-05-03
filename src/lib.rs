@@ -80,6 +80,7 @@ mod tests {
     use super::*;
     use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
     use timer::StubTimer;
     use url::Url;
@@ -353,5 +354,51 @@ mod tests {
     #[tokio::test]
     async fn validate_sitemap_in_application_xml() {
         validate_sitemap("application/xml").await;
+    }
+
+    #[tokio::test]
+
+    async fn ignore_link_with_robots_txt() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: indoc!(
+                        "
+                        User-agent: *
+                        Disallow: /bar
+                        "
+                    )
+                    .as_bytes()
+                    .to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
     }
 }

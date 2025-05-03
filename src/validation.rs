@@ -30,7 +30,9 @@ pub async fn validate_link(
     // We keep this fragment removal not configurable as otherwise we might have a lot more
     // requests for the same HTML pages, which makes crawling unacceptably inefficient.
     // TODO Configure request headers.
-    let response = context.http_client().get(&document_url).await?;
+    let Some(response) = context.http_client().get(&document_url).await? else {
+        return Ok(Success::default());
+    };
     let document_type = parse_content_type(&response, document_type)?;
 
     // TODO Configure origin URLs.
