@@ -74,3 +74,34 @@ pub async fn validate(
         .map(Box::into_pin)
         .buffer_unordered(JOB_COMPLETION_BUFFER))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::http_client::HttpClient;
+    use timer::StubTimer;
+
+    async fn validate(
+        client: impl HttpClient,
+        url: &str,
+        cache: bool,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let (sender, receiver) = channel(JOB_CAPACITY);
+        let context = Arc::new(Context::new(
+            CachedHttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            sender,
+            url.into(),
+        ));
+
+        validate_link(context, url.into(), None).await?;
+
+        Ok(ReceiverStream::new(receiver)
+            .map(Box::into_pin)
+            .buffer_unordered(JOB_COMPLETION_BUFFER))
+    }
+}
