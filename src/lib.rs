@@ -33,6 +33,9 @@ use std::env::temp_dir;
 use tokio::{fs::create_dir_all, sync::mpsc::channel};
 use tokio_stream::wrappers::ReceiverStream;
 
+const DATABASE_NAME: &str = "muffy";
+const RESPONSE_NAMESPACE: &str = "responses";
+
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
@@ -44,7 +47,7 @@ pub async fn validate(
 ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
     let (sender, receiver) = channel(JOB_CAPACITY);
     let db = if cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join("muffy");
+        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
@@ -55,7 +58,7 @@ pub async fn validate(
             ReqwestHttpClient::new(),
             ClockTimer::new(),
             if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree("responses")?))
+                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
             } else {
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
             },
