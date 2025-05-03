@@ -172,7 +172,7 @@ mod tests {
                     url: Url::parse("https://foo.com").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
-                    body: Default::default(),
+                    body: r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
                 }),
                 Ok(BareResponse {
                     url: Url::parse("https://foo.com/bar").unwrap(),
