@@ -354,4 +354,43 @@ mod tests {
     async fn validate_sitemap_in_application_xml() {
         validate_sitemap("application/xml").await;
     }
+
+    #[tokio::test]
+
+    async fn ignore_link_with_robots_txt() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(2, 0))
+        );
+    }
 }
