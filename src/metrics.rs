@@ -66,11 +66,8 @@ mod tests {
 
     #[test]
     fn has_error() {
-        let mut metrics = Metrics::default();
-
-        metrics.add(false);
-        assert!(!metrics.has_error());
-        metrics.add(true);
-        assert!(metrics.has_error());
+        assert!(!Metrics::default().has_error());
+        assert!(!Metrics::new(1, 0).has_error());
+        assert!(Metrics::new(0, 1).has_error());
     }
 }
