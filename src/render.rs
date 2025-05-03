@@ -111,30 +111,34 @@ mod tests {
     use std::io::{self, ErrorKind};
     use url::Url;
 
+    fn stub_document_output() -> DocumentOutput {
+        DocumentOutput::new(
+            Url::parse("https://foo.com").unwrap(),
+            vec![ElementOutput::new(
+                Element::new("a".into(), vec![]),
+                vec![
+                    Ok(Success::default().with_response(
+                        Response::new(
+                            Url::parse("https://foo.com").unwrap(),
+                            Default::default(),
+                            Default::default(),
+                            Default::default(),
+                            Default::default(),
+                        )
+                        .into(),
+                    )),
+                    Err(Error::HtmlParse(io::Error::new(ErrorKind::NotFound, "foo"))),
+                ],
+            )],
+        )
+    }
+
     #[tokio::test]
     async fn render_in_text() {
         let mut string = vec![];
 
         render_document(
-            DocumentOutput::new(
-                Url::parse("https://foo.com").unwrap(),
-                vec![ElementOutput::new(
-                    Element::new("a".into(), vec![]),
-                    vec![
-                        Ok(Success::default().with_response(
-                            Response::new(
-                                Url::parse("https://foo.com").unwrap(),
-                                Default::default(),
-                                Default::default(),
-                                Default::default(),
-                                Default::default(),
-                            )
-                            .into(),
-                        )),
-                        Err(Error::HtmlParse(io::Error::new(ErrorKind::NotFound, "foo"))),
-                    ],
-                )],
-            ),
+            stub_document_output(),
             &RenderOptions::default(),
             &mut string,
         )
