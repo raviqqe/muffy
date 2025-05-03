@@ -82,9 +82,8 @@ mod tests {
     use timer::StubTimer;
 
     async fn validate(
-        client: impl HttpClient,
+        client: impl HttpClient + 'static,
         url: &str,
-        cache: bool,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
         let context = Arc::new(Context::new(
