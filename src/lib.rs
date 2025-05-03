@@ -279,8 +279,7 @@ mod tests {
         );
     }
 
-    #[tokio::test]
-    async fn validate_sitemap() {
+    async fn validate_sitemap(content_type: &'static str) {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -307,7 +306,7 @@ mod tests {
                     status: StatusCode::OK,
                     headers: HeaderMap::from_iter([(
                         HeaderName::from_static("content-type"),
-                        HeaderValue::from_static("application/xml"),
+                        HeaderValue::from_static(content_type),
                     )]),
                     body: r#"
                         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -344,5 +343,15 @@ mod tests {
             collect_metrics(&mut documents).await,
             (Metrics::new(3, 0), Metrics::new(3, 0))
         );
+    }
+
+    #[tokio::test]
+    async fn validate_sitemap_in_text_xml() {
+        validate_sitemap("text/xml").await;
+    }
+
+    #[tokio::test]
+    async fn validate_sitemap_in_application_xml() {
+        validate_sitemap("application/xml").await;
     }
 }
