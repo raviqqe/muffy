@@ -102,15 +102,19 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use insta::assert_snapshot;
 
-    use super::*;
-
-    #[test]
-    fn render_in_text() {
+    #[tokio::test]
+    async fn render_in_text() {
         let mut string = String::new();
 
-        render(DocumentOutput::new(), RenderOptions::new(), &mut string);
+        render(
+            DocumentOutput::new(Url::parse("https://foo.com").unwrap(), vec![]),
+            RenderOptions::new(),
+            &mut string,
+        )
+        .await;
 
         assert_snapshot!(string);
     }
