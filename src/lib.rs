@@ -175,7 +175,7 @@ mod tests {
                     body: Default::default(),
                 }),
                 Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
+                    url: Url::parse("https://foo.com/bar").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers,
                     body: Default::default(),
