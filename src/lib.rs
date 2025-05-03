@@ -305,7 +305,18 @@ mod tests {
                     url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                    body: r#"
+                        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                            <url>
+                                <loc>https://foo.com/</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
+                        </urlset>
+                    "#
+                    .as_bytes()
+                    .to_vec(),
                 }),
             ]),
             "https://foo.com",
