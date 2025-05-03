@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 /// Validation metrics.
-#[derive(Clone, Copy, Debug, Default, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize)]
 pub struct Metrics {
     success: usize,
     error: usize,
@@ -46,5 +46,35 @@ impl Metrics {
     pub const fn merge(&mut self, other: &Self) {
         self.success += other.success;
         self.error += other.error;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn values() {
+        assert_eq!(Metrics::new(42, 7).success(), 42);
+        assert_eq!(Metrics::new(42, 7).error(), 7);
+        assert_eq!(Metrics::new(42, 7).total(), 49);
+    }
+
+    #[test]
+    fn add() {
+        let mut metrics = Metrics::default();
+
+        metrics.add(false);
+        assert_eq!(metrics, Metrics::new(1, 0));
+        metrics.add(true);
+        assert_eq!(metrics, Metrics::new(1, 1));
+    }
+
+    #[test]
+    fn has_error() {
+        assert!(!Metrics::default().has_error());
+        assert!(!Metrics::new(1, 0).has_error());
+        assert!(Metrics::new(0, 1).has_error());
     }
 }
