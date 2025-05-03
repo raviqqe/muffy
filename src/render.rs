@@ -133,7 +133,7 @@ mod tests {
         )
     }
 
-    fn success_document_output() -> DocumentOutput {
+    fn successful_document_output() -> DocumentOutput {
         DocumentOutput::new(
             Url::parse("https://foo.com").unwrap(),
             vec![ElementOutput::new(
@@ -193,7 +193,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                success_document_output(),
+                successful_document_output(),
                 &RenderOptions::default(),
                 &mut string,
             )
