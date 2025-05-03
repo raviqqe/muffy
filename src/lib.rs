@@ -278,4 +278,80 @@ mod tests {
             (Metrics::new(2, 0), Metrics::new(2, 0))
         );
     }
+
+    async fn validate_sitemap(content_type: &'static str) {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                        .as_bytes()
+                        .to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
+                    status: StatusCode::OK,
+                    headers: HeaderMap::from_iter([(
+                        HeaderName::from_static("content-type"),
+                        HeaderValue::from_static(content_type),
+                    )]),
+                    body: r#"
+                        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                            <url>
+                                <loc>https://foo.com/</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
+                            <url>
+                                <loc>https://foo.com/bar</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
+                        </urlset>
+                    "#
+                    .as_bytes()
+                    .to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(3, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_sitemap_in_text_xml() {
+        validate_sitemap("text/xml").await;
+    }
+
+    #[tokio::test]
+    async fn validate_sitemap_in_application_xml() {
+        validate_sitemap("application/xml").await;
+    }
 }
