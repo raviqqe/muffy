@@ -79,7 +79,7 @@ pub async fn validate(
 mod tests {
     use super::*;
     use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
-    use http::StatusCode;
+    use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
     use timer::StubTimer;
     use url::Url;
@@ -136,7 +136,10 @@ mod tests {
                 Ok(BareResponse {
                     url: Url::parse("https://foo.com").unwrap(),
                     status: StatusCode::OK,
-                    headers: Default::default(),
+                    headers: HeaderMap::from_iter([(
+                        HeaderName::from_static("content-type"),
+                        HeaderValue::from_static("text/html"),
+                    )]),
                     body: Default::default(),
                 }),
             ]),
