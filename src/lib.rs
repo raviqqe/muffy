@@ -285,6 +285,7 @@ mod tests {
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
         )]);
+
         let mut documents = validate(
             StubHttpClient::new(vec![
                 Ok(BareResponse {
@@ -304,7 +305,10 @@ mod tests {
                 Ok(BareResponse {
                     url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
                     status: StatusCode::OK,
-                    headers: html_headers.clone(),
+                    headers: HeaderMap::from_iter([(
+                        HeaderName::from_static("content-type"),
+                        HeaderValue::from_static("application/xml"),
+                    )]),
                     body: r#"
                         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
                             <url>
@@ -328,9 +332,7 @@ mod tests {
                     url: Url::parse("https://foo.com/bar").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
-                    body: r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
-                        .as_bytes()
-                        .to_vec(),
+                    body: Default::default(),
                 }),
             ]),
             "https://foo.com",
@@ -340,7 +342,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(3, 0), Metrics::new(2, 0))
+            (Metrics::new(3, 0), Metrics::new(3, 0))
         );
     }
 }
