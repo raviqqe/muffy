@@ -99,3 +99,22 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_snapshot;
+
+    use super::*;
+
+    #[test]
+    fn render_in_text() {
+        let mut string = String::new();
+
+        render(DocumentOutput::new(), RenderOptions::new(), &mut string);
+
+        assert_snapshot!(string);
+    }
+
+    #[test]
+    fn render_in_json() {}
+}
