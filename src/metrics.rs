@@ -48,3 +48,19 @@ impl Metrics {
         self.error += other.error;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn add() {
+        let mut metrics = Metrics::default();
+
+        metrics.add(false);
+        assert_eq!(metrics, Metrics::new(1, 0));
+        metrics.add(true);
+        assert_eq!(metrics, Metrics::new(1, 1));
+    }
+}
