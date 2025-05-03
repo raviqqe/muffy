@@ -19,7 +19,7 @@ impl ElementOutput {
     }
 
     /// Returns validation results.
-    pub fn results(&self) -> impl Iterator<Item = &Result<Success, Error>> {
+    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
         self.results.iter()
     }
 
