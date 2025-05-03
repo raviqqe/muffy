@@ -21,8 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: swatinem/rust-cache@v2
-      - run: cargo test
+      - uses: ./.github/actions/setup
+      - run: tools/coverage.sh
+      - uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
   test:
     needs:
       - build
