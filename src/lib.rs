@@ -153,4 +153,42 @@ mod tests {
             (Metrics::new(1, 0), Metrics::new(0, 0))
         );
     }
+
+    #[tokio::test]
+    async fn validate_two_pages() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers,
+                    body: Default::default(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 0))
+        );
+    }
 }
