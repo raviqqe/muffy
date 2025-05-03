@@ -313,10 +313,24 @@ mod tests {
                                 <changefreq>daily</changefreq>
                                 <priority>1</priority>
                             </url>
+                            <url>
+                                <loc>https://foo.com/bar</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
                         </urlset>
                     "#
                     .as_bytes()
                     .to_vec(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                        .as_bytes()
+                        .to_vec(),
                 }),
             ]),
             "https://foo.com",
@@ -326,7 +340,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(2, 0))
+            (Metrics::new(3, 0), Metrics::new(2, 0))
         );
     }
 }
