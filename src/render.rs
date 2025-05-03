@@ -113,7 +113,7 @@ mod tests {
 
         render_document(
             DocumentOutput::new(Url::parse("https://foo.com").unwrap(), vec![]),
-            &RenderOptions::new(),
+            &RenderOptions::default().set_verbose(true),
             &mut string,
         )
         .await
