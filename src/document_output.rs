@@ -45,4 +45,10 @@ impl DocumentOutput {
     pub const fn metrics(&self) -> Metrics {
         self.metrics
     }
+
+    pub(crate) fn remove_success(&mut self) {
+        for element in &mut self.elements {
+            element.remove_success();
+        }
+    }
 }

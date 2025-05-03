@@ -22,4 +22,8 @@ impl ElementOutput {
     pub fn results(&self) -> impl Iterator<Item = &Result<Success, Error>> {
         self.results.iter()
     }
+
+    pub(crate) fn remove_success(&mut self) {
+        self.results.retain(Result::is_err)
+    }
 }

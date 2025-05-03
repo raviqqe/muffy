@@ -51,16 +51,17 @@ async fn run() -> Result<(), muffy::Error> {
     while let Some(document) = documents.next().await {
         let document = document?;
 
+        document_metrics.add(document.metrics().has_error());
+        element_metrics.merge(&document.metrics());
+
         muffy::render_document(
-            &document,
+            document,
             &RenderOptions::default()
                 .set_format(format)
                 .set_verbose(verbose),
             &mut output,
         )
         .await?;
-        document_metrics.add(document.metrics().has_error());
-        element_metrics.merge(&document.metrics());
     }
 
     eprintln!();

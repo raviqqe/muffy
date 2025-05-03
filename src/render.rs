@@ -7,7 +7,7 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: &DocumentOutput,
+    document: DocumentOutput,
     options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
@@ -82,15 +82,15 @@ pub async fn render_document(
 }
 
 pub async fn render_json_document(
-    document: &DocumentOutput,
+    mut document: DocumentOutput,
     options: &RenderOptions,
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    if options.verbose() {
-        return render_line(&serde_json::to_string(document)?, writer).await;
+    if !options.verbose() {
+        document.remove_success();
     }
 
-    todo!();
+    render_line(&serde_json::to_string(&document)?, writer).await
 }
 
 async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Result<(), Error> {
