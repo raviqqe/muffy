@@ -372,7 +372,7 @@ mod tests {
                     body: indoc!(
                         "
                         User-agent: *
-                        Disallow: /
+                        Disallow: /bar
                         "
                     )
                     .as_bytes()
@@ -388,7 +388,7 @@ mod tests {
                     url: Url::parse("https://foo.com/bar").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                    body: Default::default(),
                 }),
             ]),
             "https://foo.com",
@@ -398,7 +398,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(2, 0))
+            (Metrics::new(1, 0), Metrics::new(0, 0))
         );
     }
 }
