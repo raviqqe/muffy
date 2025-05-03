@@ -302,7 +302,7 @@ mod tests {
                         .to_vec(),
                 }),
                 Ok(BareResponse {
-                    url: Url::parse("https://foo.com/bar").unwrap(),
+                    url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
                     body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
