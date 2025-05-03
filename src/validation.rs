@@ -271,12 +271,12 @@ fn parse_content_type(
 
     match document_type {
         Some(DocumentType::Sitemap) => {
-            if value == "application/xml" {
+            if value.ends_with("/xml") {
                 Ok(document_type)
             } else {
                 Err(Error::ContentTypeInvalid {
                     actual: value.into(),
-                    expected: "application/xml",
+                    expected: "*/xml",
                 })
             }
         }
