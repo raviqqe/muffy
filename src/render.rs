@@ -135,6 +135,7 @@ mod tests {
 
     #[tokio::test]
     async fn render_in_text() {
+        colored::control::set_override(false);
         let mut string = vec![];
 
         render_document(
@@ -148,6 +149,18 @@ mod tests {
         assert_snapshot!(str::from_utf8(&string).unwrap());
     }
 
-    #[test]
-    fn render_in_json() {}
+    #[tokio::test]
+    async fn render_in_json() {
+        let mut string = vec![];
+
+        render_document(
+            stub_document_output(),
+            &RenderOptions::default().set_format(RenderFormat::Json),
+            &mut string,
+        )
+        .await
+        .unwrap();
+
+        assert_snapshot!(str::from_utf8(&string).unwrap());
+    }
 }
