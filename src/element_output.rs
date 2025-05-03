@@ -23,7 +23,7 @@ impl ElementOutput {
         self.results.iter()
     }
 
-    pub(crate) fn remove_success(&mut self) {
+    pub(crate) fn retain_error(&mut self) {
         self.results.retain(Result::is_err)
     }
 }

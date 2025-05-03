@@ -46,9 +46,9 @@ impl DocumentOutput {
         self.metrics
     }
 
-    pub(crate) fn remove_success(&mut self) {
+    pub(crate) fn retain_error(&mut self) {
         for element in &mut self.elements {
-            element.remove_success();
+            element.retain_error();
         }
     }
 }

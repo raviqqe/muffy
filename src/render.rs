@@ -87,7 +87,7 @@ pub async fn render_json_document(
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
     if !options.verbose() {
-        document.remove_success();
+        document.retain_error();
     }
 
     render_line(&serde_json::to_string(&document)?, writer).await
