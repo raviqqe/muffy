@@ -63,4 +63,14 @@ mod tests {
         metrics.add(true);
         assert_eq!(metrics, Metrics::new(1, 1));
     }
+
+    #[test]
+    fn has_error() {
+        let mut metrics = Metrics::default();
+
+        metrics.add(false);
+        assert!(!metrics.has_error());
+        metrics.add(true);
+        assert!(metrics.has_error());
+    }
 }
