@@ -1,3 +1,4 @@
+mod document_output;
 mod options;
 
 pub use self::options::{RenderFormat, RenderOptions};
