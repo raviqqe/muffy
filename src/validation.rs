@@ -116,6 +116,7 @@ pub async fn validate_link_with_base(
     validate_link(context, url.to_string(), document_type).await
 }
 
+// TODO Cache parsed HTML documents.
 fn validate_html(
     context: &Arc<Context>,
     response: &Arc<Response>,
