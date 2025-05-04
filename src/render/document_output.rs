@@ -32,7 +32,7 @@ impl<'a> From<&'a crate::DocumentOutput> for RenderedDocumentOutput<'a> {
             url: output.url(),
             elements: output
                 .elements()
-                .map(|output| RenderedElementOutput::from(output))
+                .map(RenderedElementOutput::from)
                 .collect(),
         }
     }
