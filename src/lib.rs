@@ -24,7 +24,7 @@ pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
 pub use self::validation::WebValidator;
-use self::{context::Context, validation::validate_link};
+use self::{context::Context, validation::WebValidator};
 use alloc::sync::Arc;
 use dirs::cache_dir;
 use futures::{Stream, StreamExt};
@@ -54,22 +54,20 @@ pub async fn validate(
     } else {
         None
     };
-    let context = Arc::new(Context::new(
-        CachedHttpClient::new(
-            ReqwestHttpClient::new(),
-            ClockTimer::new(),
-            if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
-            } else {
-                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
-            },
-            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
-        ),
-        sender,
-        url.into(),
-    ));
+    let context = Arc::new(Context::new(sender, url.into()));
 
-    validate_link(context, url.into(), None).await?;
+    WebValidator::new(CachedHttpClient::new(
+        ReqwestHttpClient::new(),
+        ClockTimer::new(),
+        if let Some(db) = &db {
+            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+        } else {
+            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+        },
+        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+    ))
+    .validate_link(context, url.into(), None)
+    .await?;
 
     Ok(ReceiverStream::new(receiver)
         .map(Box::into_pin)
@@ -110,18 +108,16 @@ mod tests {
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
-        let context = Arc::new(Context::new(
-            CachedHttpClient::new(
-                client,
-                StubTimer::new(),
-                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
-                1,
-            ),
-            sender,
-            url.into(),
-        ));
+        let context = Arc::new(Context::new(sender, url.into()));
 
-        validate_link(context, url.into(), None).await?;
+        WebValidator::new(CachedHttpClient::new(
+            client,
+            StubTimer::new(),
+            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+            1,
+        ))
+        .validate_link(context, url.into(), None)
+        .await?;
 
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
