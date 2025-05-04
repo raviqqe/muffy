@@ -22,8 +22,4 @@ impl ElementOutput {
     pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
         self.results.iter()
     }
-
-    pub(crate) fn retain_error(&mut self) {
-        self.results.retain(Result::is_err)
-    }
 }

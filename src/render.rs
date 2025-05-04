@@ -2,18 +2,20 @@ mod document_output;
 mod element_output;
 mod options;
 
+use self::document_output::DocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
-use crate::{DocumentOutput, error::Error};
+use crate::error::Error;
 use colored::Colorize;
 use core::pin::pin;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    mut document: DocumentOutput,
+    document: &crate::DocumentOutput,
     options: &RenderOptions,
     mut writer: impl AsyncWrite,
 ) -> Result<(), Error> {
+    let mut document = DocumentOutput::from(document);
     let mut writer = pin!(writer);
 
     if !options.verbose() {
@@ -29,7 +31,7 @@ pub async fn render_document(
     }
 
     if options.format() == RenderFormat::Json {
-        return render_json_document(document, &mut writer).await;
+        return render_json_document(&document, &mut writer).await;
     }
 
     render_line(
@@ -84,8 +86,8 @@ pub async fn render_document(
     Ok(())
 }
 
-pub async fn render_json_document(
-    document: DocumentOutput,
+pub async fn render_json_document<'a>(
+    document: &DocumentOutput<'a>,
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
     render_line(&serde_json::to_string(&document)?, writer).await
@@ -102,7 +104,8 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 mod tests {
     use super::*;
     use crate::{
-        element::Element, element_output::ElementOutput, response::Response, success::Success,
+        document_output::DocumentOutput, element::Element, element_output::ElementOutput,
+        response::Response, success::Success,
     };
     use core::str;
     use insta::assert_snapshot;

@@ -8,11 +8,32 @@ pub struct ElementOutput<'a> {
 }
 
 impl<'a> ElementOutput<'a> {
-    pub const fn new(element: Element, results: Vec<Result<Success, Error>>) -> Self {
-        Self { element, results }
+    pub const fn element(&self) -> &'a Element {
+        self.element
     }
 
-    pub(crate) fn retain_error(&mut self) {
-        self.results.retain(Result::is_err)
+    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
+        self.results.iter().copied()
+    }
+
+    pub(crate) fn retain_error(&self) -> Self {
+        Self {
+            element: self.element,
+            results: self
+                .results
+                .iter()
+                .copied()
+                .filter(|result| result.is_err())
+                .collect(),
+        }
+    }
+}
+
+impl<'a> From<&'a crate::element_output::ElementOutput> for ElementOutput<'a> {
+    fn from(output: &'a crate::element_output::ElementOutput) -> Self {
+        Self {
+            element: output.element(),
+            results: output.results().collect(),
+        }
     }
 }
