@@ -16,16 +16,8 @@ impl<'a> RenderedElementOutput<'a> {
         self.results.iter().copied()
     }
 
-    pub(crate) fn retain_error(&self) -> Self {
-        Self {
-            element: self.element,
-            results: self
-                .results
-                .iter()
-                .copied()
-                .filter(|result| result.is_err())
-                .collect(),
-        }
+    pub(crate) fn retain_error(&mut self) {
+        self.results.retain(|result| result.is_err());
     }
 }
 

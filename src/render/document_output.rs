@@ -19,7 +19,7 @@ impl<'a> RenderedDocumentOutput<'a> {
 
     pub(crate) fn retain_error(&mut self) {
         for element in &mut self.elements {
-            *element = element.retain_error();
+            element.retain_error();
         }
 
         self.elements.retain(|element| element.results().len() != 0);
@@ -30,10 +30,7 @@ impl<'a> From<&'a crate::DocumentOutput> for RenderedDocumentOutput<'a> {
     fn from(output: &'a crate::DocumentOutput) -> Self {
         Self {
             url: output.url(),
-            elements: output
-                .elements()
-                .map(RenderedElementOutput::from)
-                .collect(),
+            elements: output.elements().map(RenderedElementOutput::from).collect(),
         }
     }
 }
