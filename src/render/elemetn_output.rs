@@ -4,7 +4,7 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub struct ElementOutput<'a> {
     element: &'a Element,
-    results: Vec<Result<Success, Error>>,
+    results: Vec<&'a Result<Success, Error>>,
 }
 
 impl<'a> ElementOutput<'a> {
