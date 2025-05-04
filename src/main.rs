@@ -3,10 +3,10 @@
 use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
-use futures::{Stream, StreamExt};
+use futures::StreamExt;
 use muffy::{
-    CachedHttpClient, ClockTimer, DocumentOutput, MemoryCache, RenderFormat, RenderOptions,
-    ReqwestHttpClient, SledCache, WebValidator,
+    CachedHttpClient, ClockTimer, MemoryCache, RenderFormat, RenderOptions, ReqwestHttpClient,
+    SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
@@ -56,9 +56,27 @@ async fn run() -> Result<(), Box<dyn Error>> {
     } = Arguments::parse();
     let mut output = stdout();
 
+    let db = if cache {
+        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
+        create_dir_all(&directory).await?;
+        Some(sled::open(directory)?)
+    } else {
+        None
+    };
+    let validator = WebValidator::new(CachedHttpClient::new(
+        ReqwestHttpClient::new()?,
+        ClockTimer::new(),
+        if let Some(db) = &db {
+            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+        } else {
+            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+        },
+        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+    ));
+
+    let mut documents = validator.validate(&url).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
-    let mut documents = validate(&url, cache).await?;
 
     while let Some(document) = documents.next().await {
         let document = document?;
@@ -125,30 +143,4 @@ async fn run() -> Result<(), Box<dyn Error>> {
     } else {
         Ok(())
     }
-}
-
-async fn validate(
-    url: &str,
-    cache: bool,
-) -> Result<impl Stream<Item = Result<DocumentOutput, muffy::Error>>, Box<dyn Error>> {
-    let db = if cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
-        create_dir_all(&directory).await?;
-        Some(sled::open(directory)?)
-    } else {
-        None
-    };
-
-    Ok(WebValidator::new(CachedHttpClient::new(
-        ReqwestHttpClient::new()?,
-        ClockTimer::new(),
-        if let Some(db) = &db {
-            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
-        } else {
-            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
-        },
-        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
-    ))
-    .validate(url)
-    .await?)
 }
