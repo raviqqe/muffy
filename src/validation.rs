@@ -51,7 +51,6 @@ pub async fn validate_link(
     }
 
     // TODO Configure origin URLs.
-    // TODO Use original URLs for origin checks?
     if !url.to_string().starts_with(context.origin())
         || context
             .documents()
@@ -62,7 +61,6 @@ pub async fn validate_link(
         return Ok(Success::new().with_response(response));
     }
 
-    // TODO Validate fragments.
     let handle = spawn(validate_document(
         context.clone(),
         response.clone(),
@@ -164,7 +162,6 @@ fn validate_html_element(
                             ),
                             vec![spawn(validate_link_with_base(
                                 context.clone(),
-                                // TODO Normalize URLs.
                                 attribute.value.to_string(),
                                 base.clone(),
                                 None,
