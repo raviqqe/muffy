@@ -3,10 +3,9 @@ mod reqwest;
 #[cfg(test)]
 mod stub;
 
-pub use self::cached::*;
-pub use self::reqwest::*;
 #[cfg(test)]
 pub use self::stub::*;
+pub use self::{cached::*, reqwest::*};
 use crate::cache::CacheError;
 use alloc::sync::Arc;
 use async_trait::async_trait;

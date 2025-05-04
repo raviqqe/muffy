@@ -1,10 +1,11 @@
-use crate::{element::Element, error::Error, success::Success};
+use super::success::RenderedSuccess;
+use crate::{element::Element, error::Error};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedElementOutput<'a> {
     element: &'a Element,
-    results: Vec<&'a Result<Success, Error>>,
+    results: Vec<Result<RenderedSuccess<'a>, &'a Error>>,
 }
 
 impl<'a> RenderedElementOutput<'a> {
@@ -12,8 +13,10 @@ impl<'a> RenderedElementOutput<'a> {
         self.element
     }
 
-    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
-        self.results.iter().copied()
+    pub fn results(
+        &self,
+    ) -> impl ExactSizeIterator<Item = &Result<RenderedSuccess<'a>, &'a Error>> {
+        self.results.iter()
     }
 
     pub(crate) fn retain_error(&mut self) {
@@ -25,7 +28,10 @@ impl<'a> From<&'a crate::element_output::ElementOutput> for RenderedElementOutpu
     fn from(output: &'a crate::element_output::ElementOutput) -> Self {
         Self {
             element: output.element(),
-            results: output.results().collect(),
+            results: output
+                .results()
+                .map(|result| result.as_ref().map(RenderedSuccess::from))
+                .collect(),
         }
     }
 }
