@@ -12,15 +12,15 @@ pub struct RenderedResponse<'a> {
 }
 
 impl<'a> RenderedResponse<'a> {
-    pub fn url(&self) -> &'a Url {
+    pub const fn url(&self) -> &'a Url {
         self.url
     }
 
-    pub fn status(&self) -> StatusCode {
+    pub const fn status(&self) -> StatusCode {
         self.status
     }
 
-    pub fn duration(&self) -> u128 {
+    pub const fn duration(&self) -> u128 {
         self.duration
     }
 }

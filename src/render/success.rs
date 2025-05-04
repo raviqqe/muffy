@@ -8,7 +8,7 @@ pub struct RenderedSuccess<'a> {
 }
 
 impl<'a> RenderedSuccess<'a> {
-    pub fn response(&self) -> Option<&RenderedResponse<'a>> {
+    pub const fn response(&self) -> Option<&RenderedResponse<'a>> {
         self.response.as_ref()
     }
 }
@@ -18,7 +18,7 @@ impl<'a> From<&'a Success> for RenderedSuccess<'a> {
         Self {
             response: success
                 .response()
-                .map(|response| RenderedResponse::from(response)),
+                .map(RenderedResponse::from),
         }
     }
 }
