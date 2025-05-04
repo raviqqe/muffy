@@ -1,17 +1,18 @@
 use super::response::RenderedResponse;
+use crate::success::Success;
 use serde::Serialize;
 
-#[derive(Serialize)]
-struct RenderedSuccess {
-    response: Option<RenderedResponse>,
+#[derive(Debug, Serialize)]
+pub struct RenderedSuccess<'a> {
+    response: Option<RenderedResponse<'a>>,
 }
 
-impl From<Success> for RenderedSuccess {
-    fn from(success: Success) -> Self {
+impl<'a> From<&'a Success> for RenderedSuccess<'a> {
+    fn from(success: &'a Success) -> Self {
         Self {
             response: success
-                .response
-                .map(|response| RenderedResponse::from_response(&response)),
+                .response()
+                .map(|response| RenderedResponse::from(response)),
         }
     }
 }

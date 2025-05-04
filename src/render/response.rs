@@ -3,7 +3,7 @@ use http::StatusCode;
 use serde::Serialize;
 use url::Url;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct RenderedResponse<'a> {
     url: &'a Url,
     #[serde(with = "http_serde::status_code")]
