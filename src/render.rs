@@ -86,8 +86,8 @@ pub async fn render_document(
     Ok(())
 }
 
-pub async fn render_json_document<'a>(
-    document: &RenderedDocumentOutput<'a>,
+pub async fn render_json_document(
+    document: &RenderedDocumentOutput<'_>,
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
     render_line(&serde_json::to_string(&document)?, writer).await
