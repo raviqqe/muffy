@@ -157,6 +157,7 @@ fn validate_html_element(
                             ),
                             vec![spawn(validate_link_with_base(
                                 context.clone(),
+                                // TODO Normalize URLs.
                                 attribute.value.to_string(),
                                 base.clone(),
                                 None,
