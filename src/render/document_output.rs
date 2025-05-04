@@ -5,10 +5,10 @@ use url::Url;
 #[derive(Debug, Serialize)]
 pub struct DocumentOutput<'a> {
     url: Url,
-    elements: Vec<&'a ElementOutput>,
+    elements: Vec<&'a ElementOutput<'a>>,
 }
 
-impl DocumentOutput {
+impl<'a> DocumentOutput<'a> {
     pub fn new(url: Url, elements: Vec<ElementOutput>) -> Self {
         Self { url, elements }
     }
