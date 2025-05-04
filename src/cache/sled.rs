@@ -7,12 +7,14 @@ use tokio::time::sleep;
 
 const DELAY: Duration = Duration::from_millis(10);
 
+/// A cache based on the Sled database.
 pub struct SledCache<T> {
     tree: Tree,
     phantom: PhantomData<T>,
 }
 
 impl<T> SledCache<T> {
+    /// Creates a cache.
     pub fn new(tree: Tree) -> Self {
         Self {
             tree,

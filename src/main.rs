@@ -1,14 +1,25 @@
 #![doc = include_str!("../README.md")]
 
 use clap::Parser;
-use futures::StreamExt;
-use muffy::{RenderFormat, RenderOptions};
+use dirs::cache_dir;
+use futures::{Stream, StreamExt};
+use muffy::{
+    CachedHttpClient, ClockTimer, DocumentOutput, MemoryCache, RenderFormat, RenderOptions,
+    ReqwestHttpClient, SledCache, WebValidator,
+};
+use rlimit::{Resource, getrlimit};
+use std::env::temp_dir;
 use std::process::exit;
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
-use tokio::io::stdout;
+use tokio::{fs::create_dir_all, io::stdout};
+
+const DATABASE_NAME: &str = "muffy";
+const RESPONSE_NAMESPACE: &str = "responses";
+
+const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -46,7 +57,7 @@ async fn run() -> Result<(), muffy::Error> {
 
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
-    let mut documents = muffy::validate(&url, cache).await?;
+    let mut documents = validate(&url, cache).await?;
 
     while let Some(document) = documents.next().await {
         let document = document?;
@@ -113,4 +124,30 @@ async fn run() -> Result<(), muffy::Error> {
     } else {
         Ok(())
     }
+}
+
+async fn validate(
+    url: &str,
+    cache: bool,
+) -> Result<impl Stream<Item = Result<DocumentOutput, muffy::Error>>, muffy::Error> {
+    let db = if cache {
+        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
+        create_dir_all(&directory).await?;
+        Some(sled::open(directory)?)
+    } else {
+        None
+    };
+
+    WebValidator::new(CachedHttpClient::new(
+        ReqwestHttpClient::new(),
+        ClockTimer::new(),
+        if let Some(db) = &db {
+            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+        } else {
+            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+        },
+        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+    ))
+    .validate(url.into())
+    .await
 }

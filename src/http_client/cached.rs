@@ -13,6 +13,7 @@ use url::Url;
 
 const USER_AGENT: &str = "muffy";
 
+/// A cached HTTP client.
 pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
 
 struct CachedHttpClientInner {
@@ -23,6 +24,7 @@ struct CachedHttpClientInner {
 }
 
 impl CachedHttpClient {
+    /// Creates an HTTP client.
     pub fn new(
         client: impl HttpClient + 'static,
         timer: impl Timer + 'static,
@@ -44,7 +46,7 @@ impl CachedHttpClient {
         Self(self.0.clone())
     }
 
-    pub async fn get(&self, url: &Url) -> Result<Option<Arc<Response>>, HttpClientError> {
+    pub(crate) async fn get(&self, url: &Url) -> Result<Option<Arc<Response>>, HttpClientError> {
         match self.get_inner(url, true).await {
             Ok(response) => Ok(Some(response)),
             Err(HttpClientError::RobotsTxt) => Ok(None),

@@ -17,62 +17,27 @@ mod success;
 mod timer;
 mod validation;
 
-use self::cache::{MemoryCache, SledCache};
+pub use self::cache::{MemoryCache, SledCache};
 pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
+pub use self::http_client::{CachedHttpClient, ReqwestHttpClient};
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
-use self::timer::ClockTimer;
+pub use self::timer::ClockTimer;
 pub use self::validation::WebValidator;
-use dirs::cache_dir;
-use futures::Stream;
-use http_client::{CachedHttpClient, ReqwestHttpClient};
-use rlimit::{Resource, getrlimit};
-use std::env::temp_dir;
-use tokio::fs::create_dir_all;
-
-const DATABASE_NAME: &str = "muffy";
-const RESPONSE_NAMESPACE: &str = "responses";
-
-const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
-
-/// Validates websites recursively.
-pub async fn validate(
-    url: &str,
-    cache: bool,
-) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
-    let db = if cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
-        create_dir_all(&directory).await?;
-        Some(sled::open(directory)?)
-    } else {
-        None
-    };
-
-    WebValidator::new(CachedHttpClient::new(
-        ReqwestHttpClient::new(),
-        ClockTimer::new(),
-        if let Some(db) = &db {
-            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
-        } else {
-            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
-        },
-        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
-    ))
-    .validate(url.into())
-    .await
-}
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient};
-    use futures::StreamExt;
+    use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use timer::StubTimer;
     use url::Url;
+
+    const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 
     fn build_response_stub(
         url: &str,
