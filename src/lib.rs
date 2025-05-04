@@ -15,7 +15,7 @@ mod render;
 mod response;
 mod success;
 mod timer;
-mod validation;
+mod web_validator;
 
 pub use self::cache::{MemoryCache, SledCache};
 pub use self::document_output::DocumentOutput;
@@ -24,7 +24,7 @@ pub use self::http_client::{CachedHttpClient, ReqwestHttpClient};
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 pub use self::timer::ClockTimer;
-pub use self::validation::WebValidator;
+pub use self::web_validator::WebValidator;
 
 #[cfg(test)]
 mod tests {
