@@ -15,7 +15,7 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 pub async fn render_document(
     document: &DocumentOutput,
     options: &RenderOptions,
-    mut writer: impl AsyncWrite,
+    writer: impl AsyncWrite,
 ) -> Result<(), Error> {
     let mut document = RenderedDocumentOutput::from(document);
     let mut writer = pin!(writer);
