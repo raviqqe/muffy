@@ -12,16 +12,6 @@ impl<'a> ElementOutput<'a> {
         Self { element, results }
     }
 
-    /// Returns an element.
-    pub const fn element(&self) -> &Element {
-        &self.element
-    }
-
-    /// Returns validation results.
-    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
-        self.results.iter()
-    }
-
     pub(crate) fn retain_error(&mut self) {
         self.results.retain(Result::is_err)
     }
