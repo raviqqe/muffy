@@ -19,6 +19,7 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 
+/// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
@@ -26,6 +27,7 @@ struct WebValidatorInner {
 }
 
 impl WebValidator {
+    /// Creates a web validator.
     pub fn new(http_client: CachedHttpClient) -> Self {
         Self(WebValidatorInner { http_client }.into())
     }
