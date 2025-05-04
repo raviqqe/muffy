@@ -337,14 +337,7 @@ mod tests {
                     url: Url::parse("https://foo.com").unwrap(),
                     status: StatusCode::OK,
                     headers: html_headers.clone(),
-                    body: indoc!(
-                        r#"
-                            <a href="https://foo.com#foo"/>
-                            <div id="foo" />
-                        "#
-                    )
-                    .as_bytes()
-                    .to_vec(),
+                    body: r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
                 }),
             ]),
             "https://foo.com",
