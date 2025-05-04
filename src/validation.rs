@@ -309,12 +309,12 @@ fn validate_document_type(
 }
 
 fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
-    Ok(has_html_element_in_node(
+    has_html_element_in_node(
         &parse_html(str::from_utf8(response.body())?)
             .map_err(Error::HtmlParse)?
             .document,
         id,
-    )?)
+    )
 }
 
 fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
@@ -329,7 +329,7 @@ fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
     }
 
     for node in node.children.borrow().iter() {
-        if has_html_element_in_node(&node, id)? {
+        if has_html_element_in_node(node, id)? {
             return Ok(true);
         }
     }
