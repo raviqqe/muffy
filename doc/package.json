@@ -4,7 +4,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "tools/usage.sh && astro build",
+    "build": "node --run build:image && node --run build:usage && astro build",
+    "build:image": "tools/image.sh",
+    "build:usage": "tools/usage.sh",
     "preview": "astro preview",
     "lint": "npm run lint:biome && eslint --cache src",
     "lint:biome": "biome ci",
