@@ -40,19 +40,19 @@ impl CachedHttpClient {
         )
     }
 
+    fn cloned(&self) -> Self {
+        Self(self.0.clone())
+    }
+
     pub async fn get(&self, url: &Url) -> Result<Option<Arc<Response>>, HttpClientError> {
-        match Self::get_inner(&self.0, url, true).await {
+        match self.get_inner(url, true).await {
             Ok(response) => Ok(Some(response)),
             Err(HttpClientError::RobotsTxt) => Ok(None),
             Err(error) => Err(error),
         }
     }
 
-    async fn get_inner(
-        inner: &Arc<CachedHttpClientInner>,
-        url: &Url,
-        robots: bool,
-    ) -> Result<Arc<Response>, HttpClientError> {
+    async fn get_inner(&self, url: &Url, robots: bool) -> Result<Arc<Response>, HttpClientError> {
         let mut url = url.clone();
 
         // TODO Configure maximum redirect counts.
@@ -60,7 +60,7 @@ impl CachedHttpClient {
         // TODO Configure timeouts.
         // TODO Configure maximum connections.
         loop {
-            let response = Self::get_once(inner, &url, robots).await?;
+            let response = self.get_once(&url, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -76,31 +76,27 @@ impl CachedHttpClient {
         }
     }
 
-    async fn get_once(
-        inner: &Arc<CachedHttpClientInner>,
-        url: &Url,
-        robots: bool,
-    ) -> Result<Arc<Response>, HttpClientError> {
+    async fn get_once(&self, url: &Url, robots: bool) -> Result<Arc<Response>, HttpClientError> {
         // TODO Configure cache expiry.
-        inner
+        self.0
             .cache
             .get_or_set(url.to_string(), {
                 let url = url.clone();
-                let inner = inner.clone();
+                let client = self.cloned();
 
                 Box::new(async move {
                     if robots {
-                        if let Some(robot) = Self::get_robot(&inner, &url).await? {
+                        if let Some(robot) = client.get_robot(&url).await? {
                             if !robot.is_absolute_allowed(&url) {
                                 return Err(HttpClientError::RobotsTxt);
                             }
                         }
                     }
 
-                    let permit = inner.semaphore.acquire().await.unwrap();
-                    let start = inner.timer.now();
-                    let response = inner.client.get(&url).await?;
-                    let duration = inner.timer.now().duration_since(start);
+                    let permit = client.0.semaphore.acquire().await.unwrap();
+                    let start = client.0.timer.now();
+                    let response = client.0.client.get(&url).await?;
+                    let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
                     Ok(Response::from_bare(response, duration).into())
@@ -110,11 +106,9 @@ impl CachedHttpClient {
     }
 
     #[async_recursion]
-    async fn get_robot(
-        inner: &Arc<CachedHttpClientInner>,
-        url: &Url,
-    ) -> Result<Option<Robots>, HttpClientError> {
-        Ok(Self::get_inner(inner, &url.join("robots.txt")?, false)
+    async fn get_robot(&self, url: &Url) -> Result<Option<Robots>, HttpClientError> {
+        Ok(self
+            .get_inner(&url.join("robots.txt")?, false)
             .await
             .ok()
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
