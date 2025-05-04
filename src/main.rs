@@ -20,7 +20,7 @@ struct Arguments {
     #[arg(long)]
     cache: bool,
     /// Sets an output format.
-    #[arg(long)]
+    #[arg(long, default_value = "text")]
     format: RenderFormat,
     /// Becomes verbose.
     #[arg(long)]
