@@ -11,7 +11,7 @@ use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, io};
-use tokio::{spawn, task::JoinHandle};
+use tokio::{spawn, sync::mpsc::Sender, task::JoinHandle};
 use url::Url;
 
 type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
@@ -30,7 +30,7 @@ impl WebValidator {
         origin: String,
     ) -> Self {
         Self {
-            inner: Context::new(http_client, job_sender, origin),
+            inner: Context::new(http_client, job_sender, origin).into(),
         }
     }
 
