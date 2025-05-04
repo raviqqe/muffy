@@ -92,6 +92,7 @@ mod tests {
         body: Vec<u8>,
     ) -> (String, Result<BareResponse, HttpClientError>) {
         let url = Url::parse(url).unwrap();
+
         (
             url.as_str().into(),
             Ok(BareResponse {
