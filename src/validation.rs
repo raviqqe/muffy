@@ -44,7 +44,7 @@ pub async fn validate_link(
     };
 
     if let Some(fragment) = url.fragment() {
-        if document_type == DocumentType::Html && has_html_element(&response, fragment)? {
+        if document_type == DocumentType::Html && !has_html_element(&response, fragment)? {
             return Err(Error::HtmlElementNotFound(fragment.into()));
         }
     }
