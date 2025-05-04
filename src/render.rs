@@ -1,6 +1,8 @@
 mod document_output;
 mod element_output;
 mod options;
+mod response;
+mod success;
 
 use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
@@ -68,7 +70,7 @@ pub async fn render_document(
                                     "\t\t{}\t{}\t{}",
                                     response.status().to_string().green(),
                                     response.url(),
-                                    format!("{} ms", response.duration().as_millis()).yellow()
+                                    format!("{} ms", response.duration()).yellow()
                                 )
                             },
                         ),

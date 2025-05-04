@@ -1,5 +1,4 @@
-use crate::cache::CacheError;
-use crate::http_client::HttpClientError;
+use crate::{cache::CacheError, http_client::HttpClientError};
 use core::{
     error,
     fmt::{self, Display, Formatter},

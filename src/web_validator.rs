@@ -70,8 +70,10 @@ impl WebValidator {
         let mut document_url = url.clone();
         document_url.set_fragment(None);
 
-        // We keep this fragment removal not configurable as otherwise we might have a lot more
-        // requests for the same HTML pages, which makes crawling unacceptably inefficient.
+        // We keep this fragment removal not configurable as otherwise we might have a
+        // lot more requests for the same HTML pages, which makes crawling
+        // unacceptably inefficient.
+        //
         // TODO Configure request headers.
         let Some(response) = self.0.http_client.get(&document_url).await? else {
             return Ok(Success::default());
