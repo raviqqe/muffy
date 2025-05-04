@@ -40,6 +40,10 @@ impl CachedHttpClient {
         )
     }
 
+    fn closed(&self) -> Self {
+        Self(self.0.clone())
+    }
+
     pub async fn get(&self, url: &Url) -> Result<Option<Arc<Response>>, HttpClientError> {
         match Self::get_inner(&self.0, url, true).await {
             Ok(response) => Ok(Some(response)),
