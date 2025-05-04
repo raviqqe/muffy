@@ -2,4 +2,4 @@
 
 set -e
 
-curl -fsSL https://raviqqe.s3.amazonaws.com/muffin/cute-icon-wide.png >public/icon.png
+curl -fsSL https://raviqqe.s3.amazonaws.com/muffin/cute-icon.png >public/icon.png
