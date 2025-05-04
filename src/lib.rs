@@ -18,13 +18,13 @@ mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
+use self::context::Context;
 pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
 pub use self::validation::WebValidator;
-use self::{context::Context, validation::WebValidator};
 use alloc::sync::Arc;
 use dirs::cache_dir;
 use futures::{Stream, StreamExt};

@@ -45,7 +45,7 @@ impl WebValidator {
         // We keep this fragment removal not configurable as otherwise we might have a lot more
         // requests for the same HTML pages, which makes crawling unacceptably inefficient.
         // TODO Configure request headers.
-        let Some(response) = context.http_client().get(&document_url).await? else {
+        let Some(response) = self.0.http_client.get(&document_url).await? else {
             return Ok(Success::default());
         };
 
@@ -143,10 +143,10 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
 
-        validate_html_element(
+        self.validate_html_element(
             context,
             &response.url().clone().into(),
-            &parse_html(str::from_utf8(response.body())?)
+            &Self::parse_html(str::from_utf8(response.body())?)
                 .map_err(Error::HtmlParse)?
                 .document,
             &mut futures,
