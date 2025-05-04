@@ -39,8 +39,7 @@ pub async fn validate_link(
         return Err(Error::InvalidStatus(response.status()));
     }
 
-    let document_type = validate_document_type(&response, document_type)?;
-    let Some(document_type) = document_type else {
+    let Some(document_type) = validate_document_type(&response, document_type)? else {
         return Ok(Success::new().with_response(response));
     };
 
