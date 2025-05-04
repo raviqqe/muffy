@@ -137,7 +137,7 @@ mod tests {
     #[test]
     fn build_client() {
         CachedHttpClient::new(
-            StubHttpClient::new(vec![]),
+            StubHttpClient::new(Default::default()),
             StubTimer::new(),
             Box::new(MemoryCache::new(0)),
             1,
@@ -147,23 +147,32 @@ mod tests {
     #[tokio::test]
     async fn get() {
         let url = Url::parse("https://foo.com").unwrap();
+        let robots_url = url.join("robots.txt").unwrap();
         let response = BareResponse {
             url: url.clone(),
             status: StatusCode::OK,
             headers: Default::default(),
             body: vec![],
         };
+
         assert_eq!(
             CachedHttpClient::new(
-                StubHttpClient::new(vec![
-                    Ok(BareResponse {
-                        url: url.join("robots.txt").unwrap(),
-                        status: StatusCode::OK,
-                        headers: Default::default(),
-                        body: vec![],
-                    }),
-                    Ok(response.clone())
-                ]),
+                StubHttpClient::new(
+                    [
+                        (
+                            robots_url.as_str().into(),
+                            Ok(BareResponse {
+                                url: robots_url,
+                                status: StatusCode::OK,
+                                headers: Default::default(),
+                                body: vec![],
+                            })
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
