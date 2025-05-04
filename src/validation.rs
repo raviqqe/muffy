@@ -5,16 +5,20 @@ use crate::{
 };
 use alloc::sync::Arc;
 use core::str;
-use futures::future::try_join_all;
+use futures::{Stream, StreamExt, future::try_join_all};
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, io};
-use tokio::{spawn, task::JoinHandle};
+use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
+use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
 
 type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
+
+const JOB_CAPACITY: usize = 1 << 16;
+const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
@@ -34,6 +38,23 @@ impl WebValidator {
 
     fn cloned(&self) -> Self {
         Self(self.0.clone())
+    }
+
+    /// Validates websites recursively.
+    pub async fn validate(
+        &self,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let (sender, receiver) = channel(JOB_CAPACITY);
+        let context = Arc::new(Context::new(sender, url.into()));
+
+        self.cloned()
+            .validate_link(context, url.into(), None)
+            .await?;
+
+        Ok(ReceiverStream::new(receiver)
+            .map(Box::into_pin)
+            .buffer_unordered(JOB_COMPLETION_BUFFER))
     }
 
     /// Validates a link.
