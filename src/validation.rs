@@ -319,12 +319,11 @@ fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
 
 fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
     if let NodeData::Element { attrs, .. } = &node.data {
-        for attribute in attrs.borrow().iter() {
-            if FRAGMENT_ATTRIBUTES.contains(&attribute.name.local.as_ref())
+        if attrs.borrow().iter().any(|attribute| {
+            FRAGMENT_ATTRIBUTES.contains(&attribute.name.local.as_ref())
                 && attribute.value.as_ref() == id
-            {
-                return Ok(true);
-            }
+        }) {
+            return Ok(true);
         }
     }
 
