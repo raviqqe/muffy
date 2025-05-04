@@ -11,14 +11,13 @@ pub struct ReqwestHttpClient {
 
 impl ReqwestHttpClient {
     /// Creates an HTTP client.
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Result<Self, reqwest::Error> {
+        Ok(Self {
             client: ClientBuilder::new()
                 .tcp_keepalive(None)
                 .redirect(Policy::none())
-                .build()
-                .unwrap(),
-        }
+                .build()?,
+        })
     }
 }
 

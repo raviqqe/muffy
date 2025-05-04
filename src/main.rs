@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use clap::Parser;
+use core::error::Error;
 use dirs::cache_dir;
 use futures::{Stream, StreamExt};
 use muffy::{
@@ -46,7 +47,7 @@ async fn main() {
     }
 }
 
-async fn run() -> Result<(), muffy::Error> {
+async fn run() -> Result<(), Box<dyn Error>> {
     let Arguments {
         url,
         cache,
@@ -120,7 +121,7 @@ async fn run() -> Result<(), muffy::Error> {
     );
 
     if document_metrics.has_error() {
-        Err(muffy::Error::Document)
+        Err(muffy::Error::Document.into())
     } else {
         Ok(())
     }
@@ -129,7 +130,7 @@ async fn run() -> Result<(), muffy::Error> {
 async fn validate(
     url: &str,
     cache: bool,
-) -> Result<impl Stream<Item = Result<DocumentOutput, muffy::Error>>, muffy::Error> {
+) -> Result<impl Stream<Item = Result<DocumentOutput, muffy::Error>>, Box<dyn Error>> {
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
         create_dir_all(&directory).await?;
@@ -138,8 +139,8 @@ async fn validate(
         None
     };
 
-    WebValidator::new(CachedHttpClient::new(
-        ReqwestHttpClient::new(),
+    Ok(WebValidator::new(CachedHttpClient::new(
+        ReqwestHttpClient::new()?,
         ClockTimer::new(),
         if let Some(db) = &db {
             Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
@@ -149,5 +150,5 @@ async fn validate(
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ))
     .validate(url)
-    .await
+    .await?)
 }
