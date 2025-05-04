@@ -17,6 +17,7 @@ use url::Url;
 type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
+const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 
 pub async fn validate_link(
     context: Arc<Context>,
@@ -319,7 +320,7 @@ fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
 fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
     if let NodeData::Element { attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
-            for name in ["id", "name"] {
+            for name in FRAGMENT_ATTRIBUTES {
                 if attribute.name.local.as_ref() == name && attribute.value.as_ref() == id {
                     return Ok(true);
                 }
