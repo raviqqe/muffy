@@ -1,6 +1,6 @@
 use crate::{
     context::Context, document_output::DocumentOutput, document_type::DocumentType,
-    element::Element, element_output::ElementOutput, error::Error, response::Response,
+    element::Element, element_output::ElementOutput, error::Error, http_client, response::Response,
     success::Success,
 };
 use alloc::sync::Arc;
@@ -18,6 +18,24 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+
+pub struct WebValidator {
+    inner: Arc<Context>,
+}
+
+impl WebValidator {
+    pub fn new(
+        http_client: CachedHttpClient,
+        job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
+        origin: String,
+    ) -> Self {
+        Self {
+            inner: Context::new(http_client, job_sender, origin),
+        }
+    }
+
+    fn cloned() {}
+}
 
 pub async fn validate_link(
     context: Arc<Context>,

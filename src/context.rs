@@ -2,18 +2,6 @@ use crate::{document_output::DocumentOutput, error::Error, http_client::CachedHt
 use scc::HashSet;
 use tokio::sync::mpsc::Sender;
 
-pub struct WebValidator {
-    inner: Arc<Context>,
-}
-
-impl WebValidator {
-    pub fn new() -> Self {
-        Self { context }
-    }
-
-    fn cloned() {}
-}
-
 pub struct Context {
     http_client: CachedHttpClient,
     origin: String,
