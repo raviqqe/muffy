@@ -383,7 +383,25 @@ mod tests {
                             .to_vec(),
                     }),
                     Ok(BareResponse {
-                        url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
+                        url: Url::parse("https://foo.com/sitemap-index.xml").unwrap(),
+                        status: StatusCode::OK,
+                        headers: HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static(content_type),
+                        )]),
+                        body: r#"
+                            <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                                <sitemap>
+                                    <loc>https://foo.com/sitemap-0.xml</loc>
+                                    <lastmod>1970-01-01T00:00:00+00:00</lastmod>
+                                </sitemap>
+                            </sitemapindex>
+                    "#
+                        .as_bytes()
+                        .to_vec(),
+                    }),
+                    Ok(BareResponse {
+                        url: Url::parse("https://foo.com/sitemap-0.xml").unwrap(),
                         status: StatusCode::OK,
                         headers: HeaderMap::from_iter([(
                             HeaderName::from_static("content-type"),
@@ -424,6 +442,16 @@ mod tests {
                 collect_metrics(&mut documents).await,
                 (Metrics::new(3, 0), Metrics::new(3, 0))
             );
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_index_in_text_xml() {
+            validate_sitemap_index("text/xml").await;
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_index_in_application_xml() {
+            validate_sitemap_index("application/xml").await;
         }
     }
 
