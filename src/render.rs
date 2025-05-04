@@ -1,6 +1,8 @@
 mod document_output;
 mod element_output;
 mod options;
+mod response;
+mod success;
 
 use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
