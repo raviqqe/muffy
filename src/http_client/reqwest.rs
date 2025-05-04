@@ -3,20 +3,21 @@ use async_trait::async_trait;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
 use url::Url;
 
+/// An HTTP client based on [`reqwest`].
 #[derive(Debug, Default)]
 pub struct ReqwestHttpClient {
     client: Client,
 }
 
 impl ReqwestHttpClient {
-    pub fn new() -> Self {
-        Self {
+    /// Creates an HTTP client.
+    pub fn new() -> Result<Self, reqwest::Error> {
+        Ok(Self {
             client: ClientBuilder::new()
                 .tcp_keepalive(None)
                 .redirect(Policy::none())
-                .build()
-                .unwrap(),
-        }
+                .build()?,
+        })
     }
 }
 
