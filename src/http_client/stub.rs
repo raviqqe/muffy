@@ -1,26 +1,27 @@
 use crate::http_client::{BareResponse, HttpClient, HttpClientError};
 use async_trait::async_trait;
-use tokio::sync::Mutex;
+use scc::HashMap;
 use url::Url;
 
 #[derive(Debug)]
 pub struct StubHttpClient {
-    results: Mutex<Vec<Result<BareResponse, HttpClientError>>>,
+    results: HashMap<String, Result<BareResponse, HttpClientError>>,
 }
 
 impl StubHttpClient {
-    pub fn new(mut results: Vec<Result<BareResponse, HttpClientError>>) -> Self {
-        results.reverse();
-
-        Self {
-            results: results.into(),
-        }
+    pub fn new(results: HashMap<String, Result<BareResponse, HttpClientError>>) -> Self {
+        Self { results }
     }
 }
 
 #[async_trait]
 impl HttpClient for StubHttpClient {
-    async fn get(&self, _url: &Url) -> Result<BareResponse, HttpClientError> {
-        self.results.lock().await.pop().unwrap()
+    async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError> {
+        self.results
+            .get_async(url.as_str())
+            .await
+            .expect("stub response")
+            .get()
+            .clone()
     }
 }
