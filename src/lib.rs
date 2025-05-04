@@ -280,6 +280,84 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn validate_fragment_for_html() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: indoc!(
+                        r#"
+                            <a href="https://foo.com#foo"/>
+                            <div id="foo" />
+                        "#
+                    )
+                    .as_bytes()
+                    .into(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_missing_fragment_for_html() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(vec![
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                }),
+                Ok(BareResponse {
+                    url: Url::parse("https://foo.com").unwrap(),
+                    status: StatusCode::OK,
+                    headers: html_headers.clone(),
+                    body: indoc!(
+                        r#"
+                            <a href="https://foo.com#foo"/>
+                            <div id="foo" />
+                        "#
+                    )
+                    .as_bytes()
+                    .to_vec(),
+                }),
+            ]),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(0, 1), Metrics::new(0, 1))
+        );
+    }
+
     mod sitemap {
         use super::*;
         use pretty_assertions::assert_eq;

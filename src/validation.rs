@@ -43,6 +43,12 @@ pub async fn validate_link(
         return Ok(Success::new().with_response(response));
     };
 
+    if let Some(fragment) = url.fragment() {
+        if document_type == DocumentType::Html && has_html_element(&response, fragment)? {
+            return Err(Error::HtmlElementNotFound(fragment.into()));
+        }
+    }
+
     // TODO Configure origin URLs.
     // TODO Use original URLs for origin checks?
     if !url.to_string().starts_with(context.origin())
@@ -314,7 +320,7 @@ fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
     if let NodeData::Element { attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
             for name in ["id", "name"] {
-                if attribute.name.local.as_ref() == name {
+                if attribute.name.local.as_ref() == name && attribute.value.as_ref() == id {
                     return Ok(true);
                 }
             }
