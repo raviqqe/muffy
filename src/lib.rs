@@ -68,7 +68,7 @@ mod tests {
             Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
             1,
         ))
-        .validate(url.into())
+        .validate(url)
         .await
     }
 
@@ -393,7 +393,7 @@ mod tests {
                             .to_vec(),
                         ),
                         build_response_stub(
-                            "https://foo.com/bar".into(),
+                            "https://foo.com/bar",
                             StatusCode::OK,
                             html_headers.clone(),
                             Default::default(),

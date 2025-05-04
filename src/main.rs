@@ -148,6 +148,6 @@ async fn validate(
         },
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ))
-    .validate(url.into())
+    .validate(url)
     .await
 }
