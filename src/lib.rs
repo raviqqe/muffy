@@ -378,7 +378,7 @@ mod tests {
                         url: Url::parse("https://foo.com").unwrap(),
                         status: StatusCode::OK,
                         headers: html_headers.clone(),
-                        body: r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                        body: r#"<link rel="sitemap" href="https://foo.com/sitemap-index.xml"/>"#
                             .as_bytes()
                             .to_vec(),
                     }),
@@ -396,7 +396,7 @@ mod tests {
                                     <lastmod>1970-01-01T00:00:00+00:00</lastmod>
                                 </sitemap>
                             </sitemapindex>
-                    "#
+                        "#
                         .as_bytes()
                         .to_vec(),
                     }),
@@ -440,7 +440,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(3, 0), Metrics::new(3, 0))
+                (Metrics::new(4, 0), Metrics::new(4, 0))
             );
         }
 
