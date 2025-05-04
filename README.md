@@ -1,7 +1,5 @@
 # Muffy
 
-![](https://raviqqe.s3.amazonaws.com/muffin/cute-icon-wide.png)
-
 [![GitHub Action](https://img.shields.io/github/actions/workflow/status/raviqqe/muffy/test.yaml?branch=main&style=flat-square)](https://github.com/raviqqe/muffy/actions)
 [![Codecov](https://img.shields.io/codecov/c/github/raviqqe/muffy.svg?style=flat-square)](https://codecov.io/gh/raviqqe/muffy)
 [![Crate](https://img.shields.io/crates/v/muffy.svg?style=flat-square)](https://crates.io/crates/muffy)
