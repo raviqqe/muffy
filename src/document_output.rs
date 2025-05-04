@@ -50,5 +50,7 @@ impl DocumentOutput {
         for element in &mut self.elements {
             element.retain_error();
         }
+
+        self.elements.retain(|element| element.results().len() != 0);
     }
 }

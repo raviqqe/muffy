@@ -7,18 +7,24 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: DocumentOutput,
+    mut document: DocumentOutput,
     options: &RenderOptions,
     mut writer: (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
+    if !options.verbose() {
+        document.retain_error();
+    }
+
     if !options.verbose()
         && document
             .elements()
             .all(|element| element.results().all(Result::is_ok))
     {
         return Ok(());
-    } else if options.format() == RenderFormat::Json {
-        return render_json_document(document, options, &mut writer).await;
+    }
+
+    if options.format() == RenderFormat::Json {
+        return render_json_document(document, &mut writer).await;
     }
 
     render_line(
@@ -28,10 +34,6 @@ pub async fn render_document(
     .await?;
 
     for output in document.elements() {
-        if !options.verbose() && output.results().all(Result::is_ok) {
-            continue;
-        }
-
         render_line(
             &format!(
                 "\t{} {}",
@@ -51,10 +53,6 @@ pub async fn render_document(
         for result in output.results() {
             match result {
                 Ok(success) => {
-                    if !options.verbose() {
-                        continue;
-                    }
-
                     render_line(
                         &success.response().map_or_else(
                             || "\t\tvalid URL".into(),
@@ -82,14 +80,9 @@ pub async fn render_document(
 }
 
 pub async fn render_json_document(
-    mut document: DocumentOutput,
-    options: &RenderOptions,
+    document: DocumentOutput,
     writer: &mut (impl AsyncWrite + Unpin),
 ) -> Result<(), Error> {
-    if !options.verbose() {
-        document.retain_error();
-    }
-
     render_line(&serde_json::to_string(&document)?, writer).await
 }
 
@@ -156,7 +149,7 @@ mod tests {
         use super::*;
 
         #[tokio::test]
-        async fn render_in_text() {
+        async fn render() {
             colored::control::set_override(false);
             let mut string = vec![];
 
@@ -172,7 +165,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_in_text_with_verbose_option() {
+        async fn render_with_verbose_option() {
             colored::control::set_override(false);
             let mut string = vec![];
 
@@ -202,13 +195,53 @@ mod tests {
 
             assert_snapshot!(str::from_utf8(&string).unwrap());
         }
+
+        #[tokio::test]
+        async fn render_successful_element() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                DocumentOutput::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    vec![
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Ok(Success::default().with_response(
+                                Response::new(
+                                    Url::parse("https://foo.com").unwrap(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                )
+                                .into(),
+                            ))],
+                        ),
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Err(Error::HtmlParse(io::Error::new(
+                                ErrorKind::NotFound,
+                                "foo",
+                            )))],
+                        ),
+                    ],
+                ),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
     }
 
     mod json {
         use super::*;
 
         #[tokio::test]
-        async fn render_in_json() {
+        async fn render() {
             let mut string = vec![];
 
             render_document(
@@ -223,7 +256,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_in_json_with_verbose_option() {
+        async fn render_with_verbose_option() {
             let mut string = vec![];
 
             render_document(
@@ -231,6 +264,62 @@ mod tests {
                 &RenderOptions::default()
                     .set_format(RenderFormat::Json)
                     .set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_successful_document() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                successful_document_output(),
+                &RenderOptions::default().set_format(RenderFormat::Json),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_successful_element() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                DocumentOutput::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    vec![
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Ok(Success::default().with_response(
+                                Response::new(
+                                    Url::parse("https://foo.com").unwrap(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                    Default::default(),
+                                )
+                                .into(),
+                            ))],
+                        ),
+                        ElementOutput::new(
+                            Element::new("a".into(), vec![]),
+                            vec![Err(Error::HtmlParse(io::Error::new(
+                                ErrorKind::NotFound,
+                                "foo",
+                            )))],
+                        ),
+                    ],
+                ),
+                &RenderOptions::default().set_format(RenderFormat::Json),
                 &mut string,
             )
             .await
