@@ -3,14 +3,17 @@ mod options;
 pub use self::options::{RenderFormat, RenderOptions};
 use crate::{DocumentOutput, error::Error};
 use colored::Colorize;
+use core::pin::pin;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
     mut document: DocumentOutput,
     options: &RenderOptions,
-    mut writer: (impl AsyncWrite + Unpin),
+    mut writer: impl AsyncWrite,
 ) -> Result<(), Error> {
+    let mut writer = pin!(writer);
+
     if !options.verbose() {
         document.retain_error();
     }
