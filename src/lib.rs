@@ -91,10 +91,11 @@ mod tests {
         headers: HeaderMap,
         body: Vec<u8>,
     ) -> (String, Result<BareResponse, HttpClientError>) {
+        let url = Url::parse(url).unwrap();
         (
-            url.into(),
+            url.as_str().into(),
             Ok(BareResponse {
-                url: Url::parse(url).unwrap(),
+                url,
                 status,
                 headers,
                 body,
