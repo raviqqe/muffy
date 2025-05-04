@@ -27,6 +27,8 @@ pub enum Error {
     },
     /// An HTML parse error.
     HtmlParse(io::Error),
+    /// An HTML parse error.
+    HtmlElementNotFound(String),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An invalid status code in an HTTP response.
@@ -63,6 +65,9 @@ impl Display for Error {
                 )
             }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::HtmlElementNotFound(name) => {
+                write!(formatter, "HTML element for #{name} not found")
+            }
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
             Self::Io(error) => write!(formatter, "{error}"),

@@ -17,6 +17,7 @@ use url::Url;
 type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
+const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 
 pub async fn validate_link(
     context: Arc<Context>,
@@ -33,18 +34,23 @@ pub async fn validate_link(
     let Some(response) = context.http_client().get(&document_url).await? else {
         return Ok(Success::default());
     };
-    let document_type = parse_content_type(&response, document_type)?;
 
-    // TODO Configure origin URLs.
     // TODO Configure accepted status codes.
     if response.status() != StatusCode::OK {
         return Err(Error::InvalidStatus(response.status()));
     }
 
-    let Some(document_type) = document_type else {
+    let Some(document_type) = validate_document_type(&response, document_type)? else {
         return Ok(Success::new().with_response(response));
     };
 
+    if let Some(fragment) = url.fragment() {
+        if document_type == DocumentType::Html && !has_html_element(&response, fragment)? {
+            return Err(Error::HtmlElementNotFound(fragment.into()));
+        }
+    }
+
+    // TODO Configure origin URLs.
     // TODO Use original URLs for origin checks?
     if !url.to_string().starts_with(context.origin())
         || context
@@ -261,7 +267,7 @@ fn validate_sitemap(
 }
 
 // TODO Configure content type matchings.
-fn parse_content_type(
+fn validate_document_type(
     response: &Response,
     document_type: Option<DocumentType>,
 ) -> Result<Option<DocumentType>, Error> {
@@ -300,6 +306,34 @@ fn parse_content_type(
             None
         }),
     }
+}
+
+fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
+    has_html_element_in_node(
+        &parse_html(str::from_utf8(response.body())?)
+            .map_err(Error::HtmlParse)?
+            .document,
+        id,
+    )
+}
+
+fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
+    if let NodeData::Element { attrs, .. } = &node.data {
+        if attrs.borrow().iter().any(|attribute| {
+            FRAGMENT_ATTRIBUTES.contains(&attribute.name.local.as_ref())
+                && attribute.value.as_ref() == id
+        }) {
+            return Ok(true);
+        }
+    }
+
+    for node in node.children.borrow().iter() {
+        if has_html_element_in_node(node, id)? {
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
 }
 
 fn parse_html(text: &str) -> Result<RcDom, io::Error> {
