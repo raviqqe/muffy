@@ -4,14 +4,14 @@ mod options;
 
 use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
-use crate::{DocumentOutput, error::Error};
+use crate::error::Error;
 use colored::Colorize;
 use core::pin::pin;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 /// Renders a result of document validation.
 pub async fn render_document(
-    document: &DocumentOutput,
+    document: &crate::DocumentOutput,
     options: &RenderOptions,
     mut writer: impl AsyncWrite,
 ) -> Result<(), Error> {
@@ -104,7 +104,8 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 mod tests {
     use super::*;
     use crate::{
-        element::Element, element_output::ElementOutput, response::Response, success::Success,
+        document_output::DocumentOutput, element::Element, element_output::ElementOutput,
+        response::Response, success::Success,
     };
     use core::str;
     use insta::assert_snapshot;
@@ -209,7 +210,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                &DocumentOutput::new(
+                &RenderedDocumentOutput::new(
                     Url::parse("https://foo.com").unwrap(),
                     vec![
                         ElementOutput::new(
@@ -301,7 +302,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                &DocumentOutput::new(
+                &RenderedDocumentOutput::new(
                     Url::parse("https://foo.com").unwrap(),
                     vec![
                         ElementOutput::new(

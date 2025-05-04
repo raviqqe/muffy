@@ -2,12 +2,12 @@ use crate::{element::Element, error::Error, success::Success};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct ElementOutput<'a> {
+pub struct RenderedElementOutput<'a> {
     element: &'a Element,
     results: Vec<&'a Result<Success, Error>>,
 }
 
-impl<'a> ElementOutput<'a> {
+impl<'a> RenderedElementOutput<'a> {
     pub const fn element(&self) -> &'a Element {
         self.element
     }
@@ -29,7 +29,7 @@ impl<'a> ElementOutput<'a> {
     }
 }
 
-impl<'a> From<&'a crate::element_output::ElementOutput> for ElementOutput<'a> {
+impl<'a> From<&'a crate::element_output::ElementOutput> for RenderedElementOutput<'a> {
     fn from(output: &'a crate::element_output::ElementOutput) -> Self {
         Self {
             element: output.element(),
