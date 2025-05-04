@@ -70,7 +70,7 @@ pub async fn render_document(
                                     "\t\t{}\t{}\t{}",
                                     response.status().to_string().green(),
                                     response.url(),
-                                    format!("{} ms", response.duration().as_millis()).yellow()
+                                    format!("{} ms", response.duration()).yellow()
                                 )
                             },
                         ),

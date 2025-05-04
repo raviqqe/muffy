@@ -11,6 +11,20 @@ pub struct RenderedResponse<'a> {
     duration: u128,
 }
 
+impl<'a> RenderedResponse<'a> {
+    pub fn url(&self) -> &'a Url {
+        self.url
+    }
+
+    pub fn status(&self) -> StatusCode {
+        self.status
+    }
+
+    pub fn duration(&self) -> u128 {
+        self.duration
+    }
+}
+
 impl<'a> From<&'a Response> for RenderedResponse<'a> {
     fn from(response: &'a Response) -> Self {
         Self {
