@@ -27,7 +27,7 @@ struct WebValidatorInner {
 
 impl WebValidator {
     pub fn new(http_client: CachedHttpClient) -> Self {
-        Self(WebValidatorInner { http_client })
+        Self(WebValidatorInner { http_client }.into())
     }
 }
 

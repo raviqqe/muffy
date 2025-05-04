@@ -23,6 +23,7 @@ pub use self::error::Error;
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
+pub use self::validation::WebValidator;
 use self::{context::Context, validation::validate_link};
 use alloc::sync::Arc;
 use dirs::cache_dir;
