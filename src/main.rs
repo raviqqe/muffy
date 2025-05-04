@@ -9,8 +9,7 @@ use muffy::{
     SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
-use std::env::temp_dir;
-use std::process::exit;
+use std::{env::temp_dir, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},

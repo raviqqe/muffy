@@ -16,9 +16,7 @@ impl<'a> RenderedSuccess<'a> {
 impl<'a> From<&'a Success> for RenderedSuccess<'a> {
     fn from(success: &'a Success) -> Self {
         Self {
-            response: success
-                .response()
-                .map(RenderedResponse::from),
+            response: success.response().map(RenderedResponse::from),
         }
     }
 }
