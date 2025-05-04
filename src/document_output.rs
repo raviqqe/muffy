@@ -45,12 +45,4 @@ impl DocumentOutput {
     pub const fn metrics(&self) -> Metrics {
         self.metrics
     }
-
-    pub(crate) fn retain_error(&mut self) {
-        for element in &mut self.elements {
-            element.retain_error();
-        }
-
-        self.elements.retain(|element| element.results().len() != 0);
-    }
 }
