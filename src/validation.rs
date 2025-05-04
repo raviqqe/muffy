@@ -321,7 +321,7 @@ fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
     if let NodeData::Element { attrs, .. } = &node.data {
         for attribute in attrs.borrow().iter() {
             for name in FRAGMENT_ATTRIBUTES {
-                if attribute.name.local.as_ref() == name && attribute.value.as_ref() == id {
+                if attribute.name.local.as_ref() == *name && attribute.value.as_ref() == id {
                     return Ok(true);
                 }
             }
