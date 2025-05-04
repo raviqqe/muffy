@@ -24,6 +24,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
+                // TODO Avoid deadlocks.
                 let value = Box::into_pin(future).await;
                 entry.insert_entry(value.clone());
                 value
