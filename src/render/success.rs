@@ -1,14 +1,17 @@
+use super::response::RenderedResponse;
+use serde::Serialize;
+
 #[derive(Serialize)]
-struct SerializedSuccess {
-    response: Option<SerializedResponse>,
+struct RenderedSuccess {
+    response: Option<RenderedResponse>,
 }
 
-impl From<Success> for SerializedSuccess {
+impl From<Success> for RenderedSuccess {
     fn from(success: Success) -> Self {
         Self {
             response: success
                 .response
-                .map(|response| SerializedResponse::from_response(&response)),
+                .map(|response| RenderedResponse::from_response(&response)),
         }
     }
 }
