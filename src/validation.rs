@@ -34,7 +34,11 @@ impl WebValidator {
         }
     }
 
-    fn cloned() {}
+    fn cloned(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
 }
 
 pub async fn validate_link(
