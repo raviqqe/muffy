@@ -18,12 +18,12 @@ mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
+use self::context::WebValidatorInner;
 pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
-use self::{context::Context, validation::validate_link};
 use alloc::sync::Arc;
 use dirs::cache_dir;
 use futures::{Stream, StreamExt};
@@ -53,7 +53,7 @@ pub async fn validate(
     } else {
         None
     };
-    let context = Arc::new(Context::new(
+    let context = Arc::new(WebValidatorInner::new(
         CachedHttpClient::new(
             ReqwestHttpClient::new(),
             ClockTimer::new(),
@@ -109,7 +109,7 @@ mod tests {
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
-        let context = Arc::new(Context::new(
+        let context = Arc::new(WebValidatorInner::new(
             CachedHttpClient::new(
                 client,
                 StubTimer::new(),

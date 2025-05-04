@@ -2,14 +2,14 @@ use crate::{document_output::DocumentOutput, error::Error, http_client::CachedHt
 use scc::HashSet;
 use tokio::sync::mpsc::Sender;
 
-pub struct Context {
+pub struct WebValidatorInner {
     http_client: CachedHttpClient,
     origin: String,
     documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
 }
 
-impl Context {
+impl WebValidatorInner {
     pub fn new(
         http_client: CachedHttpClient,
         job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
