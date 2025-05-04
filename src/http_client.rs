@@ -1,12 +1,12 @@
-mod cached_http_client;
-mod reqwest_http_client;
+mod cached;
+mod reqwest;
 #[cfg(test)]
-mod stub_http_client;
+mod stub;
 
-pub use self::cached_http_client::*;
-pub use self::reqwest_http_client::*;
+pub use self::cached::*;
+pub use self::reqwest::*;
 #[cfg(test)]
-pub use self::stub_http_client::*;
+pub use self::stub::*;
 use crate::cache::CacheError;
 use alloc::sync::Arc;
 use async_trait::async_trait;
