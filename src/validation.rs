@@ -44,7 +44,7 @@ impl WebValidator {
     pub async fn validate(
         &self,
         url: &str,
-    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>> + use<>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
         let context = Arc::new(Context::new(sender, url.into()));
 
@@ -57,8 +57,7 @@ impl WebValidator {
             .buffer_unordered(JOB_COMPLETION_BUFFER))
     }
 
-    /// Validates a link.
-    pub async fn validate_link(
+    async fn validate_link(
         self,
         context: Arc<Context>,
         url: String,

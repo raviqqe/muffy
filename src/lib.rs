@@ -18,35 +18,29 @@ mod timer;
 mod validation;
 
 use self::cache::{MemoryCache, SledCache};
-use self::context::Context;
 pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
 pub use self::render::{RenderFormat, RenderOptions, render_document};
 use self::timer::ClockTimer;
 pub use self::validation::WebValidator;
-use alloc::sync::Arc;
 use dirs::cache_dir;
-use futures::{Stream, StreamExt};
+use futures::Stream;
 use http_client::{CachedHttpClient, ReqwestHttpClient};
 use rlimit::{Resource, getrlimit};
 use std::env::temp_dir;
-use tokio::{fs::create_dir_all, sync::mpsc::channel};
-use tokio_stream::wrappers::ReceiverStream;
+use tokio::fs::create_dir_all;
 
 const DATABASE_NAME: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
-const JOB_CAPACITY: usize = 1 << 16;
-const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 /// Validates websites recursively.
 pub async fn validate(
     url: &str,
     cache: bool,
 ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
-    let (sender, receiver) = channel(JOB_CAPACITY);
     let db = if cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
         create_dir_all(&directory).await?;
@@ -54,7 +48,6 @@ pub async fn validate(
     } else {
         None
     };
-    let context = Arc::new(Context::new(sender, url.into()));
 
     WebValidator::new(CachedHttpClient::new(
         ReqwestHttpClient::new(),
@@ -66,18 +59,15 @@ pub async fn validate(
         },
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ))
-    .validate_link(context, url.into(), None)
-    .await?;
-
-    Ok(ReceiverStream::new(receiver)
-        .map(Box::into_pin)
-        .buffer_unordered(JOB_COMPLETION_BUFFER))
+    .validate(url.into())
+    .await
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient};
+    use futures::StreamExt;
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
@@ -107,21 +97,14 @@ mod tests {
         client: impl HttpClient + 'static,
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
-        let (sender, receiver) = channel(JOB_CAPACITY);
-        let context = Arc::new(Context::new(sender, url.into()));
-
         WebValidator::new(CachedHttpClient::new(
             client,
             StubTimer::new(),
             Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
             1,
         ))
-        .validate_link(context, url.into(), None)
-        .await?;
-
-        Ok(ReceiverStream::new(receiver)
-            .map(Box::into_pin)
-            .buffer_unordered(JOB_COMPLETION_BUFFER))
+        .validate(url.into())
+        .await
     }
 
     async fn collect_metrics(
