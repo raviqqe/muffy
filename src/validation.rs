@@ -32,8 +32,13 @@ impl WebValidator {
         Self(WebValidatorInner { http_client }.into())
     }
 
+    fn cloned(&self) -> Self {
+        Self(self.0.clone())
+    }
+
+    /// Validates a link.
     pub async fn validate_link(
-        &self,
+        self,
         context: Arc<Context>,
         url: String,
         document_type: Option<DocumentType>,
@@ -76,8 +81,16 @@ impl WebValidator {
             return Ok(Success::new().with_response(response));
         }
 
-        let handle =
-            spawn(self.validate_document(context.clone(), response.clone(), document_type));
+        let handle = spawn({
+            let this = self.cloned();
+            let context = context.clone();
+            let response = response.clone();
+
+            async move {
+                this.validate_document(context.clone(), response, document_type)
+                    .await
+            }
+        });
         context
             .job_sender()
             .send(Box::new(async move {
@@ -117,8 +130,8 @@ impl WebValidator {
         ))
     }
 
-    pub async fn validate_link_with_base(
-        &self,
+    async fn validate_link_with_base(
+        self,
         context: Arc<Context>,
         url: String,
         base: Arc<Url>,
@@ -177,7 +190,7 @@ impl WebValidator {
                                     "a".into(),
                                     vec![("href".into(), attribute.value.to_string())],
                                 ),
-                                vec![spawn(self.validate_link_with_base(
+                                vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
                                     attribute.value.to_string(),
                                     base.clone(),
@@ -195,7 +208,7 @@ impl WebValidator {
                                     "img".into(),
                                     vec![("src".into(), attribute.value.to_string())],
                                 ),
-                                vec![spawn(self.validate_link_with_base(
+                                vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
                                     attribute.value.to_string(),
                                     base.clone(),
@@ -216,7 +229,7 @@ impl WebValidator {
                     if let Some(value) = attributes.get("href") {
                         futures.push((
                             Element::new("link".into(), vec![("src".into(), value.to_string())]),
-                            vec![spawn(self.validate_link_with_base(
+                            vec![spawn(self.cloned().validate_link_with_base(
                                 context.clone(),
                                 value.to_string(),
                                 base.clone(),
@@ -252,7 +265,7 @@ impl WebValidator {
                 .map(|entry| {
                     (
                         Element::new("loc".into(), vec![]),
-                        vec![spawn(self.validate_link(
+                        vec![spawn(self.cloned().validate_link(
                             context.clone(),
                             entry.loc.clone(),
                             Some(DocumentType::Sitemap),
@@ -269,7 +282,7 @@ impl WebValidator {
                     .map(|entry| {
                         (
                             Element::new("loc".into(), vec![]),
-                            vec![spawn(self.validate_link(
+                            vec![spawn(self.cloned().validate_link(
                                 context.clone(),
                                 entry.loc.clone(),
                                 None,
