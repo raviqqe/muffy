@@ -29,7 +29,7 @@ impl Success {
     }
 }
 
-// TODO Mmove this under the `render` module.
+// TODO Move this under the `render` module.
 #[derive(Serialize)]
 struct SerializedSuccess {
     response: Option<SerializedResponse>,

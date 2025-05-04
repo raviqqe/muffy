@@ -64,7 +64,7 @@ impl Response {
     }
 }
 
-// TODO Mmove this under the `render` module.
+// TODO Move this under the `render` module.
 #[derive(Serialize)]
 pub(crate) struct SerializedResponse {
     url: Url,
