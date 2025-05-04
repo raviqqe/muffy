@@ -78,12 +78,29 @@ pub async fn validate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::http_client::{BareResponse, HttpClient, StubHttpClient};
+    use crate::http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use timer::StubTimer;
     use url::Url;
+
+    fn build_response_stub(
+        url: &str,
+        status: StatusCode,
+        headers: HeaderMap,
+        body: Vec<u8>,
+    ) -> (String, Result<BareResponse, HttpClientError>) {
+        (
+            url.into(),
+            Ok(BareResponse {
+                url: Url::parse(url).unwrap(),
+                status,
+                headers,
+                body,
+            }),
+        )
+    }
 
     async fn validate(
         client: impl HttpClient + 'static,
@@ -127,23 +144,27 @@ mod tests {
     #[tokio::test]
     async fn validate_page() {
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: HeaderMap::from_iter([(
-                        HeaderName::from_static("content-type"),
-                        HeaderValue::from_static("text/html"),
-                    )]),
-                    body: Default::default(),
-                }),
-            ]),
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -162,26 +183,30 @@ mod tests {
             HeaderValue::from_static("text/html"),
         )]);
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/bar").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers,
-                    body: Default::default(),
-                }),
-            ]),
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -200,37 +225,41 @@ mod tests {
             HeaderValue::from_static("text/html"),
         )]);
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: r#"
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"
                         <a href="https://foo.com/bar"/>
                         <a href="https://foo.com/baz"/>
                     "#
-                    .as_bytes()
-                    .to_vec(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/bar").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/baz").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers,
-                    body: Default::default(),
-                }),
-            ]),
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com/baz",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -249,26 +278,30 @@ mod tests {
             HeaderValue::from_static("text/html"),
         )]);
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/bar").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
-                }),
-            ]),
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -287,27 +320,31 @@ mod tests {
             HeaderValue::from_static("text/html"),
         )]);
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: indoc!(
-                        r#"
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc!(
+                            r#"
                             <a href="https://foo.com#foo"/>
                             <div id="foo" />
                         "#
-                    )
-                    .as_bytes()
-                    .into(),
-                }),
-            ]),
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -326,20 +363,24 @@ mod tests {
             HeaderValue::from_static("text/html"),
         )]);
         let mut documents = validate(
-            StubHttpClient::new(vec![
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                    status: StatusCode::OK,
-                    headers: Default::default(),
-                    body: Default::default(),
-                }),
-                Ok(BareResponse {
-                    url: Url::parse("https://foo.com").unwrap(),
-                    status: StatusCode::OK,
-                    headers: html_headers.clone(),
-                    body: r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
-                }),
-            ]),
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
             "https://foo.com",
         )
         .await
@@ -362,54 +403,58 @@ mod tests {
             )]);
 
             let mut documents = validate(
-                StubHttpClient::new(vec![
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                        status: StatusCode::OK,
-                        headers: Default::default(),
-                        body: Default::default(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                StubHttpClient::new(
+                    [
+                        build_response_stub(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com/sitemap.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
+                            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                                <url>
+                                    <loc>https://foo.com/</loc>
+                                    <lastmod>1970-01-01</lastmod>
+                                    <changefreq>daily</changefreq>
+                                    <priority>1</priority>
+                                </url>
+                                <url>
+                                    <loc>https://foo.com/bar</loc>
+                                    <lastmod>1970-01-01</lastmod>
+                                    <changefreq>daily</changefreq>
+                                    <priority>1</priority>
+                                </url>
+                            </urlset>
+                            "#
                             .as_bytes()
                             .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/sitemap.xml").unwrap(),
-                        status: StatusCode::OK,
-                        headers: HeaderMap::from_iter([(
-                            HeaderName::from_static("content-type"),
-                            HeaderValue::from_static(content_type),
-                        )]),
-                        body: r#"
-                        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-                            <url>
-                                <loc>https://foo.com/</loc>
-                                <lastmod>1970-01-01</lastmod>
-                                <changefreq>daily</changefreq>
-                                <priority>1</priority>
-                            </url>
-                            <url>
-                                <loc>https://foo.com/bar</loc>
-                                <lastmod>1970-01-01</lastmod>
-                                <changefreq>daily</changefreq>
-                                <priority>1</priority>
-                            </url>
-                        </urlset>
-                    "#
-                        .as_bytes()
-                        .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/bar").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: Default::default(),
-                    }),
-                ]),
+                        ),
+                        build_response_stub(
+                            "https://foo.com/bar".into(),
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
                 "https://foo.com",
             )
             .await
@@ -438,47 +483,48 @@ mod tests {
             )]);
 
             let mut documents = validate(
-                StubHttpClient::new(vec![
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                        status: StatusCode::OK,
-                        headers: Default::default(),
-                        body: Default::default(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: r#"<link rel="sitemap" href="https://foo.com/sitemap-index.xml"/>"#
+                StubHttpClient::new(
+                    [
+                        build_response_stub(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<link rel="sitemap" href="https://foo.com/sitemap-index.xml"/>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com/sitemap-index.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
+                        <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                            <sitemap>
+                                <loc>https://foo.com/sitemap-0.xml</loc>
+                                <lastmod>1970-01-01T00:00:00+00:00</lastmod>
+                            </sitemap>
+                        </sitemapindex>
+                        "#
                             .as_bytes()
                             .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/sitemap-index.xml").unwrap(),
-                        status: StatusCode::OK,
-                        headers: HeaderMap::from_iter([(
-                            HeaderName::from_static("content-type"),
-                            HeaderValue::from_static(content_type),
-                        )]),
-                        body: r#"
-                            <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-                                <sitemap>
-                                    <loc>https://foo.com/sitemap-0.xml</loc>
-                                    <lastmod>1970-01-01T00:00:00+00:00</lastmod>
-                                </sitemap>
-                            </sitemapindex>
-                        "#
-                        .as_bytes()
-                        .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/sitemap-0.xml").unwrap(),
-                        status: StatusCode::OK,
-                        headers: HeaderMap::from_iter([(
-                            HeaderName::from_static("content-type"),
-                            HeaderValue::from_static(content_type),
-                        )]),
-                        body: r#"
+                        ),
+                        build_response_stub(
+                            "https://foo.com/sitemap-0.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
                         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
                             <url>
                                 <loc>https://foo.com/</loc>
@@ -493,17 +539,20 @@ mod tests {
                                 <priority>1</priority>
                             </url>
                         </urlset>
-                    "#
-                        .as_bytes()
-                        .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/bar").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: Default::default(),
-                    }),
-                ]),
+                        "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
                 "https://foo.com",
             )
             .await
@@ -537,33 +586,37 @@ mod tests {
                 HeaderValue::from_static("text/html"),
             )]);
             let mut documents = validate(
-                StubHttpClient::new(vec![
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/robots.txt").unwrap(),
-                        status: StatusCode::OK,
-                        headers: Default::default(),
-                        body: indoc!(
+                StubHttpClient::new(
+                    [
+                        build_response_stub(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            indoc!(
+                                "
+                            User-agent: *
+                            Disallow: /bar
                             "
-                        User-agent: *
-                        Disallow: /bar
-                        "
-                        )
-                        .as_bytes()
-                        .to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
-                    }),
-                    Ok(BareResponse {
-                        url: Url::parse("https://foo.com/bar").unwrap(),
-                        status: StatusCode::OK,
-                        headers: html_headers.clone(),
-                        body: Default::default(),
-                    }),
-                ]),
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_response_stub(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
                 "https://foo.com",
             )
             .await
