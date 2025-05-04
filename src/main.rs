@@ -85,7 +85,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         element_metrics.merge(&document.metrics());
 
         muffy::render_document(
-            document,
+            &document,
             &RenderOptions::default()
                 .set_format(format)
                 .set_verbose(verbose),

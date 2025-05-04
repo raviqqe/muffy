@@ -162,7 +162,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                mixed_document_output(),
+                &mixed_document_output(),
                 &RenderOptions::default(),
                 &mut string,
             )
@@ -178,7 +178,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                mixed_document_output(),
+                &mixed_document_output(),
                 &RenderOptions::default().set_verbose(true),
                 &mut string,
             )
@@ -194,7 +194,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                successful_document_output(),
+                &successful_document_output(),
                 &RenderOptions::default(),
                 &mut string,
             )
@@ -210,7 +210,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                DocumentOutput::new(
+                &DocumentOutput::new(
                     Url::parse("https://foo.com").unwrap(),
                     vec![
                         ElementOutput::new(
@@ -253,7 +253,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                mixed_document_output(),
+                &mixed_document_output(),
                 &RenderOptions::default().set_format(RenderFormat::Json),
                 &mut string,
             )
@@ -268,7 +268,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                mixed_document_output(),
+                &mixed_document_output(),
                 &RenderOptions::default()
                     .set_format(RenderFormat::Json)
                     .set_verbose(true),
@@ -286,7 +286,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                successful_document_output(),
+                &successful_document_output(),
                 &RenderOptions::default().set_format(RenderFormat::Json),
                 &mut string,
             )
@@ -302,7 +302,7 @@ mod tests {
             let mut string = vec![];
 
             render_document(
-                DocumentOutput::new(
+                &DocumentOutput::new(
                     Url::parse("https://foo.com").unwrap(),
                     vec![
                         ElementOutput::new(
