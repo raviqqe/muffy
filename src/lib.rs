@@ -3,7 +3,6 @@
 extern crate alloc;
 
 mod cache;
-mod context;
 mod document_output;
 mod document_type;
 mod element;

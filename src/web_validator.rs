@@ -1,7 +1,10 @@
+mod context;
+
+use self::context::Context;
 use crate::{
-    context::Context, document_output::DocumentOutput, document_type::DocumentType,
-    element::Element, element_output::ElementOutput, error::Error, http_client::CachedHttpClient,
-    response::Response, success::Success,
+    document_output::DocumentOutput, document_type::DocumentType, element::Element,
+    element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
+    success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
