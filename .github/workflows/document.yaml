@@ -53,6 +53,9 @@ jobs:
         working-directory: doc
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
       - run: npm ci
       - run: npm run build -- --site http://localhost:4321
       - run: npm run preview &
