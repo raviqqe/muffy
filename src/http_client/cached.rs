@@ -82,21 +82,21 @@ impl CachedHttpClient {
             .cache
             .get_or_set(url.to_string(), {
                 let url = url.clone();
-                let this = self.cloned();
+                let client = self.cloned();
 
                 Box::new(async move {
                     if robots {
-                        if let Some(robot) = this.get_robot(&url).await? {
+                        if let Some(robot) = client.get_robot(&url).await? {
                             if !robot.is_absolute_allowed(&url) {
                                 return Err(HttpClientError::RobotsTxt);
                             }
                         }
                     }
 
-                    let permit = this.0.semaphore.acquire().await.unwrap();
-                    let start = this.0.timer.now();
-                    let response = this.0.client.get(&url).await?;
-                    let duration = this.0.timer.now().duration_since(start);
+                    let permit = client.0.semaphore.acquire().await.unwrap();
+                    let start = client.0.timer.now();
+                    let response = client.0.client.get(&url).await?;
+                    let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
                     Ok(Response::from_bare(response, duration).into())
