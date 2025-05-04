@@ -36,7 +36,7 @@ use tokio_stream::wrappers::ReceiverStream;
 const DATABASE_NAME: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
 
-const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
+const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
