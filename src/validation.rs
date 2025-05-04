@@ -1,7 +1,7 @@
 use crate::{
     context::Context, document_output::DocumentOutput, document_type::DocumentType,
-    element::Element, element_output::ElementOutput, error::Error, response::Response,
-    success::Success,
+    element::Element, element_output::ElementOutput, error::Error, http_client::CachedHttpClient,
+    response::Response, success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -18,6 +18,18 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+
+pub struct WebValidator(Arc<WebValidatorInner>);
+
+struct WebValidatorInner {
+    http_client: CachedHttpClient,
+}
+
+impl WebValidator {
+    pub fn new(http_client: CachedHttpClient) -> Self {
+        Self(WebValidatorInner { http_client })
+    }
+}
 
 pub async fn validate_link(
     context: Arc<Context>,
