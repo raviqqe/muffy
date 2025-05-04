@@ -1,7 +1,7 @@
 use crate::{
-    context::WebValidatorInner, document_output::DocumentOutput, document_type::DocumentType,
-    element::Element, element_output::ElementOutput, error::Error, http_client::CachedHttpClient,
-    response::Response, success::Success,
+    document_output::DocumentOutput, document_type::DocumentType, element::Element,
+    element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
+    success::Success,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -9,8 +9,10 @@ use futures::{Stream, StreamExt, future::try_join_all};
 use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
+use scc::HashSet;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, io};
+use tokio::sync::mpsc::Sender;
 use tokio::{
     spawn,
     sync::mpsc::{Sender, channel},
@@ -32,6 +34,13 @@ const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 
 pub struct WebValidator(Arc<WebValidatorInner>);
+
+pub struct WebValidatorInner {
+    http_client: CachedHttpClient,
+    origin: String,
+    documents: HashSet<String>,
+    job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
+}
 
 impl WebValidator {
     pub fn new(
@@ -73,7 +82,7 @@ impl WebValidator {
         // We keep this fragment removal not configurable as otherwise we might have a lot more
         // requests for the same HTML pages, which makes crawling unacceptably inefficient.
         // TODO Configure request headers.
-        let Some(response) = self.0.http_client().get(&document_url).await? else {
+        let Some(response) = self.0.http_client.get(&document_url).await? else {
             return Ok(Success::default());
         };
 
@@ -97,7 +106,7 @@ impl WebValidator {
         if !url.to_string().starts_with(context.origin())
             || self
                 .0
-                .documents()
+                .documents
                 .insert_async(response.url().to_string())
                 .await
                 .is_err()
@@ -107,7 +116,7 @@ impl WebValidator {
 
         let handle = spawn(async move { self.validate_document(response.clone(), document_type) });
         self.0
-            .job_sender()
+            .job_sender
             .send(Box::new(async move {
                 handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
             }))

@@ -3,7 +3,6 @@
 extern crate alloc;
 
 mod cache;
-mod context;
 mod document_output;
 mod document_type;
 mod element;
@@ -15,10 +14,9 @@ mod render;
 mod response;
 mod success;
 mod timer;
-mod validation;
+mod web_validator;
 
 use self::cache::{MemoryCache, SledCache};
-use self::context::WebValidatorInner;
 pub use self::document_output::DocumentOutput;
 pub use self::error::Error;
 pub use self::metrics::Metrics;
