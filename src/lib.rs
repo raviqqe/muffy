@@ -18,8 +18,8 @@ mod timer;
 mod web_validator;
 
 pub use self::{
-    self::config::Config,
     cache::{MemoryCache, SledCache},
+    config::Config,
     document_output::DocumentOutput,
     error::Error,
     http_client::{CachedHttpClient, ReqwestHttpClient},
