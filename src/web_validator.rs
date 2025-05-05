@@ -97,7 +97,6 @@ impl WebValidator {
             }
         }
 
-        // TODO Configure origin URLs.
         if !context
             .config()
             .sites()
