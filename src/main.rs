@@ -78,7 +78,6 @@ async fn run() -> Result<(), Box<dyn Error>> {
             Default::default(),
             urls.into_iter()
                 .map(|url| (url, SiteConfig::default().set_recursive(true)))
-                .into_iter()
                 .collect(),
         ))
         .await?;
