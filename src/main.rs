@@ -24,9 +24,9 @@ const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Arguments {
-    /// An origin URL.
-    #[arg()]
-    url: String,
+    /// Website URLs.
+    #[arg(required(true))]
+    urls: Vec<String>,
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
@@ -48,7 +48,7 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let Arguments {
-        url,
+        urls,
         cache,
         format,
         verbose,
@@ -76,7 +76,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let mut documents = validator
         .validate(&Config::new(
             Default::default(),
-            [(url, SiteConfig::default().set_recursive(true))]
+            urls.into_iter()
+                .map(|url| (url, SiteConfig::default().set_recursive(true)))
                 .into_iter()
                 .collect(),
         ))
