@@ -6,6 +6,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     default: SiteConfig,
+    // TODO Map domain names -> ports -> paths.
     sites: HashMap<String, SiteConfig>,
 }
 
