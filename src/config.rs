@@ -11,12 +11,12 @@ pub struct Config {
 
 impl Config {
     /// Returns a default configuration for websites.
-    pub fn default(&self) -> &Site {
+    pub const fn default(&self) -> &Site {
         &self.default
     }
 
     /// Returns websites.
-    pub fn sites(&self) -> &HashMap<String, Site> {
+    pub const fn sites(&self) -> &HashMap<String, Site> {
         &self.sites
     }
 }
@@ -31,12 +31,12 @@ pub struct Site {
 
 impl Site {
     /// Returns headers attached to HTTP requests.
-    pub fn headers(&self) -> &HeaderMap {
+    pub const fn headers(&self) -> &HeaderMap {
         &self.headers
     }
 
     /// Returns whether we should validate the website recursively.
-    pub fn recursive(&self) -> bool {
+    pub const fn recursive(&self) -> bool {
         self.recursive
     }
 }
