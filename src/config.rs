@@ -1,3 +1,4 @@
+use http::HeaderMap;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -14,4 +15,6 @@ impl Config {
 }
 
 /// A website configuration.
-pub struct Site {}
+pub struct Site {
+    headers: HeaderMap,
+}
