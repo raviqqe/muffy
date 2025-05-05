@@ -21,3 +21,10 @@ pub struct Site {
     #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
 }
+
+impl Site {
+    /// Returns headers attached to HTTP requests.
+    pub fn headers(&self) -> &HeaderMap {
+        &self.headers
+    }
+}
