@@ -20,6 +20,7 @@ impl Config {
 pub struct Site {
     #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
+    recurse: bool,
 }
 
 impl Site {
