@@ -5,6 +5,7 @@ use std::collections::HashMap;
 /// A validation configuration.
 #[derive(Debug, Deserialize)]
 pub struct Config {
+    r#default: Site,
     sites: HashMap<String, Site>,
 }
 
