@@ -4,7 +4,11 @@ use std::collections::HashMap;
 /// A validation configuration.
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    origins: HashMap<String, String>,
+    sites: HashMap<String, Site>,
 }
 
-impl Config {}
+impl Config {
+    pub fn sites(&self) -> &HashMap<String, Site> {
+        &self.sites
+    }
+}
