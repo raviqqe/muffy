@@ -16,5 +16,6 @@ impl Config {
 
 /// A website configuration.
 pub struct Site {
+    #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
 }
