@@ -5,11 +5,16 @@ use std::collections::HashMap;
 /// A validation configuration.
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    r#default: Site,
+    default: Site,
     sites: HashMap<String, Site>,
 }
 
 impl Config {
+    /// Returns a default configuration for websites.
+    pub fn default(&self) -> &Site {
+        &self.default
+    }
+
     /// Returns websites.
     pub fn sites(&self) -> &HashMap<String, Site> {
         &self.sites
