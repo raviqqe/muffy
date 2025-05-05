@@ -76,7 +76,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let mut documents = validator
         .validate(&Config::new(
             Default::default(),
-            [(url, SiteConfig::default())].into_iter().collect(),
+            [(url, SiteConfig::default().set_recursive(true))]
+                .into_iter()
+                .collect(),
         ))
         .await?;
     let mut document_metrics = muffy::Metrics::default();
