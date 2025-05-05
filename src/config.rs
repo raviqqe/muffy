@@ -12,3 +12,6 @@ impl Config {
         &self.sites
     }
 }
+
+/// A website configuration.
+pub struct Site {}
