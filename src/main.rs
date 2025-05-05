@@ -5,8 +5,8 @@ use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
 use muffy::{
-    CachedHttpClient, ClockTimer, MemoryCache, RenderFormat, RenderOptions, ReqwestHttpClient,
-    SledCache, WebValidator,
+    CachedHttpClient, ClockTimer, Config, MemoryCache, RenderFormat, RenderOptions,
+    ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{env::temp_dir, process::exit};
@@ -73,7 +73,12 @@ async fn run() -> Result<(), Box<dyn Error>> {
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
 
-    let mut documents = validator.validate(&url).await?;
+    let mut documents = validator
+        .validate(&Config::new(
+            Default::default(),
+            [(url, SiteConfig::default())].into_iter().collect(),
+        ))
+        .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 

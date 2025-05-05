@@ -20,9 +20,8 @@ impl Context {
         }
     }
 
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn origin(&self) -> &str {
-        &self.origin
+    pub const fn config(&self) -> &Config {
+        &self.config
     }
 
     pub const fn documents(&self) -> &HashSet<String> {

@@ -19,7 +19,7 @@ mod web_validator;
 
 pub use self::{
     cache::{MemoryCache, SledCache},
-    config::Config,
+    config::{Config, SiteConfig},
     document_output::DocumentOutput,
     error::Error,
     http_client::{CachedHttpClient, ReqwestHttpClient},
@@ -32,7 +32,10 @@ pub use self::{
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient};
+    use crate::{
+        config::SiteConfig,
+        http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient},
+    };
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
@@ -71,7 +74,12 @@ mod tests {
             Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
             1,
         ))
-        .validate(url)
+        .validate(&Config::new(
+            SiteConfig::default(),
+            [(url.into(), SiteConfig::default().set_recursive(true))]
+                .into_iter()
+                .collect(),
+        ))
         .await
     }
 
