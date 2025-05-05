@@ -2,7 +2,7 @@ mod context;
 
 use self::context::Context;
 use crate::{
-    document_output::DocumentOutput, document_type::DocumentType, element::Element,
+    config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
     element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
     success::Success,
 };
@@ -46,10 +46,10 @@ impl WebValidator {
     /// Validates websites recursively.
     pub async fn validate(
         &self,
-        url: &str,
+        config: &Config,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>> + use<>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
-        let context = Arc::new(Context::new(sender, url.into()));
+        let context = Arc::new(Context::new(sender, config));
 
         self.cloned()
             .validate_link(context, url.into(), None)

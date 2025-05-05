@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 /// A validation configuration.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     default: Site,
     sites: HashMap<String, Site>,
