@@ -11,7 +11,7 @@ pub struct Config {
 
 impl Config {
     /// Creates a configuration.
-    pub fn new(default: SiteConfig, sites: HashMap<String, SiteConfig>) -> Self {
+    pub const fn new(default: SiteConfig, sites: HashMap<String, SiteConfig>) -> Self {
         Self { default, sites }
     }
 
@@ -46,7 +46,7 @@ impl SiteConfig {
     }
 
     /// Sets whether we should validate the website recursively
-    pub fn set_recursive(mut self, recursive: bool) -> Self {
+    pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
         self
     }
