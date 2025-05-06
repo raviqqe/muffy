@@ -22,7 +22,12 @@ impl Node {
                         )
                     })
                     .collect(),
-                vec![],
+                node.children
+                    .borrow()
+                    .iter()
+                    .flat_map(|node| Self::from_markup5ever(node))
+                    .map(Arc::new)
+                    .collect(),
             ))),
             NodeData::Text { contents } => Some(Node::Text(contents.borrow().to_string())),
             _ => None,
