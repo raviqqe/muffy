@@ -9,6 +9,7 @@ mod document_type;
 mod element;
 mod element_output;
 mod error;
+mod html_parser;
 mod http_client;
 mod metrics;
 mod render;

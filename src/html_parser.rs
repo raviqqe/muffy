@@ -1,0 +1,33 @@
+use crate::cache::Cache;
+use alloc::sync::Arc;
+use html5ever::{parse_document, tendril::TendrilSink};
+use markup5ever_rcdom::RcDom;
+use std::io;
+
+#[derive(Clone, Debug)]
+pub enum HtmlError {
+    Io(Arc<io::Error>),
+}
+
+/// An HTML parser.
+pub struct HtmlParser {
+    cache: Box<dyn Cache<Result<Arc<RcDom>, HtmlError>>>,
+}
+
+impl HtmlParser {
+    /// Creates an HTML parser.
+    pub fn new(cache: impl Cache<Result<Arc<RcDom>, HtmlError>> + 'static) -> Self {
+        Self {
+            cache: Box::new(cache),
+        }
+    }
+
+    /// Parses an HTML document.
+    pub async fn parse(&self, mut bytes: &[u8]) -> Result<Arc<RcDom>, HtmlError> {
+        parse_document(RcDom::default(), Default::default())
+            .from_utf8()
+            .read_from(&mut bytes)
+            .map(Arc::new)
+            .map_err(|error| HtmlError::Io(Arc::new(error)))
+    }
+}

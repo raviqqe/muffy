@@ -3,8 +3,8 @@ mod context;
 use self::context::Context;
 use crate::{
     config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
-    element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
-    success::Success, utility::default_port,
+    element_output::ElementOutput, error::Error, html_parser::HtmlParser,
+    http_client::CachedHttpClient, response::Response, success::Success, utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -31,12 +31,19 @@ pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
     http_client: CachedHttpClient,
+    html_parser: HtmlParser,
 }
 
 impl WebValidator {
     /// Creates a web validator.
-    pub fn new(http_client: CachedHttpClient) -> Self {
-        Self(WebValidatorInner { http_client }.into())
+    pub fn new(http_client: CachedHttpClient, html_parser: HtmlParser) -> Self {
+        Self(
+            WebValidatorInner {
+                http_client,
+                html_parser,
+            }
+            .into(),
+        )
     }
 
     fn cloned(&self) -> Self {
@@ -214,7 +221,10 @@ impl WebValidator {
         self.validate_html_element(
             context,
             &response.url().clone().into(),
-            &Self::parse_html(str::from_utf8(response.body())?)
+            &self
+                .0
+                .html_parser
+                .parse(str::from_utf8(response.body())?)
                 .map_err(Error::HtmlParse)?
                 .document,
             &mut futures,
@@ -417,11 +427,5 @@ impl WebValidator {
         }
 
         Ok(false)
-    }
-
-    fn parse_html(text: &str) -> Result<RcDom, io::Error> {
-        parse_document(RcDom::default(), Default::default())
-            .from_utf8()
-            .read_from(&mut text.as_bytes())
     }
 }
