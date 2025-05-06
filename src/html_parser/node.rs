@@ -8,9 +8,9 @@ pub enum Node {
 }
 
 impl Node {
-    fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
+    fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
         match &node.data {
-            NodeData::Element { name, attrs, .. } => Node::Element(Element::new(
+            NodeData::Element { name, attrs, .. } => Some(Node::Element(Element::new(
                 name.local.to_string(),
                 attrs
                     .borrow()
@@ -23,9 +23,9 @@ impl Node {
                     })
                     .collect(),
                 vec![],
-            )),
-            NodeData::Text { contents } => Node::Text(contents.borrow().to_string()),
-            _ => todo!(),
+            ))),
+            NodeData::Text { contents } => Some(Node::Text(contents.borrow().to_string())),
+            _ => None,
         }
     }
 }
