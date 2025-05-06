@@ -110,7 +110,6 @@ mod tests {
     };
     use core::str;
     use insta::assert_snapshot;
-    use std::io::{self, ErrorKind};
     use url::Url;
 
     fn mixed_document_output() -> DocumentOutput {

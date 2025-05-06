@@ -9,11 +9,10 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
-use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
-use markup5ever_rcdom::{Node, NodeData, RcDom};
+use markup5ever_rcdom::{Node, NodeData};
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::HashMap, io};
+use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
