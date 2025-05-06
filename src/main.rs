@@ -4,17 +4,19 @@ use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
+use itertools::Itertools;
 use muffy::{
     CachedHttpClient, ClockTimer, Config, MemoryCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
-use std::{env::temp_dir, process::exit};
+use std::{collections::HashMap, env::temp_dir, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{fs::create_dir_all, io::stdout};
+use url::Url;
 
 const DATABASE_NAME: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
@@ -73,14 +75,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
 
-    let mut documents = validator
-        .validate(&Config::new(
-            Default::default(),
-            urls.into_iter()
-                .map(|url| (url, SiteConfig::default().set_recursive(true)))
-                .collect(),
-        ))
-        .await?;
+    let mut documents = validator.validate(&compile_config(&urls)?).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -149,4 +144,40 @@ async fn run() -> Result<(), Box<dyn Error>> {
     } else {
         Ok(())
     }
+}
+
+fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
+    Ok(Config::new(
+        Default::default(),
+        urls.iter()
+            .map(|url| Url::parse(url))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
+            .into_iter()
+            .map(
+                |(host, urls)| -> (String, HashMap<u16, Vec<(String, SiteConfig)>>) {
+                    (
+                        host,
+                        urls.into_iter()
+                            .chunk_by(|url| url.port().unwrap_or(/* TODO */ 80))
+                            .into_iter()
+                            .map(|(port, urls)| {
+                                (
+                                    port,
+                                    urls.map(|url| {
+                                        (
+                                            url.path().into(),
+                                            SiteConfig::default().set_recursive(true),
+                                        )
+                                    })
+                                    .collect(),
+                                )
+                            })
+                            .collect(),
+                    )
+                },
+            )
+            .collect(),
+    ))
 }

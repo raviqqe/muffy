@@ -68,6 +68,8 @@ mod tests {
         client: impl HttpClient + 'static,
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let url = Url::parse(url).unwrap();
+
         WebValidator::new(CachedHttpClient::new(
             client,
             StubTimer::new(),
@@ -76,9 +78,17 @@ mod tests {
         ))
         .validate(&Config::new(
             SiteConfig::default(),
-            [(url.into(), SiteConfig::default().set_recursive(true))]
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    443,
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
+                )]
                 .into_iter()
                 .collect(),
+            )]
+            .into_iter()
+            .collect(),
         ))
         .await
     }
