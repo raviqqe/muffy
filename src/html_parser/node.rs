@@ -40,7 +40,20 @@ impl Element {
 impl From<&markup5ever_rcdom::Node> for Node {
     fn from(node: &markup5ever_rcdom::Node) -> Self {
         match &node.data {
-            NodeData::Element { name, attrs, .. } => Node::Element(Element::new(name, attrs)),
+            NodeData::Element { name, attrs, .. } => Node::Element(Element::new(
+                name.local.to_string(),
+                attrs
+                    .borrow()
+                    .iter()
+                    .map(|attribute| {
+                        (
+                            attribute.name.local.to_string(),
+                            attribute.value.to_string(),
+                        )
+                    })
+                    .collect(),
+                vec![],
+            )),
             NodeData::Text { contents } => Node::Text(contents.borrow().to_string()),
             _ => todo!(),
         }
