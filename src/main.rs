@@ -148,7 +148,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
     Ok(Config::new(
-        urls.iter().cloned().collect(),
+        urls.to_vec(),
         Default::default(),
         urls.iter()
             .map(|url| Url::parse(url))
@@ -161,7 +161,7 @@ fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
                     (
                         host,
                         urls.into_iter()
-                            .chunk_by(|url| url.port().unwrap_or_else(|| muffy::default_port(&url)))
+                            .chunk_by(|url| url.port().unwrap_or_else(|| muffy::default_port(url)))
                             .into_iter()
                             .map(|(port, urls)| {
                                 (
