@@ -1,7 +1,9 @@
+use crate::default_port;
 use core::ops::Deref;
 use http::HeaderMap;
 use serde::Deserialize;
 use std::collections::HashMap;
+use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 
@@ -40,6 +42,15 @@ impl Config {
     /// Returns websites.
     pub const fn sites(&self) -> &HashMap<String, HostConfig> {
         &self.sites
+    }
+
+    /// Gets a site config
+    pub fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
+        self.sites()
+            .get(url.host_str()?)?
+            .get(&url.port().unwrap_or_else(|| default_port(url)))?
+            .iter()
+            .find_map(|(path, config)| url.path().starts_with(path).then_some(config))
     }
 }
 

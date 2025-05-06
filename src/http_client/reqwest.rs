@@ -1,5 +1,6 @@
 use super::{BareResponse, HttpClient, HttpClientError};
 use async_trait::async_trait;
+use http::HeaderMap;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
 use url::Url;
 
@@ -23,10 +24,15 @@ impl ReqwestHttpClient {
 
 #[async_trait]
 impl HttpClient for ReqwestHttpClient {
-    async fn get(&self, url: &Url) -> Result<BareResponse, HttpClientError> {
+    async fn get(&self, url: &Url, headers: &HeaderMap) -> Result<BareResponse, HttpClientError> {
         let response = self
             .client
-            .execute(self.client.get(url.clone()).build()?)
+            .execute(
+                self.client
+                    .get(url.clone())
+                    .headers(headers.clone())
+                    .build()?,
+            )
             .await?;
 
         Ok(BareResponse {

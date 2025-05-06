@@ -75,9 +75,19 @@ impl WebValidator {
         // We keep this fragment removal not configurable as otherwise we might have a
         // lot more requests for the same HTML pages, which makes crawling
         // unacceptably inefficient.
-        //
-        // TODO Configure request headers.
-        let Some(response) = self.0.http_client.get(&document_url).await? else {
+        let Some(response) = self
+            .0
+            .http_client
+            .get(
+                &document_url,
+                &context
+                    .config()
+                    .get_site(&url)
+                    .map(|config| config.headers().clone())
+                    .unwrap_or_default(),
+            )
+            .await?
+        else {
             return Ok(Success::default());
         };
 
