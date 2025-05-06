@@ -129,7 +129,7 @@ mod tests {
                         )
                         .into(),
                     )),
-                    Err(Error::HtmlParse(io::Error::new(ErrorKind::NotFound, "foo"))),
+                    Err(Error::Validation),
                 ],
             )],
         )
@@ -229,10 +229,7 @@ mod tests {
                         ),
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Err(Error::HtmlParse(io::Error::new(
-                                ErrorKind::NotFound,
-                                "foo",
-                            )))],
+                            vec![Err(Error::Validation)],
                         ),
                     ],
                 ),
@@ -321,10 +318,7 @@ mod tests {
                         ),
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Err(Error::HtmlParse(io::Error::new(
-                                ErrorKind::NotFound,
-                                "foo",
-                            )))],
+                            vec![Err(Error::Validation)],
                         ),
                     ],
                 ),
