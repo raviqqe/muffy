@@ -15,6 +15,7 @@ mod render;
 mod response;
 mod success;
 mod timer;
+mod utility;
 mod web_validator;
 
 pub use self::{
@@ -26,6 +27,7 @@ pub use self::{
     metrics::Metrics,
     render::{RenderFormat, RenderOptions, render_document},
     timer::ClockTimer,
+    utility::default_port,
     web_validator::WebValidator,
 };
 
@@ -68,6 +70,8 @@ mod tests {
         client: impl HttpClient + 'static,
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let url = Url::parse(url).unwrap();
+
         WebValidator::new(CachedHttpClient::new(
             client,
             StubTimer::new(),
@@ -75,10 +79,19 @@ mod tests {
             1,
         ))
         .validate(&Config::new(
+            vec![url.to_string()],
             SiteConfig::default(),
-            [(url.into(), SiteConfig::default().set_recursive(true))]
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    443,
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
+                )]
                 .into_iter()
                 .collect(),
+            )]
+            .into_iter()
+            .collect(),
         ))
         .await
     }
@@ -298,6 +311,54 @@ mod tests {
                         )
                         .as_bytes()
                         .into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_page_not_belonging_to_roots() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://bar.com" />"#.as_bytes().into(),
+                    ),
+                    build_response_stub(
+                        "https://bar.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://bar.com",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
                     ),
                 ]
                 .into_iter()

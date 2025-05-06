@@ -4,7 +4,7 @@ use self::context::Context;
 use crate::{
     config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
     element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
-    success::Success,
+    success::Success, utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -51,7 +51,7 @@ impl WebValidator {
         let (sender, receiver) = channel(JOB_CAPACITY);
         let context = Arc::new(Context::new(sender, config.clone()));
 
-        try_join_all(config.sites().keys().map(|url| {
+        try_join_all(config.roots().map(|url| {
             self.cloned()
                 .validate_link(context.clone(), url.into(), None)
         }))
@@ -97,11 +97,26 @@ impl WebValidator {
             }
         }
 
-        if !context
-            .config()
-            .sites()
-            .iter()
-            .any(|(site, config)| url.as_str().starts_with(site) && config.recursive())
+        if !url
+            .host_str()
+            .map(|host| {
+                context
+                    .config()
+                    .sites()
+                    .get(host)
+                    .map(|port_configs| {
+                        port_configs
+                            .get(&url.port().unwrap_or_else(|| default_port(&url)))
+                            .map(|sites| {
+                                sites.iter().any(|(path, config)| {
+                                    url.path().starts_with(path) && config.recursive()
+                                })
+                            })
+                            .unwrap_or_default()
+                    })
+                    .unwrap_or_default()
+            })
+            .unwrap_or_default()
             || context
                 .documents()
                 .insert_async(response.url().to_string())

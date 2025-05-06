@@ -1,19 +1,35 @@
+use core::ops::Deref;
 use http::HeaderMap;
 use serde::Deserialize;
 use std::collections::HashMap;
 
+type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
+
 /// A validation configuration.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
+    roots: Vec<String>,
     default: SiteConfig,
-    // TODO Map domain names -> ports -> paths.
-    sites: HashMap<String, SiteConfig>,
+    sites: HashMap<String, HostConfig>,
 }
 
 impl Config {
     /// Creates a configuration.
-    pub const fn new(default: SiteConfig, sites: HashMap<String, SiteConfig>) -> Self {
-        Self { default, sites }
+    pub const fn new(
+        roots: Vec<String>,
+        default: SiteConfig,
+        sites: HashMap<String, HostConfig>,
+    ) -> Self {
+        Self {
+            roots,
+            default,
+            sites,
+        }
+    }
+
+    /// Returns root URLs.
+    pub fn roots(&self) -> impl Iterator<Item = &str> {
+        self.roots.iter().map(Deref::deref)
     }
 
     /// Returns a default configuration for websites.
@@ -22,7 +38,7 @@ impl Config {
     }
 
     /// Returns websites.
-    pub const fn sites(&self) -> &HashMap<String, SiteConfig> {
+    pub const fn sites(&self) -> &HashMap<String, HostConfig> {
         &self.sites
     }
 }
