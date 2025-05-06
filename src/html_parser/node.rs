@@ -38,7 +38,7 @@ impl Element {
 }
 
 impl From<&markup5ever_rcdom::Node> for Node {
-    fn from(node: Rc<markup5ever_rcdom::Node>) -> Self {
+    fn from(node: &markup5ever_rcdom::Node) -> Self {
         match &node.data {
             NodeData::Element { name, attrs, .. } => Node::Element(Element::new(name, attrs)),
             NodeData::Text { contents } => Node::Text(contents.borrow().to_string()),
