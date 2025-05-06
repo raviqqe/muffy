@@ -2,6 +2,7 @@ use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
 
+#[derive(Debug)]
 pub enum Node {
     Element(Element),
     Text(String),
@@ -35,6 +36,7 @@ impl Node {
     }
 }
 
+#[derive(Debug)]
 pub struct Element {
     name: String,
     attributes: Vec<(String, String)>,
