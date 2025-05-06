@@ -2,6 +2,7 @@ mod node;
 
 pub use self::node::Node;
 use crate::cache::{Cache, CacheError};
+use crate::response::Response;
 use alloc::sync::Arc;
 use core::fmt::Formatter;
 use core::{error::Error, fmt};
@@ -25,17 +26,16 @@ impl HtmlParser {
     }
 
     /// Parses an HTML document.
-    pub async fn parse(&self, bytes: &[u8]) -> Result<Arc<Document>, HtmlError> {
-        // TODO
-        let string = String::from_utf8_lossy(bytes).to_string();
+    pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlError> {
+        let response = response.clone();
 
         self.cache
             .get_or_set(
-                string.clone(),
+                response.url().to_string(),
                 Box::new(async move {
                     parse_document(RcDom::default(), Default::default())
                         .from_utf8()
-                        .read_from(&mut string.as_bytes())
+                        .read_from(&mut response.body())
                         .map(|dom| Arc::new(Document::from_markup5ever(&dom.document)))
                         .map_err(|error| HtmlError::Io(Arc::new(error)))
                 }),

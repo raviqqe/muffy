@@ -224,7 +224,7 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
 
-        for node in self.0.html_parser.parse(response.body()).await?.children() {
+        for node in self.0.html_parser.parse(response).await?.children() {
             self.validate_html_element(
                 context,
                 &response.url().clone().into(),
@@ -397,7 +397,7 @@ impl WebValidator {
         Ok(self
             .0
             .html_parser
-            .parse(response.body())
+            .parse(response)
             .await?
             .children()
             .any(|node| Self::has_html_element_in_node(node, id)))
