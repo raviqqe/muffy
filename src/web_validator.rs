@@ -80,11 +80,11 @@ impl WebValidator {
             .http_client
             .get(
                 &document_url,
-                &if let Some(config) = context.config().get_site(&url) {
-                    config.headers().clone()
-                } else {
-                    Default::default()
-                },
+                &context
+                    .config()
+                    .get_site(&url)
+                    .map(|config| config.headers().clone())
+                    .unwrap_or_default(),
             )
             .await?
         else {
