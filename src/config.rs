@@ -48,7 +48,7 @@ impl Config {
     pub fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
         self.sites()
             .get(url.host_str()?)?
-            .get(&url.port().unwrap_or_else(|| default_port(&url)))?
+            .get(&url.port().unwrap_or_else(|| default_port(url)))?
             .iter()
             .find_map(|(path, config)| url.path().starts_with(path).then_some(config))
     }
