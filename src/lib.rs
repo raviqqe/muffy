@@ -24,6 +24,7 @@ pub use self::{
     config::{Config, SiteConfig},
     document_output::DocumentOutput,
     error::Error,
+    html_parser::HtmlParser,
     http_client::{CachedHttpClient, ReqwestHttpClient},
     metrics::Metrics,
     render::{RenderFormat, RenderOptions, render_document},
@@ -37,6 +38,7 @@ mod tests {
     use super::*;
     use crate::{
         config::SiteConfig,
+        html_parser::HtmlParser,
         http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient},
     };
     use futures::{Stream, StreamExt};
@@ -73,12 +75,15 @@ mod tests {
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let url = Url::parse(url).unwrap();
 
-        WebValidator::new(CachedHttpClient::new(
-            client,
-            StubTimer::new(),
-            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
-            1,
-        ))
+        WebValidator::new(
+            CachedHttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            HtmlParser::new(MemoryCache::new(0)),
+        )
         .validate(&Config::new(
             vec![url.to_string()],
             SiteConfig::default(),

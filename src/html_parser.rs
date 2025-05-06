@@ -1,4 +1,4 @@
-use crate::cache::Cache;
+use crate::cache::{Cache, CacheError};
 use alloc::sync::Arc;
 use core::fmt::Formatter;
 use core::{error::Error, fmt};
@@ -21,21 +21,27 @@ impl HtmlParser {
     }
 
     /// Parses an HTML document.
-    pub async fn parse(&self, mut bytes: &[u8]) -> Result<Arc<RcDom>, HtmlError> {
+    pub async fn parse(&self, bytes: &[u8]) -> Result<Arc<RcDom>, HtmlError> {
+        let string = String::from_utf8_lossy(bytes).to_string();
+
         self.cache
-            .get_or_set(String::from_utf8_lossy(bytes), async move {
-                parse_document(RcDom::default(), Default::default())
-                    .from_utf8()
-                    .read_from(&mut bytes)
-                    .map(Arc::new)
-                    .map_err(|error| HtmlError::Io(Arc::new(error)))
-            })
-            .await
+            .get_or_set(
+                string.clone(),
+                Box::new(async move {
+                    parse_document(RcDom::default(), Default::default())
+                        .from_utf8()
+                        .read_from(&mut string.as_bytes())
+                        .map(Arc::new)
+                        .map_err(|error| HtmlError::Io(Arc::new(error)))
+                }),
+            )
+            .await?
     }
 }
 
 #[derive(Clone, Debug)]
 pub enum HtmlError {
+    Cache(CacheError),
     Io(Arc<io::Error>),
 }
 
@@ -44,7 +50,14 @@ impl Error for HtmlError {}
 impl Display for HtmlError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Cache(error) => write!(formatter, "{error}"),
             Self::Io(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl From<CacheError> for HtmlError {
+    fn from(error: CacheError) -> Self {
+        Self::Cache(error)
     }
 }
