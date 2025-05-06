@@ -161,7 +161,7 @@ fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
                     (
                         host,
                         urls.into_iter()
-                            .chunk_by(|url| url.port().unwrap_or(/* TODO */ 80))
+                            .chunk_by(|url| url.port().unwrap_or_else(|| muffy::default_port(&url)))
                             .into_iter()
                             .map(|(port, urls)| {
                                 (

@@ -4,7 +4,7 @@ use self::context::Context;
 use crate::{
     config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
     element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
-    success::Success,
+    success::Success, utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -22,9 +22,6 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
-
-const HTTP_PORT: u16 = 80;
-const HTTPS_PORT: u16 = 443;
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
@@ -109,13 +106,7 @@ impl WebValidator {
                     .get(host)
                     .map(|port_configs| {
                         port_configs
-                            .get(&url.port().unwrap_or_else(|| {
-                                if url.scheme() == "https" {
-                                    HTTPS_PORT
-                                } else {
-                                    HTTP_PORT
-                                }
-                            }))
+                            .get(&url.port().unwrap_or_else(|| default_port(&url)))
                             .map(|sites| {
                                 sites.iter().any(|(path, config)| {
                                     url.path().starts_with(path) && config.recursive()

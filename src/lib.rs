@@ -15,6 +15,7 @@ mod render;
 mod response;
 mod success;
 mod timer;
+mod utility;
 mod web_validator;
 
 pub use self::{
@@ -26,6 +27,7 @@ pub use self::{
     metrics::Metrics,
     render::{RenderFormat, RenderOptions, render_document},
     timer::ClockTimer,
+    utility::default_port,
     web_validator::WebValidator,
 };
 
