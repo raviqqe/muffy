@@ -1,4 +1,3 @@
-use alloc::rc::Rc;
 use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
@@ -38,12 +37,12 @@ impl Element {
     }
 }
 
-impl From<Rc<markup5ever_rcdom::Node>> for Arc<Node> {
+impl From<&markup5ever_rcdom::Node> for Node {
     fn from(node: Rc<markup5ever_rcdom::Node>) -> Self {
-        Arc::new(match &node.data {
+        match &node.data {
             NodeData::Element { name, attrs, .. } => Node::Element(Element::new(name, attrs)),
             NodeData::Text { contents } => Node::Text(contents.borrow().to_string()),
             _ => todo!(),
-        })
+        }
     }
 }
