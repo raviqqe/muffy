@@ -328,6 +328,54 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_page_not_belonging_to_roots() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://bar.com" />"#.as_bytes().into(),
+                    ),
+                    build_response_stub(
+                        "https://bar.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://bar.com",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
     async fn validate_missing_fragment_for_html() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
