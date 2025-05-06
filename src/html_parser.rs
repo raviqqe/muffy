@@ -22,11 +22,15 @@ impl HtmlParser {
 
     /// Parses an HTML document.
     pub async fn parse(&self, mut bytes: &[u8]) -> Result<Arc<RcDom>, HtmlError> {
-        parse_document(RcDom::default(), Default::default())
-            .from_utf8()
-            .read_from(&mut bytes)
-            .map(Arc::new)
-            .map_err(|error| HtmlError::Io(Arc::new(error)))
+        self.cache
+            .get_or_set(String::from_utf8_lossy(bytes), async move {
+                parse_document(RcDom::default(), Default::default())
+                    .from_utf8()
+                    .read_from(&mut bytes)
+                    .map(Arc::new)
+                    .map_err(|error| HtmlError::Io(Arc::new(error)))
+            })
+            .await
     }
 }
 

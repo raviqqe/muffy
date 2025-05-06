@@ -171,7 +171,7 @@ impl WebValidator {
         document_type: DocumentType,
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
-            DocumentType::Html => self.validate_html(&context, &response)?,
+            DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
 
@@ -210,8 +210,7 @@ impl WebValidator {
             .await
     }
 
-    // TODO Cache parsed HTML documents.
-    fn validate_html(
+    async fn validate_html(
         &self,
         context: &Arc<Context>,
         response: &Arc<Response>,
