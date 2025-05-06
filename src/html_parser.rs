@@ -1,3 +1,6 @@
+mod node;
+
+use self::node::Node;
 use crate::cache::{Cache, CacheError};
 use alloc::sync::Arc;
 use core::fmt::Formatter;
@@ -9,12 +12,12 @@ use std::io;
 
 /// An HTML parser.
 pub struct HtmlParser {
-    cache: Box<dyn Cache<Result<Arc<RcDom>, HtmlError>>>,
+    cache: Box<dyn Cache<Result<Arc<Node>, HtmlError>>>,
 }
 
 impl HtmlParser {
     /// Creates an HTML parser.
-    pub fn new(cache: impl Cache<Result<Arc<RcDom>, HtmlError>> + 'static) -> Self {
+    pub fn new(cache: impl Cache<Result<Arc<Node>, HtmlError>> + 'static) -> Self {
         Self {
             cache: Box::new(cache),
         }
@@ -31,7 +34,7 @@ impl HtmlParser {
                     parse_document(RcDom::default(), Default::default())
                         .from_utf8()
                         .read_from(&mut string.as_bytes())
-                        .map(Arc::new)
+                        .map(|dom| Arc::new(dom.document))
                         .map_err(|error| HtmlError::Io(Arc::new(error)))
                 }),
             )
