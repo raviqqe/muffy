@@ -77,7 +77,12 @@ impl WebValidator {
         // unacceptably inefficient.
         //
         // TODO Configure request headers.
-        let Some(response) = self.0.http_client.get(&document_url).await? else {
+        let Some(response) = self
+            .0
+            .http_client
+            .get(&document_url, &Default::default())
+            .await?
+        else {
             return Ok(Success::default());
         };
 
