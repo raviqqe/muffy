@@ -220,7 +220,7 @@ impl WebValidator {
         self.validate_html_element(
             context,
             &response.url().clone().into(),
-            &self.0.html_parser.parse(response.body()).await?.document,
+            &self.0.html_parser.parse(response.body()).await?,
             &mut futures,
         )?;
 
@@ -396,10 +396,7 @@ impl WebValidator {
     }
 
     async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
-        Self::has_html_element_in_node(
-            &self.0.html_parser.parse(response.body()).await?.document,
-            id,
-        )
+        Self::has_html_element_in_node(&self.0.html_parser.parse(response.body()).await?, id)
     }
 
     fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {

@@ -8,7 +8,7 @@ pub enum Node {
 }
 
 impl Node {
-    fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
+    pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
         match &node.data {
             NodeData::Element { name, attrs, .. } => Some(Node::Element(Element::new(
                 name.local.to_string(),

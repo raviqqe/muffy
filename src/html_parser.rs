@@ -34,7 +34,12 @@ impl HtmlParser {
                     parse_document(RcDom::default(), Default::default())
                         .from_utf8()
                         .read_from(&mut string.as_bytes())
-                        .map(|dom| Arc::new(dom.document))
+                        .map(|dom| {
+                            Arc::new(
+                                Node::from_markup5ever(&dom.document)
+                                    .unwrap_or_else(|| Node::Text(Default::default())),
+                            )
+                        })
                         .map_err(|error| HtmlError::Io(Arc::new(error)))
                 }),
             )
