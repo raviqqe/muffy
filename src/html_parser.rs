@@ -1,6 +1,6 @@
 mod node;
 
-use self::node::Node;
+pub use self::node::Node;
 use crate::cache::{Cache, CacheError};
 use alloc::sync::Arc;
 use core::fmt::Formatter;

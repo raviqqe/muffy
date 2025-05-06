@@ -2,15 +2,22 @@ mod context;
 
 use self::context::Context;
 use crate::{
-    config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
-    element_output::ElementOutput, error::Error, html_parser::HtmlParser,
-    http_client::CachedHttpClient, response::Response, success::Success, utility::default_port,
+    config::Config,
+    document_output::DocumentOutput,
+    document_type::DocumentType,
+    element::Element,
+    element_output::ElementOutput,
+    error::Error,
+    html_parser::{HtmlParser, Node},
+    http_client::CachedHttpClient,
+    response::Response,
+    success::Success,
+    utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use http::StatusCode;
-use markup5ever_rcdom::{Node, NodeData};
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -220,7 +227,7 @@ impl WebValidator {
         self.validate_html_element(
             context,
             &response.url().clone().into(),
-            &self.0.html_parser.parse(response.body()).await?,
+            &*self.0.html_parser.parse(response.body()).await?,
             &mut futures,
         )?;
 
@@ -234,24 +241,21 @@ impl WebValidator {
         node: &Node,
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
-        if let NodeData::Element { name, attrs, .. } = &node.data {
+        if let Node::Element(element) = &node {
             // TODO Include all elements and attributes.
             // TODO Normalize URLs in attributes.
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
-            match name.local.as_ref() {
+            match element.name() {
                 "a" => {
-                    for attribute in attrs.borrow().iter() {
-                        if attribute.name.local.as_ref() == "href" {
+                    for (name, value) in element.attributes() {
+                        if name == "href" {
                             futures.push((
-                                Element::new(
-                                    "a".into(),
-                                    vec![("href".into(), attribute.value.to_string())],
-                                ),
+                                Element::new("a".into(), vec![(name.into(), value.into())]),
                                 vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
-                                    attribute.value.to_string(),
+                                    value.into(),
                                     base.clone(),
                                     None,
                                 ))],
@@ -260,16 +264,13 @@ impl WebValidator {
                     }
                 }
                 "img" => {
-                    for attribute in attrs.borrow().iter() {
-                        if attribute.name.local.as_ref() == "src" {
+                    for (name, value) in element.attributes() {
+                        if name == "src" {
                             futures.push((
-                                Element::new(
-                                    "img".into(),
-                                    vec![("src".into(), attribute.value.to_string())],
-                                ),
+                                Element::new("img".into(), vec![("src".into(), value.into())]),
                                 vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
-                                    attribute.value.to_string(),
+                                    value.into(),
                                     base.clone(),
                                     None,
                                 ))],
@@ -278,12 +279,7 @@ impl WebValidator {
                     }
                 }
                 "link" => {
-                    let attrs = attrs.borrow();
-                    let attributes = HashMap::<_, _>::from_iter(
-                        attrs
-                            .iter()
-                            .map(|attribute| (attribute.name.local.as_ref(), &*attribute.value)),
-                    );
+                    let attributes = HashMap::<_, _>::from_iter(element.attributes());
 
                     if let Some(value) = attributes.get("href") {
                         futures.push((
@@ -303,10 +299,10 @@ impl WebValidator {
                 }
                 _ => {}
             }
-        }
 
-        for node in node.children.borrow().iter() {
-            self.validate_html_element(context, base, node, futures)?;
+            for node in element.children() {
+                self.validate_html_element(context, base, node, futures)?;
+            }
         }
 
         Ok(())
@@ -396,22 +392,22 @@ impl WebValidator {
     }
 
     async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
-        Self::has_html_element_in_node(&self.0.html_parser.parse(response.body()).await?, id)
+        Self::has_html_element_in_node(&*self.0.html_parser.parse(response.body()).await?, id)
     }
 
     fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
-        if let NodeData::Element { attrs, .. } = &node.data {
-            if attrs.borrow().iter().any(|attribute| {
-                FRAGMENT_ATTRIBUTES.contains(&attribute.name.local.as_ref())
-                    && attribute.value.as_ref() == id
-            }) {
+        if let Node::Element(element) = &node {
+            if element
+                .attributes()
+                .any(|(name, value)| FRAGMENT_ATTRIBUTES.contains(&name) && value == id)
+            {
                 return Ok(true);
             }
-        }
 
-        for node in node.children.borrow().iter() {
-            if Self::has_html_element_in_node(node, id)? {
-                return Ok(true);
+            for node in element.children() {
+                if Self::has_html_element_in_node(node, id)? {
+                    return Ok(true);
+                }
             }
         }
 
