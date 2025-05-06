@@ -24,7 +24,7 @@ impl HtmlParser {
     }
 
     /// Parses an HTML document.
-    pub async fn parse(&self, bytes: &[u8]) -> Result<Arc<RcDom>, HtmlError> {
+    pub async fn parse(&self, bytes: &[u8]) -> Result<Arc<Node>, HtmlError> {
         let string = String::from_utf8_lossy(bytes).to_string();
 
         self.cache
