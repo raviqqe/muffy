@@ -6,13 +6,15 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     default: SiteConfig,
-    // TODO Map domain names -> ports -> paths.
-    sites: HashMap<String, SiteConfig>,
+    sites: HashMap<String, HashMap<usize, Vec<SiteConfig>>>,
 }
 
 impl Config {
     /// Creates a configuration.
-    pub const fn new(default: SiteConfig, sites: HashMap<String, SiteConfig>) -> Self {
+    pub const fn new(
+        default: SiteConfig,
+        sites: HashMap<String, HashMap<usize, Vec<SiteConfig>>>,
+    ) -> Self {
         Self { default, sites }
     }
 
@@ -22,7 +24,7 @@ impl Config {
     }
 
     /// Returns websites.
-    pub const fn sites(&self) -> &HashMap<String, SiteConfig> {
+    pub const fn sites(&self) -> &HashMap<String, HashMap<usize, Vec<SiteConfig>>> {
         &self.sites
     }
 }
