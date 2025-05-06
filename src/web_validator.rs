@@ -224,12 +224,14 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
 
-        self.validate_html_element(
-            context,
-            &response.url().clone().into(),
-            &*self.0.html_parser.parse(response.body()).await?,
-            &mut futures,
-        )?;
+        for node in self.0.html_parser.parse(response.body()).await?.children() {
+            self.validate_html_element(
+                context,
+                &response.url().clone().into(),
+                node,
+                &mut futures,
+            )?;
+        }
 
         Ok(futures)
     }
@@ -392,25 +394,25 @@ impl WebValidator {
     }
 
     async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
-        Self::has_html_element_in_node(&*self.0.html_parser.parse(response.body()).await?, id)
+        Ok(self
+            .0
+            .html_parser
+            .parse(response.body())
+            .await?
+            .children()
+            .any(|node| Self::has_html_element_in_node(node, id)))
     }
 
-    fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
+    fn has_html_element_in_node(node: &Node, id: &str) -> bool {
         if let Node::Element(element) = &node {
-            if element
+            element
                 .attributes()
                 .any(|(name, value)| FRAGMENT_ATTRIBUTES.contains(&name) && value == id)
-            {
-                return Ok(true);
-            }
-
-            for node in element.children() {
-                if Self::has_html_element_in_node(node, id)? {
-                    return Ok(true);
-                }
-            }
+                || element
+                    .children()
+                    .any(|node| Self::has_html_element_in_node(node, id))
+        } else {
+            false
         }
-
-        Ok(false)
     }
 }
