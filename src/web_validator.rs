@@ -108,7 +108,8 @@ impl WebValidator {
         };
 
         if let Some(fragment) = url.fragment() {
-            if document_type == DocumentType::Html && !Self::has_html_element(&response, fragment)?
+            if document_type == DocumentType::Html
+                && !self.has_html_element(&response, fragment).await?
             {
                 return Err(Error::HtmlElementNotFound(fragment.into()));
             }
@@ -221,12 +222,7 @@ impl WebValidator {
         self.validate_html_element(
             context,
             &response.url().clone().into(),
-            &self
-                .0
-                .html_parser
-                .parse(str::from_utf8(response.body())?)
-                .map_err(Error::HtmlParse)?
-                .document,
+            &self.0.html_parser.parse(response.body()).await?.document,
             &mut futures,
         )?;
 
@@ -401,11 +397,9 @@ impl WebValidator {
         }
     }
 
-    fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
+    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
         Self::has_html_element_in_node(
-            &Self::parse_html(str::from_utf8(response.body())?)
-                .map_err(Error::HtmlParse)?
-                .document,
+            &self.0.html_parser.parse(response.body()).await?.document,
             id,
         )
     }

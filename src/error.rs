@@ -1,4 +1,4 @@
-use crate::{cache::CacheError, http_client::HttpClientError};
+use crate::{cache::CacheError, html_parser::HtmlError, http_client::HttpClientError};
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -24,8 +24,8 @@ pub enum Error {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML parse error.
-    HtmlParse(io::Error),
+    /// An HTML error.
+    Html(HtmlError),
     /// An HTML parse error.
     HtmlElementNotFound(String),
     /// An HTTP client error.
@@ -63,7 +63,7 @@ impl Display for Error {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::Html(error) => write!(formatter, "{error}"),
             Self::HtmlElementNotFound(name) => {
                 write!(formatter, "HTML element for #{name} not found")
             }
@@ -102,6 +102,12 @@ impl From<CacheError> for Error {
 impl From<io::Error> for Error {
     fn from(error: io::Error) -> Self {
         Self::Io(error)
+    }
+}
+
+impl From<HtmlError> for Error {
+    fn from(error: HtmlError) -> Self {
+        Self::Html(error)
     }
 }
 
