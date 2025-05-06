@@ -3,6 +3,33 @@ use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
 
 #[derive(Debug)]
+pub struct Document {
+    children: Vec<Arc<Node>>,
+}
+
+impl Document {
+    pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
+        if matches!(node.data, NodeData::Document) {
+            Document {
+                children: node
+                    .children
+                    .borrow()
+                    .iter()
+                    .flat_map(|node| Node::from_markup5ever(node))
+                    .map(Arc::new)
+                    .collect(),
+            }
+        } else {
+            unreachable!()
+        }
+    }
+
+    pub fn children(&self) -> impl Iterator<Item = &Node> {
+        self.children.iter().map(Deref::deref)
+    }
+}
+
+#[derive(Debug)]
 pub enum Node {
     Element(Element),
     Text(String),
