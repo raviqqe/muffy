@@ -113,7 +113,7 @@ impl CachedHttpClient {
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
-                    let response = client.0.client.get(&url, headers).await?;
+                    let response = client.0.client.get(&url, &headers).await?;
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
