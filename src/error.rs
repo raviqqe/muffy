@@ -38,8 +38,6 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A document validation error.
-    Document,
     /// A sitemap error.
     Sitemap(sitemaps::error::Error),
     /// A Sled database error.
@@ -48,6 +46,8 @@ pub enum Error {
     UrlParse(ParseError),
     /// A UTF-8 error.
     Utf8(Utf8Error),
+    /// A validation failure.
+    Validation,
 }
 
 impl error::Error for Error {}
@@ -72,11 +72,11 @@ impl Display for Error {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Document => write!(formatter, "document validation failed"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
+            Self::Validation => write!(formatter, "validation failed"),
         }
     }
 }

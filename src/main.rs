@@ -140,7 +140,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     );
 
     if document_metrics.has_error() {
-        Err(muffy::Error::Document.into())
+        Err(muffy::Error::Validation.into())
     } else {
         Ok(())
     }
