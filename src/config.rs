@@ -6,14 +6,14 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     default: SiteConfig,
-    sites: HashMap<String, HashMap<usize, Vec<SiteConfig>>>,
+    sites: HashMap<String, HashMap<u16, Vec<(String, SiteConfig)>>>,
 }
 
 impl Config {
     /// Creates a configuration.
     pub const fn new(
         default: SiteConfig,
-        sites: HashMap<String, HashMap<usize, Vec<SiteConfig>>>,
+        sites: HashMap<String, HashMap<u16, Vec<(String, SiteConfig)>>>,
     ) -> Self {
         Self { default, sites }
     }
@@ -24,7 +24,7 @@ impl Config {
     }
 
     /// Returns websites.
-    pub const fn sites(&self) -> &HashMap<String, HashMap<usize, Vec<SiteConfig>>> {
+    pub const fn sites(&self) -> &HashMap<String, HashMap<u16, Vec<(String, SiteConfig)>>> {
         &self.sites
     }
 }

@@ -23,6 +23,9 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
+const HTTP_PORT: u16 = 80;
+const HTTPS_PORT: u16 = 443;
+
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 
@@ -97,11 +100,32 @@ impl WebValidator {
             }
         }
 
-        if !context
-            .config()
-            .sites()
-            .iter()
-            .any(|(site, config)| url.as_str().starts_with(site) && config.recursive())
+        if !url
+            .host_str()
+            .map(|host| {
+                context
+                    .config()
+                    .sites()
+                    .get(host)
+                    .map(|port_configs| {
+                        port_configs
+                            .get(&url.port().unwrap_or_else(|| {
+                                if url.scheme() == "https" {
+                                    HTTPS_PORT
+                                } else {
+                                    HTTP_PORT
+                                }
+                            }))
+                            .map(|sites| {
+                                sites.iter().any(|(path, config)| {
+                                    url.path().starts_with(path) && config.recursive()
+                                })
+                            })
+                            .unwrap_or_default()
+                    })
+                    .unwrap_or_default()
+            })
+            .unwrap_or_default()
             || context
                 .documents()
                 .insert_async(response.url().to_string())
