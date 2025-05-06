@@ -2,7 +2,7 @@ mod context;
 
 use self::context::Context;
 use crate::{
-    document_output::DocumentOutput, document_type::DocumentType, element::Element,
+    config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
     element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
     success::Success,
 };
@@ -46,14 +46,16 @@ impl WebValidator {
     /// Validates websites recursively.
     pub async fn validate(
         &self,
-        url: &str,
+        config: &Config,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>> + use<>, Error> {
         let (sender, receiver) = channel(JOB_CAPACITY);
-        let context = Arc::new(Context::new(sender, url.into()));
+        let context = Arc::new(Context::new(sender, config.clone()));
 
-        self.cloned()
-            .validate_link(context, url.into(), None)
-            .await?;
+        try_join_all(config.sites().keys().map(|url| {
+            self.cloned()
+                .validate_link(context.clone(), url.into(), None)
+        }))
+        .await?;
 
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
@@ -95,8 +97,11 @@ impl WebValidator {
             }
         }
 
-        // TODO Configure origin URLs.
-        if !url.to_string().starts_with(context.origin())
+        if !context
+            .config()
+            .sites()
+            .iter()
+            .any(|(site, config)| url.as_str().starts_with(site) && config.recursive())
             || context
                 .documents()
                 .insert_async(response.url().to_string())

@@ -5,8 +5,8 @@ use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
 use muffy::{
-    CachedHttpClient, ClockTimer, MemoryCache, RenderFormat, RenderOptions, ReqwestHttpClient,
-    SledCache, WebValidator,
+    CachedHttpClient, ClockTimer, Config, MemoryCache, RenderFormat, RenderOptions,
+    ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{env::temp_dir, process::exit};
@@ -24,9 +24,9 @@ const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Arguments {
-    /// An origin URL.
-    #[arg()]
-    url: String,
+    /// Website URLs.
+    #[arg(required(true))]
+    urls: Vec<String>,
     /// Uses a persistent cache.
     #[arg(long)]
     cache: bool,
@@ -48,7 +48,7 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let Arguments {
-        url,
+        urls,
         cache,
         format,
         verbose,
@@ -73,7 +73,14 @@ async fn run() -> Result<(), Box<dyn Error>> {
         (getrlimit(Resource::NOFILE)?.0 / 2) as _,
     ));
 
-    let mut documents = validator.validate(&url).await?;
+    let mut documents = validator
+        .validate(&Config::new(
+            Default::default(),
+            urls.into_iter()
+                .map(|url| (url, SiteConfig::default().set_recursive(true)))
+                .collect(),
+        ))
+        .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
