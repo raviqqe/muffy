@@ -148,6 +148,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
     Ok(Config::new(
+        urls.iter().cloned().collect(),
         Default::default(),
         urls.iter()
             .map(|url| Url::parse(url))

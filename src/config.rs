@@ -1,10 +1,11 @@
 use http::HeaderMap;
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 /// A validation configuration.
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
+    roots: Vec<String>,
     default: SiteConfig,
     sites: HashMap<String, HashMap<u16, Vec<(String, SiteConfig)>>>,
 }
@@ -12,10 +13,20 @@ pub struct Config {
 impl Config {
     /// Creates a configuration.
     pub const fn new(
+        roots: Vec<String>,
         default: SiteConfig,
         sites: HashMap<String, HashMap<u16, Vec<(String, SiteConfig)>>>,
     ) -> Self {
-        Self { default, sites }
+        Self {
+            roots,
+            default,
+            sites,
+        }
+    }
+
+    /// Returns root URLs.
+    pub fn roots(&self) -> impl Iterator<Item = &str> {
+        self.roots.iter().map(Deref::deref)
     }
 
     /// Returns a default configuration for websites.

@@ -54,7 +54,7 @@ impl WebValidator {
         let (sender, receiver) = channel(JOB_CAPACITY);
         let context = Arc::new(Context::new(sender, config.clone()));
 
-        try_join_all(config.sites().keys().map(|url| {
+        try_join_all(config.roots().map(|url| {
             self.cloned()
                 .validate_link(context.clone(), url.into(), None)
         }))
