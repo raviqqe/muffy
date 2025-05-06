@@ -24,10 +24,15 @@ impl ReqwestHttpClient {
 
 #[async_trait]
 impl HttpClient for ReqwestHttpClient {
-    async fn get(&self, url: Url, headers: HeaderMap) -> Result<BareResponse, HttpClientError> {
+    async fn get(&self, url: &Url, headers: &HeaderMap) -> Result<BareResponse, HttpClientError> {
         let response = self
             .client
-            .execute(self.client.get(url).headers(headers).build()?)
+            .execute(
+                self.client
+                    .get(url.clone())
+                    .headers(headers.clone())
+                    .build()?,
+            )
             .await?;
 
         Ok(BareResponse {
