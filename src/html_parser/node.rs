@@ -8,7 +8,7 @@ pub struct Document {
 }
 
 impl Document {
-    pub fn new(children: Vec<Arc<Node>>) -> Self {
+    pub const fn new(children: Vec<Arc<Node>>) -> Self {
         Self { children }
     }
 
@@ -41,7 +41,7 @@ pub enum Node {
 impl Node {
     pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
         match &node.data {
-            NodeData::Element { name, attrs, .. } => Some(Node::Element(Element::new(
+            NodeData::Element { name, attrs, .. } => Some(Self::Element(Element::new(
                 name.local.to_string(),
                 attrs
                     .borrow()
@@ -60,7 +60,7 @@ impl Node {
                     .map(Arc::new)
                     .collect(),
             ))),
-            NodeData::Text { contents } => Some(Node::Text(contents.borrow().to_string())),
+            NodeData::Text { contents } => Some(Self::Text(contents.borrow().to_string())),
             NodeData::Comment { .. }
             | NodeData::Document
             | NodeData::Doctype { .. }
@@ -77,7 +77,7 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(name: String, attributes: Vec<(String, String)>, children: Vec<Arc<Node>>) -> Self {
+    pub const fn new(name: String, attributes: Vec<(String, String)>, children: Vec<Arc<Node>>) -> Self {
         Self {
             name,
             attributes,
@@ -85,6 +85,7 @@ impl Element {
         }
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -102,6 +103,6 @@ impl Element {
 
 impl From<Element> for Node {
     fn from(element: Element) -> Self {
-        Node::Element(element)
+        Self::Element(element)
     }
 }

@@ -9,7 +9,7 @@ use core::{error::Error, fmt};
 use html5ever::{parse_document, tendril::TendrilSink};
 use markup5ever_rcdom::RcDom;
 use node::Document;
-use std::fmt::Display;
+use core::fmt::Display;
 use std::io;
 
 /// An HTML parser.
