@@ -199,14 +199,14 @@ impl WebValidator {
         ))
     }
 
-    async fn validate_link_with_base(
+    async fn validate_normalized_link_with_base(
         self,
         context: Arc<Context>,
         url: String,
         base: Arc<Url>,
         document_type: Option<DocumentType>,
     ) -> Result<Success, Error> {
-        let url = Url::parse(&url).or_else(|_| base.join(&url))?;
+        let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         // TODO Configure scheme and URL validation.
         if !VALID_SCHEMES.contains(&url.scheme()) {
@@ -215,6 +215,10 @@ impl WebValidator {
 
         self.validate_link(context, url.to_string(), document_type)
             .await
+    }
+
+    fn normalize_url(url: &str) -> String {
+        url.split_whitespace().collect()
     }
 
     async fn validate_html(
@@ -255,7 +259,7 @@ impl WebValidator {
                         if name == "href" {
                             futures.push((
                                 Element::new("a".into(), vec![(name.into(), value.into())]),
-                                vec![spawn(self.cloned().validate_link_with_base(
+                                vec![spawn(self.cloned().validate_normalized_link_with_base(
                                     context.clone(),
                                     value.into(),
                                     base.clone(),
@@ -270,7 +274,7 @@ impl WebValidator {
                         if name == "src" {
                             futures.push((
                                 Element::new("img".into(), vec![("src".into(), value.into())]),
-                                vec![spawn(self.cloned().validate_link_with_base(
+                                vec![spawn(self.cloned().validate_normalized_link_with_base(
                                     context.clone(),
                                     value.into(),
                                     base.clone(),
@@ -286,7 +290,7 @@ impl WebValidator {
                     if let Some(value) = attributes.get("href") {
                         futures.push((
                             Element::new("link".into(), vec![("src".into(), value.to_string())]),
-                            vec![spawn(self.cloned().validate_link_with_base(
+                            vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
                                 value.to_string(),
                                 base.clone(),

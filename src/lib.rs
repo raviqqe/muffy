@@ -417,6 +417,48 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn validate_link_with_whitespaces() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_response_stub(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https:/  /foo. com/ bar"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_response_stub(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
     mod sitemap {
         use super::*;
         use pretty_assertions::assert_eq;
