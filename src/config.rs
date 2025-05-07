@@ -85,6 +85,12 @@ impl SiteConfig {
         self.recursive
     }
 
+    /// Sets request headers.
+    pub fn set_headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
     /// Sets a status code configuration.
     pub fn set_status(mut self, status: StatusConfig) -> Self {
         self.status = status;
