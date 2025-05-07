@@ -86,7 +86,7 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.to_string()],
-            SiteConfig::new(Default::default(), Default::default(), false),
+            Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
                 [(
