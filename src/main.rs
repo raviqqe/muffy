@@ -4,7 +4,7 @@ use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
-use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
@@ -174,7 +174,7 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                         HeaderValue::from_str(&split.join(":"))?,
                     ))
                 })
-                .collect::<Result<HeaderMap, Box<dyn Error>>>()?,
+                .collect::<Result<_, Box<dyn Error>>>()?,
         );
 
     Ok(Config::new(
