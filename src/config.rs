@@ -41,12 +41,15 @@ impl Config {
 
     /// Gets a site config
     pub fn site(&self, url: &Url) -> &SiteConfig {
+        self.get_site(url).unwrap_or_else(|| &self.default)
+    }
+
+    fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
         self.sites()
             .get(url.host_str()?)?
             .get(&url.port().unwrap_or_else(|| default_port(url)))?
             .iter()
             .find_map(|(path, config)| url.path().starts_with(path).then_some(config))
-            .unwrap_or_else(|| self.default())
     }
 }
 
