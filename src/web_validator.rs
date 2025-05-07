@@ -199,20 +199,6 @@ impl WebValidator {
         ))
     }
 
-    async fn validate_normalized_link(
-        self,
-        context: Arc<Context>,
-        url: String,
-        document_type: Option<DocumentType>,
-    ) -> Result<Success, Error> {
-        self.validate_link(context, Self::normalize_url(&url), document_type)
-            .await
-    }
-
-    fn normalize_url(url: &str) -> String {
-        url.split_whitespace().collect::<String>()
-    }
-
     async fn validate_normalized_link_with_base(
         self,
         context: Arc<Context>,
@@ -229,6 +215,10 @@ impl WebValidator {
 
         self.validate_link(context, url.to_string(), document_type)
             .await
+    }
+
+    fn normalize_url(url: &str) -> String {
+        url.split_whitespace().collect()
     }
 
     async fn validate_html(
