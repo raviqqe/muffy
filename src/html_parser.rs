@@ -1,15 +1,19 @@
 mod node;
 
 pub use self::node::Node;
-use crate::cache::{Cache, CacheError};
-use crate::response::Response;
+use crate::{
+    cache::{Cache, CacheError},
+    response::Response,
+};
 use alloc::sync::Arc;
-use core::fmt::Formatter;
-use core::{error::Error, fmt};
+use core::{
+    error::Error,
+    fmt,
+    fmt::{Display, Formatter},
+};
 use html5ever::{parse_document, tendril::TendrilSink};
 use markup5ever_rcdom::RcDom;
 use node::Document;
-use core::fmt::Display;
 use std::io;
 
 /// An HTML parser.

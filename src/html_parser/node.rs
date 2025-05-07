@@ -77,7 +77,11 @@ pub struct Element {
 }
 
 impl Element {
-    pub const fn new(name: String, attributes: Vec<(String, String)>, children: Vec<Arc<Node>>) -> Self {
+    pub const fn new(
+        name: String,
+        attributes: Vec<(String, String)>,
+        children: Vec<Arc<Node>>,
+    ) -> Self {
         Self {
             name,
             attributes,
