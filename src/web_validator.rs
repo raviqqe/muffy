@@ -96,7 +96,7 @@ impl WebValidator {
             return Ok(Success::default());
         };
 
-        if context
+        if !context
             .config()
             .site(&url)
             .status()

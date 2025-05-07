@@ -52,7 +52,7 @@ impl Config {
     }
 }
 
-/// A website configuration.
+/// A site configuration.
 #[derive(Clone, Debug, Default)]
 pub struct SiteConfig {
     headers: HeaderMap,
@@ -61,6 +61,15 @@ pub struct SiteConfig {
 }
 
 impl SiteConfig {
+    /// Creates a site configuration.
+    pub const fn new(headers: HeaderMap, status: StatusConfig, recursive: bool) -> Self {
+        Self {
+            headers,
+            status,
+            recursive,
+        }
+    }
+
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
@@ -83,7 +92,7 @@ impl SiteConfig {
     }
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct StatusConfig {
     accepted: HashSet<StatusCode>,
 }
@@ -95,5 +104,13 @@ impl StatusConfig {
 
     pub fn accepted(&self, status: StatusCode) -> bool {
         self.accepted.contains(&status)
+    }
+}
+
+impl Default for StatusConfig {
+    fn default() -> Self {
+        Self {
+            accepted: HashSet::from_iter([StatusCode::OK]),
+        }
     }
 }
