@@ -98,7 +98,7 @@ pub struct StatusConfig {
 }
 
 impl StatusConfig {
-    pub fn new(accepted: HashSet<StatusCode>) -> Self {
+    pub const fn new(accepted: HashSet<StatusCode>) -> Self {
         Self { accepted }
     }
 
