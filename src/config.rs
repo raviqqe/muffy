@@ -2,7 +2,7 @@ use crate::default_port;
 use core::ops::Deref;
 use http::HeaderMap;
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
@@ -58,6 +58,7 @@ impl Config {
 pub struct SiteConfig {
     #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
+    status: StatusConfig,
     recursive: bool,
 }
 
@@ -65,6 +66,11 @@ impl SiteConfig {
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
+    }
+
+    /// Returns a status configuration.
+    pub const fn status(&self) -> &StatusConfig {
+        &self.status
     }
 
     /// Returns whether we should validate the website recursively.
@@ -76,5 +82,20 @@ impl SiteConfig {
     pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
         self
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct StatusConfig {
+    accepted: HashSet<usize>,
+}
+
+impl StatusConfig {
+    pub fn new(accepted: HashSet<usize>) -> Self {
+        Self { accepted }
+    }
+
+    pub fn accepted(&self, status: usize) -> bool {
+        self.accepted.contains(&status)
     }
 }
