@@ -6,7 +6,7 @@ use dirs::cache_dir;
 use futures::StreamExt;
 use itertools::Itertools;
 use muffy::{
-    HttpClient, ClockTimer, Config, HtmlParser, MemoryCache, RenderFormat, RenderOptions,
+    ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
