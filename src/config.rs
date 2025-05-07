@@ -1,14 +1,13 @@
 use crate::default_port;
 use core::ops::Deref;
 use http::{HeaderMap, StatusCode};
-use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 
 /// A validation configuration.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Config {
     roots: Vec<String>,
     default: SiteConfig,
@@ -54,9 +53,8 @@ impl Config {
 }
 
 /// A website configuration.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct SiteConfig {
-    #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
     status: StatusConfig,
     recursive: bool,
@@ -85,17 +83,17 @@ impl SiteConfig {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default)]
 pub struct StatusConfig {
-    accepted: HashSet<u16>,
+    accepted: HashSet<StatusCode>,
 }
 
 impl StatusConfig {
-    pub fn new(accepted: HashSet<u16>) -> Self {
+    pub fn new(accepted: HashSet<StatusCode>) -> Self {
         Self { accepted }
     }
 
     pub fn accepted(&self, status: StatusCode) -> bool {
-        self.accepted.contains(&(status.as_u16() as _))
+        self.accepted.contains(&status)
     }
 }
