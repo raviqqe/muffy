@@ -39,6 +39,9 @@ struct Arguments {
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
+    /// Set request headers.
+    #[arg(long)]
+    header: Vec<String>,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
