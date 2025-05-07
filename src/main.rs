@@ -4,14 +4,14 @@ use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
-use http::StatusCode;
+use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, process::exit};
+use std::{collections::HashMap, env::temp_dir, process::exit, str::FromStr};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -80,9 +80,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator
-        .validate(&compile_config(&arguments.urls, &arguments.accept_status)?)
-        .await?;
+    let mut documents = validator.validate(&compile_config(&arguments)?).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -153,22 +151,38 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_config(
-    urls: &[String],
-    accepted_status_codes: &[u16],
-) -> Result<Config, Box<dyn Error>> {
-    let status = StatusConfig::new(
-        accepted_status_codes
-            .iter()
-            .copied()
-            .map(StatusCode::try_from)
-            .collect::<Result<_, _>>()?,
-    );
+fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
+    let site = SiteConfig::default()
+        .set_status(StatusConfig::new(
+            arguments
+                .accept_status
+                .iter()
+                .copied()
+                .map(StatusCode::try_from)
+                .collect::<Result<_, _>>()?,
+        ))
+        .set_headers(
+            arguments
+                .header
+                .iter()
+                .map(|header| {
+                    let mut split = header.split(":");
+                    let name = split.next().ok_or("no header name")?;
+
+                    Ok((
+                        HeaderName::from_str(name)?,
+                        HeaderValue::from_str(&split.collect::<String>())?,
+                    ))
+                })
+                .collect::<Result<HeaderMap, Box<dyn Error>>>()?,
+        );
 
     Ok(Config::new(
-        urls.to_vec(),
-        SiteConfig::default().set_status(status.clone()),
-        urls.iter()
+        arguments.urls.to_vec(),
+        site.clone(),
+        arguments
+            .urls
+            .iter()
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
@@ -185,12 +199,7 @@ fn compile_config(
                                 (
                                     port,
                                     urls.map(|url| {
-                                        (
-                                            url.path().into(),
-                                            SiteConfig::default()
-                                                .set_status(status.clone())
-                                                .set_recursive(true),
-                                        )
+                                        (url.path().into(), site.clone().set_recursive(true))
                                     })
                                     .collect(),
                                 )
