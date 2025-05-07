@@ -2,18 +2,24 @@ mod context;
 
 use self::context::Context;
 use crate::{
-    config::Config, document_output::DocumentOutput, document_type::DocumentType, element::Element,
-    element_output::ElementOutput, error::Error, http_client::CachedHttpClient, response::Response,
-    success::Success, utility::default_port,
+    config::Config,
+    document_output::DocumentOutput,
+    document_type::DocumentType,
+    element::Element,
+    element_output::ElementOutput,
+    error::Error,
+    html_parser::{HtmlParser, Node},
+    http_client::CachedHttpClient,
+    response::Response,
+    success::Success,
+    utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
-use html5ever::{parse_document, tendril::TendrilSink};
 use http::StatusCode;
-use markup5ever_rcdom::{Node, NodeData, RcDom};
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::HashMap, io};
+use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -31,12 +37,19 @@ pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
     http_client: CachedHttpClient,
+    html_parser: HtmlParser,
 }
 
 impl WebValidator {
     /// Creates a web validator.
-    pub fn new(http_client: CachedHttpClient) -> Self {
-        Self(WebValidatorInner { http_client }.into())
+    pub fn new(http_client: CachedHttpClient, html_parser: HtmlParser) -> Self {
+        Self(
+            WebValidatorInner {
+                http_client,
+                html_parser,
+            }
+            .into(),
+        )
     }
 
     fn cloned(&self) -> Self {
@@ -101,7 +114,8 @@ impl WebValidator {
         };
 
         if let Some(fragment) = url.fragment() {
-            if document_type == DocumentType::Html && !Self::has_html_element(&response, fragment)?
+            if document_type == DocumentType::Html
+                && !self.has_html_element(&response, fragment).await?
             {
                 return Err(Error::HtmlElementNotFound(fragment.into()));
             }
@@ -164,7 +178,7 @@ impl WebValidator {
         document_type: DocumentType,
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
-            DocumentType::Html => self.validate_html(&context, &response)?,
+            DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
 
@@ -203,22 +217,21 @@ impl WebValidator {
             .await
     }
 
-    // TODO Cache parsed HTML documents.
-    fn validate_html(
+    async fn validate_html(
         &self,
         context: &Arc<Context>,
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
 
-        self.validate_html_element(
-            context,
-            &response.url().clone().into(),
-            &Self::parse_html(str::from_utf8(response.body())?)
-                .map_err(Error::HtmlParse)?
-                .document,
-            &mut futures,
-        )?;
+        for node in self.0.html_parser.parse(response).await?.children() {
+            self.validate_html_element(
+                context,
+                &response.url().clone().into(),
+                node,
+                &mut futures,
+            )?;
+        }
 
         Ok(futures)
     }
@@ -230,24 +243,21 @@ impl WebValidator {
         node: &Node,
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
-        if let NodeData::Element { name, attrs, .. } = &node.data {
+        if let Node::Element(element) = &node {
             // TODO Include all elements and attributes.
             // TODO Normalize URLs in attributes.
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
-            match name.local.as_ref() {
+            match element.name() {
                 "a" => {
-                    for attribute in attrs.borrow().iter() {
-                        if attribute.name.local.as_ref() == "href" {
+                    for (name, value) in element.attributes() {
+                        if name == "href" {
                             futures.push((
-                                Element::new(
-                                    "a".into(),
-                                    vec![("href".into(), attribute.value.to_string())],
-                                ),
+                                Element::new("a".into(), vec![(name.into(), value.into())]),
                                 vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
-                                    attribute.value.to_string(),
+                                    value.into(),
                                     base.clone(),
                                     None,
                                 ))],
@@ -256,16 +266,13 @@ impl WebValidator {
                     }
                 }
                 "img" => {
-                    for attribute in attrs.borrow().iter() {
-                        if attribute.name.local.as_ref() == "src" {
+                    for (name, value) in element.attributes() {
+                        if name == "src" {
                             futures.push((
-                                Element::new(
-                                    "img".into(),
-                                    vec![("src".into(), attribute.value.to_string())],
-                                ),
+                                Element::new("img".into(), vec![("src".into(), value.into())]),
                                 vec![spawn(self.cloned().validate_link_with_base(
                                     context.clone(),
-                                    attribute.value.to_string(),
+                                    value.into(),
                                     base.clone(),
                                     None,
                                 ))],
@@ -274,12 +281,7 @@ impl WebValidator {
                     }
                 }
                 "link" => {
-                    let attrs = attrs.borrow();
-                    let attributes = HashMap::<_, _>::from_iter(
-                        attrs
-                            .iter()
-                            .map(|attribute| (attribute.name.local.as_ref(), &*attribute.value)),
-                    );
+                    let attributes = HashMap::<_, _>::from_iter(element.attributes());
 
                     if let Some(value) = attributes.get("href") {
                         futures.push((
@@ -299,10 +301,10 @@ impl WebValidator {
                 }
                 _ => {}
             }
-        }
 
-        for node in node.children.borrow().iter() {
-            self.validate_html_element(context, base, node, futures)?;
+            for node in element.children() {
+                self.validate_html_element(context, base, node, futures)?;
+            }
         }
 
         Ok(())
@@ -391,37 +393,26 @@ impl WebValidator {
         }
     }
 
-    fn has_html_element(response: &Arc<Response>, id: &str) -> Result<bool, Error> {
-        Self::has_html_element_in_node(
-            &Self::parse_html(str::from_utf8(response.body())?)
-                .map_err(Error::HtmlParse)?
-                .document,
-            id,
-        )
+    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
+        Ok(self
+            .0
+            .html_parser
+            .parse(response)
+            .await?
+            .children()
+            .any(|node| Self::has_html_element_in_node(node, id)))
     }
 
-    fn has_html_element_in_node(node: &Node, id: &str) -> Result<bool, Error> {
-        if let NodeData::Element { attrs, .. } = &node.data {
-            if attrs.borrow().iter().any(|attribute| {
-                FRAGMENT_ATTRIBUTES.contains(&attribute.name.local.as_ref())
-                    && attribute.value.as_ref() == id
-            }) {
-                return Ok(true);
-            }
+    fn has_html_element_in_node(node: &Node, id: &str) -> bool {
+        if let Node::Element(element) = &node {
+            element
+                .attributes()
+                .any(|(name, value)| FRAGMENT_ATTRIBUTES.contains(&name) && value == id)
+                || element
+                    .children()
+                    .any(|node| Self::has_html_element_in_node(node, id))
+        } else {
+            false
         }
-
-        for node in node.children.borrow().iter() {
-            if Self::has_html_element_in_node(node, id)? {
-                return Ok(true);
-            }
-        }
-
-        Ok(false)
-    }
-
-    fn parse_html(text: &str) -> Result<RcDom, io::Error> {
-        parse_document(RcDom::default(), Default::default())
-            .from_utf8()
-            .read_from(&mut text.as_bytes())
     }
 }

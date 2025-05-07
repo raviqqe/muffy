@@ -6,7 +6,7 @@ use dirs::cache_dir;
 use futures::StreamExt;
 use itertools::Itertools;
 use muffy::{
-    CachedHttpClient, ClockTimer, Config, MemoryCache, RenderFormat, RenderOptions,
+    CachedHttpClient, ClockTimer, Config, HtmlParser, MemoryCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
@@ -64,16 +64,19 @@ async fn run() -> Result<(), Box<dyn Error>> {
     } else {
         None
     };
-    let validator = WebValidator::new(CachedHttpClient::new(
-        ReqwestHttpClient::new()?,
-        ClockTimer::new(),
-        if let Some(db) = &db {
-            Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
-        } else {
-            Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
-        },
-        (getrlimit(Resource::NOFILE)?.0 / 2) as _,
-    ));
+    let validator = WebValidator::new(
+        CachedHttpClient::new(
+            ReqwestHttpClient::new()?,
+            ClockTimer::new(),
+            if let Some(db) = &db {
+                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+            } else {
+                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+            },
+            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+        ),
+        HtmlParser::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+    );
 
     let mut documents = validator.validate(&compile_config(&urls)?).await?;
     let mut document_metrics = muffy::Metrics::default();

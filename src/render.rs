@@ -110,7 +110,6 @@ mod tests {
     };
     use core::str;
     use insta::assert_snapshot;
-    use std::io::{self, ErrorKind};
     use url::Url;
 
     fn mixed_document_output() -> DocumentOutput {
@@ -129,7 +128,7 @@ mod tests {
                         )
                         .into(),
                     )),
-                    Err(Error::HtmlParse(io::Error::new(ErrorKind::NotFound, "foo"))),
+                    Err(Error::Validation),
                 ],
             )],
         )
@@ -229,10 +228,7 @@ mod tests {
                         ),
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Err(Error::HtmlParse(io::Error::new(
-                                ErrorKind::NotFound,
-                                "foo",
-                            )))],
+                            vec![Err(Error::Validation)],
                         ),
                     ],
                 ),
@@ -321,10 +317,7 @@ mod tests {
                         ),
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Err(Error::HtmlParse(io::Error::new(
-                                ErrorKind::NotFound,
-                                "foo",
-                            )))],
+                            vec![Err(Error::Validation)],
                         ),
                     ],
                 ),
