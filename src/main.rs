@@ -4,10 +4,11 @@ use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
+use http::StatusCode;
 use itertools::Itertools;
 use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
-    ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
+    ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{collections::HashMap, env::temp_dir, process::exit};
@@ -77,7 +78,10 @@ async fn run() -> Result<(), Box<dyn Error>> {
     );
 
     let mut documents = validator
-        .validate(&compile_config(&arguments.urls)?)
+        .validate(&compile_config(
+            &arguments.urls,
+            &arguments.accepted_status_codes,
+        )?)
         .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
@@ -149,10 +153,19 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
+fn compile_config(
+    urls: &[String],
+    accepted_status_codes: &[u16],
+) -> Result<Config, Box<dyn Error>> {
     Ok(Config::new(
         urls.to_vec(),
-        Default::default(),
+        SiteConfig::default().set_status(StatusConfig::new(
+            accepted_status_codes
+                .iter()
+                .copied()
+                .map(StatusCode::try_from)
+                .collect::<Result<_, _>>()?,
+        )),
         urls.iter()
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?

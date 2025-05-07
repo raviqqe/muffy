@@ -85,6 +85,12 @@ impl SiteConfig {
         self.recursive
     }
 
+    /// Sets a status code configuration.
+    pub fn set_status(mut self, status: StatusConfig) -> Self {
+        self.status = status;
+        self
+    }
+
     /// Sets whether we should validate the website recursively
     pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
@@ -92,16 +98,19 @@ impl SiteConfig {
     }
 }
 
+/// A status code configuration.
 #[derive(Clone, Debug)]
 pub struct StatusConfig {
     accepted: HashSet<StatusCode>,
 }
 
 impl StatusConfig {
+    /// Creates a status code configuration.
     pub const fn new(accepted: HashSet<StatusCode>) -> Self {
         Self { accepted }
     }
 
+    /// Returns whether a status code is accepted.
     pub fn accepted(&self, status: StatusCode) -> bool {
         self.accepted.contains(&status)
     }
