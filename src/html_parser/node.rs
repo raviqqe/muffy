@@ -58,7 +58,10 @@ impl Node {
                     .collect(),
             ))),
             NodeData::Text { contents } => Some(Node::Text(contents.borrow().to_string())),
-            _ => None,
+            NodeData::Comment { .. }
+            | NodeData::Document
+            | NodeData::Doctype { .. }
+            | NodeData::ProcessingInstruction { .. } => None,
         }
     }
 }
