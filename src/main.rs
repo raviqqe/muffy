@@ -38,7 +38,7 @@ struct Arguments {
     format: RenderFormat,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
-    accepted_status_codes: Vec<u16>,
+    accept_status: Vec<u16>,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
@@ -78,10 +78,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     );
 
     let mut documents = validator
-        .validate(&compile_config(
-            &arguments.urls,
-            &arguments.accepted_status_codes,
-        )?)
+        .validate(&compile_config(&arguments.urls, &arguments.accept_status)?)
         .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
@@ -157,15 +154,17 @@ fn compile_config(
     urls: &[String],
     accepted_status_codes: &[u16],
 ) -> Result<Config, Box<dyn Error>> {
+    let status = StatusConfig::new(
+        accepted_status_codes
+            .iter()
+            .copied()
+            .map(StatusCode::try_from)
+            .collect::<Result<_, _>>()?,
+    );
+
     Ok(Config::new(
         urls.to_vec(),
-        SiteConfig::default().set_status(StatusConfig::new(
-            accepted_status_codes
-                .iter()
-                .copied()
-                .map(StatusCode::try_from)
-                .collect::<Result<_, _>>()?,
-        )),
+        SiteConfig::default().set_status(status.clone()),
         urls.iter()
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
@@ -185,7 +184,9 @@ fn compile_config(
                                     urls.map(|url| {
                                         (
                                             url.path().into(),
-                                            SiteConfig::default().set_recursive(true),
+                                            SiteConfig::default()
+                                                .set_status(status.clone())
+                                                .set_recursive(true),
                                         )
                                     })
                                     .collect(),
