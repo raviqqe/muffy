@@ -29,13 +29,16 @@ struct Arguments {
     /// Website URLs.
     #[arg(required(true))]
     urls: Vec<String>,
-    /// Uses a persistent cache.
+    /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
-    /// Sets an output format.
+    /// Set an output format.
     #[arg(long, default_value = "text")]
     format: RenderFormat,
-    /// Becomes verbose.
+    /// Set accepted status codes.
+    #[arg(long, default_value = "200")]
+    accepted_status_codes: Vec<u16>,
+    /// Be verbose.
     #[arg(long)]
     verbose: bool,
 }
@@ -49,15 +52,10 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Box<dyn Error>> {
-    let Arguments {
-        urls,
-        cache,
-        format,
-        verbose,
-    } = Arguments::parse();
+    let arguments = Arguments::parse();
     let mut output = stdout();
 
-    let db = if cache {
+    let db = if arguments.cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
@@ -78,7 +76,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&compile_config(&urls)?).await?;
+    let mut documents = validator
+        .validate(&compile_config(&arguments.urls)?)
+        .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -91,8 +91,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         muffy::render_document(
             &document,
             &RenderOptions::default()
-                .set_format(format)
-                .set_verbose(verbose),
+                .set_format(arguments.format)
+                .set_verbose(arguments.verbose),
             &mut output,
         )
         .await?;
