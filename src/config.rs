@@ -34,23 +34,19 @@ impl Config {
         self.roots.iter().map(Deref::deref)
     }
 
-    /// Returns a default configuration for websites.
-    pub const fn default(&self) -> &SiteConfig {
-        &self.default
-    }
-
     /// Returns websites.
     pub const fn sites(&self) -> &HashMap<String, HostConfig> {
         &self.sites
     }
 
     /// Gets a site config
-    pub fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
+    pub fn site(&self, url: &Url) -> &SiteConfig {
         self.sites()
             .get(url.host_str()?)?
             .get(&url.port().unwrap_or_else(|| default_port(url)))?
             .iter()
             .find_map(|(path, config)| url.path().starts_with(path).then_some(config))
+            .unwrap_or_else(|| self.default())
     }
 }
 
