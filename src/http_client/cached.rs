@@ -1,6 +1,6 @@
 use crate::{
     cache::Cache,
-    http_client::{HttpClient, HttpClientError},
+    http_client::{BareHttpClient, HttpClientError},
     response::Response,
     timer::Timer,
 };
@@ -18,7 +18,7 @@ const USER_AGENT: &str = "muffy";
 pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
 
 struct CachedHttpClientInner {
-    client: Box<dyn HttpClient>,
+    client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
@@ -27,7 +27,7 @@ struct CachedHttpClientInner {
 impl CachedHttpClient {
     /// Creates an HTTP client.
     pub fn new(
-        client: impl HttpClient + 'static,
+        client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
         concurrency: usize,
