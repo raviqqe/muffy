@@ -1,6 +1,6 @@
 use crate::default_port;
 use core::ops::Deref;
-use http::HeaderMap;
+use http::{HeaderMap, StatusCode};
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 use url::Url;
@@ -87,15 +87,15 @@ impl SiteConfig {
 
 #[derive(Clone, Debug, Default, Deserialize)]
 pub struct StatusConfig {
-    accepted: HashSet<usize>,
+    accepted: HashSet<u16>,
 }
 
 impl StatusConfig {
-    pub fn new(accepted: HashSet<usize>) -> Self {
+    pub fn new(accepted: HashSet<u16>) -> Self {
         Self { accepted }
     }
 
-    pub fn accepted(&self, status: usize) -> bool {
-        self.accepted.contains(&status)
+    pub fn accepted(&self, status: StatusCode) -> bool {
+        self.accepted.contains(&(status.as_u16() as _))
     }
 }
