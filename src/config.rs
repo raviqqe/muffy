@@ -41,7 +41,7 @@ impl Config {
 
     /// Gets a site config
     pub fn site(&self, url: &Url) -> &SiteConfig {
-        self.get_site(url).unwrap_or_else(|| &self.default)
+        self.get_site(url).unwrap_or(&self.default)
     }
 
     fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
