@@ -91,14 +91,7 @@ impl WebValidator {
         let Some(response) = self
             .0
             .http_client
-            .get(
-                &document_url,
-                &context
-                    .config()
-                    .get_site(&url)
-                    .map(|config| config.headers().clone())
-                    .unwrap_or_default(),
-            )
+            .get(&document_url, context.config().site(&url).headers())
             .await?
         else {
             return Ok(Success::default());
