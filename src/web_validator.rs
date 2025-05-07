@@ -17,7 +17,6 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
-use http::StatusCode;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
