@@ -2,23 +2,26 @@ use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Document {
     children: Vec<Arc<Node>>,
 }
 
 impl Document {
+    pub fn new(children: Vec<Arc<Node>>) -> Self {
+        Self { children }
+    }
+
     pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
         if matches!(node.data, NodeData::Document) {
-            Document {
-                children: node
-                    .children
+            Self::new(
+                node.children
                     .borrow()
                     .iter()
                     .flat_map(|node| Node::from_markup5ever(node))
                     .map(Arc::new)
                     .collect(),
-            }
+            )
         } else {
             unreachable!()
         }
@@ -29,7 +32,7 @@ impl Document {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Node {
     Element(Element),
     Text(String),
@@ -66,7 +69,7 @@ impl Node {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Element {
     name: String,
     attributes: Vec<(String, String)>,
@@ -94,5 +97,11 @@ impl Element {
 
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
+    }
+}
+
+impl From<Element> for Node {
+    fn from(element: Element) -> Self {
+        Node::Element(element)
     }
 }

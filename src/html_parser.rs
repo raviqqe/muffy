@@ -66,3 +66,39 @@ impl From<CacheError> for HtmlError {
         Self::Cache(error)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{MemoryCache, html_parser::node::Element};
+    use http::StatusCode;
+    use pretty_assertions::assert_eq;
+    use url::Url;
+
+    #[tokio::test]
+    async fn parse_response() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap(),
+            Document::new(vec![Arc::new(
+                Element::new(
+                    "a".into(),
+                    vec![("href".into(), "https://foo.com/bar".into())],
+                    vec![]
+                )
+                .into()
+            )])
+            .into()
+        );
+    }
+}
