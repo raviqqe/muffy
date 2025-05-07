@@ -9,7 +9,7 @@ mod stub;
 pub use self::stub::StubHttpClient;
 pub use self::{
     bare::{BareHttpClient, BareResponse},
-    cached::CachedHttpClient,
+    cached::HttpClient,
     error::HttpClientError,
     reqwest::ReqwestHttpClient,
 };

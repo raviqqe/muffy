@@ -25,7 +25,7 @@ pub use self::{
     document_output::DocumentOutput,
     error::Error,
     html_parser::HtmlParser,
-    http_client::{CachedHttpClient, ReqwestHttpClient},
+    http_client::{HttpClient, ReqwestHttpClient},
     metrics::Metrics,
     render::{RenderFormat, RenderOptions, render_document},
     timer::ClockTimer,
@@ -76,7 +76,7 @@ mod tests {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            CachedHttpClient::new(
+            HttpClient::new(
                 client,
                 StubTimer::new(),
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),

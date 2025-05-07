@@ -15,16 +15,16 @@ use url::Url;
 const USER_AGENT: &str = "muffy";
 
 /// A cached HTTP client.
-pub struct CachedHttpClient(Arc<CachedHttpClientInner>);
+pub struct HttpClient(Arc<HttpClientInner>);
 
-struct CachedHttpClientInner {
+struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
     semaphore: Semaphore,
 }
 
-impl CachedHttpClient {
+impl HttpClient {
     /// Creates an HTTP client.
     pub fn new(
         client: impl BareHttpClient + 'static,
@@ -33,7 +33,7 @@ impl CachedHttpClient {
         concurrency: usize,
     ) -> Self {
         Self(
-            CachedHttpClientInner {
+            HttpClientInner {
                 client: Box::new(client),
                 timer: Box::new(timer),
                 cache,
@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn build_client() {
-        CachedHttpClient::new(
+        HttpClient::new(
             StubHttpClient::new(Default::default()),
             StubTimer::new(),
             Box::new(MemoryCache::new(0)),
@@ -173,7 +173,7 @@ mod tests {
         };
 
         assert_eq!(
-            CachedHttpClient::new(
+            HttpClient::new(
                 StubHttpClient::new(
                     [
                         (
