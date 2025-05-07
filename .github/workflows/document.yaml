@@ -61,9 +61,9 @@ jobs:
       - run: npm run preview &
       # TODO Use Muffy instead.
       - run: >
-          go run github.com/raviqqe/muffet/v2@latest
-          --accepted-status-codes 200,403
-          --buffer-size 8192
+          cargo run --
+          --accept-status 200
+          --accept-status 403
           http://localhost:4321/muffy/
   document:
     needs:
