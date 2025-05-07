@@ -92,9 +92,26 @@ mod tests {
                 .unwrap(),
             Document::new(vec![Arc::new(
                 Element::new(
-                    "a".into(),
-                    vec![("href".into(), "https://foo.com/bar".into())],
-                    vec![]
+                    "html".into(),
+                    vec![],
+                    vec![
+                        Arc::new(Element::new("head".into(), vec![], vec![]).into()),
+                        Arc::new(
+                            Element::new(
+                                "body".into(),
+                                vec![],
+                                vec![Arc::new(
+                                    Element::new(
+                                        "a".into(),
+                                        vec![("href".into(), "https://foo.com/bar".into())],
+                                        vec![]
+                                    )
+                                    .into()
+                                )]
+                            )
+                            .into()
+                        )
+                    ]
                 )
                 .into()
             )])
