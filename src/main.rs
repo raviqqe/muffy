@@ -6,7 +6,7 @@ use dirs::cache_dir;
 use futures::StreamExt;
 use itertools::Itertools;
 use muffy::{
-    CachedHttpClient, ClockTimer, Config, HtmlParser, MemoryCache, RenderFormat, RenderOptions,
+    ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
@@ -65,7 +65,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         None
     };
     let validator = WebValidator::new(
-        CachedHttpClient::new(
+        HttpClient::new(
             ReqwestHttpClient::new()?,
             ClockTimer::new(),
             if let Some(db) = &db {

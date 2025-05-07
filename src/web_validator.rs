@@ -9,7 +9,7 @@ use crate::{
     element_output::ElementOutput,
     error::Error,
     html_parser::{HtmlParser, Node},
-    http_client::CachedHttpClient,
+    http_client::HttpClient,
     response::Response,
     success::Success,
     utility::default_port,
@@ -36,13 +36,13 @@ const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
-    http_client: CachedHttpClient,
+    http_client: HttpClient,
     html_parser: HtmlParser,
 }
 
 impl WebValidator {
     /// Creates a web validator.
-    pub fn new(http_client: CachedHttpClient, html_parser: HtmlParser) -> Self {
+    pub fn new(http_client: HttpClient, html_parser: HtmlParser) -> Self {
         Self(
             WebValidatorInner {
                 http_client,

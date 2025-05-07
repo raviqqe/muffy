@@ -25,7 +25,7 @@ pub use self::{
     document_output::DocumentOutput,
     error::Error,
     html_parser::HtmlParser,
-    http_client::{CachedHttpClient, ReqwestHttpClient},
+    http_client::{HttpClient, ReqwestHttpClient},
     metrics::Metrics,
     render::{RenderFormat, RenderOptions, render_document},
     timer::ClockTimer,
@@ -39,7 +39,7 @@ mod tests {
     use crate::{
         config::SiteConfig,
         html_parser::HtmlParser,
-        http_client::{BareResponse, HttpClient, HttpClientError, StubHttpClient},
+        http_client::{BareHttpClient, BareResponse, HttpClientError, StubHttpClient},
     };
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
@@ -70,13 +70,13 @@ mod tests {
     }
 
     async fn validate(
-        client: impl HttpClient + 'static,
+        client: impl BareHttpClient + 'static,
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            CachedHttpClient::new(
+            HttpClient::new(
                 client,
                 StubTimer::new(),
                 Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),

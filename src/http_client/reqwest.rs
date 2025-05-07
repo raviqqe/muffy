@@ -1,4 +1,4 @@
-use super::{BareResponse, HttpClient, HttpClientError};
+use super::{BareHttpClient, BareResponse, HttpClientError};
 use async_trait::async_trait;
 use http::HeaderMap;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
@@ -23,7 +23,7 @@ impl ReqwestHttpClient {
 }
 
 #[async_trait]
-impl HttpClient for ReqwestHttpClient {
+impl BareHttpClient for ReqwestHttpClient {
     async fn get(&self, url: &Url, headers: &HeaderMap) -> Result<BareResponse, HttpClientError> {
         let response = self
             .client

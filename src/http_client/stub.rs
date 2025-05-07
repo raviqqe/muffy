@@ -1,4 +1,4 @@
-use crate::http_client::{BareResponse, HttpClient, HttpClientError};
+use crate::http_client::{BareHttpClient, BareResponse, HttpClientError};
 use async_trait::async_trait;
 use http::HeaderMap;
 use scc::HashMap;
@@ -16,7 +16,7 @@ impl StubHttpClient {
 }
 
 #[async_trait]
-impl HttpClient for StubHttpClient {
+impl BareHttpClient for StubHttpClient {
     async fn get(&self, url: &Url, _headers: &HeaderMap) -> Result<BareResponse, HttpClientError> {
         self.results
             .get_async(url.as_str())
