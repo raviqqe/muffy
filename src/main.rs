@@ -171,7 +171,7 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
 
                     Ok((
                         HeaderName::from_str(name)?,
-                        HeaderValue::from_str(&split.collect::<String>())?,
+                        HeaderValue::from_str(&split.join(":"))?,
                     ))
                 })
                 .collect::<Result<HeaderMap, Box<dyn Error>>>()?,
