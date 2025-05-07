@@ -97,8 +97,12 @@ impl WebValidator {
             return Ok(Success::default());
         };
 
-        // TODO Configure accepted status codes.
-        if response.status() != StatusCode::OK {
+        if context
+            .config()
+            .site(&url)
+            .status()
+            .accepted(response.status())
+        {
             return Err(Error::InvalidStatus(response.status()));
         }
 
