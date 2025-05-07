@@ -1,14 +1,13 @@
 use crate::default_port;
 use core::ops::Deref;
-use http::HeaderMap;
-use serde::Deserialize;
-use std::collections::HashMap;
+use http::{HeaderMap, StatusCode};
+use std::collections::{HashMap, HashSet};
 use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 
 /// A validation configuration.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct Config {
     roots: Vec<String>,
     default: SiteConfig,
@@ -53,18 +52,32 @@ impl Config {
     }
 }
 
-/// A website configuration.
-#[derive(Clone, Debug, Default, Deserialize)]
+/// A site configuration.
+#[derive(Clone, Debug, Default)]
 pub struct SiteConfig {
-    #[serde(with = "http_serde::header_map")]
     headers: HeaderMap,
+    status: StatusConfig,
     recursive: bool,
 }
 
 impl SiteConfig {
+    /// Creates a site configuration.
+    pub const fn new(headers: HeaderMap, status: StatusConfig, recursive: bool) -> Self {
+        Self {
+            headers,
+            status,
+            recursive,
+        }
+    }
+
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
+    }
+
+    /// Returns a status configuration.
+    pub const fn status(&self) -> &StatusConfig {
+        &self.status
     }
 
     /// Returns whether we should validate the website recursively.
@@ -72,9 +85,41 @@ impl SiteConfig {
         self.recursive
     }
 
+    /// Sets a status code configuration.
+    pub fn set_status(mut self, status: StatusConfig) -> Self {
+        self.status = status;
+        self
+    }
+
     /// Sets whether we should validate the website recursively
     pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
         self
+    }
+}
+
+/// A status code configuration.
+#[derive(Clone, Debug)]
+pub struct StatusConfig {
+    accepted: HashSet<StatusCode>,
+}
+
+impl StatusConfig {
+    /// Creates a status code configuration.
+    pub const fn new(accepted: HashSet<StatusCode>) -> Self {
+        Self { accepted }
+    }
+
+    /// Returns whether a status code is accepted.
+    pub fn accepted(&self, status: StatusCode) -> bool {
+        self.accepted.contains(&status)
+    }
+}
+
+impl Default for StatusConfig {
+    fn default() -> Self {
+        Self {
+            accepted: HashSet::from_iter([StatusCode::OK]),
+        }
     }
 }

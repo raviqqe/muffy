@@ -21,7 +21,7 @@ mod web_validator;
 
 pub use self::{
     cache::{MemoryCache, SledCache},
-    config::{Config, SiteConfig},
+    config::{Config, SiteConfig, StatusConfig},
     document_output::DocumentOutput,
     error::Error,
     html_parser::HtmlParser,
@@ -37,7 +37,7 @@ pub use self::{
 mod tests {
     use super::*;
     use crate::{
-        config::SiteConfig,
+        config::{Config, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, BareResponse, HttpClientError, StubHttpClient},
     };
@@ -86,7 +86,7 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.to_string()],
-            SiteConfig::default(),
+            Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
                 [(

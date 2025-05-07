@@ -4,10 +4,11 @@ use clap::Parser;
 use core::error::Error;
 use dirs::cache_dir;
 use futures::StreamExt;
+use http::StatusCode;
 use itertools::Itertools;
 use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
-    ReqwestHttpClient, SiteConfig, SledCache, WebValidator,
+    ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{collections::HashMap, env::temp_dir, process::exit};
@@ -29,13 +30,16 @@ struct Arguments {
     /// Website URLs.
     #[arg(required(true))]
     urls: Vec<String>,
-    /// Uses a persistent cache.
+    /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
-    /// Sets an output format.
+    /// Set an output format.
     #[arg(long, default_value = "text")]
     format: RenderFormat,
-    /// Becomes verbose.
+    /// Set accepted status codes.
+    #[arg(long, default_value = "200")]
+    accept_status: Vec<u16>,
+    /// Be verbose.
     #[arg(long)]
     verbose: bool,
 }
@@ -49,15 +53,10 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Box<dyn Error>> {
-    let Arguments {
-        urls,
-        cache,
-        format,
-        verbose,
-    } = Arguments::parse();
+    let arguments = Arguments::parse();
     let mut output = stdout();
 
-    let db = if cache {
+    let db = if arguments.cache {
         let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
@@ -78,7 +77,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&compile_config(&urls)?).await?;
+    let mut documents = validator
+        .validate(&compile_config(&arguments.urls, &arguments.accept_status)?)
+        .await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -91,8 +92,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         muffy::render_document(
             &document,
             &RenderOptions::default()
-                .set_format(format)
-                .set_verbose(verbose),
+                .set_format(arguments.format)
+                .set_verbose(arguments.verbose),
             &mut output,
         )
         .await?;
@@ -149,10 +150,21 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
+fn compile_config(
+    urls: &[String],
+    accepted_status_codes: &[u16],
+) -> Result<Config, Box<dyn Error>> {
+    let status = StatusConfig::new(
+        accepted_status_codes
+            .iter()
+            .copied()
+            .map(StatusCode::try_from)
+            .collect::<Result<_, _>>()?,
+    );
+
     Ok(Config::new(
         urls.to_vec(),
-        Default::default(),
+        SiteConfig::default().set_status(status.clone()),
         urls.iter()
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
@@ -172,7 +184,9 @@ fn compile_config(urls: &[String]) -> Result<Config, url::ParseError> {
                                     urls.map(|url| {
                                         (
                                             url.path().into(),
-                                            SiteConfig::default().set_recursive(true),
+                                            SiteConfig::default()
+                                                .set_status(status.clone())
+                                                .set_recursive(true),
                                         )
                                     })
                                     .collect(),

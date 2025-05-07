@@ -17,7 +17,6 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
-use http::StatusCode;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -97,8 +96,12 @@ impl WebValidator {
             return Ok(Success::default());
         };
 
-        // TODO Configure accepted status codes.
-        if response.status() != StatusCode::OK {
+        if !context
+            .config()
+            .site(&url)
+            .status()
+            .accepted(response.status())
+        {
             return Err(Error::InvalidStatus(response.status()));
         }
 
