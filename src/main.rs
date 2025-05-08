@@ -29,7 +29,7 @@ const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
 struct Arguments {
     /// Website URLs.
     #[arg(required(true))]
-    urls: Vec<String>,
+    url: Vec<String>,
     /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
@@ -42,6 +42,8 @@ struct Arguments {
     /// Set request headers.
     #[arg(long)]
     header: Vec<String>,
+    #[arg(long, default_value = "16")]
+    max_redirects: usize,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
@@ -175,13 +177,14 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                     ))
                 })
                 .collect::<Result<_, Box<dyn Error>>>()?,
-        );
+        )
+        .set_max_redirects(arguments.max_redirects);
 
     Ok(Config::new(
-        arguments.urls.to_vec(),
+        arguments.url.to_vec(),
         site.clone(),
         arguments
-            .urls
+            .url
             .iter()
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
