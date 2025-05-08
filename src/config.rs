@@ -1,6 +1,5 @@
 use crate::default_port;
-use core::ops::Deref;
-use core::time::Duration;
+use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use std::collections::{HashMap, HashSet};
 use url::Url;

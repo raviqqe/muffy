@@ -1,6 +1,6 @@
 use crate::http_client::BareRequest;
-use http::HeaderMap;
 use core::time::Duration;
+use http::HeaderMap;
 use url::Url;
 
 #[derive(Clone, Debug)]

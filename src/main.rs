@@ -1,8 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use clap::Parser;
-use core::error::Error;
-use core::str::FromStr;
+use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
