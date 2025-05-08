@@ -88,7 +88,7 @@ impl SiteConfig {
     }
 
     /// Returns a maximum number of redirects.
-    pub fn max_redirects(&self) -> usize {
+    pub const fn max_redirects(&self) -> usize {
         self.max_redirects
     }
 
@@ -110,7 +110,7 @@ impl SiteConfig {
     }
 
     /// Sets a maximum number of redirects.
-    pub fn set_max_redirects(mut self, count: usize) -> Self {
+    pub const fn set_max_redirects(mut self, count: usize) -> Self {
         self.max_redirects = count;
         self
     }
