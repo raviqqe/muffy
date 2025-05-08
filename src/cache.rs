@@ -19,7 +19,7 @@ pub trait Cache<T: Clone>: Send + Sync {
     ) -> Result<T, CacheError>;
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum CacheError {
     Bitcode(Arc<str>),
     Sled(Arc<str>),

@@ -258,4 +258,59 @@ mod tests {
             Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
         );
     }
+
+    #[tokio::test]
+    async fn redirect_never() {
+        let foo_response = BareResponse {
+            url: Url::parse("https://foo.com").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://bar.com"),
+            )]
+            .into_iter()
+            .collect(),
+            body: vec![],
+        };
+        let bar_response = BareResponse {
+            url: Url::parse("https://bar.com").unwrap(),
+            status: StatusCode::OK,
+            ..foo_response.clone()
+        };
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_response_stub(
+                            foo_response.url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        build_response_stub(
+                            bar_response.url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (foo_response.url.clone().into(), Ok(foo_response.clone())),
+                        (bar_response.url.clone().into(), Ok(bar_response.clone())),
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&Request::new(
+                foo_response.url.clone(),
+                Default::default(),
+                0
+            ))
+            .await,
+            Err(HttpClientError::TooManyRedirects)
+        );
+    }
 }
