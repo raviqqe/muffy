@@ -325,4 +325,44 @@ mod tests {
             Err(HttpClientError::TooManyRedirects)
         );
     }
+
+    #[tokio::test]
+    async fn update_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let robots_url = url.join("robots.txt").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        (
+                            robots_url.as_str().into(),
+                            Ok(BareResponse {
+                                url: robots_url,
+                                status: StatusCode::OK,
+                                headers: Default::default(),
+                                body: vec![],
+                            })
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
 }

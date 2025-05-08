@@ -1,7 +1,8 @@
 use crate::response::Response;
 use alloc::sync::Arc;
+use core::time::Duration;
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CachedResponse {
@@ -17,7 +18,7 @@ impl CachedResponse {
         }
     }
 
-    pub fn response(&self) -> &Arc<Response> {
+    pub const fn response(&self) -> &Arc<Response> {
         &self.response
     }
 

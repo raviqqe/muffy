@@ -1,10 +1,8 @@
 use crate::default_port;
 use core::ops::Deref;
+use core::time::Duration;
 use http::{HeaderMap, StatusCode};
-use std::{
-    collections::{HashMap, HashSet},
-    time::Duration,
-};
+use std::collections::{HashMap, HashSet};
 use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
