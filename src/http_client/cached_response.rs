@@ -1,10 +1,11 @@
 use crate::response::Response;
+use alloc::sync::Arc;
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CachedResponse {
-    response: Response,
+    response: Arc<Response>,
     timestamp: Duration,
 }
 
@@ -16,7 +17,7 @@ impl CachedResponse {
         }
     }
 
-    pub fn response(&self) -> &Response {
+    pub fn response(&self) -> &Arc<Response> {
         &self.response
     }
 

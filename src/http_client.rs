@@ -15,6 +15,7 @@ pub use self::{
 use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
+use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
 use tokio::sync::Semaphore;
@@ -27,7 +28,7 @@ pub struct HttpClient(Arc<HttpClientInner>);
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
-    cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+    cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
 }
 
@@ -36,7 +37,7 @@ impl HttpClient {
     pub fn new(
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
-        cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+        cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
@@ -101,7 +102,6 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        // TODO Configure cache expiry.
         self.0
             .cache
             .get_or_set(request.url().to_string(), {
