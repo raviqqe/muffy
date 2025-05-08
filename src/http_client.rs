@@ -71,11 +71,10 @@ impl HttpClient {
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut url = request.url().clone();
 
-        // TODO Configure maximum redirect counts.
         // TODO Configure rate limits.
         // TODO Configure timeouts.
         // TODO Configure maximum connections.
-        loop {
+        for _ in 0..request.max_redirects() + 1 {
             let response = self.get_once(request, robots).await?;
 
             if !response.status().is_redirection() {
@@ -90,6 +89,8 @@ impl HttpClient {
                     .as_bytes(),
             )?)?;
         }
+
+        return Err(HttpClientError::TooManyRedirects);
     }
 
     async fn get_once(
