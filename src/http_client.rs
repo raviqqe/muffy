@@ -90,7 +90,7 @@ impl HttpClient {
             )?)?;
         }
 
-        return Err(HttpClientError::TooManyRedirects);
+        Err(HttpClientError::TooManyRedirects)
     }
 
     async fn get_once(
