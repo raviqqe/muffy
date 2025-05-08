@@ -1,0 +1,32 @@
+name: Muffy
+description: Checks links in Markdown files
+branding:
+  icon: link
+  color: green
+inputs:
+  paths:
+    description: Paths to Markdown files or directories
+    required: false
+    default: .
+  github_token:
+    description: GitHub token to access GitHub pages
+    required: false
+    default:
+outputs: {}
+runs:
+  using: composite
+  steps:
+    - uses: lycheeverse/lychee-action@v2
+      with:
+        args: >
+          --accept 200..300,403,429
+          --exclude ^https://dblp.org/rec/conf/pldi/
+          --exclude ^https://ghc.gitlab.haskell.org/
+          --exclude ^https://help.openai.com/
+          --exclude ^https://stackoverflow.com/
+          --exclude ^https://wiki.haskell.org/
+          --exclude ^https://www.gnu.org/software/guile/
+          --no-progress
+          --verbose
+          ${{ inputs.paths }}
+        token: ${{ inputs.github_token }}
