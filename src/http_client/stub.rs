@@ -30,7 +30,7 @@ impl BareHttpClient for StubHttpClient {
 }
 
 #[cfg(test)]
-pub fn build_response_stub(
+pub fn build_stub_response(
     url: &str,
     status: StatusCode,
     headers: HeaderMap,

@@ -6,7 +6,7 @@ mod reqwest;
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::{StubHttpClient, build_response_stub};
+pub use self::stub::{StubHttpClient, build_stub_response};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
@@ -236,13 +236,13 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             foo_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             bar_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
@@ -293,13 +293,13 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             foo_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             bar_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
