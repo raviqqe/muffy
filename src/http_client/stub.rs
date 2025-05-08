@@ -1,6 +1,10 @@
 use crate::http_client::{BareHttpClient, BareRequest, BareResponse, HttpClientError};
 use async_trait::async_trait;
+#[cfg(test)]
+use http::{HeaderMap, StatusCode};
 use scc::HashMap;
+#[cfg(test)]
+use url::Url;
 
 #[derive(Debug)]
 pub struct StubHttpClient {
@@ -23,4 +27,24 @@ impl BareHttpClient for StubHttpClient {
             .get()
             .clone()
     }
+}
+
+#[cfg(test)]
+pub fn build_response_stub(
+    url: &str,
+    status: StatusCode,
+    headers: HeaderMap,
+    body: Vec<u8>,
+) -> (String, Result<BareResponse, HttpClientError>) {
+    let url = Url::parse(url).unwrap();
+
+    (
+        url.as_str().into(),
+        Ok(BareResponse {
+            url,
+            status,
+            headers,
+            body,
+        }),
+    )
 }

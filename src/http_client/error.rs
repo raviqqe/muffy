@@ -7,7 +7,7 @@ use core::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum HttpClientError {
     Cache(CacheError),
     HostNotDefined,

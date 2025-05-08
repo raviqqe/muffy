@@ -37,10 +37,11 @@ pub use self::{
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::http_client::build_response_stub;
     use crate::{
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
-        http_client::{BareHttpClient, BareResponse, HttpClientError, StubHttpClient},
+        http_client::{BareHttpClient, StubHttpClient},
     };
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
@@ -50,25 +51,6 @@ mod tests {
     use url::Url;
 
     const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
-
-    fn build_response_stub(
-        url: &str,
-        status: StatusCode,
-        headers: HeaderMap,
-        body: Vec<u8>,
-    ) -> (String, Result<BareResponse, HttpClientError>) {
-        let url = Url::parse(url).unwrap();
-
-        (
-            url.as_str().into(),
-            Ok(BareResponse {
-                url,
-                status,
-                headers,
-                body,
-            }),
-        )
-    }
 
     async fn validate(
         client: impl BareHttpClient + 'static,
@@ -644,6 +626,8 @@ mod tests {
     }
 
     mod robots {
+        use crate::http_client::build_response_stub;
+
         use super::*;
         use pretty_assertions::assert_eq;
 
