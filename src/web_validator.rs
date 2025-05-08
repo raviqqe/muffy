@@ -10,6 +10,7 @@ use crate::{
     error::Error,
     html_parser::{HtmlParser, Node},
     http_client::HttpClient,
+    request::Request,
     response::Response,
     success::Success,
     utility::default_port,
@@ -90,7 +91,11 @@ impl WebValidator {
         let Some(response) = self
             .0
             .http_client
-            .get(&document_url, context.config().site(&url).headers())
+            .get(&Request::new(
+                document_url,
+                context.config().site(&url).headers().clone(),
+                context.config().site(&url).max_redirects(),
+            ))
             .await?
         else {
             return Ok(Success::default());

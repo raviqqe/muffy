@@ -15,10 +15,8 @@ use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use core::str;
-use http::HeaderMap;
 use robotxt::Robots;
 use tokio::sync::Semaphore;
-use url::Url;
 
 const USER_AGENT: &str = "muffy";
 
@@ -109,7 +107,7 @@ impl HttpClient {
                 Box::new(async move {
                     if robots {
                         if let Some(robot) = client.get_robot(&request).await? {
-                            if !robot.is_absolute_allowed(&url) {
+                            if !robot.is_absolute_allowed(request.url()) {
                                 return Err(HttpClientError::RobotsTxt);
                             }
                         }
@@ -117,7 +115,7 @@ impl HttpClient {
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
-                    let response = client.0.client.get(request).await?;
+                    let response = client.0.client.get(&request).await?;
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
@@ -130,7 +128,7 @@ impl HttpClient {
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
-            .get_inner(&request.set_url(url.join("robots.txt")?), false)
+            .get_inner(&request.with_url(request.url().join("robots.txt")?), false)
             .await
             .ok()
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
@@ -148,6 +146,7 @@ mod tests {
     use core::time::Duration;
     use http::StatusCode;
     use pretty_assertions::assert_eq;
+    use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
 
@@ -194,7 +193,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&url, &Default::default())
+            .get(&Request::new(url, Default::default(), 0))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())

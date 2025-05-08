@@ -1,4 +1,5 @@
 use super::HttpClientError;
+use crate::request::Request;
 use async_trait::async_trait;
 use http::{HeaderMap, StatusCode};
 use url::Url;

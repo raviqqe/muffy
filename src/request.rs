@@ -1,7 +1,7 @@
 use http::HeaderMap;
 use url::Url;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Request {
     url: Url,
     headers: HeaderMap,
@@ -27,5 +27,12 @@ impl Request {
 
     pub fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    pub fn with_url(&self, url: Url) -> Self {
+        Self {
+            url,
+            ..self.clone()
+        }
     }
 }
