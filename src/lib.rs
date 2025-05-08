@@ -51,25 +51,6 @@ mod tests {
 
     const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
 
-    fn build_response_stub(
-        url: &str,
-        status: StatusCode,
-        headers: HeaderMap,
-        body: Vec<u8>,
-    ) -> (String, Result<BareResponse, HttpClientError>) {
-        let url = Url::parse(url).unwrap();
-
-        (
-            url.as_str().into(),
-            Ok(BareResponse {
-                url,
-                status,
-                headers,
-                body,
-            }),
-        )
-    }
-
     async fn validate(
         client: impl BareHttpClient + 'static,
         url: &str,

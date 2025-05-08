@@ -5,7 +5,7 @@ mod reqwest;
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::StubHttpClient;
+pub use self::stub::{build_response_stub,StubHttpClient};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
