@@ -5,7 +5,7 @@ mod reqwest;
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::{build_response_stub,StubHttpClient};
+pub use self::stub::{StubHttpClient, build_response_stub};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
@@ -147,7 +147,7 @@ mod tests {
         timer::StubTimer,
     };
     use core::time::Duration;
-    use http::StatusCode;
+    use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
     use url::Url;
 
@@ -205,11 +205,15 @@ mod tests {
 
     #[tokio::test]
     async fn redirect() {
-        let robots_url = ;
         let foo_response = BareResponse {
             url: Url::parse("https://foo.com").unwrap(),
             status: StatusCode::MOVED_PERMANENTLY,
-            headers: Default::default(),
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://bar.com"),
+            )]
+            .into_iter()
+            .collect(),
             body: vec![],
         };
         let bar_response = BareResponse {
@@ -222,23 +226,20 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        (
-                            foo_response.url().join("robots.txt").unwrap().into(),
-                            Ok(BareResponse {
-                                url: robots_url,
-                                status: StatusCode::OK,
-                                headers: Default::default(),
-                                body: vec![],
-                            })
+                        build_response_stub(
+                            foo_response.url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
                         ),
-                        (
-                            url.as_str().into(),
-                            Ok(BareResponse {
-                                status: StatusCode::MOVED_PERMANENTLY,
-                                ..foo_response.clone()
-                            })
+                        build_response_stub(
+                            bar_response.url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
                         ),
-                        ("https://bar.com".into(), Ok(foo_response.clone())),
+                        (foo_response.url.clone().into(), Ok(foo_response.clone())),
+                        (bar_response.url.clone().into(), Ok(bar_response.clone())),
                     ]
                     .into_iter()
                     .collect()
@@ -247,10 +248,14 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0))
+            .get(&Request::new(
+                foo_response.url.clone(),
+                Default::default(),
+                1
+            ))
             .await
             .unwrap(),
-            Some(Response::from_bare(foo_response, Duration::from_millis(0)).into())
+            Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
         );
     }
 }
