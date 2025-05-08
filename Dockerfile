@@ -4,5 +4,5 @@ WORKDIR /src
 RUN cargo build --release
 
 FROM scratch
-COPY --from=build /src/target/muffy /muffy
+COPY --from=build /src/target/release/muffy /muffy
 ENTRYPOINT ["/muffy"]
