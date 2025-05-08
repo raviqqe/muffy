@@ -13,6 +13,7 @@ mod html_parser;
 mod http_client;
 mod metrics;
 mod render;
+mod request;
 mod response;
 mod success;
 mod timer;
