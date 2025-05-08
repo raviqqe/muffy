@@ -2,6 +2,7 @@
 
 use clap::Parser;
 use core::error::Error;
+use core::str::FromStr;
 use dirs::cache_dir;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
@@ -11,7 +12,7 @@ use muffy::{
     ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, process::exit, str::FromStr};
+use std::{collections::HashMap, env::temp_dir, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
