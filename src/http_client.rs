@@ -69,25 +69,27 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let mut url = request.url().clone();
+        let mut request = request.clone();
 
         // TODO Configure rate limits.
         // TODO Configure timeouts.
         // TODO Configure maximum connections.
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_once(request, robots).await?;
+            let response = self.get_once(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
             }
 
-            url = url.join(str::from_utf8(
-                response
-                    .headers()
-                    .get("location")
-                    .ok_or(HttpClientError::RedirectLocation)?
-                    .as_bytes(),
-            )?)?;
+            request = request.with_url(
+                request.url().join(str::from_utf8(
+                    response
+                        .headers()
+                        .get("location")
+                        .ok_or(HttpClientError::RedirectLocation)?
+                        .as_bytes(),
+                )?)?,
+            );
         }
 
         Err(HttpClientError::TooManyRedirects)
