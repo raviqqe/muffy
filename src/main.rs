@@ -42,6 +42,7 @@ struct Arguments {
     /// Set request headers.
     #[arg(long)]
     header: Vec<String>,
+    /// Set a maximum number of redirects.
     #[arg(long, default_value = "16")]
     max_redirects: usize,
     /// Be verbose.
