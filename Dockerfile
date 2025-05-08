@@ -1,7 +1,7 @@
 FROM rust:alpine AS build
 ADD . /src
 WORKDIR /src
-RUN apk add openssl-dev
+RUN apk add build-base openssl-dev
 RUN cargo build --release
 
 FROM alpine
