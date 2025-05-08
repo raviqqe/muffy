@@ -37,10 +37,11 @@ pub use self::{
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::http_client::build_response_stub;
     use crate::{
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
-        http_client::{BareHttpClient, BareResponse, HttpClientError, StubHttpClient},
+        http_client::{BareHttpClient, StubHttpClient},
     };
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
@@ -625,6 +626,8 @@ mod tests {
     }
 
     mod robots {
+        use crate::http_client::build_response_stub;
+
         use super::*;
         use pretty_assertions::assert_eq;
 
