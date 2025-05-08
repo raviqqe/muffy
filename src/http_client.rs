@@ -7,7 +7,7 @@ mod stub;
 #[cfg(test)]
 pub use self::stub::StubHttpClient;
 pub use self::{
-    bare::{BareHttpClient, BareResponse},
+    bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
     reqwest::ReqwestHttpClient,
 };
@@ -118,7 +118,7 @@ impl HttpClient {
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
-                    let response = client.0.client.get(&request).await?;
+                    let response = client.0.client.get(request.as_bare()).await?;
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
