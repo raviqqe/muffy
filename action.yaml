@@ -1,0 +1,34 @@
+name: Muffy
+description: The static website validator
+branding:
+  icon: link
+  color: yellow
+inputs:
+  url:
+    description: A website URL
+    required: true
+  accept-status:
+    description: Comma-separated accepted status codes
+    required: false
+  verbose:
+    description: Be verbose
+    required: false
+outputs: {}
+runs:
+  using: composite
+  steps:
+    - id: status
+      shell: bash
+      run: |
+        for status in $(echo ${{ inputs.accept-status }} | tr , ' '); do
+          options="$options --accept-status $status"
+        done
+
+        echo options=$options >> ${{ github.output }}
+    - shell: bash
+      run: >
+        docker run --network host
+        raviqqe/muffy
+        ${{ inputs.verbose && '--verbose' || '' }}
+        ${{ steps.status.outputs.options }}
+        ${{ inputs.url }}
