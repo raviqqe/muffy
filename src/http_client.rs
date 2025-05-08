@@ -205,13 +205,17 @@ mod tests {
 
     #[tokio::test]
     async fn redirect() {
-        let url = Url::parse("https://foo.com").unwrap();
-        let robots_url = url.join("robots.txt").unwrap();
-        let response = BareResponse {
-            url: url.clone(),
-            status: StatusCode::OK,
+        let robots_url = ;
+        let foo_response = BareResponse {
+            url: Url::parse("https://foo.com").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
             headers: Default::default(),
             body: vec![],
+        };
+        let bar_response = BareResponse {
+            url: Url::parse("https://bar.com").unwrap(),
+            status: StatusCode::OK,
+            ..foo_response.clone()
         };
 
         assert_eq!(
@@ -219,7 +223,7 @@ mod tests {
                 StubHttpClient::new(
                     [
                         (
-                            robots_url.as_str().into(),
+                            foo_response.url().join("robots.txt").unwrap().into(),
                             Ok(BareResponse {
                                 url: robots_url,
                                 status: StatusCode::OK,
@@ -231,10 +235,10 @@ mod tests {
                             url.as_str().into(),
                             Ok(BareResponse {
                                 status: StatusCode::MOVED_PERMANENTLY,
-                                ..response.clone()
+                                ..foo_response.clone()
                             })
                         ),
-                        ("https://bar.com".into(), Ok(response.clone())),
+                        ("https://bar.com".into(), Ok(foo_response.clone())),
                     ]
                     .into_iter()
                     .collect()
@@ -246,7 +250,7 @@ mod tests {
             .get(&Request::new(url, Default::default(), 0))
             .await
             .unwrap(),
-            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            Some(Response::from_bare(foo_response, Duration::from_millis(0)).into())
         );
     }
 }
