@@ -38,7 +38,7 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64/v8
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: raviqqe/muffy:latest${{ steps.version.outputs.version && ',raviqqe/muffy:' + steps.version.outputs.version || '' }}
+          tags: raviqqe/muffy:latest${{ steps.version.outputs.version && join(',raviqqe/muffy:', steps.version.outputs.version) || '' }}
   release:
     needs:
       - rust_release
