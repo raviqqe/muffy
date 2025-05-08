@@ -18,6 +18,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
+use std::time::Duration;
 use tokio::sync::Semaphore;
 
 const USER_AGENT: &str = "muffy";
@@ -102,9 +103,8 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        self.0
-            .cache
-            .get_or_set(request.url().to_string(), {
+        let get = || {
+            self.0.cache.get_or_set(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
 
@@ -123,10 +123,20 @@ impl HttpClient {
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
-                    Ok(Response::from_bare(response, duration).into())
+                    Ok(Arc::new(Response::from_bare(response, duration).into()))
                 })
             })
-            .await?
+        };
+
+        let response = get().await??;
+
+        if !response.is_expired(Duration::default()) {
+            return Ok(response.response().clone());
+        }
+
+        self.0.cache.remove(request.url().as_str()).await?;
+
+        Ok(get().await??.response().clone())
     }
 
     #[async_recursion]

@@ -11,8 +11,8 @@ pub struct CachedResponse {
 
 impl CachedResponse {
     pub fn new(response: Response) -> Self {
-        CachedResponse {
-            response,
+        Self {
+            response: response.into(),
             timestamp: Self::now(),
         }
     }
@@ -27,5 +27,11 @@ impl CachedResponse {
 
     fn now() -> Duration {
         SystemTime::now().duration_since(UNIX_EPOCH).unwrap()
+    }
+}
+
+impl From<Response> for CachedResponse {
+    fn from(response: Response) -> Self {
+        Self::new(response)
     }
 }

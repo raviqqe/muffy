@@ -55,6 +55,12 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             sleep(DELAY).await;
         }
     }
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        self.tree.remove(key)?;
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
