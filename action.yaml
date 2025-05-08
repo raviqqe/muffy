@@ -21,7 +21,7 @@ runs:
       shell: bash
       run: |
         for status in $(echo ${{ inputs.accept-status }} | tr , ' '); do
-          options="--accept-status $status"
+          options="$options --accept-status $status"
         done
 
         echo options=$options >> ${{ github.output }}
