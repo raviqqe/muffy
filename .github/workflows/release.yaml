@@ -22,7 +22,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         if: github.ref == 'refs/heads/main'
   docker_release:
-    needs: go_release
+    needs: rust_release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
