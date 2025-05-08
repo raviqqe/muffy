@@ -59,7 +59,6 @@ jobs:
       - run: npm ci
       - run: npm run build -- --site http://localhost:4321
       - run: npm run preview &
-      # TODO Use Muffy instead.
       - run: >
           cargo run --
           --accept-status 200
