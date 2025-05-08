@@ -1,4 +1,5 @@
 mod bare;
+mod cached_response;
 mod error;
 mod reqwest;
 #[cfg(test)]
