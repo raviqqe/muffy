@@ -18,7 +18,6 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
-use std::time::Duration;
 use tokio::sync::Semaphore;
 
 const USER_AGENT: &str = "muffy";
@@ -207,7 +206,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0))
+            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -262,7 +261,8 @@ mod tests {
             .get(&Request::new(
                 foo_response.url.clone(),
                 Default::default(),
-                1
+                1,
+                Duration::MAX
             ))
             .await
             .unwrap(),
@@ -318,7 +318,8 @@ mod tests {
             .get(&Request::new(
                 foo_response.url.clone(),
                 Default::default(),
-                0
+                0,
+                Duration::MAX,
             ))
             .await,
             Err(HttpClientError::TooManyRedirects)

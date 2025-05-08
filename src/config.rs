@@ -1,7 +1,10 @@
 use crate::default_port;
 use core::ops::Deref;
 use http::{HeaderMap, StatusCode};
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 use url::Url;
 
 type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
@@ -58,6 +61,7 @@ pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
     max_redirects: usize,
+    max_cache_age: Duration,
     recursive: bool,
 }
 
@@ -67,12 +71,14 @@ impl SiteConfig {
         headers: HeaderMap,
         status: StatusConfig,
         max_redirects: usize,
+        max_cache_age: Duration,
         recursive: bool,
     ) -> Self {
         Self {
             headers,
             status,
             max_redirects,
+            max_cache_age,
             recursive,
         }
     }
@@ -90,6 +96,11 @@ impl SiteConfig {
     /// Returns a maximum number of redirects.
     pub const fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    /// Returns a maximum cache age.
+    pub const fn max_cache_age(&self) -> Duration {
+        self.max_cache_age
     }
 
     /// Returns whether we should validate the website recursively.

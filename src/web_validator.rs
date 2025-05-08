@@ -95,6 +95,7 @@ impl WebValidator {
                 document_url,
                 context.config().site(&url).headers().clone(),
                 context.config().site(&url).max_redirects(),
+                context.config().site(&url).max_cache_age(),
             ))
             .await?
         else {
