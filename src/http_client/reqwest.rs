@@ -1,8 +1,7 @@
 use super::{BareHttpClient, BareResponse, HttpClientError};
+use crate::request::Request;
 use async_trait::async_trait;
-use http::HeaderMap;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
-use url::Url;
 
 /// An HTTP client based on [`reqwest`].
 #[derive(Debug, Default)]
@@ -24,13 +23,13 @@ impl ReqwestHttpClient {
 
 #[async_trait]
 impl BareHttpClient for ReqwestHttpClient {
-    async fn get(&self, url: &Url, headers: &HeaderMap) -> Result<BareResponse, HttpClientError> {
+    async fn get(&self, request: &Request) -> Result<BareResponse, HttpClientError> {
         let response = self
             .client
             .execute(
                 self.client
-                    .get(url.clone())
-                    .headers(headers.clone())
+                    .get(request.url().clone())
+                    .headers(request.headers().clone())
                     .build()?,
             )
             .await?;

@@ -14,6 +14,7 @@ pub enum HttpClientError {
     Http(Arc<str>),
     RedirectLocation,
     RobotsTxt,
+    TooManyRedirects,
     UrlParse(Arc<str>),
     Utf8(Arc<str>),
 }
@@ -34,6 +35,7 @@ impl Display for HttpClientError {
             Self::Http(error) => write!(formatter, "{error}"),
             Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
             Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
+            Self::TooManyRedirects => write!(formatter, "too many redirects"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }

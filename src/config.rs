@@ -57,15 +57,22 @@ impl Config {
 pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
+    max_redirects: usize,
     recursive: bool,
 }
 
 impl SiteConfig {
     /// Creates a site configuration.
-    pub const fn new(headers: HeaderMap, status: StatusConfig, recursive: bool) -> Self {
+    pub const fn new(
+        headers: HeaderMap,
+        status: StatusConfig,
+        max_redirects: usize,
+        recursive: bool,
+    ) -> Self {
         Self {
             headers,
             status,
+            max_redirects,
             recursive,
         }
     }
@@ -78,6 +85,11 @@ impl SiteConfig {
     /// Returns a status configuration.
     pub const fn status(&self) -> &StatusConfig {
         &self.status
+    }
+
+    /// Returns a maximum number of redirects.
+    pub const fn max_redirects(&self) -> usize {
+        self.max_redirects
     }
 
     /// Returns whether we should validate the website recursively.
@@ -94,6 +106,12 @@ impl SiteConfig {
     /// Sets a status code configuration.
     pub fn set_status(mut self, status: StatusConfig) -> Self {
         self.status = status;
+        self
+    }
+
+    /// Sets a maximum number of redirects.
+    pub const fn set_max_redirects(mut self, count: usize) -> Self {
+        self.max_redirects = count;
         self
     }
 
