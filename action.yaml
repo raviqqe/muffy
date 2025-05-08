@@ -7,7 +7,7 @@ inputs:
   url:
     description: A website URL
     required: true
-  accepted-status:
+  accept-status:
     description: Comma-separated accepted status codes
     required: false
   verbose:
@@ -20,7 +20,7 @@ runs:
     - id: status
       shell: bash
       run: |
-        for status in $(echo ${{ inputs.accepted-status }} | tr , ' '); do
+        for status in $(echo ${{ inputs.accept-status }} | tr , ' '); do
           options="--accept-status $status"
         done
 
