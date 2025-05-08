@@ -130,7 +130,7 @@ impl HttpClient {
 
         let response = get().await??;
 
-        if !response.is_expired(Duration::default()) {
+        if !response.is_expired(request.max_age()) {
             return Ok(response.response().clone());
         }
 
