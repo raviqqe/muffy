@@ -202,4 +202,51 @@ mod tests {
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
     }
+
+    #[tokio::test]
+    async fn redirect() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let robots_url = url.join("robots.txt").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        (
+                            robots_url.as_str().into(),
+                            Ok(BareResponse {
+                                url: robots_url,
+                                status: StatusCode::OK,
+                                headers: Default::default(),
+                                body: vec![],
+                            })
+                        ),
+                        (
+                            url.as_str().into(),
+                            Ok(BareResponse {
+                                status: StatusCode::MOVED_PERMANENTLY,
+                                ..response.clone()
+                            })
+                        ),
+                        ("https://bar.com".into(), Ok(response.clone())),
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&Request::new(url, Default::default(), 0))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
 }
