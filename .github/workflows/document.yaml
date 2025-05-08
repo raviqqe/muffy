@@ -59,12 +59,14 @@ jobs:
       - run: npm ci
       - run: npm run build -- --site http://localhost:4321
       - run: npm run preview &
-      # TODO Use Muffy instead.
       - run: >
           cargo run --
           --accept-status 200
           --accept-status 403
           http://localhost:4321/muffy/
+      - uses: .
+        with:
+          url: http://localhost:4321/muffy/
   document:
     needs:
       - web_build
