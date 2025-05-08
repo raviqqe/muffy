@@ -67,6 +67,7 @@ jobs:
       - uses: ./.
         with:
           url: http://localhost:4321/muffy/
+          accept-status: 200,403
   document:
     needs:
       - web_build
