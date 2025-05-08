@@ -4,19 +4,12 @@ branding:
   icon: link
   color: yellow
 inputs:
-  github_token:
-    description: GitHub token to access GitHub pages
-    required: false
-    default:
+  url:
+    description: A website URL
+    required: true
 outputs: {}
 runs:
-  using: composite
-  steps:
-    - uses: lycheeverse/lychee-action@v2
-      with:
-        args: >
-          --accept 200..300,403,429
-          --no-progress
-          --verbose
-          ${{ inputs.paths }}
-        token: ${{ inputs.github_token }}
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.who-to-greet }}
