@@ -21,7 +21,7 @@ mod utility;
 mod web_validator;
 
 pub use self::{
-    cache::{MemoryCache, SledCache},
+    cache::{MemoryCache, MokaCache, SledCache},
     config::{Config, SiteConfig, StatusConfig},
     document_output::DocumentOutput,
     error::Error,
@@ -61,10 +61,10 @@ mod tests {
             HttpClient::new(
                 client,
                 StubTimer::new(),
-                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
                 1,
             ),
-            HtmlParser::new(MemoryCache::new(0)),
+            HtmlParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.to_string()],

@@ -1,14 +1,13 @@
 #![doc = include_str!("../README.md")]
 
 use clap::{Parser, crate_version};
-use core::time::Duration;
-use core::{error::Error, str::FromStr};
+use core::{error::Error, str::FromStr, time::Duration};
 use dirs::cache_dir;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, RenderFormat, RenderOptions,
+    ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
@@ -23,7 +22,7 @@ use url::Url;
 const DATABASE_DIRECTORY: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
 
-const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
+const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -83,11 +82,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
             if let Some(db) = &db {
                 Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
             } else {
-                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY))
+                Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
             (getrlimit(Resource::NOFILE)?.0 / 2) as _,
         ),
-        HtmlParser::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+        HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
     let mut documents = validator.validate(&compile_config(&arguments)?).await?;

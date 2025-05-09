@@ -1,7 +1,8 @@
 mod memory;
+mod moka;
 mod sled;
 
-pub use self::{memory::MemoryCache, sled::SledCache};
+pub use self::{memory::MemoryCache, moka::MokaCache, sled::SledCache};
 use alloc::sync::Arc;
 use async_trait::async_trait;
 use core::{
