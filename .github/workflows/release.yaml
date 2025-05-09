@@ -21,8 +21,27 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         if: github.ref == 'refs/heads/main'
-  docker_release:
+  goreleaser:
     needs: rust_release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: mlugg/setup-zig@v1
+      - run: cargo install --locked cargo-zigbuild
+      - id: version
+        run: echo version=v$(cargo run -- --version | grep -o '[0-9.]*') > ${{ github.output }}
+      - uses: raviqqe/goreleaser-action@v1
+        with:
+          version: ${{ steps.version.outputs.version }}
+          snapshot: ${{ github.ref != 'refs/heads/main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  docker_release:
+    needs: goreleaser
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +61,7 @@ jobs:
   release:
     needs:
       - rust_release
+      - goreleaser
       - docker_release
     if: always()
     runs-on: ubuntu-latest
