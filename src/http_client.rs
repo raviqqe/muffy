@@ -129,13 +129,15 @@ impl HttpClient {
 
         let response = get().await??;
 
-        if !response.is_expired(request.max_age()) {
-            return Ok(response.response().clone());
+        Ok(if response.is_expired(request.max_age()) {
+            self.0.cache.remove(request.url().as_str()).await?;
+
+            get().await??
+        } else {
+            response
         }
-
-        self.0.cache.remove(request.url().as_str()).await?;
-
-        Ok(get().await??.response().clone())
+        .response()
+        .clone())
     }
 
     #[async_recursion]
