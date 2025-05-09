@@ -17,6 +17,8 @@ pub trait Cache<T: Clone>: Send + Sync {
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError>;
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
