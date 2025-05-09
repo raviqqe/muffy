@@ -336,6 +336,21 @@ mod tests {
             body: vec![],
         };
 
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_or_set(url.as_str().into(), {
+                let response = response.clone();
+                Box::new(async move {
+                    BareResponse {
+                        body: b"stale".to_vec(),
+                        ..response
+                    }
+                })
+            })
+            .await
+            .unwrap();
+
         assert_eq!(
             HttpClient::new(
                 StubHttpClient::new(
@@ -355,7 +370,12 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Default::default()
+            ))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
