@@ -1,10 +1,9 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
-use moka::sync::Cache;
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    cache: Cache<String, T>,
+    cache: moka::sync::Cache<String, T>,
 }
 
 impl<T> MemoryCache<T> {
@@ -23,7 +22,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        Ok(match self.map.entry_async(key).await {
+        Ok(match self.cache.get_with(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
                 // TODO Avoid deadlocks.
@@ -35,7 +34,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
-        self.map.remove(key);
+        self.cache.remove(key);
 
         Ok(())
     }
