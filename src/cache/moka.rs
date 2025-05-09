@@ -1,6 +1,6 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
-use scc::{HashMap, hash_map::Entry};
+use moka::Cache;
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
