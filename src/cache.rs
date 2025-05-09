@@ -1,4 +1,5 @@
 mod memory;
+mod moka;
 mod sled;
 
 pub use self::{memory::MemoryCache, sled::SledCache};
