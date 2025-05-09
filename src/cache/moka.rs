@@ -3,14 +3,16 @@ use async_trait::async_trait;
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    cache: moka::sync::Cache<String, T>,
+    cache: moka::future::Cache<String, T>,
 }
 
-impl<T> MemoryCache<T> {
+impl<T: Clone + Send + Sync + 'static> MemoryCache<T> {
     /// Creates an in-memory cache based on [`moka`].
     pub fn new(capacity: usize) -> Self {
         Self {
-            cache: Default::default(),
+            cache: moka::future::Cache::builder()
+                .initial_capacity(capacity)
+                .build(),
         }
     }
 }
@@ -22,15 +24,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        Ok(match self.cache.get_with(key).await {
-            Entry::Occupied(entry) => entry.get().clone(),
-            Entry::Vacant(entry) => {
-                // TODO Avoid deadlocks.
-                let value = Box::into_pin(future).await;
-                entry.insert_entry(value.clone());
-                value
-            }
-        })
+        Ok(self.cache.get_with(key, future).await)
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
