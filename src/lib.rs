@@ -61,10 +61,10 @@ mod tests {
             HttpClient::new(
                 client,
                 StubTimer::new(),
-                Box::new(MemoryCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
                 1,
             ),
-            HtmlParser::new(MemoryCache::new(0)),
+            HtmlParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.to_string()],
