@@ -127,6 +127,7 @@ impl HttpClient {
             })
         };
 
+        dbg!("fetch");
         let response = get().await??;
 
         if !response.is_expired(request.max_age()) {
@@ -343,13 +344,20 @@ mod tests {
                 let response = response.clone();
 
                 Box::new(async move {
-                    BareResponse {
-                        body: b"stale".to_vec(),
-                        ..response
-                    }
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
                 })
             })
             .await
+            .unwrap()
             .unwrap();
 
         assert_eq!(
@@ -368,7 +376,7 @@ mod tests {
                     .collect()
                 ),
                 StubTimer::new(),
-                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                Box::new(cache),
                 1,
             )
             .get(&Request::new(url, Default::default(), 0, Duration::MAX))
@@ -404,13 +412,20 @@ mod tests {
                 let response = response.clone();
 
                 Box::new(async move {
-                    BareResponse {
-                        body: b"stale".to_vec(),
-                        ..response
-                    }
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
                 })
             })
             .await
+            .unwrap()
             .unwrap();
 
         assert_eq!(
@@ -429,7 +444,7 @@ mod tests {
                     .collect()
                 ),
                 StubTimer::new(),
-                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                Box::new(cache),
                 1,
             )
             .get(&Request::new(
