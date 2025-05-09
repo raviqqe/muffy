@@ -1,17 +1,17 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
-use moka::Cache;
+use moka::sync::Cache;
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    map: HashMap<String, T>,
+    cache: Cache<String, T>,
 }
 
 impl<T> MemoryCache<T> {
-    /// Creates an in-memory cache.
+    /// Creates an in-memory cache based on [`moka`].
     pub fn new(capacity: usize) -> Self {
         Self {
-            map: HashMap::with_capacity(capacity),
+            cache: Default::default(),
         }
     }
 }
