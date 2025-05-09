@@ -8,8 +8,8 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    ClockTimer, Config, HtmlParser, HttpClient, MemoryCache, MokaCache, RenderFormat,
-    RenderOptions, ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
+    ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat, RenderOptions,
+    ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{collections::HashMap, env::temp_dir, process::exit};
