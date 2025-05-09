@@ -327,6 +327,72 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_or_set(url.as_str().into(), {
+                let response = response.clone();
+
+                Box::new(async move {
+                    BareResponse {
+                        body: b"stale".to_vec(),
+                        ..response
+                    }
+                })
+            })
+            .await
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Default::default()
+            ))
+            .await
+            .unwrap(),
+            Some(
+                Response::from_bare(
+                    BareResponse {
+                        body: b"stale".to_vec(),
+                        ..response
+                    },
+                    Duration::from_millis(0)
+                )
+                .into()
+            )
+        );
+    }
+
+    #[tokio::test]
     async fn update_cache() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
@@ -341,6 +407,7 @@ mod tests {
         cache
             .get_or_set(url.as_str().into(), {
                 let response = response.clone();
+
                 Box::new(async move {
                     BareResponse {
                         body: b"stale".to_vec(),
