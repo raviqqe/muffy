@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-use clap::Parser;
+use clap::{Parser, crate_version};
 use core::time::Duration;
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
@@ -20,7 +20,7 @@ use tabled::{
 use tokio::{fs::create_dir_all, io::stdout};
 use url::Url;
 
-const DATABASE_NAME: &str = "muffy";
+const DATABASE_DIRECTORY: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
@@ -67,7 +67,10 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let mut output = stdout();
 
     let db = if arguments.cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
+        let directory = cache_dir()
+            .unwrap_or_else(temp_dir)
+            .join(DATABASE_DIRECTORY)
+            .join(crate_version!());
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
