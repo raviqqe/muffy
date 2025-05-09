@@ -58,7 +58,7 @@ pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
     max_redirects: usize,
-    max_cache_age: Duration,
+    max_age: Duration,
     recursive: bool,
 }
 
@@ -68,14 +68,14 @@ impl SiteConfig {
         headers: HeaderMap,
         status: StatusConfig,
         max_redirects: usize,
-        max_cache_age: Duration,
+        max_age: Duration,
         recursive: bool,
     ) -> Self {
         Self {
             headers,
             status,
             max_redirects,
-            max_cache_age,
+            max_age,
             recursive,
         }
     }
@@ -96,8 +96,8 @@ impl SiteConfig {
     }
 
     /// Returns a maximum cache age.
-    pub const fn max_cache_age(&self) -> Duration {
-        self.max_cache_age
+    pub const fn max_age(&self) -> Duration {
+        self.max_age
     }
 
     /// Returns whether we should validate the website recursively.
