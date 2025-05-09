@@ -127,7 +127,6 @@ impl HttpClient {
             })
         };
 
-        dbg!("fetch");
         let response = get().await??;
 
         if !response.is_expired(request.max_age()) {
