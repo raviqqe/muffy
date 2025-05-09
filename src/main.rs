@@ -1,6 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use clap::Parser;
+use core::time::Duration;
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use futures::StreamExt;
@@ -33,6 +34,9 @@ struct Arguments {
     /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
+    /// Set a maximum cache age in seconds.
+    #[arg(long, default_value_t = 86400)]
+    max_age: u64,
     /// Set an output format.
     #[arg(long, default_value = "text")]
     format: RenderFormat,
@@ -179,7 +183,8 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                 })
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
-        .set_max_redirects(arguments.max_redirects);
+        .set_max_redirects(arguments.max_redirects)
+        .set_max_age(Duration::from_secs(arguments.max_age));
 
     Ok(Config::new(
         arguments.url.to_vec(),

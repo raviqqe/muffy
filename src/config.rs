@@ -123,6 +123,12 @@ impl SiteConfig {
         self
     }
 
+    /// Sets a maximum cache age.
+    pub const fn set_max_age(mut self, age: Duration) -> Self {
+        self.max_age = age;
+        self
+    }
+
     /// Sets whether we should validate the website recursively
     pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
