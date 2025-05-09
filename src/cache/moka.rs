@@ -1,13 +1,13 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
 
-/// An in-memory cache.
-pub struct MemoryCache<T> {
+/// An in-memory cache based on [`moka`].
+pub struct MokaCache<T> {
     cache: moka::future::Cache<String, T>,
 }
 
-impl<T: Clone + Send + Sync + 'static> MemoryCache<T> {
-    /// Creates an in-memory cache based on [`moka`].
+impl<T: Clone + Send + Sync + 'static> MokaCache<T> {
+    /// Creates a cache.
     pub fn new(capacity: usize) -> Self {
         Self {
             cache: moka::future::Cache::builder()
@@ -18,7 +18,7 @@ impl<T: Clone + Send + Sync + 'static> MemoryCache<T> {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync + 'static> Cache<T> for MemoryCache<T> {
+impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
     async fn get_or_set(
         &self,
         key: String,
@@ -40,7 +40,7 @@ mod tests {
 
     #[tokio::test]
     async fn get_or_set() {
-        let cache = MemoryCache::new(1 << 10);
+        let cache = MokaCache::new(1 << 10);
 
         assert_eq!(
             cache
