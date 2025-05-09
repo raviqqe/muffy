@@ -371,12 +371,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(
-                url,
-                Default::default(),
-                0,
-                Default::default()
-            ))
+            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
             .await
             .unwrap(),
             Some(
