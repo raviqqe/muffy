@@ -329,7 +329,6 @@ mod tests {
     #[tokio::test]
     async fn update_cache() {
         let url = Url::parse("https://foo.com").unwrap();
-        let robots_url = url.join("robots.txt").unwrap();
         let response = BareResponse {
             url: url.clone(),
             status: StatusCode::OK,
@@ -341,14 +340,11 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        (
-                            robots_url.as_str().into(),
-                            Ok(BareResponse {
-                                url: robots_url,
-                                status: StatusCode::OK,
-                                headers: Default::default(),
-                                body: vec![],
-                            })
+                        build_stub_response(
+                            url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
                         ),
                         (url.as_str().into(), Ok(response.clone()))
                     ]
