@@ -18,17 +18,17 @@ impl<T: Clone + Send + Sync + 'static> MemoryCache<T> {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
+impl<T: Clone + Send + Sync + 'static> Cache<T> for MemoryCache<T> {
     async fn get_or_set(
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        Ok(self.cache.get_with(key, future).await)
+        Ok(self.cache.get_with(key, Box::into_pin(future)).await)
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
-        self.cache.remove(key);
+        self.cache.remove(key).await;
 
         Ok(())
     }
