@@ -37,11 +37,10 @@ pub use self::{
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::http_client::build_response_stub;
     use crate::{
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
-        http_client::{BareHttpClient, StubHttpClient},
+        http_client::{BareHttpClient, StubHttpClient, build_stub_response},
     };
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
@@ -106,13 +105,13 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         HeaderMap::from_iter([(
@@ -145,19 +144,19 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
                         r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/bar",
                         StatusCode::OK,
                         html_headers,
@@ -187,13 +186,13 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
@@ -204,13 +203,13 @@ mod tests {
                         .as_bytes()
                         .to_vec(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/bar",
                         StatusCode::OK,
                         html_headers.clone(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/baz",
                         StatusCode::OK,
                         html_headers,
@@ -240,19 +239,19 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
                         r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/bar",
                         StatusCode::OK,
                         html_headers.clone(),
@@ -282,13 +281,13 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
@@ -325,25 +324,25 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
                         r#"<a href="https://bar.com" />"#.as_bytes().into(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://bar.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://bar.com",
                         StatusCode::OK,
                         html_headers,
@@ -373,13 +372,13 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
@@ -409,19 +408,19 @@ mod tests {
         let mut documents = validate(
             StubHttpClient::new(
                 [
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/robots.txt",
                         StatusCode::OK,
                         Default::default(),
                         Default::default(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
                         r#"<a href="https:/  /foo. com/ bar"/>"#.as_bytes().to_vec(),
                     ),
-                    build_response_stub(
+                    build_stub_response(
                         "https://foo.com/bar",
                         StatusCode::OK,
                         html_headers.clone(),
@@ -455,13 +454,13 @@ mod tests {
             let mut documents = validate(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/robots.txt",
                             StatusCode::OK,
                             Default::default(),
                             Default::default(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com",
                             StatusCode::OK,
                             html_headers.clone(),
@@ -469,7 +468,7 @@ mod tests {
                                 .as_bytes()
                                 .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/sitemap.xml",
                             StatusCode::OK,
                             HeaderMap::from_iter([(
@@ -495,7 +494,7 @@ mod tests {
                             .as_bytes()
                             .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/bar",
                             StatusCode::OK,
                             html_headers.clone(),
@@ -535,13 +534,13 @@ mod tests {
             let mut documents = validate(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/robots.txt",
                             StatusCode::OK,
                             Default::default(),
                             Default::default(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com",
                             StatusCode::OK,
                             html_headers.clone(),
@@ -549,7 +548,7 @@ mod tests {
                                 .as_bytes()
                                 .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/sitemap-index.xml",
                             StatusCode::OK,
                             HeaderMap::from_iter([(
@@ -567,7 +566,7 @@ mod tests {
                             .as_bytes()
                             .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/sitemap-0.xml",
                             StatusCode::OK,
                             HeaderMap::from_iter([(
@@ -593,7 +592,7 @@ mod tests {
                             .as_bytes()
                             .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/bar",
                             StatusCode::OK,
                             html_headers.clone(),
@@ -626,7 +625,7 @@ mod tests {
     }
 
     mod robots {
-        use crate::http_client::build_response_stub;
+        use crate::http_client::build_stub_response;
 
         use super::*;
         use pretty_assertions::assert_eq;
@@ -640,7 +639,7 @@ mod tests {
             let mut documents = validate(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/robots.txt",
                             StatusCode::OK,
                             Default::default(),
@@ -653,13 +652,13 @@ mod tests {
                             .as_bytes()
                             .to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com",
                             StatusCode::OK,
                             html_headers.clone(),
                             r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             "https://foo.com/bar",
                             StatusCode::OK,
                             html_headers.clone(),

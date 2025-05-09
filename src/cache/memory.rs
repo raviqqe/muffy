@@ -33,6 +33,12 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
             }
         })
     }
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        self.map.remove(key);
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]

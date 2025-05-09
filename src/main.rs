@@ -1,8 +1,8 @@
 #![doc = include_str!("../README.md")]
 
-use clap::Parser;
-use core::error::Error;
-use core::str::FromStr;
+use clap::{Parser, crate_version};
+use core::time::Duration;
+use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
@@ -20,7 +20,7 @@ use tabled::{
 use tokio::{fs::create_dir_all, io::stdout};
 use url::Url;
 
-const DATABASE_NAME: &str = "muffy";
+const DATABASE_DIRECTORY: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
 
 const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 20;
@@ -34,6 +34,9 @@ struct Arguments {
     /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
+    /// Set a maximum cache age in seconds.
+    #[arg(long, default_value_t = 86400)]
+    max_age: u64,
     /// Set an output format.
     #[arg(long, default_value = "text")]
     format: RenderFormat,
@@ -64,7 +67,10 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let mut output = stdout();
 
     let db = if arguments.cache {
-        let directory = cache_dir().unwrap_or_else(temp_dir).join(DATABASE_NAME);
+        let directory = cache_dir()
+            .unwrap_or_else(temp_dir)
+            .join(DATABASE_DIRECTORY)
+            .join(crate_version!());
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
@@ -180,7 +186,8 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                 })
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
-        .set_max_redirects(arguments.max_redirects);
+        .set_max_redirects(arguments.max_redirects)
+        .set_max_age(Duration::from_secs(arguments.max_age));
 
     Ok(Config::new(
         arguments.url.to_vec(),

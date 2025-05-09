@@ -1,11 +1,12 @@
 mod bare;
+mod cached_response;
 mod error;
 mod reqwest;
 #[cfg(test)]
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::{StubHttpClient, build_response_stub};
+pub use self::stub::{StubHttpClient, build_stub_response};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
@@ -14,6 +15,7 @@ pub use self::{
 use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
+use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
 use tokio::sync::Semaphore;
@@ -26,7 +28,7 @@ pub struct HttpClient(Arc<HttpClientInner>);
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
-    cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+    cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
 }
 
@@ -35,7 +37,7 @@ impl HttpClient {
     pub fn new(
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
-        cache: Box<dyn Cache<Result<Arc<Response>, HttpClientError>>>,
+        cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
         concurrency: usize,
     ) -> Self {
         Self(
@@ -100,10 +102,8 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        // TODO Configure cache expiry.
-        self.0
-            .cache
-            .get_or_set(request.url().to_string(), {
+        let get = || {
+            self.0.cache.get_or_set(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
 
@@ -122,10 +122,22 @@ impl HttpClient {
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
-                    Ok(Response::from_bare(response, duration).into())
+                    Ok(Arc::new(Response::from_bare(response, duration).into()))
                 })
             })
-            .await?
+        };
+
+        let response = get().await??;
+
+        Ok(if response.is_expired(request.max_age()) {
+            self.0.cache.remove(request.url().as_str()).await?;
+
+            get().await??
+        } else {
+            response
+        }
+        .response()
+        .clone())
     }
 
     #[async_recursion]
@@ -165,10 +177,8 @@ mod tests {
 
     #[tokio::test]
     async fn get() {
-        let url = Url::parse("https://foo.com").unwrap();
-        let robots_url = url.join("robots.txt").unwrap();
         let response = BareResponse {
-            url: url.clone(),
+            url: Url::parse("https://foo.com").unwrap().clone(),
             status: StatusCode::OK,
             headers: Default::default(),
             body: vec![],
@@ -178,16 +188,13 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        (
-                            robots_url.as_str().into(),
-                            Ok(BareResponse {
-                                url: robots_url,
-                                status: StatusCode::OK,
-                                headers: Default::default(),
-                                body: vec![],
-                            })
+                        build_stub_response(
+                            response.url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
                         ),
-                        (url.as_str().into(), Ok(response.clone()))
+                        (response.url.as_str().into(), Ok(response.clone()))
                     ]
                     .into_iter()
                     .collect()
@@ -196,7 +203,12 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0))
+            .get(&Request::new(
+                response.url.clone(),
+                Default::default(),
+                0,
+                Duration::MAX
+            ))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -226,13 +238,13 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             foo_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             bar_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
@@ -251,7 +263,8 @@ mod tests {
             .get(&Request::new(
                 foo_response.url.clone(),
                 Default::default(),
-                1
+                1,
+                Duration::MAX
             ))
             .await
             .unwrap(),
@@ -282,13 +295,13 @@ mod tests {
             HttpClient::new(
                 StubHttpClient::new(
                     [
-                        build_response_stub(
+                        build_stub_response(
                             foo_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
-                        build_response_stub(
+                        build_stub_response(
                             bar_response.url.join("robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
@@ -307,10 +320,143 @@ mod tests {
             .get(&Request::new(
                 foo_response.url.clone(),
                 Default::default(),
-                0
+                0,
+                Duration::MAX,
             ))
             .await,
             Err(HttpClientError::TooManyRedirects)
+        );
+    }
+
+    #[tokio::test]
+    async fn get_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_or_set(url.as_str().into(), {
+                let response = response.clone();
+
+                Box::new(async move {
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
+                })
+            })
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+                1,
+            )
+            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
+            .await
+            .unwrap(),
+            Some(
+                Response::from_bare(
+                    BareResponse {
+                        body: b"stale".to_vec(),
+                        ..response
+                    },
+                    Duration::from_millis(0)
+                )
+                .into()
+            )
+        );
+    }
+
+    #[tokio::test]
+    async fn update_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_or_set(url.as_str().into(), {
+                let response = response.clone();
+
+                Box::new(async move {
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
+                })
+            })
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+                1,
+            )
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Default::default()
+            ))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
     }
 }
