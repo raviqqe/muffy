@@ -11,14 +11,20 @@ use core::{
 };
 use serde::{Deserialize, Serialize};
 
+/// A cache.
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
-    async fn get_or_set(
+    /// Gets a cached value.
+    ///
+    /// If a cached value is not found, it awaits the given future and sets its resulting value into
+    /// the cache and returns the value.
+    async fn get_with(
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError>;
 
+    /// Removes a cached value corresponding to the given key.
     async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
 
