@@ -225,6 +225,8 @@ impl WebValidator {
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             return Ok(Success::new());
+        } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
+            return Err(Error::InvalidScheme(url.scheme().into()));
         }
 
         self.validate_link(context, url.to_string(), document_type)
