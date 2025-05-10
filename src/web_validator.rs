@@ -320,11 +320,7 @@ impl WebValidator {
                                 context.clone(),
                                 value.to_string(),
                                 base.clone(),
-                                if attributes.get("rel") == Some(&"sitemap") {
-                                    Some(DocumentType::Sitemap)
-                                } else {
-                                    None
-                                },
+                                None,
                             ))],
                         ));
                     }
