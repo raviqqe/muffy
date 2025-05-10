@@ -95,6 +95,15 @@ impl WebValidator {
         document_type: Option<DocumentType>,
     ) -> Result<Success, Error> {
         let url = Url::parse(&url)?;
+
+        if context
+            .config()
+            .excluded_links()
+            .any(|pattern| pattern.is_match(url.as_str()))
+        {
+            return Ok(Success::new());
+        }
+
         let mut document_url = url.clone();
         document_url.set_fragment(None);
 
@@ -223,12 +232,7 @@ impl WebValidator {
     ) -> Result<Success, Error> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
-        if !DOCUMENT_SCHEMES.contains(&url.scheme())
-            || context
-                .config()
-                .excluded_links()
-                .any(|pattern| pattern.is_match(url.as_str()))
-        {
+        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             return Ok(Success::new());
         } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
             return Err(Error::InvalidScheme(url.scheme().into()));
