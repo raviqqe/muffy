@@ -34,7 +34,7 @@ impl HtmlParser {
         let response = response.clone();
 
         self.cache
-            .get_or_set(
+            .get_with(
                 response.url().to_string(),
                 Box::new(async move {
                     parse_document(RcDom::default(), Default::default())

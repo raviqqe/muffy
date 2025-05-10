@@ -3,8 +3,10 @@ use async_trait::async_trait;
 use http::{HeaderMap, StatusCode};
 use url::Url;
 
+/// A bare HTTP client.
 #[async_trait]
 pub trait BareHttpClient: Send + Sync {
+    /// Sends a GET request.
     async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError>;
 }
 

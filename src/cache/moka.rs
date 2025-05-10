@@ -19,7 +19,7 @@ impl<T: Clone + Send + Sync + 'static> MokaCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
-    async fn get_or_set(
+    async fn get_with(
         &self,
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
@@ -44,14 +44,14 @@ mod tests {
 
         assert_eq!(
             cache
-                .get_or_set("key".into(), Box::new(async { 42 }))
+                .get_with("key".into(), Box::new(async { 42 }))
                 .await
                 .unwrap(),
             42,
         );
         assert_eq!(
             cache
-                .get_or_set("key".into(), Box::new(async { 0 }))
+                .get_with("key".into(), Box::new(async { 0 }))
                 .await
                 .unwrap(),
             42,
