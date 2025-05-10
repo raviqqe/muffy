@@ -251,7 +251,6 @@ impl WebValidator {
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
             // TODO Include all elements and attributes.
-            // TODO Normalize URLs in attributes.
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
