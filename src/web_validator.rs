@@ -250,44 +250,40 @@ impl WebValidator {
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
+            let attributes = HashMap::<_, _>::from_iter(element.attributes());
+
             // TODO Include all elements and attributes.
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
             match element.name() {
                 "a" => {
-                    for (name, value) in element.attributes() {
-                        if name == "href" {
-                            futures.push((
-                                Element::new("a".into(), vec![(name.into(), value.into())]),
-                                vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.into(),
-                                    base.clone(),
-                                    None,
-                                ))],
-                            ))
-                        }
+                    if let Some(value) = attributes.get("href") {
+                        futures.push((
+                            Element::new("a".into(), vec![("href".into(), value.to_string())]),
+                            vec![spawn(self.cloned().validate_normalized_link_with_base(
+                                context.clone(),
+                                value.to_string(),
+                                base.clone(),
+                                None,
+                            ))],
+                        ))
                     }
                 }
                 "img" => {
-                    for (name, value) in element.attributes() {
-                        if name == "src" {
-                            futures.push((
-                                Element::new("img".into(), vec![("src".into(), value.into())]),
-                                vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.into(),
-                                    base.clone(),
-                                    None,
-                                ))],
-                            ));
-                        }
+                    if let Some(value) = attributes.get("src") {
+                        futures.push((
+                            Element::new("img".into(), vec![("src".into(), value.to_string())]),
+                            vec![spawn(self.cloned().validate_normalized_link_with_base(
+                                context.clone(),
+                                value.to_string(),
+                                base.clone(),
+                                None,
+                            ))],
+                        ));
                     }
                 }
                 "link" => {
-                    let attributes = HashMap::<_, _>::from_iter(element.attributes());
-
                     if let Some(value) = attributes.get("href") {
                         futures.push((
                             Element::new("link".into(), vec![("src".into(), value.to_string())]),
