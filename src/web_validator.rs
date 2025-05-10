@@ -302,7 +302,7 @@ impl WebValidator {
                         futures.push((
                             Element::new(
                                 element.name().into(),
-                                vec![("src".into(), value.to_string())],
+                                vec![("href".into(), value.to_string())],
                             ),
                             vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
