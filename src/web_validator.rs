@@ -986,17 +986,13 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
-            Default::default(),
+            SiteConfig::default()
+                .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect())),
             [(
                 url.host_str().unwrap_or_default().into(),
                 [(
                     443,
-                    vec![(
-                        "".into(),
-                        SiteConfig::default()
-                            .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect()))
-                            .set_recursive(true),
-                    )],
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
                 )]
                 .into_iter()
                 .collect(),
@@ -1009,7 +1005,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 1))
+            (Metrics::new(0, 1), Metrics::new(0, 1))
         );
     }
 
