@@ -1,6 +1,7 @@
 use crate::default_port;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
@@ -10,6 +11,7 @@ type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 #[derive(Clone, Debug)]
 pub struct Config {
     roots: Vec<String>,
+    excluded_links: Vec<Regex>,
     default: SiteConfig,
     sites: HashMap<String, HostConfig>,
 }
@@ -18,11 +20,13 @@ impl Config {
     /// Creates a configuration.
     pub const fn new(
         roots: Vec<String>,
+        excluded_links: Vec<Regex>,
         default: SiteConfig,
         sites: HashMap<String, HostConfig>,
     ) -> Self {
         Self {
             roots,
+            excluded_links,
             default,
             sites,
         }
@@ -30,6 +34,11 @@ impl Config {
 
     /// Returns root URLs.
     pub fn roots(&self) -> impl Iterator<Item = &str> {
+        self.roots.iter().map(Deref::deref)
+    }
+
+    /// Returns excluded link patterns.
+    pub fn excluded_links(&self) -> impl Iterator<Item = &str> {
         self.roots.iter().map(Deref::deref)
     }
 
