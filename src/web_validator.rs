@@ -31,6 +31,14 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+const META_LINK_PROPERTIES: &[&str] = &[
+    "og:image",
+    "og:audio",
+    "og:video",
+    "og:image:url",
+    "og:image:secure_url",
+    "twitter:image",
+];
 
 /// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
@@ -310,6 +318,26 @@ impl WebValidator {
                     }
                 }
                 "meta" => {
+                    if let Some(value) = attributes.get("content") {
+                        if let Some(property) = attributes.get("property") {
+                            if META_LINK_PROPERTIES.contains(property) {
+                                futures.push((
+                                    Element::new(
+                                        element.name().into(),
+                                        vec![("content".into(), value.to_string())],
+                                    ),
+                                    vec![spawn(self.cloned().validate_normalized_link_with_base(
+                                        context.clone(),
+                                        value.to_string(),
+                                        base.clone(),
+                                        None,
+                                    ))],
+                                ));
+                            }
+                        }
+                    }
+                }
+                "source" => {
                     if let Some(value) = attributes.get("content") {
                         futures.push((
                             Element::new(
