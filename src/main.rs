@@ -54,7 +54,7 @@ struct Arguments {
     max_redirects: usize,
     /// Set patterns to exclude URLs.
     #[arg(long)]
-    exclude: Vec<Regex>,
+    exclude_link: Vec<Regex>,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
