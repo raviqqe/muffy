@@ -1,15 +1,15 @@
-use crate::{element::Element, error::Error, success::Success};
+use crate::{element::Element, error::Error, success::ItemOutput};
 use serde::Serialize;
 
 /// An element output.
 #[derive(Debug, Serialize)]
 pub struct ElementOutput {
     element: Element,
-    results: Vec<Result<Success, Error>>,
+    results: Vec<Result<ItemOutput, Error>>,
 }
 
 impl ElementOutput {
-    pub const fn new(element: Element, results: Vec<Result<Success, Error>>) -> Self {
+    pub const fn new(element: Element, results: Vec<Result<ItemOutput, Error>>) -> Self {
         Self { element, results }
     }
 
@@ -19,7 +19,7 @@ impl ElementOutput {
     }
 
     /// Returns validation results.
-    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<Success, Error>> {
+    pub fn results(&self) -> impl ExactSizeIterator<Item = &Result<ItemOutput, Error>> {
         self.results.iter()
     }
 }

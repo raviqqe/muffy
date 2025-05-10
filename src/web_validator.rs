@@ -12,7 +12,7 @@ use crate::{
     http_client::HttpClient,
     request::Request,
     response::Response,
-    success::Success,
+    success::ItemOutput,
     utility::default_port,
 };
 use alloc::sync::Arc;
@@ -25,7 +25,7 @@ use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
 
-type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
+type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, Error>>>);
 
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
@@ -93,7 +93,7 @@ impl WebValidator {
         context: Arc<Context>,
         url: String,
         document_type: Option<DocumentType>,
-    ) -> Result<Success, Error> {
+    ) -> Result<ItemOutput, Error> {
         let url = Url::parse(&url)?;
         let mut document_url = url.clone();
         document_url.set_fragment(None);
@@ -112,7 +112,7 @@ impl WebValidator {
             ))
             .await?
         else {
-            return Ok(Success::default());
+            return Ok(ItemOutput::default());
         };
 
         if !context
@@ -125,7 +125,7 @@ impl WebValidator {
         }
 
         let Some(document_type) = Self::validate_document_type(&response, document_type)? else {
-            return Ok(Success::new().with_response(response));
+            return Ok(ItemOutput::new().with_response(response));
         };
 
         if let Some(fragment) = url.fragment() {
@@ -162,7 +162,7 @@ impl WebValidator {
                 .await
                 .is_err()
         {
-            return Ok(Success::new().with_response(response));
+            return Ok(ItemOutput::new().with_response(response));
         }
 
         let handle = spawn({
@@ -183,7 +183,7 @@ impl WebValidator {
             .await
             .unwrap();
 
-        Ok(Success::new().with_response(response))
+        Ok(ItemOutput::new().with_response(response))
     }
 
     async fn validate_document(
@@ -220,11 +220,11 @@ impl WebValidator {
         url: String,
         base: Arc<Url>,
         document_type: Option<DocumentType>,
-    ) -> Result<Success, Error> {
+    ) -> Result<ItemOutput, Error> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
-            return Ok(Success::new());
+            return Ok(ItemOutput::new());
         } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
             return Err(Error::InvalidScheme(url.scheme().into()));
         }
