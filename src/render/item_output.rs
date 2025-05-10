@@ -1,20 +1,20 @@
 use super::response::RenderedResponse;
-use crate::success::Success;
+use crate::item_output::ItemOutput;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct RenderedSuccess<'a> {
+pub struct RenderedItemOutput<'a> {
     response: Option<RenderedResponse<'a>>,
 }
 
-impl<'a> RenderedSuccess<'a> {
+impl<'a> RenderedItemOutput<'a> {
     pub const fn response(&self) -> Option<&RenderedResponse<'a>> {
         self.response.as_ref()
     }
 }
 
-impl<'a> From<&'a Success> for RenderedSuccess<'a> {
-    fn from(success: &'a Success) -> Self {
+impl<'a> From<&'a ItemOutput> for RenderedItemOutput<'a> {
+    fn from(success: &'a ItemOutput) -> Self {
         Self {
             response: success.response().map(RenderedResponse::from),
         }

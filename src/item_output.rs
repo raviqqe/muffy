@@ -3,17 +3,17 @@ use alloc::sync::Arc;
 use serde::Serialize;
 
 #[derive(Clone, Debug, Serialize)]
-pub struct Success {
+pub struct ItemOutput {
     response: Option<Arc<Response>>,
 }
 
-impl Default for Success {
+impl Default for ItemOutput {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Success {
+impl ItemOutput {
     pub const fn new() -> Self {
         Self { response: None }
     }

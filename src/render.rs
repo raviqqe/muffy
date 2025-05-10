@@ -1,8 +1,8 @@
 mod document_output;
 mod element_output;
+mod item_output;
 mod options;
 mod response;
-mod success;
 
 use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
@@ -106,7 +106,8 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 mod tests {
     use super::*;
     use crate::{
-        element::Element, element_output::ElementOutput, response::Response, success::Success,
+        element::Element, element_output::ElementOutput, item_output::ItemOutput,
+        response::Response,
     };
     use core::str;
     use insta::assert_snapshot;
@@ -118,7 +119,7 @@ mod tests {
             vec![ElementOutput::new(
                 Element::new("a".into(), vec![]),
                 vec![
-                    Ok(Success::default().with_response(
+                    Ok(ItemOutput::default().with_response(
                         Response::new(
                             Url::parse("https://foo.com").unwrap(),
                             Default::default(),
@@ -139,7 +140,7 @@ mod tests {
             Url::parse("https://foo.com").unwrap(),
             vec![ElementOutput::new(
                 Element::new("a".into(), vec![]),
-                vec![Ok(Success::default().with_response(
+                vec![Ok(ItemOutput::default().with_response(
                     Response::new(
                         Url::parse("https://foo.com").unwrap(),
                         Default::default(),
@@ -215,7 +216,7 @@ mod tests {
                     vec![
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Ok(Success::default().with_response(
+                            vec![Ok(ItemOutput::default().with_response(
                                 Response::new(
                                     Url::parse("https://foo.com").unwrap(),
                                     Default::default(),
@@ -304,7 +305,7 @@ mod tests {
                     vec![
                         ElementOutput::new(
                             Element::new("a".into(), vec![]),
-                            vec![Ok(Success::default().with_response(
+                            vec![Ok(ItemOutput::default().with_response(
                                 Response::new(
                                     Url::parse("https://foo.com").unwrap(),
                                     Default::default(),
