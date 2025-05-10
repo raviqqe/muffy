@@ -106,7 +106,8 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 mod tests {
     use super::*;
     use crate::{
-        element::Element, element_output::ElementOutput, response::Response, success::ItemOutput,
+        element::Element, element_output::ElementOutput, item_output::ItemOutput,
+        response::Response,
     };
     use core::str;
     use insta::assert_snapshot;

@@ -1,4 +1,4 @@
-use super::success::RenderedItemOutput;
+use super::item_output::RenderedItemOutput;
 use crate::{element::Element, error::Error};
 use serde::Serialize;
 

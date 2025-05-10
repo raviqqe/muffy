@@ -10,9 +10,9 @@ use crate::{
     error::Error,
     html_parser::{HtmlParser, Node},
     http_client::HttpClient,
+    item_output::ItemOutput,
     request::Request,
     response::Response,
-    success::ItemOutput,
     utility::default_port,
 };
 use alloc::sync::Arc;

@@ -1,4 +1,4 @@
-use crate::{element::Element, error::Error, success::ItemOutput};
+use crate::{element::Element, error::Error, item_output::ItemOutput};
 use serde::Serialize;
 
 /// An element output.

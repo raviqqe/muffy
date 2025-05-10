@@ -1,5 +1,5 @@
 use super::response::RenderedResponse;
-use crate::success::ItemOutput;
+use crate::item_output::ItemOutput;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
