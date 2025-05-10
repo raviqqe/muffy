@@ -8,7 +8,7 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat, RenderOptions,
-    ReqwestHttpClient, SiteConfig, SledCache, StatusConfig, WebValidator,
+    ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use rlimit::{Resource, getrlimit};
 use std::{collections::HashMap, env::temp_dir, process::exit};
@@ -172,6 +172,9 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                 .copied()
                 .map(StatusCode::try_from)
                 .collect::<Result<_, _>>()?,
+        ))
+        .set_scheme(SchemeConfig::new(
+            arguments.accept_scheme.iter().cloned().collect(),
         ))
         .set_headers(
             arguments

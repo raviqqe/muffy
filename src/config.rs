@@ -125,6 +125,12 @@ impl SiteConfig {
         self
     }
 
+    /// Sets a scheme configuration.
+    pub fn set_scheme(mut self, scheme: SchemeConfig) -> Self {
+        self.scheme = scheme;
+        self
+    }
+
     /// Sets a maximum number of redirects.
     pub const fn set_max_redirects(mut self, count: usize) -> Self {
         self.max_redirects = count;
@@ -173,28 +179,25 @@ impl Default for StatusConfig {
 /// A scheme configuration.
 #[derive(Clone, Debug)]
 pub struct SchemeConfig {
-    accepted: Vec<String>,
+    accepted: HashSet<String>,
 }
 
 impl SchemeConfig {
     /// Creates a scheme configuration.
-    pub const fn new(accepted: Vec<String>) -> Self {
+    pub const fn new(accepted: HashSet<String>) -> Self {
         Self { accepted }
     }
 
     /// Returns whether a scheme is accepted.
     pub fn accepted(&self, scheme: &str) -> bool {
-        self.accepted
-            .iter()
-            .find(|accepted| *accepted == scheme)
-            .is_some()
+        self.accepted.contains(scheme)
     }
 }
 
 impl Default for SchemeConfig {
     fn default() -> Self {
         Self {
-            accepted: vec!["http".into(), "https".into()],
+            accepted: ["http".into(), "https".into()].into_iter().collect(),
         }
     }
 }
