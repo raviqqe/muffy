@@ -265,7 +265,6 @@ impl WebValidator {
         if let Node::Element(element) = &node {
             let attributes = HashMap::<_, _>::from_iter(element.attributes());
 
-            // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
             let mut links = vec![];
