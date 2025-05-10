@@ -18,15 +18,14 @@ pub struct Config {
 
 impl Config {
     /// Creates a configuration.
-    pub const fn new(
+    pub fn new(
         roots: Vec<String>,
-        excluded_links: Vec<Regex>,
         default: SiteConfig,
         sites: HashMap<String, HostConfig>,
     ) -> Self {
         Self {
             roots,
-            excluded_links,
+            excluded_links: Default::default(),
             default,
             sites,
         }
@@ -50,6 +49,12 @@ impl Config {
     /// Gets a site config
     pub fn site(&self, url: &Url) -> &SiteConfig {
         self.get_site(url).unwrap_or(&self.default)
+    }
+
+    /// Set excluded link patterns.
+    pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
+        self.excluded_links = links;
+        self
     }
 
     fn get_site(&self, url: &Url) -> Option<&SiteConfig> {
