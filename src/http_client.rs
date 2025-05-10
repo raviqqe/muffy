@@ -22,7 +22,7 @@ use tokio::sync::Semaphore;
 
 const USER_AGENT: &str = "muffy";
 
-/// A cached HTTP client.
+/// A full-featured HTTP client.
 pub struct HttpClient(Arc<HttpClientInner>);
 
 struct HttpClientInner {
@@ -103,7 +103,7 @@ impl HttpClient {
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
-            self.0.cache.get_or_set(request.url().to_string(), {
+            self.0.cache.get_with(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
 
@@ -341,7 +341,7 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_or_set(url.as_str().into(), {
+            .get_with(url.as_str().into(), {
                 let response = response.clone();
 
                 Box::new(async move {
@@ -409,7 +409,7 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_or_set(url.as_str().into(), {
+            .get_with(url.as_str().into(), {
                 let response = response.clone();
 
                 Box::new(async move {
