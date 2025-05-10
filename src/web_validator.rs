@@ -473,7 +473,7 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Metrics, MokaCache,
+        Metrics, MokaCache, SchemeConfig,
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
@@ -945,6 +945,71 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_scheme() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            url.as_str().into(),
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"
+                                <a href="http://foo.com"/>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec![url.as_str().into()],
+            Default::default(),
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    443,
+                    vec![(
+                        "".into(),
+                        SiteConfig::default()
+                            .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect()))
+                            .set_recursive(true),
+                    )],
+                )]
+                .into_iter()
+                .collect(),
+            )]
+            .into_iter()
+            .collect(),
+        ))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 1))
         );
     }
 
