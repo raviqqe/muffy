@@ -10,6 +10,7 @@ use muffy::{
     ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat, RenderOptions,
     ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
+use regex::Regex;
 use rlimit::{Resource, getrlimit};
 use std::{collections::HashMap, env::temp_dir, process::exit};
 use tabled::{
@@ -53,7 +54,7 @@ struct Arguments {
     max_redirects: usize,
     /// Set patterns to exclude URLs.
     #[arg(long)]
-    header: Vec<String>,
+    exclude: Vec<Regex>,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
