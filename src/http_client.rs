@@ -216,6 +216,46 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get_slash() {
+        let response = BareResponse {
+            url: Url::parse("https://foo.com/bar/").unwrap().clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            response.url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (response.url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                1,
+            )
+            .get(&Request::new(
+                response.url.clone(),
+                Default::default(),
+                0,
+                Duration::MAX
+            ))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
     async fn redirect() {
         let foo_response = BareResponse {
             url: Url::parse("https://foo.com").unwrap(),
@@ -239,13 +279,13 @@ mod tests {
                 StubHttpClient::new(
                     [
                         build_stub_response(
-                            foo_response.url.join("robots.txt").unwrap().as_str(),
+                            foo_response.url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
                         build_stub_response(
-                            bar_response.url.join("robots.txt").unwrap().as_str(),
+                            bar_response.url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
@@ -296,13 +336,13 @@ mod tests {
                 StubHttpClient::new(
                     [
                         build_stub_response(
-                            foo_response.url.join("robots.txt").unwrap().as_str(),
+                            foo_response.url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
                         ),
                         build_stub_response(
-                            bar_response.url.join("robots.txt").unwrap().as_str(),
+                            bar_response.url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
