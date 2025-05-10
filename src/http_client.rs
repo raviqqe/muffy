@@ -143,7 +143,7 @@ impl HttpClient {
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
-            .get_inner(&request.with_url(request.url().join("robots.txt")?), false)
+            .get_inner(&request.with_url(request.url().join("/robots.txt")?), false)
             .await
             .ok()
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
@@ -189,7 +189,7 @@ mod tests {
                 StubHttpClient::new(
                     [
                         build_stub_response(
-                            response.url.join("robots.txt").unwrap().as_str(),
+                            response.url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
@@ -406,7 +406,7 @@ mod tests {
                 StubHttpClient::new(
                     [
                         build_stub_response(
-                            url.join("robots.txt").unwrap().as_str(),
+                            url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
@@ -474,7 +474,7 @@ mod tests {
                 StubHttpClient::new(
                     [
                         build_stub_response(
-                            url.join("robots.txt").unwrap().as_str(),
+                            url.join("/robots.txt").unwrap().as_str(),
                             StatusCode::OK,
                             Default::default(),
                             vec![],
