@@ -57,6 +57,7 @@ impl Config {
 pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
+    scheme: SchemeConfig,
     max_redirects: usize,
     max_age: Duration,
     recursive: bool,
@@ -67,6 +68,7 @@ impl SiteConfig {
     pub const fn new(
         headers: HeaderMap,
         status: StatusConfig,
+        scheme: SchemeConfig,
         max_redirects: usize,
         max_age: Duration,
         recursive: bool,
@@ -74,6 +76,7 @@ impl SiteConfig {
         Self {
             headers,
             status,
+            scheme,
             max_redirects,
             max_age,
             recursive,
@@ -85,9 +88,14 @@ impl SiteConfig {
         &self.headers
     }
 
-    /// Returns a status configuration.
+    /// Returns a status code configuration.
     pub const fn status(&self) -> &StatusConfig {
         &self.status
+    }
+
+    /// Returns a scheme configuration.
+    pub const fn scheme(&self) -> &SchemeConfig {
+        &self.scheme
     }
 
     /// Returns a maximum number of redirects.
