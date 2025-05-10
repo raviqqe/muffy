@@ -40,7 +40,7 @@ const META_LINK_PROPERTIES: &[&str] = &[
     "og:image:secure_url",
     "twitter:image",
 ];
-const LINK_DOMAIN_RELS: &[&str] = &["dns-prefetch", "preconnect"];
+const LINK_ORIGIN_RELS: &[&str] = &["dns-prefetch", "preconnect"];
 
 static SRCSET_PATTERN: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
@@ -305,7 +305,7 @@ impl WebValidator {
                 "link" => {
                     if !attributes
                         .get("rel")
-                        .map(|rel| LINK_DOMAIN_RELS.contains(rel))
+                        .map(|rel| LINK_ORIGIN_RELS.contains(rel))
                         .unwrap_or_default()
                     {
                         if let Some(value) = attributes.get("href") {
