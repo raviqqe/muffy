@@ -16,8 +16,8 @@ use serde::{Deserialize, Serialize};
 pub trait Cache<T: Clone>: Send + Sync {
     /// Gets a cached value.
     ///
-    /// If a cached value is not found, it awaits the given future and sets its resulting value into
-    /// the cache and returns the value.
+    /// If a cached value is not found, it awaits the given future and sets its
+    /// resulting value into the cache and returns the value.
     async fn get_with(
         &self,
         key: String,
