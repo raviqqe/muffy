@@ -268,39 +268,9 @@ impl WebValidator {
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
+            let mut links = vec![];
+
             match element.name() {
-                "a" => {
-                    if let Some(value) = attributes.get("href") {
-                        futures.push((
-                            Element::new(
-                                element.name().into(),
-                                vec![("href".into(), value.to_string())],
-                            ),
-                            vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                context.clone(),
-                                value.to_string(),
-                                base.clone(),
-                                None,
-                            ))],
-                        ))
-                    }
-                }
-                "frame" | "iframe" | "img" | "script" | "track" => {
-                    if let Some(value) = attributes.get("src") {
-                        futures.push((
-                            Element::new(
-                                element.name().into(),
-                                vec![("src".into(), value.to_string())],
-                            ),
-                            vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                context.clone(),
-                                value.to_string(),
-                                base.clone(),
-                                None,
-                            ))],
-                        ));
-                    }
-                }
                 "link" => {
                     if !attributes
                         .get("rel")
@@ -308,19 +278,12 @@ impl WebValidator {
                         .unwrap_or_default()
                     {
                         if let Some(value) = attributes.get("href") {
-                            futures.push((
-                                Element::new(
-                                    element.name().into(),
-                                    vec![("href".into(), value.to_string())],
-                                ),
-                                vec![spawn(
-                                    self.cloned().validate_normalized_link_with_base(
-                                        context.clone(),
-                                        value.to_string(),
-                                        base.clone(),
-                                        (attributes.get("rel") == Some(&"sitemap"))
-                                            .then_some(DocumentType::Sitemap),
-                                    ),
+                            links.push((
+                                vec![("href", value)],
+                                vec![(
+                                    value.to_string(),
+                                    (attributes.get("rel") == Some(&"sitemap"))
+                                        .then_some(DocumentType::Sitemap),
                                 )],
                             ));
                         }
@@ -330,65 +293,59 @@ impl WebValidator {
                     if let Some(content) = attributes.get("content") {
                         if let Some(property) = attributes.get("property") {
                             if META_LINK_PROPERTIES.contains(property) {
-                                futures.push((
-                                    Element::new(
-                                        element.name().into(),
-                                        vec![
-                                            ("property".into(), property.to_string()),
-                                            ("content".into(), content.to_string()),
-                                        ],
-                                    ),
-                                    vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                        context.clone(),
-                                        content.to_string(),
-                                        base.clone(),
-                                        None,
-                                    ))],
+                                links.push((
+                                    vec![("property", property), ("content", content)],
+                                    vec![(content.to_string(), None)],
                                 ));
                             }
                         }
                     }
                 }
-                "source" => {
-                    let src = attributes.get("src");
-                    let srcset = attributes.get("srcset");
+                _ => {
+                    if let Some(value) = attributes.get("href") {
+                        links.push((vec![("href", value)], vec![(value.to_string(), None)]));
+                    }
 
-                    if src.is_some() || srcset.is_some() {
-                        futures.push((
-                            Element::new(
-                                element.name().into(),
-                                src.map(|value| ("src".into(), value.to_string()))
-                                    .into_iter()
-                                    .chain(srcset.map(|value| ("srcset".into(), value.to_string())))
-                                    .collect(),
-                            ),
-                            src.map(|value| {
-                                spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.to_string(),
-                                    base.clone(),
-                                    None,
-                                ))
-                            })
-                            .into_iter()
-                            .chain(
-                                srcset
-                                    .into_iter()
-                                    .flat_map(|srcset| Self::parse_srcset(srcset))
-                                    .map(|value| {
-                                        spawn(self.cloned().validate_normalized_link_with_base(
-                                            context.clone(),
-                                            value,
-                                            base.clone(),
-                                            None,
-                                        ))
-                                    }),
-                            )
-                            .collect(),
+                    if let Some(value) = attributes.get("src") {
+                        links.push((vec![("src", value)], vec![(value.to_string(), None)]));
+                    }
+
+                    if let Some(value) = attributes.get("srcset") {
+                        links.push((
+                            vec![("srcset", value)],
+                            Self::parse_srcset(value).map(|url| (url, None)).collect(),
                         ));
                     }
                 }
-                _ => {}
+            }
+
+            if !links.is_empty() {
+                futures.push((
+                    Element::new(
+                        element.name().into(),
+                        links
+                            .iter()
+                            .flat_map(|(attributes, _)| {
+                                attributes
+                                    .iter()
+                                    .map(|(name, value)| (name.to_string(), value.to_string()))
+                            })
+                            .collect(),
+                    ),
+                    links
+                        .iter()
+                        .flat_map(|(_, links)| {
+                            links.iter().map(|(link, document_type)| {
+                                spawn(self.cloned().validate_normalized_link_with_base(
+                                    context.clone(),
+                                    link.to_string(),
+                                    base.clone(),
+                                    *document_type,
+                                ))
+                            })
+                        })
+                        .collect(),
+                ));
             }
 
             for node in element.children() {
