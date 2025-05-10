@@ -473,7 +473,7 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Metrics, MokaCache, SchemeConfig,
+        MemoryCache, Metrics, SchemeConfig,
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
@@ -492,8 +492,8 @@ mod tests {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0)), 1),
-            HtmlParser::new(MokaCache::new(0)),
+            HttpClient::new(client, StubTimer::new(), Box::new(MemoryCache::new(0)), 1),
+            HtmlParser::new(MemoryCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.to_string()],
@@ -972,10 +972,10 @@ mod tests {
                     .collect(),
                 ),
                 StubTimer::new(),
-                Box::new(MokaCache::new(0)),
+                Box::new(MemoryCache::new(0)),
                 1,
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            HtmlParser::new(MemoryCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
