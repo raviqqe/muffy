@@ -42,6 +42,9 @@ struct Arguments {
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
+    /// Set accepted schemes.
+    #[arg(long, default_values = ["http", "https"])]
+    accept_scheme: Vec<String>,
     /// Set request headers.
     #[arg(long)]
     header: Vec<String>,
