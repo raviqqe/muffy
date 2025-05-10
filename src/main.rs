@@ -232,5 +232,6 @@ fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
                 },
             )
             .collect(),
-    ))
+    )
+    .set_excluded_links(arguments.exclude_link.clone()))
 }
