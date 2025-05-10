@@ -338,11 +338,17 @@ impl WebValidator {
                     }
                 }
                 "source" => {
-                    if let Some(value) = attributes.get("content") {
+                    let src = attributes.get("src");
+                    let srcset = attributes.get("srcset");
+
+                    if src.is_some() || srcset.is_some() {
                         futures.push((
                             Element::new(
                                 element.name().into(),
-                                vec![("content".into(), value.to_string())],
+                                src.map(|value| ("src".into(), value.to_string()))
+                                    .into_iter()
+                                    .chain(srcset.map(|value| ("srcset".into(), value.to_string())))
+                                    .collect(),
                             ),
                             vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
