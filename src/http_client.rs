@@ -163,7 +163,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use url::Url;
 
-    const CACHE_CAPACITY: usize = 1 << 16;
+    const CACHE_CAPACITY: usize = 0;
 
     #[test]
     fn build_client() {
