@@ -51,6 +51,9 @@ struct Arguments {
     /// Set a maximum number of redirects.
     #[arg(long, default_value = "16")]
     max_redirects: usize,
+    /// Set patterns to exclude URLs.
+    #[arg(long)]
+    header: Vec<String>,
     /// Be verbose.
     #[arg(long)]
     verbose: bool,
