@@ -101,7 +101,7 @@ impl WebValidator {
             .excluded_links()
             .any(|pattern| pattern.is_match(url.as_str()))
         {
-            return Ok(Success::new());
+            return Ok(ItemOutput::new());
         }
 
         let mut document_url = url.clone();
