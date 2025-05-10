@@ -35,9 +35,9 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 
         if self
             .tree
-            .compare_and_swap(
+            .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
                 &key,
-                Option::<Vec<u8>>::None,
+                None,
                 Some(bitcode::serialize(&Option::<T>::None)?),
             )?
             .is_ok()
