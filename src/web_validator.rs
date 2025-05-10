@@ -223,7 +223,12 @@ impl WebValidator {
     ) -> Result<Success, Error> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
-        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
+        if !DOCUMENT_SCHEMES.contains(&url.scheme())
+            || context
+                .config()
+                .excluded_links()
+                .any(|pattern| pattern.is_match(url.as_str()))
+        {
             return Ok(Success::new());
         } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
             return Err(Error::InvalidScheme(url.scheme().into()));
@@ -999,6 +1004,76 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(0, 1), Metrics::new(0, 1))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_excluded_link() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            url.as_str().into(),
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"
+                                <a href="https://foo.com/bar"/>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers,
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MokaCache::new(0)),
+                1,
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(
+            &Config::new(
+                vec![url.as_str().into()],
+                Default::default(),
+                [(
+                    url.host_str().unwrap_or_default().into(),
+                    [(
+                        443,
+                        vec![("".into(), SiteConfig::default().set_recursive(true))],
+                    )]
+                    .into_iter()
+                    .collect(),
+                )]
+                .into_iter()
+                .collect(),
+            )
+            .set_excluded_links(vec![Regex::new("bar").unwrap()]),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
         );
     }
 

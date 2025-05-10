@@ -37,8 +37,8 @@ impl Config {
     }
 
     /// Returns excluded link patterns.
-    pub fn excluded_links(&self) -> impl Iterator<Item = &str> {
-        self.roots.iter().map(Deref::deref)
+    pub fn excluded_links(&self) -> impl Iterator<Item = &Regex> {
+        self.excluded_links.iter()
     }
 
     /// Returns websites.
