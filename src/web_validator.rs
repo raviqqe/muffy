@@ -270,10 +270,13 @@ impl WebValidator {
                         ))
                     }
                 }
-                "img" => {
+                "frame" | "iframe" | "img" | "script" | "track" => {
                     if let Some(value) = attributes.get("src") {
                         futures.push((
-                            Element::new("img".into(), vec![("src".into(), value.to_string())]),
+                            Element::new(
+                                element.name().into(),
+                                vec![("src".into(), value.to_string())],
+                            ),
                             vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
                                 value.to_string(),
