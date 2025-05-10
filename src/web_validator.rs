@@ -796,6 +796,77 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_srcset() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let image_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("image/png"),
+        )]);
+
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc!(
+                            r#"
+                            <img src="/foo.png" srcset="/bar.png, /baz.png 2x, /qux.png 800w">
+                            "#
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/baz.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/qux.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(4, 0))
+        );
+    }
+
+    #[tokio::test]
     async fn validate_page_not_belonging_to_roots() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
