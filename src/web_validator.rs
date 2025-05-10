@@ -318,17 +318,20 @@ impl WebValidator {
                     }
                 }
                 "meta" => {
-                    if let Some(value) = attributes.get("content") {
+                    if let Some(content) = attributes.get("content") {
                         if let Some(property) = attributes.get("property") {
                             if META_LINK_PROPERTIES.contains(property) {
                                 futures.push((
                                     Element::new(
                                         element.name().into(),
-                                        vec![("content".into(), value.to_string())],
+                                        vec![
+                                            ("property".into(), property.to_string()),
+                                            ("content".into(), content.to_string()),
+                                        ],
                                     ),
                                     vec![spawn(self.cloned().validate_normalized_link_with_base(
                                         context.clone(),
-                                        value.to_string(),
+                                        content.to_string(),
                                         base.clone(),
                                         None,
                                     ))],
