@@ -43,11 +43,14 @@ jobs:
             - --accept-status 200
             - --accept-status 403
           - - https://raviqqe.com/muffet
+        cache_options:
+          -
+          - --cache
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: swatinem/rust-cache@v2
-      - run: cargo run ${{ join(matrix.arguments, ' ') }}
+      - run: cargo run ${{ join(matrix.arguments, ' ') }} ${{ matrix.cache_options }}
         env:
           RUST_LOG: muffy=trace
   test:
