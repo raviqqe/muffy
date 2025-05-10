@@ -18,8 +18,9 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
+use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -39,6 +40,9 @@ const META_LINK_PROPERTIES: &[&str] = &[
     "og:image:secure_url",
     "twitter:image",
 ];
+
+static SRCSET_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
 
 /// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
@@ -496,8 +500,10 @@ impl WebValidator {
         }
     }
 
-    fn parse_srcset(srcset: &str) -> Vec<String> {
-        srcset.split(",").map();
+    fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> {
+        srcset
+            .split(",")
+            .map(|string| SRCSET_PATTERN.replace(string, "$1").to_string())
     }
 }
 
