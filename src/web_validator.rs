@@ -497,7 +497,7 @@ impl WebValidator {
     }
 
     fn parse_srcset(srcset: &str) -> Vec<String> {
-        srcset.split(",").foo;
+        srcset.split(",").map();
     }
 }
 
