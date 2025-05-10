@@ -57,6 +57,7 @@ impl Config {
 pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
+    scheme: SchemeConfig,
     max_redirects: usize,
     max_age: Duration,
     recursive: bool,
@@ -67,6 +68,7 @@ impl SiteConfig {
     pub const fn new(
         headers: HeaderMap,
         status: StatusConfig,
+        scheme: SchemeConfig,
         max_redirects: usize,
         max_age: Duration,
         recursive: bool,
@@ -74,6 +76,7 @@ impl SiteConfig {
         Self {
             headers,
             status,
+            scheme,
             max_redirects,
             max_age,
             recursive,
@@ -85,9 +88,14 @@ impl SiteConfig {
         &self.headers
     }
 
-    /// Returns a status configuration.
+    /// Returns a status code configuration.
     pub const fn status(&self) -> &StatusConfig {
         &self.status
+    }
+
+    /// Returns a scheme configuration.
+    pub const fn scheme(&self) -> &SchemeConfig {
+        &self.scheme
     }
 
     /// Returns a maximum number of redirects.
@@ -114,6 +122,12 @@ impl SiteConfig {
     /// Sets a status code configuration.
     pub fn set_status(mut self, status: StatusConfig) -> Self {
         self.status = status;
+        self
+    }
+
+    /// Sets a scheme configuration.
+    pub fn set_scheme(mut self, scheme: SchemeConfig) -> Self {
+        self.scheme = scheme;
         self
     }
 
@@ -158,6 +172,32 @@ impl Default for StatusConfig {
     fn default() -> Self {
         Self {
             accepted: HashSet::from_iter([StatusCode::OK]),
+        }
+    }
+}
+
+/// A scheme configuration.
+#[derive(Clone, Debug)]
+pub struct SchemeConfig {
+    accepted: HashSet<String>,
+}
+
+impl SchemeConfig {
+    /// Creates a scheme configuration.
+    pub const fn new(accepted: HashSet<String>) -> Self {
+        Self { accepted }
+    }
+
+    /// Returns whether a scheme is accepted.
+    pub fn accepted(&self, scheme: &str) -> bool {
+        self.accepted.contains(scheme)
+    }
+}
+
+impl Default for SchemeConfig {
+    fn default() -> Self {
+        Self {
+            accepted: ["http".into(), "https".into()].into_iter().collect(),
         }
     }
 }

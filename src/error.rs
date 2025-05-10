@@ -32,6 +32,8 @@ pub enum Error {
     HttpClient(HttpClientError),
     /// An invalid status code in an HTTP response.
     InvalidStatus(StatusCode),
+    /// An invalid scheme.
+    InvalidScheme(String),
     /// An I/O error.
     Io(io::Error),
     /// An thread join error.
@@ -69,6 +71,7 @@ impl Display for Error {
             }
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),

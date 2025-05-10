@@ -30,7 +30,7 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
-const VALID_SCHEMES: &[&str] = &["http", "https"];
+const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
@@ -214,7 +214,7 @@ impl WebValidator {
         ))
     }
 
-    async fn validate_normalized_link_with_base(
+    async fn validate_element_link(
         self,
         context: Arc<Context>,
         url: String,
@@ -223,9 +223,10 @@ impl WebValidator {
     ) -> Result<Success, Error> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
-        // TODO Configure scheme and URL validation.
-        if !VALID_SCHEMES.contains(&url.scheme()) {
+        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             return Ok(Success::new());
+        } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
+            return Err(Error::InvalidScheme(url.scheme().into()));
         }
 
         self.validate_link(context, url.to_string(), document_type)
@@ -335,7 +336,7 @@ impl WebValidator {
                         .iter()
                         .flat_map(|(_, links)| {
                             links.iter().map(|(link, document_type)| {
-                                spawn(self.cloned().validate_normalized_link_with_base(
+                                spawn(self.cloned().validate_element_link(
                                     context.clone(),
                                     link.to_string(),
                                     base.clone(),
@@ -472,7 +473,7 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Metrics, MokaCache,
+        Metrics, MokaCache, SchemeConfig,
         config::{Config, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
@@ -947,6 +948,67 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn validate_scheme() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            url.as_str().into(),
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"
+                                <a href="http://foo.com"/>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec![url.as_str().into()],
+            SiteConfig::default()
+                .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect())),
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    443,
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
+                )]
+                .into_iter()
+                .collect(),
+            )]
+            .into_iter()
+            .collect(),
+        ))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(0, 1), Metrics::new(0, 1))
+        );
+    }
+
     mod sitemap {
         use super::*;
         use pretty_assertions::assert_eq;
@@ -1131,8 +1193,6 @@ mod tests {
     }
 
     mod robots {
-        use crate::http_client::build_stub_response;
-
         use super::*;
         use pretty_assertions::assert_eq;
 
