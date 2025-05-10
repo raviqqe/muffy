@@ -1131,8 +1131,6 @@ mod tests {
     }
 
     mod robots {
-        use crate::http_client::build_stub_response;
-
         use super::*;
         use pretty_assertions::assert_eq;
 
