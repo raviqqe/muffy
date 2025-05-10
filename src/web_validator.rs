@@ -350,12 +350,24 @@ impl WebValidator {
                                     .chain(srcset.map(|value| ("srcset".into(), value.to_string())))
                                     .collect(),
                             ),
-                            vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                context.clone(),
-                                value.to_string(),
-                                base.clone(),
-                                None,
-                            ))],
+                            src.map(|value| {
+                                spawn(self.cloned().validate_normalized_link_with_base(
+                                    context.clone(),
+                                    value.to_string(),
+                                    base.clone(),
+                                    None,
+                                ))
+                            })
+                            .into_iter()
+                            .chain(srcset.map(|value| {
+                                spawn(self.cloned().validate_normalized_link_with_base(
+                                    context.clone(),
+                                    value.to_string(),
+                                    base.clone(),
+                                    None,
+                                ))
+                            }))
+                            .collect(),
                         ));
                     }
                 }
