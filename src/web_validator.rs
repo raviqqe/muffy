@@ -40,6 +40,7 @@ const META_LINK_PROPERTIES: &[&str] = &[
     "og:image:secure_url",
     "twitter:image",
 ];
+const LINK_DOMAIN_RELS: &[&str] = &["dns-prefetch", "preconnect"];
 
 static SRCSET_PATTERN: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
@@ -302,23 +303,28 @@ impl WebValidator {
                     }
                 }
                 "link" => {
-                    if let Some(value) = attributes.get("href") {
-                        futures.push((
-                            Element::new(
-                                element.name().into(),
-                                vec![("href".into(), value.to_string())],
-                            ),
-                            vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                context.clone(),
-                                value.to_string(),
-                                base.clone(),
-                                if attributes.get("rel") == Some(&"sitemap") {
-                                    Some(DocumentType::Sitemap)
-                                } else {
-                                    None
-                                },
-                            ))],
-                        ));
+                    if !attributes
+                        .get("rel")
+                        .map(|rel| LINK_DOMAIN_RELS.contains(rel))
+                        .unwrap_or_default()
+                    {
+                        if let Some(value) = attributes.get("href") {
+                            futures.push((
+                                Element::new(
+                                    element.name().into(),
+                                    vec![("href".into(), value.to_string())],
+                                ),
+                                vec![spawn(
+                                    self.cloned().validate_normalized_link_with_base(
+                                        context.clone(),
+                                        value.to_string(),
+                                        base.clone(),
+                                        (attributes.get("rel") == Some(&"sitemap"))
+                                            .then_some(DocumentType::Sitemap),
+                                    ),
+                                )],
+                            ));
+                        }
                     }
                 }
                 "meta" => {
