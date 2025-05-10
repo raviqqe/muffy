@@ -362,14 +362,19 @@ impl WebValidator {
                                 ))
                             })
                             .into_iter()
-                            .chain(srcset.map(|value| {
-                                spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.to_string(),
-                                    base.clone(),
-                                    None,
-                                ))
-                            }))
+                            .chain(
+                                srcset
+                                    .into_iter()
+                                    .flat_map(|srcset| Self::parse_srcset(srcset))
+                                    .map(|value| {
+                                        spawn(self.cloned().validate_normalized_link_with_base(
+                                            context.clone(),
+                                            value,
+                                            base.clone(),
+                                            None,
+                                        ))
+                                    }),
+                            )
                             .collect(),
                         ));
                     }
@@ -489,6 +494,10 @@ impl WebValidator {
         } else {
             false
         }
+    }
+
+    fn parse_srcset(srcset: &str) -> Vec<String> {
+        srcset.split(",").foo;
     }
 }
 
