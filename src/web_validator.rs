@@ -260,7 +260,10 @@ impl WebValidator {
                 "a" => {
                     if let Some(value) = attributes.get("href") {
                         futures.push((
-                            Element::new("a".into(), vec![("href".into(), value.to_string())]),
+                            Element::new(
+                                element.name().into(),
+                                vec![("href".into(), value.to_string())],
+                            ),
                             vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
                                 value.to_string(),
@@ -289,7 +292,30 @@ impl WebValidator {
                 "link" => {
                     if let Some(value) = attributes.get("href") {
                         futures.push((
-                            Element::new("link".into(), vec![("src".into(), value.to_string())]),
+                            Element::new(
+                                element.name().into(),
+                                vec![("src".into(), value.to_string())],
+                            ),
+                            vec![spawn(self.cloned().validate_normalized_link_with_base(
+                                context.clone(),
+                                value.to_string(),
+                                base.clone(),
+                                if attributes.get("rel") == Some(&"sitemap") {
+                                    Some(DocumentType::Sitemap)
+                                } else {
+                                    None
+                                },
+                            ))],
+                        ));
+                    }
+                }
+                "meta" => {
+                    if let Some(value) = attributes.get("content") {
+                        futures.push((
+                            Element::new(
+                                element.name().into(),
+                                vec![("content".into(), value.to_string())],
+                            ),
                             vec![spawn(self.cloned().validate_normalized_link_with_base(
                                 context.clone(),
                                 value.to_string(),
