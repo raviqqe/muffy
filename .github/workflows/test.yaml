@@ -26,10 +26,25 @@ jobs:
         with:
           fail_ci_if_error: true
           files: lcov.info
+  command_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        origin:
+          - https://raviqqe.com
+          - https://raviqqe.com/stak
+          - https://raviqqe.com/muffy
+          - https://raviqqe.com/muffet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swatinem/rust-cache@v2
+      - run: cargo run
   test:
     needs:
       - build
       - unit_test
+      - command_test
       - coverage
     if: always()
     runs-on: ubuntu-latest
