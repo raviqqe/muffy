@@ -30,16 +30,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        origin:
-          - https://raviqqe.com
-          - https://raviqqe.com/stak
-          - https://raviqqe.com/muffy
-          - https://raviqqe.com/muffet
+        arguments:
+          - - https://raviqqe.com
+          - - https://raviqqe.com/stak
+          - - https://raviqqe.com/muffy
+          - - https://raviqqe.com/muffet
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: swatinem/rust-cache@v2
-      - run: cargo run
+      - run: cargo run ${{ join(matrix.arguments, " ") }}
   test:
     needs:
       - build
