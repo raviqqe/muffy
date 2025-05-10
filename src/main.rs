@@ -58,6 +58,8 @@ struct Arguments {
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     if let Err(error) = run().await {
         eprintln!("{error}");
         exit(1)
