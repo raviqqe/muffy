@@ -22,7 +22,7 @@ use tokio::sync::Semaphore;
 
 const USER_AGENT: &str = "muffy";
 
-/// A cached HTTP client.
+/// A full-featured HTTP client.
 pub struct HttpClient(Arc<HttpClientInner>);
 
 struct HttpClientInner {
