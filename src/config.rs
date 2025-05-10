@@ -161,3 +161,32 @@ impl Default for StatusConfig {
         }
     }
 }
+
+/// A scheme configuration.
+#[derive(Clone, Debug)]
+pub struct SchemeConfig {
+    accepted: Vec<String>,
+}
+
+impl SchemeConfig {
+    /// Creates a scheme configuration.
+    pub const fn new(accepted: Vec<String>) -> Self {
+        Self { accepted }
+    }
+
+    /// Returns whether a scheme is accepted.
+    pub fn accepted(&self, scheme: &str) -> bool {
+        self.accepted
+            .iter()
+            .find(|accepted| *accepted == scheme)
+            .is_some()
+    }
+}
+
+impl Default for SchemeConfig {
+    fn default() -> Self {
+        Self {
+            accepted: vec!["http".into(), "https".into()],
+        }
+    }
+}
