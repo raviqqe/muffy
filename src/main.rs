@@ -34,7 +34,7 @@ struct Arguments {
     #[arg(long)]
     cache: bool,
     /// Set a maximum cache age in seconds.
-    #[arg(long, default_value_t = 86400)]
+    #[arg(long, default_value_t = 3600)]
     max_age: u64,
     /// Set an output format.
     #[arg(long, default_value = "text")]
