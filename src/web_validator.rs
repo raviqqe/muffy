@@ -30,7 +30,7 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<Success, Error>>>);
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
-const VALID_SCHEMES: &[&str] = &["http", "https"];
+const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
@@ -214,7 +214,7 @@ impl WebValidator {
         ))
     }
 
-    async fn validate_normalized_link_with_base(
+    async fn validate_element_link(
         self,
         context: Arc<Context>,
         url: String,
@@ -223,8 +223,7 @@ impl WebValidator {
     ) -> Result<Success, Error> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
-        // TODO Configure scheme and URL validation.
-        if !VALID_SCHEMES.contains(&url.scheme()) {
+        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             return Ok(Success::new());
         }
 
@@ -335,7 +334,7 @@ impl WebValidator {
                         .iter()
                         .flat_map(|(_, links)| {
                             links.iter().map(|(link, document_type)| {
-                                spawn(self.cloned().validate_normalized_link_with_base(
+                                spawn(self.cloned().validate_element_link(
                                     context.clone(),
                                     link.to_string(),
                                     base.clone(),
