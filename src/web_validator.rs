@@ -18,8 +18,9 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
+use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -31,6 +32,18 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const VALID_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+const META_LINK_PROPERTIES: &[&str] = &[
+    "og:image",
+    "og:audio",
+    "og:video",
+    "og:image:url",
+    "og:image:secure_url",
+    "twitter:image",
+];
+const LINK_ORIGIN_RELATIONS: &[&str] = &["dns-prefetch", "preconnect"];
+
+static SRCSET_PATTERN: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
 
 /// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
@@ -250,61 +263,89 @@ impl WebValidator {
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
-            // TODO Include all elements and attributes.
+            let attributes = HashMap::<_, _>::from_iter(element.attributes());
+
             // TODO Allow validation of multiple attributes for each element.
             // TODO Allow skipping element or attribute validation conditionally.
             // TODO Generalize element validation.
+            let mut links = vec![];
+
             match element.name() {
-                "a" => {
-                    for (name, value) in element.attributes() {
-                        if name == "href" {
-                            futures.push((
-                                Element::new("a".into(), vec![(name.into(), value.into())]),
-                                vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.into(),
-                                    base.clone(),
-                                    None,
-                                ))],
-                            ))
-                        }
-                    }
-                }
-                "img" => {
-                    for (name, value) in element.attributes() {
-                        if name == "src" {
-                            futures.push((
-                                Element::new("img".into(), vec![("src".into(), value.into())]),
-                                vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                    context.clone(),
-                                    value.into(),
-                                    base.clone(),
-                                    None,
-                                ))],
+                "link" => {
+                    if !attributes
+                        .get("rel")
+                        .map(|rel| LINK_ORIGIN_RELATIONS.contains(rel))
+                        .unwrap_or_default()
+                    {
+                        if let Some(value) = attributes.get("href") {
+                            links.push((
+                                vec![("href", value)],
+                                vec![(
+                                    value.to_string(),
+                                    (attributes.get("rel") == Some(&"sitemap"))
+                                        .then_some(DocumentType::Sitemap),
+                                )],
                             ));
                         }
                     }
                 }
-                "link" => {
-                    let attributes = HashMap::<_, _>::from_iter(element.attributes());
-
+                "meta" => {
+                    if let Some(content) = attributes.get("content") {
+                        if let Some(property) = attributes.get("property") {
+                            if META_LINK_PROPERTIES.contains(property) {
+                                links.push((
+                                    vec![("property", property), ("content", content)],
+                                    vec![(content.to_string(), None)],
+                                ));
+                            }
+                        }
+                    }
+                }
+                _ => {
                     if let Some(value) = attributes.get("href") {
-                        futures.push((
-                            Element::new("link".into(), vec![("src".into(), value.to_string())]),
-                            vec![spawn(self.cloned().validate_normalized_link_with_base(
-                                context.clone(),
-                                value.to_string(),
-                                base.clone(),
-                                if attributes.get("rel") == Some(&"sitemap") {
-                                    Some(DocumentType::Sitemap)
-                                } else {
-                                    None
-                                },
-                            ))],
+                        links.push((vec![("href", value)], vec![(value.to_string(), None)]));
+                    }
+
+                    if let Some(value) = attributes.get("src") {
+                        links.push((vec![("src", value)], vec![(value.to_string(), None)]));
+                    }
+
+                    if let Some(value) = attributes.get("srcset") {
+                        links.push((
+                            vec![("srcset", value)],
+                            Self::parse_srcset(value).map(|url| (url, None)).collect(),
                         ));
                     }
                 }
-                _ => {}
+            }
+
+            if !links.is_empty() {
+                futures.push((
+                    Element::new(
+                        element.name().into(),
+                        links
+                            .iter()
+                            .flat_map(|(attributes, _)| {
+                                attributes
+                                    .iter()
+                                    .map(|(name, value)| (name.to_string(), value.to_string()))
+                            })
+                            .collect(),
+                    ),
+                    links
+                        .iter()
+                        .flat_map(|(_, links)| {
+                            links.iter().map(|(link, document_type)| {
+                                spawn(self.cloned().validate_normalized_link_with_base(
+                                    context.clone(),
+                                    link.to_string(),
+                                    base.clone(),
+                                    *document_type,
+                                ))
+                            })
+                        })
+                        .collect(),
+                ));
             }
 
             for node in element.children() {
@@ -418,6 +459,731 @@ impl WebValidator {
                     .any(|node| Self::has_html_element_in_node(node, id))
         } else {
             false
+        }
+    }
+
+    fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> {
+        srcset
+            .split(",")
+            .map(|string| SRCSET_PATTERN.replace(string, "$1").to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        Metrics, MokaCache,
+        config::{Config, SiteConfig},
+        html_parser::HtmlParser,
+        http_client::{BareHttpClient, StubHttpClient, build_stub_response},
+        timer::StubTimer,
+    };
+    use futures::{Stream, StreamExt};
+    use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
+    use url::Url;
+
+    const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
+
+    async fn validate(
+        client: impl BareHttpClient + 'static,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        let url = Url::parse(url).unwrap();
+
+        WebValidator::new(
+            HttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                1,
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec![url.to_string()],
+            Default::default(),
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    443,
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
+                )]
+                .into_iter()
+                .collect(),
+            )]
+            .into_iter()
+            .collect(),
+        ))
+        .await
+    }
+
+    async fn collect_metrics(
+        documents: &mut (impl Stream<Item = Result<DocumentOutput, Error>> + Unpin),
+    ) -> (Metrics, Metrics) {
+        let mut document_metrics = Metrics::default();
+        let mut element_metrics = Metrics::default();
+
+        while let Some(document) = documents.next().await {
+            let document = document.unwrap();
+
+            document_metrics.add(document.metrics().has_error());
+            element_metrics.merge(&document.metrics());
+        }
+
+        (document_metrics, element_metrics)
+    }
+
+    #[tokio::test]
+    async fn validate_page() {
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_two_pages() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com/bar"/>" "#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_two_links_in_page() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"
+                        <a href="https://foo.com/bar"/>
+                        <a href="https://foo.com/baz"/>
+                    "#
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/baz",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(2, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_links_recursively() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(2, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_fragment_for_html() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc!(
+                            r#"
+                            <a href="https://foo.com#foo"/>
+                            <div id="foo" />
+                        "#
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_srcset() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let image_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("image/png"),
+        )]);
+
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc!(
+                            r#"
+                            <img src="/foo.png" srcset="/bar.png, /baz.png 2x, /qux.png 800w">
+                            "#
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/baz.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/qux.png",
+                        StatusCode::OK,
+                        image_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(4, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_page_not_belonging_to_roots() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://bar.com" />"#.as_bytes().into(),
+                    ),
+                    build_stub_response(
+                        "https://bar.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://bar.com",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_missing_fragment_for_html() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(0, 1), Metrics::new(0, 1))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_link_with_whitespaces() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https:/  /foo. com/ bar"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    mod sitemap {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        async fn validate_sitemap(content_type: &'static str) {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sitemap.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
+                            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                                <url>
+                                    <loc>https://foo.com/</loc>
+                                    <lastmod>1970-01-01</lastmod>
+                                    <changefreq>daily</changefreq>
+                                    <priority>1</priority>
+                                </url>
+                                <url>
+                                    <loc>https://foo.com/bar</loc>
+                                    <lastmod>1970-01-01</lastmod>
+                                    <changefreq>daily</changefreq>
+                                    <priority>1</priority>
+                                </url>
+                            </urlset>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(3, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_in_text_xml() {
+            validate_sitemap("text/xml").await;
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_in_application_xml() {
+            validate_sitemap("application/xml").await;
+        }
+
+        async fn validate_sitemap_index(content_type: &'static str) {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<link rel="sitemap" href="https://foo.com/sitemap-index.xml"/>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sitemap-index.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
+                        <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                            <sitemap>
+                                <loc>https://foo.com/sitemap-0.xml</loc>
+                                <lastmod>1970-01-01T00:00:00+00:00</lastmod>
+                            </sitemap>
+                        </sitemapindex>
+                        "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sitemap-0.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static(content_type),
+                            )]),
+                            r#"
+                        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                            <url>
+                                <loc>https://foo.com/</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
+                            <url>
+                                <loc>https://foo.com/bar</loc>
+                                <lastmod>1970-01-01</lastmod>
+                                <changefreq>daily</changefreq>
+                                <priority>1</priority>
+                            </url>
+                        </urlset>
+                        "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(4, 0), Metrics::new(4, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_index_in_text_xml() {
+            validate_sitemap_index("text/xml").await;
+        }
+
+        #[tokio::test]
+        async fn validate_sitemap_index_in_application_xml() {
+            validate_sitemap_index("application/xml").await;
+        }
+    }
+
+    mod robots {
+        use crate::http_client::build_stub_response;
+
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test]
+        async fn ignore_link_with_robots_txt() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            indoc!(
+                                "
+                            User-agent: *
+                            Disallow: /bar
+                            "
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 0), Metrics::new(1, 0))
+            );
         }
     }
 }
