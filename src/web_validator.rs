@@ -485,8 +485,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use url::Url;
 
-    const INITIAL_REQUEST_CACHE_CAPACITY: usize = 1 << 16;
-
     async fn validate(
         client: impl BareHttpClient + 'static,
         url: &str,
@@ -494,12 +492,7 @@ mod tests {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            HttpClient::new(
-                client,
-                StubTimer::new(),
-                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
-                1,
-            ),
+            HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0)), 1),
             HtmlParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
@@ -979,7 +972,7 @@ mod tests {
                     .collect(),
                 ),
                 StubTimer::new(),
-                Box::new(MokaCache::new(INITIAL_REQUEST_CACHE_CAPACITY)),
+                Box::new(MokaCache::new(0)),
                 1,
             ),
             HtmlParser::new(MokaCache::new(0)),
