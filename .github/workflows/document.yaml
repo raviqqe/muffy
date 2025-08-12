@@ -15,7 +15,7 @@ jobs:
   rust_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: swatinem/rust-cache@v2
       - run: cargo +nightly doc --all-features
   web_build:
@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: latest
@@ -42,7 +42,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
       - run: npm ci
       - run: npm run lint
@@ -52,7 +52,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: latest
