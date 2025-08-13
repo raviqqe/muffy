@@ -8,8 +8,7 @@
     "build:image": "tools/image.sh",
     "build:usage": "tools/usage.sh",
     "preview": "astro preview",
-    "lint": "npm run lint:biome && eslint --cache src",
-    "lint:biome": "biome ci",
+    "lint": "biome ci",
     "format": "biome format --write ."
   },
   "dependencies": {
@@ -21,9 +20,7 @@
   },
   "devDependencies": {
     "@raviqqe/biome-config": "^2.0.16",
-    "@raviqqe/eslint-config": "^5.0.0",
     "@types/node": "^24.2.1",
-    "eslint": "^9.33.0",
     "typescript": "^5.9.2"
   }
 }
