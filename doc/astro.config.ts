@@ -7,35 +7,27 @@ export default defineConfig({
   integrations: [
     sitemap(),
     starlight({
-      title: "Muffy",
       customCss: ["./src/index.css"],
       favicon: "/icon.svg",
       head: [
         {
-          tag: "link",
           attrs: {
-            rel: "manifest",
             href: "/muffy/manifest.json",
+            rel: "manifest",
           },
+          tag: "link",
         },
         {
-          tag: "meta",
           attrs: {
-            property: "og:image",
             content: "/muffy/icon.svg",
+            property: "og:image",
           },
+          tag: "meta",
         },
       ],
       logo: {
         src: "./src/icon.svg",
       },
-      social: [
-        {
-          icon: "github",
-          label: "GitHub",
-          href: "https://github.com/raviqqe/muffy",
-        },
-      ],
       sidebar: [
         {
           label: "Home",
@@ -50,6 +42,14 @@ export default defineConfig({
           link: "/usage",
         },
       ],
+      social: [
+        {
+          href: "https://github.com/raviqqe/muffy",
+          icon: "github",
+          label: "GitHub",
+        },
+      ],
+      title: "Muffy",
     }),
   ],
   prefetch: { prefetchAll: true },
