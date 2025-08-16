@@ -108,13 +108,11 @@ impl HttpClient {
                 let client = self.cloned();
 
                 Box::new(async move {
-                    if robots {
-                        if let Some(robot) = client.get_robot(&request).await? {
-                            if !robot.is_absolute_allowed(request.url()) {
+                    if robots
+                        && let Some(robot) = client.get_robot(&request).await?
+                            && !robot.is_absolute_allowed(request.url()) {
                                 return Err(HttpClientError::RobotsTxt);
                             }
-                        }
-                    }
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
