@@ -137,12 +137,11 @@ impl WebValidator {
             return Ok(ItemOutput::new().with_response(response));
         };
 
-        if let Some(fragment) = url.fragment() {
-            if document_type == DocumentType::Html
-                && !self.has_html_element(&response, fragment).await?
-            {
-                return Err(Error::HtmlElementNotFound(fragment.into()));
-            }
+        if let Some(fragment) = url.fragment()
+            && document_type == DocumentType::Html
+            && !self.has_html_element(&response, fragment).await?
+        {
+            return Err(Error::HtmlElementNotFound(fragment.into()));
         }
 
         if !url
@@ -285,29 +284,27 @@ impl WebValidator {
                         .get("rel")
                         .map(|rel| LINK_ORIGIN_RELATIONS.contains(rel))
                         .unwrap_or_default()
+                        && let Some(value) = attributes.get("href")
                     {
-                        if let Some(value) = attributes.get("href") {
-                            links.push((
-                                vec![("href", value)],
-                                vec![(
-                                    value.to_string(),
-                                    (attributes.get("rel") == Some(&"sitemap"))
-                                        .then_some(DocumentType::Sitemap),
-                                )],
-                            ));
-                        }
+                        links.push((
+                            vec![("href", value)],
+                            vec![(
+                                value.to_string(),
+                                (attributes.get("rel") == Some(&"sitemap"))
+                                    .then_some(DocumentType::Sitemap),
+                            )],
+                        ));
                     }
                 }
                 "meta" => {
-                    if let Some(content) = attributes.get("content") {
-                        if let Some(property) = attributes.get("property") {
-                            if META_LINK_PROPERTIES.contains(property) {
-                                links.push((
-                                    vec![("property", property), ("content", content)],
-                                    vec![(content.to_string(), None)],
-                                ));
-                            }
-                        }
+                    if let Some(content) = attributes.get("content")
+                        && let Some(property) = attributes.get("property")
+                        && META_LINK_PROPERTIES.contains(property)
+                    {
+                        links.push((
+                            vec![("property", property), ("content", content)],
+                            vec![(content.to_string(), None)],
+                        ));
                     }
                 }
                 _ => {

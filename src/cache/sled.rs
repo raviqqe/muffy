@@ -56,11 +56,11 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         trace!("waiting for cache at {}", &key);
 
         loop {
-            if let Some(value) = self.tree.get(&key)? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    trace!("waited for cache at {}", &key);
-                    return Ok(value);
-                }
+            if let Some(value) = self.tree.get(&key)?
+                && let Some(value) = bitcode::deserialize::<Option<T>>(&value)?
+            {
+                trace!("waited for cache at {}", &key);
+                return Ok(value);
             }
 
             sleep(DELAY).await;
