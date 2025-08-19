@@ -39,6 +39,8 @@ jobs:
             - --accept-status 200
             - --accept-status 403
             - --exclude-link https://www.gnu.org/software/guile/
+            - --header user-agent:muffet
+            - --header accept:text/html,*/*
           - - https://raviqqe.com/muffy
             - --accept-status 200
             - --accept-status 403
