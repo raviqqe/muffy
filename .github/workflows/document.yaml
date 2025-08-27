@@ -40,7 +40,6 @@ jobs:
         working-directory: doc
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
       - uses: ./.github/actions/setup
       - run: node --run lint
   web_test:
@@ -50,12 +49,9 @@ jobs:
         working-directory: doc
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
-        with:
-          node-version: latest
-      - run: npm ci
-      - run: npm run build -- --site http://localhost:4321
-      - run: npm run preview &
+      - uses: ./.github/actions/setup
+      - run: node --run build -- --site http://localhost:4321
+      - run: node --run preview &
       - run: >
           cargo run --
           --accept-status 200
