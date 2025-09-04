@@ -35,7 +35,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
-        self.map.remove(key);
+        self.map.remove_async(key).await;
 
         Ok(())
     }
