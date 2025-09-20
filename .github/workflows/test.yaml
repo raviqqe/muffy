@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: swatinem/rust-cache@v2
+      - uses: raviqqe/cargo-cache@v1
       - run: cargo build
   unit_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: swatinem/rust-cache@v2
+      - uses: raviqqe/cargo-cache@v1
       - run: cargo test
   coverage:
     runs-on: ubuntu-latest
@@ -38,6 +38,7 @@ jobs:
           - - https://raviqqe.com/stak
             - --accept-status 200
             - --accept-status 403
+            - --exclude-link https://codspeed.io/stak
             - --exclude-link https://r7rs.org/
             - --exclude-link https://www.gnu.org/software/guile/
             - --header user-agent:muffet
@@ -52,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: swatinem/rust-cache@v2
+      - uses: raviqqe/cargo-cache@v1
       - run: cargo run ${{ join(matrix.arguments, ' ') }} ${{ matrix.cache_options }}
         env:
           RUST_LOG: muffy=trace
