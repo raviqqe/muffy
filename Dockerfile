@@ -6,6 +6,6 @@ RUN apk add build-base openssl-dev openssl-libs-static
 RUN cargo build --release --target $(uname -m)-unknown-linux-musl
 
 FROM alpine
-COPY --from=build /src/target/release/muffy /muffy
+COPY --from=build /src/target/*-unknown-linux-musl/release/muffy /muffy
 RUN /muffy --version
 ENTRYPOINT ["/muffy"]
