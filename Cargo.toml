@@ -84,3 +84,9 @@ use_self = "deny"
 [lints.rust]
 missing_docs = "deny"
 warnings = "deny"
+
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1
+debuginfo = "line-directives-only"
