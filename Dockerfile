@@ -1,8 +1,7 @@
 FROM rust:alpine AS build
 ADD . /src
 WORKDIR /src
-ENV OPENSSL_STATIC=1
-RUN apk add build-base openssl-dev openssl-libs-static
+RUN apk add build-base
 RUN cargo build --release --target $(uname -m)-unknown-linux-musl
 
 FROM alpine
