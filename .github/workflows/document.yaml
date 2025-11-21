@@ -15,7 +15,7 @@ jobs:
   rust_build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
       - run: cargo +nightly doc --all-features
   web_build:
@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/configure-pages@v5
       - uses: ./.github/actions/setup
       - run: node --run build
@@ -39,7 +39,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
       - run: node --run lint
   web_test:
@@ -48,7 +48,7 @@ jobs:
       run:
         working-directory: doc
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &

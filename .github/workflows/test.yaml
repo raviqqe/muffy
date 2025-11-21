@@ -8,19 +8,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
       - run: cargo build
   unit_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
       - run: cargo test
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: tools/coverage.sh
       - uses: codecov/codecov-action@v5
         with:
@@ -52,7 +52,7 @@ jobs:
           - --cache
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
       - run: cargo run ${{ join(matrix.arguments, ' ') }} ${{ matrix.cache_options }}
         env:
