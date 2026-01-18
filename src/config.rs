@@ -107,8 +107,8 @@ impl SiteConfig {
             status,
             scheme,
             max_redirects,
-            max_age,
             timeout,
+            max_age,
             recursive,
         }
     }
