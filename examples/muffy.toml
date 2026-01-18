@@ -1,0 +1,28 @@
+[sites]
+[sites."https://raviqqe.com/"]
+recurse = true
+
+[sites."https://raviqqe.com/muffet"]
+recurse = true
+
+[sites."https://raviqqe.com/muffy"]
+recurse = true
+
+[sites."https://raviqqe.com/stak"]
+recurse = true
+
+[sites."https://www.gnu.org/guile"]
+exclude = true
+
+[default]
+max_redirects = 8
+scheme = ["http", "https"]
+
+[default.cache]
+max_age = 3600
+
+[default.headers]
+user-agent = "Muffy/1.0"
+
+[default.status]
+accept = [200, 403]
