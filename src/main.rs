@@ -95,7 +95,7 @@ async fn main() {
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
     let config = match arguments.command {
-        Command::Run(arguments) => todo!(),
+        Command::Run(_arguments) => todo!(),
         Command::Check(arguments) => compile_check_config(&arguments)?,
     };
 
