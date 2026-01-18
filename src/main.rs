@@ -267,6 +267,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
+            .sorted_by_key(|url| url.host_str().map(ToOwned::to_owned))
             .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
             .into_iter()
             .map(|(host, urls)| -> (String, Vec<(String, SiteConfig)>) {

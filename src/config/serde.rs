@@ -67,6 +67,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error
             .map(|(url, site)| Ok((Url::parse(&url)?, site)))
             .collect::<Result<Vec<_>, Error>>()?
             .into_iter()
+            .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
             .into_iter()
             .map(|(host, sites)| {
