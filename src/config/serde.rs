@@ -55,9 +55,9 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
         config
             .sites
             .iter()
-            .flat_map(|site| {
+            .flat_map(|(url, site)| {
                 if site.exclude == Some(true) {
-                    Some(Regex::new(string))
+                    Some(Regex::new(url))
                 } else {
                     None
                 }
