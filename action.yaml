@@ -19,7 +19,7 @@ runs:
   steps:
     - id: version
       shell: bash
-      run: echo version=$options >> ${{ github.output }}
+      run: echo version=$(cat ${{ github.action_path }}/Cargo.toml | grep '^version = ' | grep -o '[0-9.]\+') >> ${{ github.output }}
     - id: status
       shell: bash
       run: |
