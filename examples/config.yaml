@@ -1,9 +1,6 @@
 sites:
   https://raviqqe.com/:
     recurse: true
-    check:
-      - link
-      - html_element
   https://raviqqe.com/stak:
     recurse: true
   https://raviqqe.com/muffet:
@@ -13,6 +10,8 @@ sites:
   https://www.gnu.org/guile:
     exclude: true
 default:
+  check:
+    - link
   headers:
     user-agent: Muffy/1.0
   status:
