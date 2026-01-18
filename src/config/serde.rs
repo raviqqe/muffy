@@ -204,7 +204,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_fails_on_invalid_url_key() {
+    fn compile_invalid_site_url() {
         let config = SerializableConfig {
             default: None,
             sites: HashMap::from([(
