@@ -12,7 +12,7 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, io, path::PathBuf, process::exit};
+use std::{env::temp_dir, io, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},

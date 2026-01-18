@@ -13,7 +13,6 @@ use crate::{
     item_output::ItemOutput,
     request::Request,
     response::Response,
-    utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
