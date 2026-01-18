@@ -14,6 +14,7 @@ pub enum HttpClientError {
     Http(Arc<str>),
     RedirectLocation,
     RobotsTxt,
+    Timeout(Arc<str>),
     TooManyRedirects,
     UrlParse(Arc<str>),
     Utf8(Arc<str>),
@@ -35,6 +36,7 @@ impl Display for HttpClientError {
             Self::Http(error) => write!(formatter, "{error}"),
             Self::RedirectLocation => write!(formatter, "location header not found on redirect"),
             Self::RobotsTxt => write!(formatter, "rejected by robots.txt"),
+            Self::Timeout(error) => write!(formatter, "{error}"),
             Self::TooManyRedirects => write!(formatter, "too many redirects"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
@@ -45,6 +47,12 @@ impl Display for HttpClientError {
 impl From<CacheError> for HttpClientError {
     fn from(error: CacheError) -> Self {
         Self::Cache(error)
+    }
+}
+
+impl From<tokio::time::error::Elapsed> for HttpClientError {
+    fn from(error: tokio::time::error::Elapsed) -> Self {
+        Self::Timeout(error.to_string().into())
     }
 }
 
