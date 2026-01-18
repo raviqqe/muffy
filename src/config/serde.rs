@@ -40,7 +40,7 @@ struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
-    #[serde(deserialize_with = "deserialize_option_duration")]
+    #[serde(default, deserialize_with = "deserialize_option_duration")]
     timeout: Option<Duration>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
@@ -50,7 +50,7 @@ struct IncludedSiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
-    #[serde(deserialize_with = "deserialize_option_duration")]
+    #[serde(default, deserialize_with = "deserialize_option_duration")]
     max_age: Option<Duration>,
 }
 
