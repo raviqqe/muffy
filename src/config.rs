@@ -191,7 +191,7 @@ impl StatusConfig {
 impl Default for StatusConfig {
     fn default() -> Self {
         Self {
-            accepted: HashSet::from_iter([StatusCode::OK]),
+            accepted: DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
         }
     }
 }
