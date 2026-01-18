@@ -1,5 +1,6 @@
 use crate::Error;
 use core::time::Duration;
+use http::HeaderMap;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -24,13 +25,13 @@ struct SiteConfig {
 }
 
 /// A status code configuration.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct StatusConfig {
     accepted: Option<HashSet<u16>>,
 }
 
 /// A scheme configuration.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct SchemeConfig {
     accept: Option<HashSet<String>>,
 }
@@ -43,7 +44,7 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             .filter(|(_, site)| site.recurse == Some(true))
             .map(|(url, _)| url.clone())
             .collect(),
-        config.default.unwrap_or_default(),
+        compile_site_config(&config.default.unwrap_or_default()),
         config
             .sites
             .iter()
@@ -68,15 +69,14 @@ fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
     super::SiteConfig::new(
         HeaderMap::from_iter(
             site.headers
-                .clone()
                 .unwrap_or_default()
                 .into_iter()
-                .map(|(k, v)| (k.parse().unwrap(), v)),
+                .map(|(key, value)| (key.parse().unwrap(), value)),
         ),
-        site.status.clone(),
-        site.scheme.clone(),
-        site.max_redirects,
-        site.max_age,
-        site.recurse,
+        site.status.unwrap_or_default(),
+        site.scheme.unwrap_or_default(),
+        site.max_redirects.unwrap_or(64),
+        site.max_age.unwrap_or(3600),
+        site.recurse == Some(true),
     )
 }
