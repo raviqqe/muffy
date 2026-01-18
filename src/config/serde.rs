@@ -1,3 +1,4 @@
+use crate::Error;
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -35,7 +36,23 @@ struct SchemeConfig {
 }
 
 pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
-    let config = serde_yaml2::from_str(yaml)?;
-
-    Ok(super::Config::new())
+    Ok(super::Config::new(
+        config.sites.iter().filter(|site| site.recurse).collect(),
+        default.unwrap_or_default(),
+        config
+            .sites
+            .iter()
+            .map(|site| {
+                super::SiteConfig::new(
+                    site.headers.clone(),
+                    site.status.clone(),
+                    site.scheme.clone(),
+                    site.max_redirects,
+                    site.max_age,
+                    site.recurse,
+                )
+            })
+            .collect(),
+    )
+    .set_excluded_links(config.exclude_links.clone()))
 }
