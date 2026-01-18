@@ -206,6 +206,7 @@ mod tests {
                 response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -246,6 +247,7 @@ mod tests {
                 response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -303,6 +305,7 @@ mod tests {
                 foo_response.url.clone(),
                 Default::default(),
                 1,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -360,6 +363,7 @@ mod tests {
                 foo_response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX,
             ))
             .await,
@@ -419,7 +423,13 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Duration::MAX,
+                Duration::MAX
+            ))
             .await
             .unwrap(),
             Some(
