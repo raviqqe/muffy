@@ -12,12 +12,20 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{env::current_dir, env::temp_dir, path::PathBuf, process::exit};
+use std::{
+    env::{current_dir, temp_dir},
+    path::PathBuf,
+    process::exit,
+};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
-use tokio::{fs, fs::create_dir_all, fs::read_to_string, io::stdout};
+use tokio::{
+    fs,
+    fs::{create_dir_all, read_to_string},
+    io::stdout,
+};
 use url::Url;
 
 const DATABASE_DIRECTORY: &str = "muffy";
