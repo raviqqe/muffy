@@ -17,6 +17,9 @@ outputs: {}
 runs:
   using: composite
   steps:
+    - id: version
+      shell: bash
+      run: echo version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+') >> ${{ github.output }}
     - id: status
       shell: bash
       run: |
@@ -28,7 +31,8 @@ runs:
     - shell: bash
       run: >
         docker run --network host
-        raviqqe/muffy check
+        raviqqe/muffy:${{ steps.version.outputs.version }}
+        check
         ${{ inputs.verbose && '--verbose' || '' }}
         ${{ steps.status.outputs.options }}
         ${{ inputs.url }}
