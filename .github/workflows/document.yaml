@@ -53,7 +53,7 @@ jobs:
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &
       - run: >
-          cargo run --
+          cargo run check
           --accept-status 200
           --accept-status 403
           --accept-status 429

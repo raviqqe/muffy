@@ -12,7 +12,7 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, process::exit};
+use std::{collections::HashMap, env::temp_dir, io, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -25,21 +25,45 @@ const RESPONSE_NAMESPACE: &str = "responses";
 
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[derive(clap::Parser)]
+#[command(about, version)]
 struct Arguments {
+    #[command(subcommand)]
+    command: Option<Command>,
+    /// Use a persistent cache.
+    #[arg(long, global = true)]
+    cache: bool,
+    /// Set an output format.
+    #[arg(long, default_value = "text", global = true)]
+    format: RenderFormat,
+    /// Be verbose.
+    #[arg(long, global = true)]
+    verbose: bool,
+}
+
+#[derive(clap::Subcommand)]
+enum Command {
+    /// Runs a validation suite.
+    Run(RunArguments),
+    /// Check URLs.
+    Check(CheckArguments),
+}
+
+#[derive(clap::Args, Default)]
+struct RunArguments {
+    /// A configuration file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
+
+#[derive(clap::Args, Debug)]
+struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
-    /// Use a persistent cache.
-    #[arg(long)]
-    cache: bool,
     /// Set a maximum cache age in seconds.
     #[arg(long, default_value_t = 3600)]
     max_age: u64,
-    /// Set an output format.
-    #[arg(long, default_value = "text")]
-    format: RenderFormat,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -55,9 +79,6 @@ struct Arguments {
     /// Set patterns to exclude URLs.
     #[arg(long)]
     exclude_link: Vec<Regex>,
-    /// Be verbose.
-    #[arg(long)]
-    verbose: bool,
 }
 
 #[tokio::main]
@@ -72,8 +93,17 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let mut output = stdout();
+    let config = match arguments
+        .command
+        .unwrap_or(Command::Run(Default::default()))
+    {
+        Command::Run(_arguments) => {
+            return Err(Box::new(io::Error::other("run command not supported yet")));
+        }
+        Command::Check(arguments) => compile_check_config(&arguments)?,
+    };
 
+    let mut output = stdout();
     let db = if arguments.cache {
         let directory = cache_dir()
             .unwrap_or_else(temp_dir)
@@ -98,7 +128,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&compile_config(&arguments)?).await?;
+    let mut documents = validator.validate(&config).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -169,7 +199,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
+fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_status(StatusConfig::new(
             arguments
