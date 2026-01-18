@@ -13,15 +13,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-/// A validation configuration.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Config {
     default: Option<SiteConfig>,
     sites: HashMap<String, SiteConfig>,
 }
 
-/// A site configuration.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct SiteConfig {
     exclude: Option<bool>,
     headers: Option<HashMap<String, String>>,
@@ -32,14 +30,12 @@ struct SiteConfig {
     recurse: Option<bool>,
 }
 
-/// A status code configuration.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct StatusConfig {
     accept: Option<HashSet<u16>>,
 }
 
-/// A scheme configuration.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct SchemeConfig {
     accept: Option<HashSet<String>>,
 }
