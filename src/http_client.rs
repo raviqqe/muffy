@@ -18,8 +18,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
-use tokio::sync::Semaphore;
-use tokio::time::timeout;
+use tokio::{sync::Semaphore, time::timeout};
 
 const USER_AGENT: &str = "muffy";
 
