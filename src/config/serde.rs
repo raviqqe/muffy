@@ -1,7 +1,10 @@
 use super::error::ConfigError;
-use crate::config::{
-    DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-    DEFAULT_MAX_REDIRECTS,
+use crate::{
+    DEFAULT_TIMEOUT,
+    config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS,
+    },
 };
 use core::time::Duration;
 use duration_str::deserialize_option_duration;
@@ -143,7 +146,7 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
             ),
         ),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
-        site.timeout.unwrap_or(Duration::MAX),
+        site.timeout.unwrap_or(DEFAULT_TIMEOUT),
         site.cache
             .and_then(|cache| cache.max_age)
             .unwrap_or(DEFAULT_MAX_CACHE_AGE),
