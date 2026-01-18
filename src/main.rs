@@ -25,6 +25,34 @@ const RESPONSE_NAMESPACE: &str = "responses";
 
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
+#[derive(clap::Parser)]
+#[command(about, version)]
+struct Arguments {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(clap::Subcommand)]
+enum Command {
+    /// Runs a bytecode file.
+    Run(RunArguments),
+    /// Analyze profile records.
+    Analyze(AnalyzeArguments),
+}
+
+#[derive(clap::Args)]
+struct RunArguments {
+    /// A bytecode file.
+    #[arg(required(true))]
+    bytecode_file: PathBuf,
+    /// A profile file to which a profiler writes records.
+    #[arg(short = 'p', long = "profile", required(true))]
+    profile_file: PathBuf,
+    /// A heap size of a virtual machine.
+    #[arg(short = 's', long, default_value_t = DEFAULT_HEAP_SIZE)]
+    heap_size: usize,
+}
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Arguments {
