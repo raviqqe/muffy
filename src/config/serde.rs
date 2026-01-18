@@ -21,16 +21,21 @@ pub struct SerializableConfig {
     sites: HashMap<String, SiteConfig>,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct SiteConfig {
-    exclude: Option<bool>,
-    headers: Option<HashMap<String, String>>,
-    status: Option<HashSet<u16>>,
-    scheme: Option<HashSet<String>>,
-    max_redirects: Option<usize>,
-    cache: Option<CacheConfig>,
-    recurse: Option<bool>,
+#[serde(untagged)]
+enum SiteConfig {
+    Included {
+        headers: Option<HashMap<String, String>>,
+        status: Option<HashSet<u16>>,
+        scheme: Option<HashSet<String>>,
+        max_redirects: Option<usize>,
+        cache: Option<CacheConfig>,
+        recurse: Option<bool>,
+    },
+    Excluded {
+        exclude: bool,
+    },
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -41,6 +46,16 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error> {
+    for (_, site) in &config.sites {
+        if let SiteConfig::Excluded { exclude } = site
+            && !exclude
+        {
+            return Err(Error::InvalidConfig(
+                "exclude field must be true if present".to_owned(),
+            ));
+        }
+    }
+
     let excluded_links = config
         .sites
         .iter()
