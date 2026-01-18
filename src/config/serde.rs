@@ -28,8 +28,14 @@ struct SiteConfig {
     status: Option<HashSet<u16>>,
     scheme: Option<HashSet<String>>,
     max_redirects: Option<usize>,
-    max_age: Option<Duration>,
+    cache: Option<CacheConfig>,
     recurse: Option<bool>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CacheConfig {
+    max_age: Option<u64>,
 }
 
 /// Compiles a configuration.
@@ -103,7 +109,10 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
             ),
         ),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
-        site.max_age.unwrap_or(DEFAULT_MAX_CACHE_AGE),
+        site.cache
+            .and_then(|cache| cache.max_age)
+            .map(Duration::from_secs)
+            .unwrap_or(DEFAULT_MAX_CACHE_AGE),
         site.recurse == Some(true),
     ))
 }
