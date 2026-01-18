@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet};
 use url::Url;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
+pub struct SerializableConfig {
     default: Option<SiteConfig>,
     sites: HashMap<String, SiteConfig>,
 }
@@ -41,7 +41,7 @@ struct SchemeConfig {
 }
 
 /// Compiles a configuration.
-pub fn compile_config(config: Config) -> Result<super::Config, Error> {
+pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error> {
     let excluded_links = config
         .sites
         .iter()
