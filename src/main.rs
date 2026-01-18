@@ -28,9 +28,9 @@ use tokio::{
 };
 use url::Url;
 
+const CONFIG_FILE: &str = "muffy.toml";
 const DATABASE_DIRECTORY: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
-
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(clap::Parser)]
@@ -113,7 +113,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 let mut directory = directory.as_path();
 
                 loop {
-                    let file = directory.join("muffy.toml");
+                    let file = directory.join(CONFIG_FILE);
 
                     if fs::try_exists(&file).await? {
                         break file;
