@@ -13,6 +13,7 @@ struct Config {
 /// A site configuration.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct SiteConfig {
+    exclude: Option<bool>,
     headers: Option<HashMap<String, String>>,
     status: Option<StatusConfig>,
     scheme: Option<SchemeConfig>,
