@@ -122,6 +122,7 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
 #[cfg(test)]
 mod tests {
     use super::{SerializableConfig, compile_config};
+    use crate::Error;
     use crate::config::{
         DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
         DEFAULT_MAX_REDIRECTS,
@@ -130,9 +131,12 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn deserialize_and_compile_success_minimal() {
-        let config: SerializableConfig = toml::from_str("sites = {}\n").unwrap();
-        let config = compile_config(config).unwrap();
+    fn compile_empty() {
+        let config = compile_config(SerializableConfig {
+            sites: Default::default(),
+            default: Default::default(),
+        })
+        .unwrap();
 
         assert_eq!(config.roots().count(), 0);
         assert_eq!(config.excluded_links().count(), 0);
@@ -249,7 +253,7 @@ mod tests {
         .unwrap();
 
         let error = compile_config(config).unwrap_err();
-        assert!(error.to_string().to_lowercase().contains("header"));
+        assert!(matches!(error, Error::HttpInvalidHeaderValue(_)));
     }
 
     #[test]
