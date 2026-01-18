@@ -217,10 +217,7 @@ mod tests {
         };
 
         let error = compile_config(config).unwrap_err();
-        assert!(
-            error.to_string().to_lowercase().contains("relative url")
-                || error.to_string().to_lowercase().contains("url")
-        );
+        assert!(matches!(error, Error::UrlParse(_)));
     }
 
     #[test]
@@ -237,7 +234,7 @@ mod tests {
         };
 
         let error = compile_config(config).unwrap_err();
-        assert!(error.to_string().to_lowercase().contains("regex"));
+        assert!(matches!(error, Error::Regex(_)));
     }
 
     #[test]
@@ -254,7 +251,7 @@ mod tests {
         };
 
         let error = compile_config(config).unwrap_err();
-        assert!(error.to_string().to_lowercase().contains("header"));
+        assert!(matches!(error, Error::HttpInvalidHeaderName(_)));
     }
 
     #[test]
@@ -285,6 +282,6 @@ mod tests {
         };
 
         let error = compile_config(config).unwrap_err();
-        assert!(error.to_string().to_lowercase().contains("status"));
+        assert!(matches!(error, Error::HttpInvalidStatus(_)));
     }
 }
