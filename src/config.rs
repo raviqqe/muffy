@@ -1,8 +1,7 @@
 mod error;
 mod serde;
 
-pub use self::error::ConfigError;
-pub use self::serde::compile_config;
+pub use self::{error::ConfigError, serde::compile_config};
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;

@@ -1,10 +1,7 @@
 use super::error::ConfigError;
-use crate::{
-    Error,
-    config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS,
-    },
+use crate::config::{
+    DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+    DEFAULT_MAX_REDIRECTS,
 };
 use core::time::Duration;
 use http::{HeaderName, HeaderValue, StatusCode};
@@ -18,7 +15,7 @@ use url::Url;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    default: Option<SiteConfig>,
+    default: Option<IncludedSiteConfig>,
     sites: HashMap<String, SiteConfig>,
 }
 
@@ -26,17 +23,19 @@ pub struct SerializableConfig {
 #[serde(deny_unknown_fields)]
 #[serde(untagged)]
 enum SiteConfig {
-    Included {
-        headers: Option<HashMap<String, String>>,
-        status: Option<HashSet<u16>>,
-        scheme: Option<HashSet<String>>,
-        max_redirects: Option<usize>,
-        cache: Option<CacheConfig>,
-        recurse: Option<bool>,
-    },
-    Excluded {
-        exclude: bool,
-    },
+    Included(IncludedSiteConfig),
+    Excluded { exclude: bool },
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct IncludedSiteConfig {
+    headers: Option<HashMap<String, String>>,
+    status: Option<HashSet<u16>>,
+    scheme: Option<HashSet<String>>,
+    max_redirects: Option<usize>,
+    cache: Option<CacheConfig>,
+    recurse: Option<bool>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -51,7 +50,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         if let SiteConfig::Excluded { exclude } = site
             && !exclude
         {
-            return Err(ConfigError::ExcludeSite(url.clone()));
+            return Err(ConfigError::InvalidSiteExclude(url.clone()));
         }
     }
 
@@ -71,7 +70,19 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         config
             .sites
             .iter()
-            .filter(|(_, site)| site.recurse == Some(true))
+            .filter_map(|(url, site)| {
+                if matches!(
+                    &site,
+                    SiteConfig::Included(IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..
+                    })
+                ) {
+                    Some((url, site))
+                } else {
+                    None
+                }
+            })
             .map(|(url, _)| url.clone())
             .collect(),
         compile_site_config(config.default.unwrap_or_default())?,
@@ -79,7 +90,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .sites
             .into_iter()
             .map(|(url, site)| Ok((Url::parse(&url)?, site)))
-            .collect::<Result<Vec<_>, Error>>()?
+            .collect::<Result<Vec<_>, ConfigError>>()?
             .into_iter()
             .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
@@ -89,7 +100,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     host,
                     sites
                         .map(|(url, site)| Ok((url.path().to_owned(), compile_site_config(site)?)))
-                        .collect::<Result<_, Error>>()?,
+                        .collect::<Result<_, ConfigError>>()?,
                 ))
             })
             .collect::<Result<_, Error>>()?,
@@ -97,59 +108,51 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     .set_excluded_links(excluded_links))
 }
 
-fn compile_site_config(config: SiteConfig) -> Result<super::SiteConfig, ConfigError> {
-    Ok(match config {
-        SiteConfig::Included {
-            headers,
-            status,
-            scheme,
-            max_redirects,
-            cache,
-            recurse,
-        } => super::SiteConfig::new(
-            headers
-                .unwrap_or_default()
-                .into_iter()
-                .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
-                .collect::<Result<_, Error>>()?,
-            super::StatusConfig::new(
-                status
-                    .map(|codes| {
-                        codes
-                            .into_iter()
-                            .map(StatusCode::try_from)
-                            .collect::<Result<_, _>>()
-                    })
-                    .transpose()?
-                    .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
-            ),
-            super::SchemeConfig::new(
-                scheme.unwrap_or(
-                    DEFAULT_ACCEPTED_SCHEMES
-                        .iter()
-                        .copied()
-                        .map(ToOwned::to_owned)
-                        .collect(),
-                ),
-            ),
-            max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
-            cache
-                .and_then(|cache| cache.max_age)
-                .map(Duration::from_secs)
-                .unwrap_or(DEFAULT_MAX_CACHE_AGE),
-            recurse == Some(true),
+fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, ConfigError> {
+    Ok(super::SiteConfig::new(
+        site.headers
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
+            .collect::<Result<_, ConfigError>>()?,
+        super::StatusConfig::new(
+            site.status
+                .map(|codes| {
+                    codes
+                        .into_iter()
+                        .map(StatusCode::try_from)
+                        .collect::<Result<_, _>>()
+                })
+                .transpose()?
+                .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
         ),
-        Excluded { .. } => super::SiteConfig::default(),
-    })
+        super::SchemeConfig::new(
+            site.scheme.unwrap_or(
+                DEFAULT_ACCEPTED_SCHEMES
+                    .iter()
+                    .copied()
+                    .map(ToOwned::to_owned)
+                    .collect(),
+            ),
+        ),
+        site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
+        site.cache
+            .and_then(|cache| cache.max_age)
+            .map(Duration::from_secs)
+            .unwrap_or(DEFAULT_MAX_CACHE_AGE),
+        site.recurse == Some(true),
+    ))
 }
 
 #[cfg(test)]
 mod tests {
     use super::{SerializableConfig, SiteConfig, compile_config};
-    use crate::Error;
-    use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS,
+    use crate::{
+        Error,
+        config::{
+            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+            DEFAULT_MAX_REDIRECTS,
+        },
     };
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
