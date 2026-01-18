@@ -56,8 +56,7 @@ struct RunArguments {
     config: Option<PathBuf>,
 }
 
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[derive(clap::Args, Debug)]
 struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
