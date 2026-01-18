@@ -143,6 +143,7 @@ mod tests {
         assert_eq!(config.sites().len(), 0);
 
         let default = config.default;
+
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE);
 
@@ -156,7 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_and_compile_success_sites_roots_and_excluded_links() {
+    fn compile_roots_and_excluded_links() {
         let config: SerializableConfig = toml::from_str(indoc! {r#"
             [sites."https://example.com/"]
             recurse = true
