@@ -1,3 +1,5 @@
+mod serde;
+
 use crate::default_port;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
