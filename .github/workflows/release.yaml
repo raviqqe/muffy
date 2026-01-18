@@ -59,21 +59,25 @@ jobs:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
         if: github.ref == 'refs/heads/main'
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - id: meta
-        run: |
-          (
-            echo repository=${{ vars.DOCKER_USER || 'test' }}/muffy
-            echo version=$(git tag --points-at | sed s/^v//)
-          ) >> ${{ github.output }}
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: |
+            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
       - uses: docker/build-push-action@v6
         with:
           platforms: |
             linux/amd64
             ${{ github.ref == 'refs/heads/main' && 'linux/arm64' || '' }}
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: |
-            ${{ steps.meta.outputs.repository }}:latest
-            ${{ steps.meta.outputs.version && format('{0}:{1}', steps.meta.outputs.repository, steps.meta.outputs.version) || '' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
       # spell-checker: disable-next-line
       - uses: peter-evans/dockerhub-description@1b9a80c056b620d92cedb9d9b5a223409c68ddfa # v5.0.0
         with:
