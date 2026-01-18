@@ -14,7 +14,6 @@ pub struct Config {
     excluded_links: Vec<Regex>,
     default: SiteConfig,
     sites: HashMap<String, HostConfig>,
-    cache: bool,
 }
 
 impl Config {
@@ -23,14 +22,12 @@ impl Config {
         roots: Vec<String>,
         default: SiteConfig,
         sites: HashMap<String, HostConfig>,
-        cache: bool,
     ) -> Self {
         Self {
             roots,
             excluded_links: Default::default(),
             default,
             sites,
-            cache,
         }
     }
 
