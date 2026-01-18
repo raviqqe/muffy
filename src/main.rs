@@ -30,6 +30,15 @@ const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 struct Arguments {
     #[command(subcommand)]
     command: Command,
+    /// Use a persistent cache.
+    #[arg(long)]
+    cache: bool,
+    /// Set an output format.
+    #[arg(long, default_value = "text")]
+    format: RenderFormat,
+    /// Be verbose.
+    #[arg(long)]
+    verbose: bool,
 }
 
 #[derive(clap::Subcommand)]
@@ -45,15 +54,6 @@ struct RunArguments {
     /// A configuration file.
     #[arg(short, long)]
     config: Option<PathBuf>,
-    /// Use a persistent cache.
-    #[arg(long)]
-    cache: bool,
-    /// Set an output format.
-    #[arg(long, default_value = "text")]
-    format: RenderFormat,
-    /// Be verbose.
-    #[arg(long)]
-    verbose: bool,
 }
 
 #[derive(Parser, Debug)]
