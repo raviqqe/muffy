@@ -522,36 +522,33 @@ mod tests {
             body: vec![],
         };
 
-        let cache = MemoryCache::new(CACHE_CAPACITY);
+        let result = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        url.join("/robots.txt").unwrap().as_str(),
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (url.as_str().into(), Ok(response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+            1,
+        )
+        .get(&Request::new(
+            url,
+            Default::default(),
+            0,
+            Duration::ZERO,
+            Duration::MAX,
+        ))
+        .await;
 
-        assert!(matches!(
-            HttpClient::new(
-                StubHttpClient::new(
-                    [
-                        build_stub_response(
-                            url.join("/robots.txt").unwrap().as_str(),
-                            StatusCode::OK,
-                            Default::default(),
-                            vec![],
-                        ),
-                        (url.as_str().into(), Ok(response.clone()))
-                    ]
-                    .into_iter()
-                    .collect()
-                ),
-                StubTimer::new(),
-                Box::new(cache),
-                1,
-            )
-            .get(&Request::new(
-                url,
-                Default::default(),
-                0,
-                Duration::ZERO,
-                Duration::MAX,
-            ))
-            .await,
-            Err(HttpClientError::Timeout(_))
-        ));
+        assert!(matches!(result, Err(HttpClientError::Timeout(_))));
     }
 }
