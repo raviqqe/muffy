@@ -14,12 +14,14 @@ use std::collections::{HashMap, HashSet};
 use url::Url;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
     default: Option<SiteConfig>,
     sites: HashMap<String, SiteConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SiteConfig {
     exclude: Option<bool>,
     headers: Option<HashMap<String, String>>,
