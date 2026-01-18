@@ -1,9 +1,11 @@
 use crate::Error;
 use core::time::Duration;
 use http::HeaderMap;
+use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
+use url::Url;
 
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -48,7 +50,10 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
         config
             .sites
             .iter()
-            .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
+            .map(|(url, site)| Ok((Url::parse(url)?, site)))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
             .map(|(host, sites)| {
                 sites
                     .iter()
@@ -83,7 +88,7 @@ fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
         site.status.unwrap_or_default(),
         site.scheme.unwrap_or_default(),
         site.max_redirects.unwrap_or(64),
-        site.max_age.unwrap_or(3600),
+        site.max_age.unwrap_or(Duration::from_secs(3600)),
         site.recurse == Some(true),
     )
 }
