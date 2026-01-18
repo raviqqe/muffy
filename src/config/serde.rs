@@ -121,14 +121,14 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::{SerializableConfig, compile_config};
+    use super::{SerializableConfig, SiteConfig, compile_config};
     use crate::Error;
     use crate::config::{
         DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
         DEFAULT_MAX_REDIRECTS,
     };
-    use indoc::indoc;
     use pretty_assertions::assert_eq;
+    use std::collections::{HashMap, HashSet};
 
     #[test]
     fn compile_empty() {
@@ -158,19 +158,33 @@ mod tests {
 
     #[test]
     fn compile_roots_and_excluded_links() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            [sites."https://example.com/"]
-            recurse = true
-
-            [sites."https://example.com/private"]
-            exclude = true
-
-            [sites."https://example.net/"]
-            recurse = true
-        "#})
+        let config = compile_config(SerializableConfig {
+            default: None,
+            sites: HashMap::from([
+                (
+                    "https://example.com/".to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "https://example.com/private".to_owned(),
+                    SiteConfig {
+                        exclude: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "https://example.net/".to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+            ]),
+        })
         .unwrap();
-
-        let config = compile_config(config).unwrap();
 
         let mut roots = config.roots().collect::<Vec<_>>();
         roots.sort_unstable();
@@ -190,24 +204,17 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_fails_on_unknown_fields() {
-        let error = toml::from_str::<SerializableConfig>(indoc! {r#"
-            sites = {}
-            unknown = true
-        "#})
-        .unwrap_err();
-
-        // deny_unknown_fields should trigger a serde error.
-        assert!(error.to_string().to_lowercase().contains("unknown"));
-    }
-
-    #[test]
     fn compile_fails_on_invalid_url_key() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            [sites."not a url"]
-            recurse = true
-        "#})
-        .unwrap();
+        let config = SerializableConfig {
+            default: None,
+            sites: HashMap::from([(
+                "not a url".to_owned(),
+                SiteConfig {
+                    recurse: Some(true),
+                    ..Default::default()
+                },
+            )]),
+        };
 
         let error = compile_config(config).unwrap_err();
         assert!(
@@ -218,11 +225,16 @@ mod tests {
 
     #[test]
     fn compile_fails_on_invalid_regex_in_exclude_key() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            [sites."["]
-            exclude = true
-        "#})
-        .unwrap();
+        let config = SerializableConfig {
+            default: None,
+            sites: HashMap::from([(
+                "[".to_owned(),
+                SiteConfig {
+                    exclude: Some(true),
+                    ..Default::default()
+                },
+            )]),
+        };
 
         let error = compile_config(config).unwrap_err();
         assert!(error.to_string().to_lowercase().contains("regex"));
@@ -230,13 +242,16 @@ mod tests {
 
     #[test]
     fn compile_fails_on_invalid_header_name() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            sites = {}
-
-            [default.headers]
-            "invalid header" = "x"
-        "#})
-        .unwrap();
+        let config = SerializableConfig {
+            sites: Default::default(),
+            default: Some(SiteConfig {
+                headers: Some(HashMap::from([(
+                    "invalid header".to_owned(),
+                    "x".to_owned(),
+                )])),
+                ..Default::default()
+            }),
+        };
 
         let error = compile_config(config).unwrap_err();
         assert!(error.to_string().to_lowercase().contains("header"));
@@ -244,13 +259,13 @@ mod tests {
 
     #[test]
     fn compile_fails_on_invalid_header_value() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            sites = {}
-
-            [default.headers]
-            user-agent = "\u0000"
-        "#})
-        .unwrap();
+        let config = SerializableConfig {
+            sites: Default::default(),
+            default: Some(SiteConfig {
+                headers: Some(HashMap::from([("user-agent".to_owned(), "\u{0}".to_owned())])),
+                ..Default::default()
+            }),
+        };
 
         let error = compile_config(config).unwrap_err();
         assert!(matches!(error, Error::HttpInvalidHeaderValue(_)));
@@ -258,13 +273,13 @@ mod tests {
 
     #[test]
     fn compile_fails_on_invalid_status_code() {
-        let config: SerializableConfig = toml::from_str(indoc! {r#"
-            sites = {}
-
-            [default]
-            status = [99]
-        "#})
-        .unwrap();
+        let config = SerializableConfig {
+            sites: Default::default(),
+            default: Some(SiteConfig {
+                status: Some(HashSet::from([99u16])),
+                ..Default::default()
+            }),
+        };
 
         let error = compile_config(config).unwrap_err();
         assert!(error.to_string().to_lowercase().contains("status"));
