@@ -39,6 +39,7 @@ struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
+    timeout: Option<Duration>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
     cache: Option<CacheConfig>,
@@ -139,6 +140,7 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
             ),
         ),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
+        site.timeout.unwrap_or(Duration::MAX),
         site.cache
             .and_then(|cache| cache.max_age)
             .map(Duration::from_secs)

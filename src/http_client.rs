@@ -501,7 +501,8 @@ mod tests {
                 url,
                 Default::default(),
                 0,
-                Default::default()
+                Duration::MAX,
+                Default::default(),
             ))
             .await
             .unwrap(),

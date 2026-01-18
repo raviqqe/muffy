@@ -16,14 +16,14 @@ impl Request {
         url: Url,
         headers: HeaderMap,
         max_redirects: usize,
-        max_age: Duration,
         timeout: Duration,
+        max_age: Duration,
     ) -> Self {
         Self {
             bare: BareRequest { url, headers },
             max_redirects,
-            max_age,
             timeout,
+            max_age,
         }
     }
 
@@ -35,12 +35,12 @@ impl Request {
         self.max_redirects
     }
 
-    pub const fn max_age(&self) -> Duration {
-        self.max_age
-    }
-
     pub const fn timeout(&self) -> Duration {
         self.timeout
+    }
+
+    pub const fn max_age(&self) -> Duration {
+        self.max_age
     }
 
     pub const fn as_bare(&self) -> &BareRequest {

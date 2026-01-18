@@ -84,6 +84,7 @@ pub struct SiteConfig {
     status: StatusConfig,
     scheme: SchemeConfig,
     max_redirects: usize,
+    timeout: Duration,
     max_age: Duration,
     recursive: bool,
 }
@@ -95,6 +96,7 @@ impl SiteConfig {
         status: StatusConfig,
         scheme: SchemeConfig,
         max_redirects: usize,
+        timeout: Duration,
         max_age: Duration,
         recursive: bool,
     ) -> Self {
@@ -104,6 +106,7 @@ impl SiteConfig {
             scheme,
             max_redirects,
             max_age,
+            timeout,
             recursive,
         }
     }
@@ -126,6 +129,11 @@ impl SiteConfig {
     /// Returns a maximum number of redirects.
     pub const fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    /// Returns a timeout.
+    pub const fn timeout(&self) -> Duration {
+        self.timeout
     }
 
     /// Returns a maximum cache age.
