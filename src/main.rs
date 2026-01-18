@@ -26,18 +26,18 @@ const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(clap::Parser)]
-#[command(about, version, args_conflicts_with_subcommands = false)]
+#[command(about, version)]
 struct Arguments {
     #[command(subcommand)]
     command: Option<Command>,
     /// Use a persistent cache.
-    #[arg(long)]
+    #[arg(long, global = true)]
     cache: bool,
     /// Set an output format.
-    #[arg(long, default_value = "text")]
+    #[arg(long, default_value = "text", global = true)]
     format: RenderFormat,
     /// Be verbose.
-    #[arg(long)]
+    #[arg(long, global = true)]
     verbose: bool,
 }
 
