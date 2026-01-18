@@ -511,4 +511,68 @@ mod tests {
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
     }
+
+    #[tokio::test]
+    async fn timeout() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_with(url.as_str().into(), {
+                let response = response.clone();
+
+                Box::new(async move {
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
+                })
+            })
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert!(matches!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+                1,
+            )
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Duration::ZERO,
+                Duration::MAX,
+            ))
+            .await,
+            Err(HttpClientError::Timeout(_))
+        ));
+    }
 }
