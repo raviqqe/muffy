@@ -12,12 +12,12 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{env::temp_dir, io, path::PathBuf, process::exit};
+use std::{env::current_dir, env::temp_dir, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
-use tokio::{fs::create_dir_all, io::stdout};
+use tokio::{fs, fs::create_dir_all, fs::read_to_string, io::stdout};
 use url::Url;
 
 const DATABASE_DIRECTORY: &str = "muffy";
@@ -97,8 +97,27 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Run(_arguments) => {
-            return Err(Box::new(io::Error::other("run command not supported yet")));
+        Command::Run(arguments) => {
+            let config_file = if let Some(file) = arguments.config {
+                file
+            } else {
+                let directory = current_dir()?;
+
+                loop {
+                    let file = directory.join("muffy.toml");
+
+                    if fs::try_exists(file).await? {
+                        break file;
+                    }
+
+                    let Some(parent) = directory.parent() else {
+                        return Err("no configuration file found".into());
+                    };
+                    directory = parent;
+                }
+            };
+
+            muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
         }
         Command::Check(arguments) => compile_check_config(&arguments)?,
     };
