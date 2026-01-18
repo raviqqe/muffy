@@ -84,6 +84,9 @@ struct CheckArguments {
     /// Set a maximum number of redirects.
     #[arg(long, default_value_t = muffy::DEFAULT_MAX_REDIRECTS)]
     max_redirects: usize,
+    /// Set an HTTP timeout.
+    #[arg(long, default_value = "10s")]
+    timeout: String,
     /// Set patterns to exclude URLs.
     #[arg(long)]
     exclude_link: Vec<Regex>,
@@ -256,6 +259,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
+        .set_timeout(duration_str::parse(&arguments.timeout)?)
         .set_max_age(Duration::from_secs(arguments.max_age));
 
     Ok(Config::new(

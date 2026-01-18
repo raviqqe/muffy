@@ -10,14 +10,16 @@ use url::Url;
 
 type HostConfig = Vec<(String, SiteConfig)>;
 
-/// A default number of maximum redirects.
-pub const DEFAULT_MAX_REDIRECTS: usize = 16;
-/// A default maximum cache age.
-pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
-/// Default accepted HTTP status codes.
-pub const DEFAULT_ACCEPTED_STATUS_CODES: &[StatusCode] = &[StatusCode::OK];
 /// Default accepted URL schemes.
 pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
+/// Default accepted HTTP status codes.
+pub const DEFAULT_ACCEPTED_STATUS_CODES: &[StatusCode] = &[StatusCode::OK];
+/// A default maximum cache age.
+pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+/// A default number of maximum redirects.
+pub const DEFAULT_MAX_REDIRECTS: usize = 16;
+/// A default HTTP timeout.
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
@@ -84,6 +86,7 @@ pub struct SiteConfig {
     status: StatusConfig,
     scheme: SchemeConfig,
     max_redirects: usize,
+    timeout: Duration,
     max_age: Duration,
     recursive: bool,
 }
@@ -95,6 +98,7 @@ impl SiteConfig {
         status: StatusConfig,
         scheme: SchemeConfig,
         max_redirects: usize,
+        timeout: Duration,
         max_age: Duration,
         recursive: bool,
     ) -> Self {
@@ -104,6 +108,7 @@ impl SiteConfig {
             scheme,
             max_redirects,
             max_age,
+            timeout,
             recursive,
         }
     }
@@ -126,6 +131,11 @@ impl SiteConfig {
     /// Returns a maximum number of redirects.
     pub const fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    /// Returns a timeout.
+    pub const fn timeout(&self) -> Duration {
+        self.timeout
     }
 
     /// Returns a maximum cache age.
@@ -171,6 +181,12 @@ impl SiteConfig {
     /// Sets whether we should validate the website recursively
     pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
+        self
+    }
+
+    /// Sets an HTTP timeout.
+    pub const fn set_timeout(mut self, duration: Duration) -> Self {
+        self.timeout = duration;
         self
     }
 }

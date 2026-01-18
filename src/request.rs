@@ -8,6 +8,7 @@ pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
     max_age: Duration,
+    timeout: Duration,
 }
 
 impl Request {
@@ -15,11 +16,13 @@ impl Request {
         url: Url,
         headers: HeaderMap,
         max_redirects: usize,
+        timeout: Duration,
         max_age: Duration,
     ) -> Self {
         Self {
             bare: BareRequest { url, headers },
             max_redirects,
+            timeout,
             max_age,
         }
     }
@@ -30,6 +33,10 @@ impl Request {
 
     pub const fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    pub const fn timeout(&self) -> Duration {
+        self.timeout
     }
 
     pub const fn max_age(&self) -> Duration {

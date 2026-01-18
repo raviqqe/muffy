@@ -1,9 +1,10 @@
 use super::error::ConfigError;
 use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-    DEFAULT_MAX_REDIRECTS,
+    DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
 use core::time::Duration;
+use duration_str::deserialize_option_duration;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
@@ -39,6 +40,8 @@ struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
+    #[serde(default, deserialize_with = "deserialize_option_duration")]
+    timeout: Option<Duration>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
     cache: Option<CacheConfig>,
@@ -47,7 +50,8 @@ struct IncludedSiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
-    max_age: Option<u64>,
+    #[serde(default, deserialize_with = "deserialize_option_duration")]
+    max_age: Option<Duration>,
 }
 
 /// Compiles a configuration.
@@ -139,9 +143,9 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
             ),
         ),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
+        site.timeout.unwrap_or(DEFAULT_TIMEOUT),
         site.cache
             .and_then(|cache| cache.max_age)
-            .map(Duration::from_secs)
             .unwrap_or(DEFAULT_MAX_CACHE_AGE),
         site.recurse == Some(true),
     ))

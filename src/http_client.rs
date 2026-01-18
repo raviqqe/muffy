@@ -18,7 +18,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
-use tokio::sync::Semaphore;
+use tokio::{sync::Semaphore, time::timeout};
 
 const USER_AGENT: &str = "muffy";
 
@@ -117,7 +117,9 @@ impl HttpClient {
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
-                    let response = client.0.client.get(request.as_bare()).await?;
+                    let response =
+                        timeout(request.timeout(), client.0.client.get(request.as_bare()))
+                            .await??;
                     let duration = client.0.timer.now().duration_since(start);
                     drop(permit);
 
@@ -206,6 +208,7 @@ mod tests {
                 response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -246,6 +249,7 @@ mod tests {
                 response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -303,6 +307,7 @@ mod tests {
                 foo_response.url.clone(),
                 Default::default(),
                 1,
+                Duration::MAX,
                 Duration::MAX
             ))
             .await
@@ -360,6 +365,7 @@ mod tests {
                 foo_response.url.clone(),
                 Default::default(),
                 0,
+                Duration::MAX,
                 Duration::MAX,
             ))
             .await,
@@ -419,7 +425,13 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default(), 0, Duration::MAX))
+            .get(&Request::new(
+                url,
+                Default::default(),
+                0,
+                Duration::MAX,
+                Duration::MAX
+            ))
             .await
             .unwrap(),
             Some(
@@ -491,11 +503,53 @@ mod tests {
                 url,
                 Default::default(),
                 0,
-                Default::default()
+                Duration::MAX,
+                Default::default(),
             ))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
+    }
+
+    #[tokio::test]
+    async fn timeout() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let result = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        url.join("/robots.txt").unwrap().as_str(),
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (url.as_str().into(), Ok(response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            )
+            .set_delay(Duration::from_millis(2)),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+            1,
+        )
+        .get(&Request::new(
+            url,
+            Default::default(),
+            0,
+            Duration::from_millis(1),
+            Duration::MAX,
+        ))
+        .await;
+
+        assert!(matches!(result, Err(HttpClientError::Timeout(_))));
     }
 }
