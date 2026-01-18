@@ -8,6 +8,11 @@ use url::Url;
 
 type HostConfig = Vec<(String, SiteConfig)>;
 
+pub(self) const DEFAULT_MAX_REDIRECTS: usize = 16;
+pub(self) const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+pub(self) const DEFAULT_ACCEPTED_STATUS_CODES: &[u16] = &[200];
+pub(self) const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
+
 /// A validation configuration.
 #[derive(Clone, Debug)]
 pub struct Config {

@@ -1,4 +1,8 @@
 use crate::Error;
+use crate::config::DEFAULT_ACCEPTED_SCHEMES;
+use crate::config::DEFAULT_ACCEPTED_STATUS_CODES;
+use crate::config::DEFAULT_MAX_CACHE_AGE;
+use crate::config::DEFAULT_MAX_REDIRECTS;
 use core::time::Duration;
 use http::HeaderName;
 use http::HeaderValue;
@@ -8,11 +12,6 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use url::Url;
-
-const DEFAULT_MAX_REDIRECTS: usize = 16;
-const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
-const DEFAULT_ACCEPTED_STATUS_CODES: &[u16] = &[200];
-const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -45,8 +44,18 @@ struct SchemeConfig {
     accept: Option<HashSet<String>>,
 }
 
-pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
-    let default_site_config = SiteConfig::default();
+pub fn compile_config(config: Config) -> Result<super::Config, Error> {
+    let excluded_links = config
+        .sites
+        .iter()
+        .flat_map(|(url, site)| {
+            if site.exclude == Some(true) {
+                Some(Regex::new(url))
+            } else {
+                None
+            }
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(super::Config::new(
         config
@@ -55,11 +64,11 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             .filter(|(_, site)| site.recurse == Some(true))
             .map(|(url, _)| url.clone())
             .collect(),
-        compile_site_config(config.default.as_ref().unwrap_or(&default_site_config))?,
+        compile_site_config(config.default.unwrap_or_default())?,
         config
             .sites
-            .iter()
-            .map(|(url, site)| Ok((Url::parse(url)?, site)))
+            .into_iter()
+            .map(|(url, site)| Ok((Url::parse(&url)?, site)))
             .collect::<Result<Vec<_>, Error>>()?
             .into_iter()
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
@@ -74,25 +83,14 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             })
             .collect::<Result<_, Error>>()?,
     )
-    .set_excluded_links(
-        config
-            .sites
-            .iter()
-            .flat_map(|(url, site)| {
-                if site.exclude == Some(true) {
-                    Some(Regex::new(url))
-                } else {
-                    None
-                }
-            })
-            .collect::<Result<Vec<_>, _>>()?,
-    ))
+    .set_excluded_links(excluded_links))
 }
 
-fn compile_site_config(site: &SiteConfig) -> Result<super::SiteConfig, Error> {
+fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
     Ok(super::SiteConfig::new(
         site.headers
-            .unwrap_or_default()
+            .as_ref()
+            .unwrap_or(&Default::default())
             .into_iter()
             .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
             .collect::<Result<_, Error>>()?,
