@@ -1,12 +1,12 @@
-use crate::Error;
-use crate::config::DEFAULT_ACCEPTED_SCHEMES;
-use crate::config::DEFAULT_ACCEPTED_STATUS_CODES;
-use crate::config::DEFAULT_MAX_CACHE_AGE;
-use crate::config::DEFAULT_MAX_REDIRECTS;
+use crate::{
+    Error,
+    config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS,
+    },
+};
 use core::time::Duration;
-use http::HeaderName;
-use http::HeaderValue;
-use http::StatusCode;
+use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -94,10 +94,14 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
             site.status
                 .unwrap_or_default()
                 .accept
-                .unwrap_or(DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect())
-                .into_iter()
-                .map(StatusCode::try_from)
-                .collect::<Result<_, _>>()?,
+                .map(|codes| {
+                    codes
+                        .into_iter()
+                        .map(StatusCode::try_from)
+                        .collect::<Result<_, _>>()
+                })
+                .transpose()?
+                .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
         ),
         super::SchemeConfig::new(
             site.scheme.unwrap_or_default().accept.unwrap_or(
