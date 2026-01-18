@@ -80,7 +80,7 @@ impl Config {
 }
 
 /// A site configuration.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
@@ -192,7 +192,7 @@ impl SiteConfig {
 }
 
 /// A status code configuration.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StatusConfig {
     accepted: HashSet<StatusCode>,
 }
@@ -218,7 +218,7 @@ impl Default for StatusConfig {
 }
 
 /// A scheme configuration.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SchemeConfig {
     accepted: HashSet<String>,
 }

@@ -158,6 +158,7 @@ mod tests {
         DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
         DEFAULT_MAX_REDIRECTS,
     };
+    use http::HeaderMap;
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
 
@@ -185,6 +186,64 @@ mod tests {
         for scheme in DEFAULT_ACCEPTED_SCHEMES {
             assert!(default.scheme().accepted(scheme));
         }
+    }
+
+    #[test]
+    fn compile_default() {
+        let config = compile_config(SerializableConfig {
+            default: Some(IncludedSiteConfig {
+                recurse: Some(true),
+                schemes: Some(HashSet::from(["https".to_owned()])),
+                statuses: Some(HashSet::from([200, 418])),
+                timeout: Some(Duration::from_secs(10)),
+                max_redirects: Some(5),
+                headers: Some(HashMap::from([(
+                    "user-agent".to_owned(),
+                    "my-agent".to_owned(),
+                )])),
+                cache: Some(CacheConfig {
+                    max_age: Some(Duration::from_secs(3600)),
+                }),
+            }),
+            sites: HashMap::from([(
+                "https://foo.com/".to_owned(),
+                IncludedSiteConfig {
+                    recurse: Some(true),
+                    ..Default::default()
+                }
+                .into(),
+            )]),
+        })
+        .unwrap();
+
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec!["https://foo.com/"]
+        );
+
+        let paths = &config.sites().get("foo.com").unwrap();
+
+        assert_eq!(
+            paths.as_slice(),
+            &[(
+                "/".into(),
+                crate::config::SiteConfig::new(
+                    HeaderMap::from_iter([(
+                        HeaderName::try_from("user-agent").unwrap(),
+                        HeaderValue::try_from("my-agent").unwrap(),
+                    )]),
+                    crate::config::StatusConfig::new(HashSet::from([
+                        StatusCode::try_from(200).unwrap(),
+                        StatusCode::try_from(418).unwrap(),
+                    ])),
+                    crate::config::SchemeConfig::new(HashSet::from(["https".to_owned()])),
+                    5,
+                    Duration::from_secs(10),
+                    Duration::from_secs(3600),
+                    true,
+                )
+            )]
+        );
     }
 
     #[test]
