@@ -31,11 +31,20 @@ jobs:
       fail-fast: false
       matrix:
         arguments:
-          - - https://raviqqe.com
+          - - run
+            - --config
+            - examples/muffy.toml
+          - - check
             - --accept-status 200
             - --accept-status 403
             - --accept-status 999
-          - - https://raviqqe.com/stak
+            - https://raviqqe.com
+          - - check
+            - --accept-status 200
+            - --accept-status 403
+            - --accept-status 999
+            - https://raviqqe.com
+          - - check
             - --accept-status 200
             - --accept-status 403
             - --exclude-link https://codspeed.io/raviqqe/stak
@@ -43,10 +52,13 @@ jobs:
             - --exclude-link https://www.gnu.org/software/guile/
             - --header user-agent:muffet
             - --header accept:text/html,*/*
-          - - https://raviqqe.com/muffy
+            - https://raviqqe.com/stak
+          - - check
             - --accept-status 200
             - --accept-status 403
-          - - https://raviqqe.com/muffet
+            - https://raviqqe.com/muffy
+          - - check
+            - https://raviqqe.com/muffet
         cache_options:
           -
           - --cache
@@ -54,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
-      - run: cargo run check ${{ join(matrix.arguments, ' ') }} ${{ matrix.cache_options }}
+      - run: cargo run -- ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
         env:
           RUST_LOG: muffy=trace
   docker_test:

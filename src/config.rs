@@ -1,3 +1,7 @@
+mod error;
+mod serde;
+
+pub use self::{error::ConfigError, serde::compile_config};
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
@@ -5,6 +9,15 @@ use std::collections::{HashMap, HashSet};
 use url::Url;
 
 type HostConfig = Vec<(String, SiteConfig)>;
+
+/// A default number of maximum redirects.
+pub const DEFAULT_MAX_REDIRECTS: usize = 16;
+/// A default maximum cache age.
+pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+/// Default accepted HTTP status codes.
+pub const DEFAULT_ACCEPTED_STATUS_CODES: &[StatusCode] = &[StatusCode::OK];
+/// Default accepted URL schemes.
+pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
@@ -183,7 +196,7 @@ impl StatusConfig {
 impl Default for StatusConfig {
     fn default() -> Self {
         Self {
-            accepted: HashSet::from_iter([StatusCode::OK]),
+            accepted: DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
         }
     }
 }
@@ -209,7 +222,11 @@ impl SchemeConfig {
 impl Default for SchemeConfig {
     fn default() -> Self {
         Self {
-            accepted: ["http".into(), "https".into()].into_iter().collect(),
+            accepted: DEFAULT_ACCEPTED_SCHEMES
+                .iter()
+                .copied()
+                .map(ToOwned::to_owned)
+                .collect(),
         }
     }
 }

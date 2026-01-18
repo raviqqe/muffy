@@ -129,7 +129,7 @@ impl WebValidator {
             .status()
             .accepted(response.status())
         {
-            return Err(Error::InvalidStatus(response.status()));
+            return Err(Error::HttpStatus(response.status()));
         }
 
         let Some(document_type) = Self::validate_document_type(&response, document_type)? else {

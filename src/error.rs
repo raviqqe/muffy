@@ -30,8 +30,8 @@ pub enum Error {
     HtmlElementNotFound(String),
     /// An HTTP client error.
     HttpClient(HttpClientError),
-    /// An invalid status code in an HTTP response.
-    InvalidStatus(StatusCode),
+    /// An error status code in an HTTP response.
+    HttpStatus(StatusCode),
     /// An invalid scheme.
     InvalidScheme(String),
     /// An I/O error.
@@ -40,6 +40,8 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
+    /// A regular expression error.
+    Regex(regex::Error),
     /// A sitemap error.
     Sitemap(sitemaps::error::Error),
     /// A Sled database error.
@@ -70,11 +72,12 @@ impl Display for Error {
                 write!(formatter, "HTML element for #{name} not found")
             }
             Self::HttpClient(error) => write!(formatter, "{error}"),
-            Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
+            Self::Regex(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
@@ -123,6 +126,12 @@ impl From<HttpClientError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
+    }
+}
+
+impl From<regex::Error> for Error {
+    fn from(error: regex::Error) -> Self {
+        Self::Regex(error)
     }
 }
 

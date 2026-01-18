@@ -12,17 +12,25 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{env::temp_dir, io, path::PathBuf, process::exit};
+use std::{
+    env::{current_dir, temp_dir},
+    path::PathBuf,
+    process::exit,
+};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
-use tokio::{fs::create_dir_all, io::stdout};
+use tokio::{
+    fs,
+    fs::{create_dir_all, read_to_string},
+    io::stdout,
+};
 use url::Url;
 
+const CONFIG_FILE: &str = "muffy.toml";
 const DATABASE_DIRECTORY: &str = "muffy";
 const RESPONSE_NAMESPACE: &str = "responses";
-
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(clap::Parser)]
@@ -62,19 +70,19 @@ struct CheckArguments {
     #[arg(required(true))]
     url: Vec<String>,
     /// Set a maximum cache age in seconds.
-    #[arg(long, default_value_t = 3600)]
+    #[arg(long, default_value_t = muffy::DEFAULT_MAX_CACHE_AGE.as_secs())]
     max_age: u64,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
     /// Set accepted schemes.
-    #[arg(long, default_values = ["http", "https"])]
+    #[arg(long, default_values = muffy::DEFAULT_ACCEPTED_SCHEMES)]
     accept_scheme: Vec<String>,
     /// Set request headers.
     #[arg(long)]
     header: Vec<String>,
     /// Set a maximum number of redirects.
-    #[arg(long, default_value = "16")]
+    #[arg(long, default_value_t = muffy::DEFAULT_MAX_REDIRECTS)]
     max_redirects: usize,
     /// Set patterns to exclude URLs.
     #[arg(long)]
@@ -97,8 +105,28 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Run(_arguments) => {
-            return Err(Box::new(io::Error::other("run command not supported yet")));
+        Command::Run(arguments) => {
+            let config_file = if let Some(file) = arguments.config {
+                file
+            } else {
+                let directory = current_dir()?;
+                let mut directory = directory.as_path();
+
+                loop {
+                    let file = directory.join(CONFIG_FILE);
+
+                    if fs::try_exists(&file).await? {
+                        break file;
+                    }
+
+                    let Some(parent) = directory.parent() else {
+                        return Err("no configuration file found".into());
+                    };
+                    directory = parent;
+                }
+            };
+
+            muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
         }
         Command::Check(arguments) => compile_check_config(&arguments)?,
     };
@@ -239,6 +267,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .map(|url| Url::parse(url))
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
+            .sorted_by_key(|url| url.host_str().map(ToOwned::to_owned))
             .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
             .into_iter()
             .map(|(host, urls)| -> (String, Vec<(String, SiteConfig)>) {

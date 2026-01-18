@@ -1,0 +1,28 @@
+[sites."https://raviqqe.com/"]
+recurse = true
+
+[sites."https://raviqqe.com/muffet"]
+recurse = true
+
+[sites."https://raviqqe.com/muffy"]
+recurse = true
+
+[sites."https://raviqqe.com/stak"]
+recurse = true
+
+[sites."https://crates.io/"]
+status = [403, 404]
+
+[sites."https://www.gnu.org/software/guile/"]
+exclude = true
+
+[default]
+max_redirects = 8
+scheme = ["http", "https"]
+status = [200]
+
+[default.cache]
+max_age = 3600
+
+[default.headers]
+user-agent = "Muffy/0.2.0"

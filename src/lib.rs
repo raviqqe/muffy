@@ -22,7 +22,7 @@ mod web_validator;
 
 pub use self::{
     cache::{Cache, MemoryCache, MokaCache, SledCache},
-    config::{Config, SchemeConfig, SiteConfig, StatusConfig},
+    config::*,
     document_output::DocumentOutput,
     error::Error,
     html_parser::HtmlParser,
