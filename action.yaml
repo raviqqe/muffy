@@ -28,7 +28,7 @@ runs:
     - shell: bash
       run: >
         docker run --network host
-        raviqqe/muffy
+        raviqqe/muffy check
         ${{ inputs.verbose && '--verbose' || '' }}
         ${{ steps.status.outputs.options }}
         ${{ inputs.url }}

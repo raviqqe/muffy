@@ -13,7 +13,6 @@ use crate::{
     item_output::ItemOutput,
     request::Request,
     response::Response,
-    utility::default_port,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -151,15 +150,10 @@ impl WebValidator {
                     .config()
                     .sites()
                     .get(host)
-                    .map(|port_configs| {
-                        port_configs
-                            .get(&url.port().unwrap_or_else(|| default_port(&url)))
-                            .map(|sites| {
-                                sites.iter().any(|(path, config)| {
-                                    url.path().starts_with(path) && config.recursive()
-                                })
-                            })
-                            .unwrap_or_default()
+                    .map(|sites| {
+                        sites.iter().any(|(path, config)| {
+                            url.path().starts_with(path) && config.recursive()
+                        })
                     })
                     .unwrap_or_default()
             })
@@ -506,12 +500,7 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [(
-                    443,
-                    vec![("".into(), SiteConfig::default().set_recursive(true))],
-                )]
-                .into_iter()
-                .collect(),
+                vec![("".into(), SiteConfig::default().set_recursive(true))],
             )]
             .into_iter()
             .collect(),
@@ -985,16 +974,15 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
-            SiteConfig::default()
-                .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect())),
+            SiteConfig::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [(
-                    443,
-                    vec![("".into(), SiteConfig::default().set_recursive(true))],
-                )]
-                .into_iter()
-                .collect(),
+                vec![(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect()))
+                        .set_recursive(true),
+                )],
             )]
             .into_iter()
             .collect(),
@@ -1057,12 +1045,7 @@ mod tests {
                 Default::default(),
                 [(
                     url.host_str().unwrap_or_default().into(),
-                    [(
-                        443,
-                        vec![("".into(), SiteConfig::default().set_recursive(true))],
-                    )]
-                    .into_iter()
-                    .collect(),
+                    vec![("".into(), SiteConfig::default().set_recursive(true))],
                 )]
                 .into_iter()
                 .collect(),
