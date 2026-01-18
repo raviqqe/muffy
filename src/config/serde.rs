@@ -48,7 +48,13 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
         config
             .sites
             .iter()
-            .map(|(url, site)| (url, compile_site_config(site)))
+            .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
+            .map(|(host, sites)| {
+                sites
+                    .iter()
+                    .map(|(url, site)| (url, compile_site_config(site)))
+                    .collect()
+            })
             .collect(),
     )
     .set_excluded_links(
