@@ -262,7 +262,10 @@ mod tests {
         let config = SerializableConfig {
             sites: Default::default(),
             default: Some(SiteConfig {
-                headers: Some(HashMap::from([("user-agent".to_owned(), "\u{0}".to_owned())])),
+                headers: Some(HashMap::from([(
+                    "user-agent".to_owned(),
+                    "\u{0}".to_owned(),
+                )])),
                 ..Default::default()
             }),
         };
@@ -272,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_fails_on_invalid_status_code() {
+    fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: Default::default(),
             default: Some(SiteConfig {
