@@ -31,6 +31,13 @@ jobs:
       fail-fast: false
       matrix:
         arguments:
+          - - run
+            - examples/muffy.toml
+          - - check
+            - --accept-status 200
+            - --accept-status 403
+            - --accept-status 999
+            - https://raviqqe.com
           - - check
             - --accept-status 200
             - --accept-status 403
