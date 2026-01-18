@@ -65,7 +65,7 @@ jobs:
       - id: meta
         run: |
           (
-            echo repository=${{ secrets.DOCKER_USER || 'test' }}/muffet
+            echo repository=${{ vars.DOCKER_USER || 'test' }}/muffet
             echo version=$(git tag --points-at | sed s/^v//)
           ) >> ${{ github.output }}
       - uses: docker/build-push-action@v6
@@ -81,7 +81,7 @@ jobs:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: ${{ steps.meta.outputs.repository }}
-          short-description: Fast website link checker in Go
+          short-description: The website validator
         if: github.ref == 'refs/heads/main'
   release:
     needs:
