@@ -11,15 +11,15 @@ recurse = true
 recurse = true
 
 [sites."https://crates.io/"]
-status = [403, 404]
+statuses = [403, 404]
 
 [sites."https://www.gnu.org/software/guile/"]
 exclude = true
 
 [default]
 max_redirects = 8
-scheme = ["http", "https"]
-status = [200]
+schemes = ["http", "https"]
+statuses = [200]
 
 [default.cache]
 max_age = 3600
