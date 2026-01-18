@@ -5,7 +5,7 @@ use std::collections::{HashMap, HashSet};
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
-pub struct SerializableConfig {
+pub struct Config {
     pub excluded_links: Vec<Regex>,
     pub default: SiteConfig,
     pub sites: HashMap<String, SiteConfig>,
