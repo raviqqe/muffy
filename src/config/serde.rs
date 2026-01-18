@@ -5,20 +5,20 @@ use std::collections::{HashMap, HashSet};
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Config {
-    pub excluded_links: Option<Vec<String>>,
-    pub default: Option<SiteConfig>,
-    pub sites: HashMap<String, SiteConfig>,
+    excluded_links: Option<Vec<String>>,
+    default: Option<SiteConfig>,
+    sites: HashMap<String, SiteConfig>,
 }
 
 /// A site configuration.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct SiteConfig {
-    pub headers: Option<HashMap<String, String>>,
-    pub status: Option<StatusConfig>,
-    pub scheme: Option<SchemeConfig>,
-    pub max_redirects: Option<usize>,
-    pub max_age: Option<Duration>,
-    pub recursive: Option<bool>,
+    headers: Option<HashMap<String, String>>,
+    status: Option<StatusConfig>,
+    scheme: Option<SchemeConfig>,
+    max_redirects: Option<usize>,
+    max_age: Option<Duration>,
+    recursive: Option<bool>,
 }
 
 /// A status code configuration.
@@ -33,7 +33,7 @@ struct SchemeConfig {
     accept: Option<HashSet<String>>,
 }
 
-pub fn parse_config_yaml(yaml: &str) -> Result<Config, serde::de::value::Error> {
+pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
     let config = serde_yaml2::from_str(yaml)?;
 
     Ok(config)
