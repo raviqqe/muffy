@@ -1,10 +1,7 @@
 use super::error::ConfigError;
-use crate::{
-    DEFAULT_TIMEOUT,
-    config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS,
-    },
+use crate::config::{
+    DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+    DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
 use core::time::Duration;
 use duration_str::deserialize_option_duration;
