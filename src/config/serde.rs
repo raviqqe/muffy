@@ -89,8 +89,7 @@ pub fn compile_config(config: Config) -> Result<super::Config, Error> {
 fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
     Ok(super::SiteConfig::new(
         site.headers
-            .as_ref()
-            .unwrap_or(&Default::default())
+            .unwrap_or_default()
             .into_iter()
             .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
             .collect::<Result<_, Error>>()?,
