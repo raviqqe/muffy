@@ -974,11 +974,15 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
-            SiteConfig::default()
-                .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect())),
+            SiteConfig::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                vec![("".into(), SiteConfig::default().set_recursive(true))],
+                vec![(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect()))
+                        .set_recursive(true),
+                )],
             )]
             .into_iter()
             .collect(),
