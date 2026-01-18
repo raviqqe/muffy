@@ -74,7 +74,6 @@ impl HttpClient {
         let mut request = request.clone();
 
         // TODO Configure rate limits.
-        // TODO Configure timeouts.
         // TODO Configure maximum connections.
         for _ in 0..request.max_redirects() + 1 {
             let response = self.get_once(&request, robots).await?;
