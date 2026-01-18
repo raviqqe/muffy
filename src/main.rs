@@ -55,7 +55,7 @@ struct RunArguments {
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-struct Arguments {
+struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
