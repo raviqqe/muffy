@@ -32,7 +32,9 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: mlugg/setup-zig@v2
+      - uses: homebrew/actions/setup-homebrew@main
+      - run: brew install zig
+      # spell-checker: ignore zigbuild
       - run: cargo install --locked cargo-zigbuild
       - id: version
         run: echo version=v$(cargo run -- --version | grep -o '[0-9.]*') > ${{ github.output }}

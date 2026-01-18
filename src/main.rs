@@ -190,13 +190,13 @@ async fn run() -> Result<(), Box<dyn Error>> {
             .chain(
                 [
                     (
-                        "document",
+                        "documents",
                         document_metrics.success(),
                         document_metrics.error(),
                         document_metrics.total()
                     ),
                     (
-                        "element",
+                        "elements",
                         element_metrics.success(),
                         element_metrics.error(),
                         element_metrics.total()

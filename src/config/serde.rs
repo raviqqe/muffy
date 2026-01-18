@@ -36,12 +36,12 @@ impl From<IncludedSiteConfig> for SiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct IncludedSiteConfig {
-    headers: Option<HashMap<String, String>>,
-    status: Option<HashSet<u16>>,
-    scheme: Option<HashSet<String>>,
-    max_redirects: Option<usize>,
-    cache: Option<CacheConfig>,
     recurse: Option<bool>,
+    headers: Option<HashMap<String, String>>,
+    max_redirects: Option<usize>,
+    schemes: Option<HashSet<String>>,
+    statuses: Option<HashSet<u16>>,
+    cache: Option<CacheConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -119,7 +119,7 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
             .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
             .collect::<Result<_, ConfigError>>()?,
         super::StatusConfig::new(
-            site.status
+            site.statuses
                 .map(|codes| {
                     codes
                         .into_iter()
@@ -130,7 +130,7 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
                 .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
         ),
         super::SchemeConfig::new(
-            site.scheme.unwrap_or(
+            site.schemes.unwrap_or(
                 DEFAULT_ACCEPTED_SCHEMES
                     .iter()
                     .copied()
@@ -305,7 +305,7 @@ mod tests {
                 (
                     "https://bar.com/".to_owned(),
                     IncludedSiteConfig {
-                        status: Some(HashSet::from([200, 201])),
+                        statuses: Some(HashSet::from([200, 201])),
                         ..Default::default()
                     }
                     .into(),
@@ -405,7 +405,7 @@ mod tests {
             sites: Default::default(),
             default: Some(
                 IncludedSiteConfig {
-                    status: Some(HashSet::from([99u16])),
+                    statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
                 }
                 .into(),
