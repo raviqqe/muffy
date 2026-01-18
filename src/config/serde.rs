@@ -86,67 +86,87 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             }
         })
         .collect::<Vec<_>>();
-
-    Ok(super::Config::new(
-        included_sites
-            .iter()
-            .filter(|(_, site)| site.recurse == Some(true))
-            .map(|(url, _)| url.clone())
-            .collect(),
-        compile_site_config(config.default.unwrap_or_default())?,
-        included_sites
-            .into_iter()
-            .map(|(url, site)| Ok((Url::parse(&url)?, site)))
-            .collect::<Result<Vec<_>, ConfigError>>()?
-            .into_iter()
-            .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
-            .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
-            .into_iter()
-            .map(|(host, sites)| {
-                Ok((
-                    host,
-                    sites
-                        .map(|(url, site)| Ok((url.path().to_owned(), compile_site_config(site)?)))
-                        .collect::<Result<_, ConfigError>>()?,
-                ))
-            })
-            .collect::<Result<_, ConfigError>>()?,
-    )
-    .set_excluded_links(excluded_links))
-}
-
-fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, ConfigError> {
-    Ok(super::SiteConfig::new(
-        site.headers
-            .unwrap_or_default()
-            .into_iter()
-            .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
-            .collect::<Result<_, ConfigError>>()?,
-        super::StatusConfig::new(
-            site.statuses
-                .map(|codes| {
-                    codes
-                        .into_iter()
-                        .map(StatusCode::try_from)
-                        .collect::<Result<_, _>>()
-                })
-                .transpose()?
-                .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
-        ),
-        super::SchemeConfig::new(
-            site.schemes.unwrap_or(
+    let roots = included_sites
+        .iter()
+        .filter(|(_, site)| site.recurse == Some(true))
+        .map(|(url, _)| url.clone())
+        .collect();
+    let default = compile_site_config(
+        config.default.unwrap_or_default(),
+        &super::SiteConfig::new(
+            Default::default(),
+            super::StatusConfig::new(DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
+            super::SchemeConfig::new(
                 DEFAULT_ACCEPTED_SCHEMES
                     .iter()
                     .copied()
                     .map(ToOwned::to_owned)
                     .collect(),
             ),
+            DEFAULT_MAX_REDIRECTS,
+            DEFAULT_TIMEOUT,
+            DEFAULT_MAX_CACHE_AGE,
+            false,
         ),
-        site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
-        site.timeout.unwrap_or(DEFAULT_TIMEOUT),
+    )?;
+    let sites = included_sites
+        .into_iter()
+        .map(|(url, site)| Ok((Url::parse(&url)?, site)))
+        .collect::<Result<Vec<_>, ConfigError>>()?
+        .into_iter()
+        .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
+        .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
+        .into_iter()
+        .map(|(host, sites)| {
+            Ok((
+                host,
+                sites
+                    .map(|(url, site)| {
+                        Ok((url.path().to_owned(), compile_site_config(site, &default)?))
+                    })
+                    .collect::<Result<_, ConfigError>>()?,
+            ))
+        })
+        .collect::<Result<_, ConfigError>>()?;
+
+    Ok(super::Config::new(roots, default, sites).set_excluded_links(excluded_links))
+}
+
+fn compile_site_config(
+    site: IncludedSiteConfig,
+    default: &super::SiteConfig,
+) -> Result<super::SiteConfig, ConfigError> {
+    Ok(super::SiteConfig::new(
+        site.headers
+            .map(|headers| {
+                headers
+                    .into_iter()
+                    .map(|(key, value)| {
+                        Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?))
+                    })
+                    .collect::<Result<_, ConfigError>>()
+            })
+            .transpose()?
+            .unwrap_or_else(|| default.headers().clone()),
+        site.statuses
+            .map(|codes| {
+                Ok::<_, ConfigError>(super::StatusConfig::new(
+                    codes
+                        .into_iter()
+                        .map(StatusCode::try_from)
+                        .collect::<Result<_, _>>()?,
+                ))
+            })
+            .transpose()?
+            .unwrap_or_else(|| default.status().clone()),
+        site.schemes
+            .map(super::SchemeConfig::new)
+            .unwrap_or(default.scheme().clone()),
+        site.max_redirects.unwrap_or(default.max_redirects()),
+        site.timeout.unwrap_or(default.timeout()),
         site.cache
             .and_then(|cache| cache.max_age)
-            .unwrap_or(DEFAULT_MAX_CACHE_AGE),
+            .unwrap_or(default.max_age()),
         site.recurse == Some(true),
     ))
 }
