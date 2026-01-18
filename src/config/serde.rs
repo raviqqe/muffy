@@ -178,7 +178,6 @@ mod tests {
         assert_eq!(config.excluded_links().count(), 1);
         assert_eq!(config.sites().len(), 2);
 
-        // Host grouping: example.com has 2 site entries ("/" and "/private")
         let mut paths = config
             .sites()
             .get("example.com")
