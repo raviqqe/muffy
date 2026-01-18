@@ -10,6 +10,8 @@ sites:
     recurse: true
   https://raviqqe.com/muffy:
     recurse: true
+  https://www.gnu.org/guile:
+    exclude: true
 default:
   headers:
     user-agent: Muffy/1.0
@@ -22,6 +24,4 @@ default:
       - https
   max_redirects: 8
   max_age: 7d
-exclude:
-  - https://www.gnu.org/guile
 cache: true
