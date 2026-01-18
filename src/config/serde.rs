@@ -4,6 +4,7 @@ use crate::config::{
     DEFAULT_MAX_REDIRECTS,
 };
 use core::time::Duration;
+use duration_str::deserialize_option_duration;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
@@ -39,6 +40,7 @@ struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
+    #[serde(deserialize_with = "deserialize_option_duration")]
     timeout: Option<Duration>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
@@ -48,7 +50,8 @@ struct IncludedSiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
-    max_age: Option<u64>,
+    #[serde(deserialize_with = "deserialize_option_duration")]
+    max_age: Option<Duration>,
 }
 
 /// Compiles a configuration.
@@ -143,7 +146,6 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
         site.timeout.unwrap_or(Duration::MAX),
         site.cache
             .and_then(|cache| cache.max_age)
-            .map(Duration::from_secs)
             .unwrap_or(DEFAULT_MAX_CACHE_AGE),
         site.recurse == Some(true),
     ))
