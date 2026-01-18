@@ -98,8 +98,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .unwrap_or(Command::Run(Default::default()))
     {
         Command::Run(_arguments) => {
-            return Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
+            return Err(Box::new(std::io::Error::other(
                 "the 'run' subcommand is not implemented yet",
             )));
         }
