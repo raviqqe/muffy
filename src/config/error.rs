@@ -1,3 +1,4 @@
+use core::error::Error;
 use core::fmt;
 use core::fmt::Display;
 use core::fmt::Formatter;
@@ -9,8 +10,8 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ConfigError::ExcludeSite(site) => {
-                write!(formatter, "The site '{}' is marked for exclusion.", site)
+            ConfigError::ExcludeSite(url) => {
+                write!(formatter, "exclude field must be true if present: {url}")
             }
         }
     }

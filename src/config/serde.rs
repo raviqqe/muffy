@@ -1,3 +1,4 @@
+use super::error::ConfigError;
 use crate::{
     Error,
     config::{
@@ -50,7 +51,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error
         if let SiteConfig::Excluded { exclude } = site
             && !exclude
         {
-            return Err(Error::InvalidConfig(
+            return Err(ConfigError::InvalidConfig(
                 "exclude field must be true if present".to_owned(),
             ));
         }
