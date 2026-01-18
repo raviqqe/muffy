@@ -12,18 +12,27 @@ use url::Url;
 #[derive(Debug)]
 pub struct StubHttpClient {
     results: HashMap<String, Result<BareResponse, HttpClientError>>,
+    delay: Duration,
 }
 
 impl StubHttpClient {
     pub fn new(results: HashMap<String, Result<BareResponse, HttpClientError>>) -> Self {
-        Self { results }
+        Self {
+            results,
+            delay: Default::default(),
+        }
+    }
+
+    pub fn set_delay(mut self, delay: Duration) -> Self {
+        self.delay = delay;
+        self
     }
 }
 
 #[async_trait]
 impl BareHttpClient for StubHttpClient {
     async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
-        sleep(Duration::from_millis(1)).await;
+        sleep(self.delay).await;
 
         self.results
             .get_async(request.url.as_str())

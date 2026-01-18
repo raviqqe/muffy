@@ -535,7 +535,8 @@ mod tests {
                 ]
                 .into_iter()
                 .collect(),
-            ),
+            )
+            .set_delay(Duration::from_millis(1)),
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
             1,
