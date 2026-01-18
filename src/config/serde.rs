@@ -48,20 +48,21 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
         config
             .sites
             .iter()
-            .map(|(url, site)| (url, compile_site_config(site)).collect())
-            .set_excluded_links(
-                config
-                    .sites
-                    .iter()
-                    .flat_map(|site| {
-                        if site.exclude == Some(true) {
-                            Some(Regex::new(string))
-                        } else {
-                            None
-                        }
-                    })
-                    .collect::<Result<Vec<_>, _>>()?,
-            ),
+            .map(|(url, site)| (url, compile_site_config(site)))
+            .collect(),
+    )
+    .set_excluded_links(
+        config
+            .sites
+            .iter()
+            .flat_map(|site| {
+                if site.exclude == Some(true) {
+                    Some(Regex::new(string))
+                } else {
+                    None
+                }
+            })
+            .collect::<Result<Vec<_>, _>>()?,
     ))
 }
 
