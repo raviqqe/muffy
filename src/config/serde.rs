@@ -194,15 +194,15 @@ mod tests {
             default: Some(IncludedSiteConfig {
                 recurse: Some(true),
                 schemes: Some(HashSet::from(["https".to_owned()])),
-                statuses: Some(HashSet::from([200, 418])),
-                timeout: Some(Duration::from_secs(10)),
-                max_redirects: Some(5),
+                statuses: Some(HashSet::from([200, 403, 418])),
+                timeout: Some(Duration::from_secs(42)),
+                max_redirects: Some(42),
                 headers: Some(HashMap::from([(
                     "user-agent".to_owned(),
                     "my-agent".to_owned(),
                 )])),
                 cache: Some(CacheConfig {
-                    max_age: Some(Duration::from_secs(3600)),
+                    max_age: Some(Duration::from_secs(2045)),
                 }),
             }),
             sites: HashMap::from([(
@@ -234,12 +234,13 @@ mod tests {
                     )]),
                     crate::config::StatusConfig::new(HashSet::from([
                         StatusCode::try_from(200).unwrap(),
+                        StatusCode::try_from(403).unwrap(),
                         StatusCode::try_from(418).unwrap(),
                     ])),
                     crate::config::SchemeConfig::new(HashSet::from(["https".to_owned()])),
-                    5,
-                    Duration::from_secs(10),
-                    Duration::from_secs(3600),
+                    42,
+                    Duration::from_secs(42),
+                    Duration::from_secs(2045),
                     true,
                 )
             )]
