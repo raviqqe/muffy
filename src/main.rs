@@ -94,9 +94,13 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let mut output = stdout();
+    let config = match arguments.command {
+        Command::Run(arguments) => todo!(),
+        Command::Check(arguments) => compile_check_config(&arguments)?,
+    };
 
-    let db = if arguments.cache {
+    let mut output = stdout();
+    let db = if config.cache {
         let directory = cache_dir()
             .unwrap_or_else(temp_dir)
             .join(DATABASE_DIRECTORY)
@@ -120,7 +124,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&compile_config(&arguments)?).await?;
+    let mut documents = validator.validate(&config).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -191,7 +195,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_config(arguments: &Arguments) -> Result<Config, Box<dyn Error>> {
+fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_status(StatusConfig::new(
             arguments
