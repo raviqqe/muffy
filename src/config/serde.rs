@@ -216,12 +216,11 @@ mod tests {
             )]),
         };
 
-        let error = compile_config(config).unwrap_err();
-        assert!(matches!(error, Error::UrlParse(_)));
+        assert!(matches!(compile_config(config), Err(Error::UrlParse(_))));
     }
 
     #[test]
-    fn compile_fails_on_invalid_regex_in_exclude_key() {
+    fn compile_invalid_excluded_site_url() {
         let config = SerializableConfig {
             default: None,
             sites: HashMap::from([(
@@ -233,8 +232,7 @@ mod tests {
             )]),
         };
 
-        let error = compile_config(config).unwrap_err();
-        assert!(matches!(error, Error::Regex(_)));
+        assert!(matches!(compile_config(config), Err(Error::Regex(_))));
     }
 
     #[test]
