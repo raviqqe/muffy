@@ -1,6 +1,7 @@
 use crate::Error;
 use core::time::Duration;
-use http::HeaderMap;
+use http::HeaderName;
+use http::HeaderValue;
 use http::StatusCode;
 use itertools::Itertools;
 use regex::Regex;
@@ -54,7 +55,7 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             .filter(|(_, site)| site.recurse == Some(true))
             .map(|(url, _)| url.clone())
             .collect(),
-        compile_site_config(config.default.as_ref().unwrap_or(&default_site_config)),
+        compile_site_config(config.default.as_ref().unwrap_or(&default_site_config))?,
         config
             .sites
             .iter()
@@ -64,14 +65,14 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
             .into_iter()
             .map(|(host, sites)| {
-                (
+                Ok((
                     host,
                     sites
-                        .map(|(url, site)| (url.path().to_owned(), compile_site_config(site)))
-                        .collect(),
-                )
+                        .map(|(url, site)| Ok((url.path().to_owned(), compile_site_config(site)?)))
+                        .collect::<Result<_, Error>>()?,
+                ))
             })
-            .collect(),
+            .collect::<Result<_, Error>>()?,
     )
     .set_excluded_links(
         config
@@ -90,12 +91,11 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
 
 fn compile_site_config(site: &SiteConfig) -> Result<super::SiteConfig, Error> {
     Ok(super::SiteConfig::new(
-        HeaderMap::from_iter(
-            site.headers
-                .unwrap_or_default()
-                .into_iter()
-                .map(|(key, value)| (key.parse().unwrap(), value)),
-        ),
+        site.headers
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
+            .collect::<Result<_, Error>>()?,
         super::StatusConfig::new(
             site.status
                 .unwrap_or_default()

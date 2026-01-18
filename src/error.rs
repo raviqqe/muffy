@@ -34,6 +34,10 @@ pub enum Error {
     HttpStatus(StatusCode),
     /// An invalid status code.
     HttpInvalidStatus(http::status::InvalidStatusCode),
+    /// An invalid header name.
+    HttpInvalidHeaderName(http::header::InvalidHeaderName),
+    /// An invalid header value.
+    HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
     /// An invalid scheme.
     InvalidScheme(String),
     /// An I/O error.
@@ -76,6 +80,8 @@ impl Display for Error {
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::HttpInvalidStatus(error) => write!(formatter, "{error}"),
+            Self::HttpInvalidHeaderName(error) => write!(formatter, "{error}"),
+            Self::HttpInvalidHeaderValue(error) => write!(formatter, "{error}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
@@ -129,6 +135,18 @@ impl From<HttpClientError> for Error {
 impl From<http::status::InvalidStatusCode> for Error {
     fn from(error: http::status::InvalidStatusCode) -> Self {
         Self::HttpInvalidStatus(error)
+    }
+}
+
+impl From<http::header::InvalidHeaderName> for Error {
+    fn from(error: http::header::InvalidHeaderName) -> Self {
+        Self::HttpInvalidHeaderName(error)
+    }
+}
+
+impl From<http::header::InvalidHeaderValue> for Error {
+    fn from(error: http::header::InvalidHeaderValue) -> Self {
+        Self::HttpInvalidHeaderValue(error)
     }
 }
 
