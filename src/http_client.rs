@@ -536,7 +536,7 @@ mod tests {
                 .into_iter()
                 .collect(),
             )
-            .set_delay(Duration::from_millis(1)),
+            .set_delay(Duration::from_millis(2)),
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
             1,
@@ -545,7 +545,7 @@ mod tests {
             url,
             Default::default(),
             0,
-            Duration::ZERO,
+            Duration::from_millis(1),
             Duration::MAX,
         ))
         .await;
