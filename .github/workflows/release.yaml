@@ -80,7 +80,7 @@ jobs:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
           repository: ${{ steps.meta.outputs.repository }}
-          short-description: The website validator
+          short-description: The static website validator
         if: github.ref == 'refs/heads/main'
   release:
     needs:
