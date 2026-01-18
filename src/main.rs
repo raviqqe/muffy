@@ -102,11 +102,12 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 file
             } else {
                 let directory = current_dir()?;
+                let mut directory = directory.as_path();
 
                 loop {
                     let file = directory.join("muffy.toml");
 
-                    if fs::try_exists(file).await? {
+                    if fs::try_exists(&file).await? {
                         break file;
                     }
 
