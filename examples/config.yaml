@@ -11,11 +11,13 @@ default:
   headers:
     user-agent: Muffy/1.0
   status:
+    - 200
+    - 403
   scheme:
     accept:
       - http
       - https
-  max_redirects: 3
+  max_redirects: 8
   max_age: 7d
 exclude:
   - https://www.gnu.org/guile
