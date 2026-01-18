@@ -9,10 +9,10 @@ use url::Url;
 
 type HostConfig = Vec<(String, SiteConfig)>;
 
-pub(self) const DEFAULT_MAX_REDIRECTS: usize = 16;
-pub(self) const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
-pub(self) const DEFAULT_ACCEPTED_STATUS_CODES: &[u16] = &[200];
-pub(self) const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
+const DEFAULT_MAX_REDIRECTS: usize = 16;
+const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+const DEFAULT_ACCEPTED_STATUS_CODES: &[u16] = &[200];
+const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
@@ -217,7 +217,10 @@ impl SchemeConfig {
 impl Default for SchemeConfig {
     fn default() -> Self {
         Self {
-            accepted: ["http".into(), "https".into()].into_iter().collect(),
+            accepted: DEFAULT_ACCEPTED_SCHEMES
+                .iter()
+                .map(ToOwned::to_owned)
+                .collect(),
         }
     }
 }
