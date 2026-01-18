@@ -60,6 +60,9 @@ jobs:
   docker_test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+      - uses: raviqqe/cargo-cache@v1
+      - run: cargo run -- --version
       - uses: ./.
         with:
           url: http://localhost:4321/muffy/
@@ -70,6 +73,7 @@ jobs:
       - build
       - unit_test
       - command_test
+      - docker_test
       - coverage
     if: always()
     runs-on: ubuntu-latest
