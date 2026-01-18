@@ -26,7 +26,7 @@ const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 #[derive(clap::Parser)]
-#[command(about, version)]
+#[command(about, version, args_conflicts_with_subcommands = false)]
 struct Arguments {
     #[command(subcommand)]
     command: Command,
