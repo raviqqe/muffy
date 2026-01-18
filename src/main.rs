@@ -12,7 +12,7 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, path::PathBuf, process::exit};
+use std::{collections::HashMap, env::temp_dir, io, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -98,7 +98,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .unwrap_or(Command::Run(Default::default()))
     {
         Command::Run(_arguments) => {
-            return Err(Box::new(std::io::Error::other(
+            return Err(Box::new(io::Error::other(
                 "the 'run' subcommand is not implemented yet",
             )));
         }
