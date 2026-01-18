@@ -57,6 +57,14 @@ jobs:
       - run: cargo run check ${{ join(matrix.arguments, ' ') }} ${{ matrix.cache_options }}
         env:
           RUST_LOG: muffy=trace
+  docker_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.
+        with:
+          url: http://localhost:4321/muffy/
+          accept-status: 200,403,429
+          version: latest
   test:
     needs:
       - build
