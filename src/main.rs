@@ -45,6 +45,15 @@ struct RunArguments {
     /// A configuration file.
     #[arg(short, long)]
     config: Option<PathBuf>,
+    /// Use a persistent cache.
+    #[arg(long)]
+    cache: bool,
+    /// Set an output format.
+    #[arg(long, default_value = "text")]
+    format: RenderFormat,
+    /// Be verbose.
+    #[arg(long)]
+    verbose: bool,
 }
 
 #[derive(Parser, Debug)]
@@ -53,15 +62,9 @@ struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
-    /// Use a persistent cache.
-    #[arg(long)]
-    cache: bool,
     /// Set a maximum cache age in seconds.
     #[arg(long, default_value_t = 3600)]
     max_age: u64,
-    /// Set an output format.
-    #[arg(long, default_value = "text")]
-    format: RenderFormat,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -77,9 +80,6 @@ struct CheckArguments {
     /// Set patterns to exclude URLs.
     #[arg(long)]
     exclude_link: Vec<Regex>,
-    /// Be verbose.
-    #[arg(long)]
-    verbose: bool,
 }
 
 #[tokio::main]
@@ -100,7 +100,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
 
     let mut output = stdout();
-    let db = if config.cache {
+    let db = if arguments.cache {
         let directory = cache_dir()
             .unwrap_or_else(temp_dir)
             .join(DATABASE_DIRECTORY)
