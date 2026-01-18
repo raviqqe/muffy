@@ -76,13 +76,13 @@ struct CheckArguments {
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
     /// Set accepted schemes.
-    #[arg(long, default_values = ["http", "https"])]
+    #[arg(long, default_values = muffy::DEFAULT_ACCEPTED_SCHEMES)]
     accept_scheme: Vec<String>,
     /// Set request headers.
     #[arg(long)]
     header: Vec<String>,
     /// Set a maximum number of redirects.
-    #[arg(long, default_value = "16")]
+    #[arg(long, default_value_t = muffy::DEFAULT_MAX_REDIRECTS)]
     max_redirects: usize,
     /// Set patterns to exclude URLs.
     #[arg(long)]
