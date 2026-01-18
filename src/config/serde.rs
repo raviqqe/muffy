@@ -27,6 +27,12 @@ enum SiteConfig {
     Excluded { exclude: bool },
 }
 
+impl From<IncludedSiteConfig> for SiteConfig {
+    fn from(site: IncludedSiteConfig) -> Self {
+        Self::Included(site)
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct IncludedSiteConfig {
@@ -65,29 +71,30 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             }
         })
         .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(super::Config::new(
-        config
-            .sites
-            .iter()
-            .filter_map(|(url, site)| {
-                if matches!(
+    let included_sites = config
+        .sites
+        .into_iter()
+        .filter_map(|(url, site)| {
+            if let SiteConfig::Included(site) = site
+                && matches!(
                     &site,
-                    SiteConfig::Included(IncludedSiteConfig {
+                    IncludedSiteConfig {
                         recurse: Some(true),
                         ..
-                    })
-                ) {
-                    Some((url, site))
-                } else {
-                    None
-                }
-            })
-            .map(|(url, _)| url.clone())
-            .collect(),
+                    }
+                )
+            {
+                Some((url, site))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    Ok(super::Config::new(
+        included_sites.iter().map(|(url, _)| url.clone()).collect(),
         compile_site_config(config.default.unwrap_or_default())?,
-        config
-            .sites
+        included_sites
             .into_iter()
             .map(|(url, site)| Ok((Url::parse(&url)?, site)))
             .collect::<Result<Vec<_>, ConfigError>>()?
@@ -103,7 +110,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                         .collect::<Result<_, ConfigError>>()?,
                 ))
             })
-            .collect::<Result<_, Error>>()?,
+            .collect::<Result<_, ConfigError>>()?,
     )
     .set_excluded_links(excluded_links))
 }
@@ -146,13 +153,10 @@ fn compile_site_config(site: IncludedSiteConfig) -> Result<super::SiteConfig, Co
 
 #[cfg(test)]
 mod tests {
-    use super::{SerializableConfig, SiteConfig, compile_config};
-    use crate::{
-        Error,
-        config::{
-            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-            DEFAULT_MAX_REDIRECTS,
-        },
+    use super::*;
+    use crate::config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS,
     };
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
@@ -189,45 +193,58 @@ mod tests {
             default: None,
             sites: HashMap::from([
                 (
-                    "https://example.com/".to_owned(),
-                    SiteConfig {
+                    "https://foo.com/".to_owned(),
+                    IncludedSiteConfig {
                         recurse: Some(true),
                         ..Default::default()
-                    },
+                    }
+                    .into(),
                 ),
                 (
-                    "https://example.com/private".to_owned(),
-                    SiteConfig {
-                        exclude: Some(true),
-                        ..Default::default()
-                    },
-                ),
-                (
-                    "https://example.net/".to_owned(),
-                    SiteConfig {
+                    "https://foo.com/foo".to_owned(),
+                    IncludedSiteConfig {
                         recurse: Some(true),
                         ..Default::default()
-                    },
+                    }
+                    .into(),
+                ),
+                (
+                    "https://foo.com/bar".to_owned(),
+                    SiteConfig::Excluded { exclude: true },
+                ),
+                (
+                    "https://foo.net/".to_owned(),
+                    IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    }
+                    .into(),
                 ),
             ]),
         })
         .unwrap();
 
-        let mut roots = config.roots().collect::<Vec<_>>();
-        roots.sort_unstable();
-        assert_eq!(roots, vec!["https://example.com/", "https://example.net/"]);
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec![
+                "https://foo.com/",
+                "https://foo.com/foo",
+                "https://foo.net/"
+            ]
+        );
         assert_eq!(config.excluded_links().count(), 1);
         assert_eq!(config.sites().len(), 2);
-
-        let mut paths = config
-            .sites()
-            .get("example.com")
-            .unwrap()
-            .iter()
-            .map(|(path, _)| path.as_str())
-            .collect::<Vec<_>>();
-        paths.sort_unstable();
-        assert_eq!(paths, vec!["/", "/private"]);
+        assert_eq!(
+            config
+                .sites()
+                .get("foo.com")
+                .unwrap()
+                .iter()
+                .map(|(path, _)| path.as_str())
+                .sorted()
+                .collect::<Vec<_>>(),
+            vec!["/", "/foo"]
+        );
     }
 
     #[test]
@@ -236,10 +253,11 @@ mod tests {
             default: None,
             sites: HashMap::from([(
                 "not a url".to_owned(),
-                SiteConfig::Included {
+                IncludedSiteConfig {
                     recurse: Some(true),
                     ..Default::default()
-                },
+                }
+                .into(),
             )]),
         };
 
@@ -263,13 +281,16 @@ mod tests {
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig::Included {
-                headers: Some(HashMap::from([(
-                    "invalid header".to_owned(),
-                    "x".to_owned(),
-                )])),
-                ..Default::default()
-            }),
+            default: Some(
+                IncludedSiteConfig {
+                    headers: Some(HashMap::from([(
+                        "invalid header".to_owned(),
+                        "x".to_owned(),
+                    )])),
+                    ..Default::default()
+                }
+                .into(),
+            ),
         };
 
         assert!(matches!(
@@ -282,13 +303,16 @@ mod tests {
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig::Included {
-                headers: Some(HashMap::from([(
-                    "user-agent".to_owned(),
-                    "\u{0}".to_owned(),
-                )])),
-                ..Default::default()
-            }),
+            default: Some(
+                IncludedSiteConfig {
+                    headers: Some(HashMap::from([(
+                        "user-agent".to_owned(),
+                        "\u{0}".to_owned(),
+                    )])),
+                    ..Default::default()
+                }
+                .into(),
+            ),
         };
 
         assert!(matches!(
@@ -301,10 +325,13 @@ mod tests {
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig::Included {
-                status: Some(HashSet::from([99u16])),
-                ..Default::default()
-            }),
+            default: Some(
+                IncludedSiteConfig {
+                    status: Some(HashSet::from([99u16])),
+                    ..Default::default()
+                }
+                .into(),
+            ),
         };
 
         assert!(matches!(

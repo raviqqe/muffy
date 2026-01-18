@@ -73,7 +73,7 @@ impl From<regex::Error> for ConfigError {
     }
 }
 
-impl ParseError for ConfigError {
+impl From<ParseError> for ConfigError {
     fn from(error: ParseError) -> Self {
         Self::UrlParse(error)
     }
