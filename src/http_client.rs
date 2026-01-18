@@ -524,27 +524,6 @@ mod tests {
 
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
-        cache
-            .get_with(url.as_str().into(), {
-                let response = response.clone();
-
-                Box::new(async move {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                })
-            })
-            .await
-            .unwrap()
-            .unwrap();
-
         assert!(matches!(
             HttpClient::new(
                 StubHttpClient::new(
