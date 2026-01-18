@@ -7,15 +7,12 @@ use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
-
 /// A validation configuration.
 #[derive(Clone, Debug)]
 pub struct SerializableConfig {
-    roots: Vec<String>,
     excluded_links: Vec<Regex>,
     default: SiteConfig,
-    sites: HashMap<String, HostConfig>,
+    sites: HashMap<String, SiteConfig>,
 }
 
 impl Config {
