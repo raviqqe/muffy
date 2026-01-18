@@ -70,7 +70,7 @@ jobs:
         with:
           images: |
             ${{ vars.DOCKER_USER || 'test' }}/muffy
-            ghcr.io/${{ github.repository }}in'
+            ghcr.io/${{ github.repository }}
       - uses: docker/build-push-action@v6
         with:
           platforms: |
