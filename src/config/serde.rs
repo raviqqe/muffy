@@ -283,6 +283,7 @@ mod tests {
             config
                 .excluded_links()
                 .map(Regex::as_str)
+                .sorted()
                 .collect::<Vec<_>>(),
             ["https://foo.com/bar", "https://foo.net/"]
         );
