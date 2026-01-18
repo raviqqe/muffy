@@ -117,3 +117,151 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
         site.recurse == Some(true),
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{SerializableConfig, compile_config};
+    use crate::config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS,
+    };
+    use indoc::indoc;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn deserialize_and_compile_success_minimal() {
+        let config: SerializableConfig = toml::from_str("sites = {}\n").unwrap();
+        let config = compile_config(config).unwrap();
+
+        assert_eq!(config.roots().count(), 0);
+        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(config.sites().len(), 0);
+
+        let default = config.default;
+        assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
+        assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE);
+
+        for status in DEFAULT_ACCEPTED_STATUS_CODES {
+            assert!(default.status().accepted(*status));
+        }
+
+        for scheme in DEFAULT_ACCEPTED_SCHEMES {
+            assert!(default.scheme().accepted(scheme));
+        }
+    }
+
+    #[test]
+    fn deserialize_and_compile_success_sites_roots_and_excluded_links() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            [sites."https://example.com/"]
+            recurse = true
+
+            [sites."https://example.com/private"]
+            exclude = true
+
+            [sites."https://example.net/"]
+            recurse = true
+        "#})
+        .unwrap();
+
+        let config = compile_config(config).unwrap();
+
+        let mut roots = config.roots().collect::<Vec<_>>();
+        roots.sort_unstable();
+        assert_eq!(roots, vec!["https://example.com/", "https://example.net/"]);
+        assert_eq!(config.excluded_links().count(), 1);
+        assert_eq!(config.sites().len(), 2);
+
+        // Host grouping: example.com has 2 site entries ("/" and "/private")
+        let mut paths = config
+            .sites()
+            .get("example.com")
+            .unwrap()
+            .iter()
+            .map(|(path, _)| path.as_str())
+            .collect::<Vec<_>>();
+        paths.sort_unstable();
+        assert_eq!(paths, vec!["/", "/private"]);
+    }
+
+    #[test]
+    fn deserialize_fails_on_unknown_fields() {
+        let error = toml::from_str::<SerializableConfig>(indoc! {r#"
+            sites = {}
+            unknown = true
+        "#})
+        .unwrap_err();
+
+        // deny_unknown_fields should trigger a serde error.
+        assert!(error.to_string().to_lowercase().contains("unknown"));
+    }
+
+    #[test]
+    fn compile_fails_on_invalid_url_key() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            [sites."not a url"]
+            recurse = true
+        "#})
+        .unwrap();
+
+        let error = compile_config(config).unwrap_err();
+        assert!(
+            error.to_string().to_lowercase().contains("relative url")
+                || error.to_string().to_lowercase().contains("url")
+        );
+    }
+
+    #[test]
+    fn compile_fails_on_invalid_regex_in_exclude_key() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            [sites."["]
+            exclude = true
+        "#})
+        .unwrap();
+
+        let error = compile_config(config).unwrap_err();
+        assert!(error.to_string().to_lowercase().contains("regex"));
+    }
+
+    #[test]
+    fn compile_fails_on_invalid_header_name() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            sites = {}
+
+            [default.headers]
+            "invalid header" = "x"
+        "#})
+        .unwrap();
+
+        let error = compile_config(config).unwrap_err();
+        assert!(error.to_string().to_lowercase().contains("header"));
+    }
+
+    #[test]
+    fn compile_fails_on_invalid_header_value() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            sites = {}
+
+            [default.headers]
+            user-agent = "\u0000"
+        "#})
+        .unwrap();
+
+        let error = compile_config(config).unwrap_err();
+        assert!(error.to_string().to_lowercase().contains("header"));
+    }
+
+    #[test]
+    fn compile_fails_on_invalid_status_code() {
+        let config: SerializableConfig = toml::from_str(indoc! {r#"
+            sites = {}
+
+            [default]
+            status = [99]
+        "#})
+        .unwrap();
+
+        let error = compile_config(config).unwrap_err();
+        assert!(error.to_string().to_lowercase().contains("status"));
+    }
+}
