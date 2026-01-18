@@ -11,7 +11,7 @@ type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
-pub struct Config {
+pub struct SerializableConfig {
     roots: Vec<String>,
     excluded_links: Vec<Regex>,
     default: SiteConfig,
