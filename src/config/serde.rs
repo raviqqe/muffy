@@ -23,21 +23,11 @@ pub struct SerializableConfig {
 struct SiteConfig {
     exclude: Option<bool>,
     headers: Option<HashMap<String, String>>,
-    status: Option<StatusConfig>,
-    scheme: Option<SchemeConfig>,
+    status: Option<HashSet<u16>>,
+    scheme: Option<HashSet<String>>,
     max_redirects: Option<usize>,
     max_age: Option<Duration>,
     recurse: Option<bool>,
-}
-
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct StatusConfig {
-    accept: Option<HashSet<u16>>,
-}
-
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct SchemeConfig {
-    accept: Option<HashSet<String>>,
 }
 
 /// Compiles a configuration.
@@ -92,8 +82,6 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
             .collect::<Result<_, Error>>()?,
         super::StatusConfig::new(
             site.status
-                .unwrap_or_default()
-                .accept
                 .map(|codes| {
                     codes
                         .into_iter()
@@ -104,7 +92,7 @@ fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
                 .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
         ),
         super::SchemeConfig::new(
-            site.scheme.unwrap_or_default().accept.unwrap_or(
+            site.scheme.unwrap_or(
                 DEFAULT_ACCEPTED_SCHEMES
                     .iter()
                     .copied()
