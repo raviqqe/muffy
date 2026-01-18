@@ -7,6 +7,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
+const DEFAULT_MAX_REDIRECTS: usize = 16;
+const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Config {
@@ -90,10 +93,14 @@ fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
                 .into_iter()
                 .map(|(key, value)| (key.parse().unwrap(), value)),
         ),
-        site.status.unwrap_or_default(),
+        {
+            let config = site.status.unwrap_or_default();
+
+            super::StatusConfig::new(config.accepted.unwrap_or_default())
+        },
         site.scheme.unwrap_or_default(),
-        site.max_redirects.unwrap_or(64),
-        site.max_age.unwrap_or(Duration::from_secs(3600)),
+        site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
+        site.max_age.unwrap_or(DEFAULT_MAX_CACHE_AGE),
         site.recurse == Some(true),
     )
 }
