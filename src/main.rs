@@ -12,7 +12,7 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, io, path::PathBuf, process::exit};
+use std::{env::temp_dir, io, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -241,26 +241,13 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .into_iter()
             .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
             .into_iter()
-            .map(
-                |(host, urls)| -> (String, HashMap<u16, Vec<(String, SiteConfig)>>) {
-                    (
-                        host,
-                        urls.into_iter()
-                            .chunk_by(|url| url.port().unwrap_or_else(|| muffy::default_port(url)))
-                            .into_iter()
-                            .map(|(port, urls)| {
-                                (
-                                    port,
-                                    urls.map(|url| {
-                                        (url.path().into(), site.clone().set_recursive(true))
-                                    })
-                                    .collect(),
-                                )
-                            })
-                            .collect(),
-                    )
-                },
-            )
+            .map(|(host, urls)| -> (String, Vec<(String, SiteConfig)>) {
+                (
+                    host,
+                    urls.map(|url| (url.path().into(), site.clone().set_recursive(true)))
+                        .collect(),
+                )
+            })
             .collect(),
     )
     .set_excluded_links(arguments.exclude_link.clone()))
