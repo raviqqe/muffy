@@ -1,6 +1,7 @@
 use crate::Error;
 use core::time::Duration;
 use http::HeaderMap;
+use http::StatusCode;
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -9,7 +10,8 @@ use url::Url;
 
 const DEFAULT_MAX_REDIRECTS: usize = 16;
 const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
-const DEFAULT_ACCEPTED_STATUS_CODES: [u16; 1] = [200];
+const DEFAULT_ACCEPTED_STATUS_CODES: &[u16] = &[200];
+const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -86,8 +88,8 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
     ))
 }
 
-fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
-    super::SiteConfig::new(
+fn compile_site_config(site: &SiteConfig) -> Result<super::SiteConfig, Error> {
+    Ok(super::SiteConfig::new(
         HeaderMap::from_iter(
             site.headers
                 .unwrap_or_default()
@@ -95,14 +97,24 @@ fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
                 .map(|(key, value)| (key.parse().unwrap(), value)),
         ),
         super::StatusConfig::new(
-            site.status
-                .unwrap_or_default()
-                .accept
-                .unwrap_or(DEFAULT_ACCEPTED_STATUS_CODES.into_iter().collect()),
+            site.status.unwrap_or_default().accept.unwrap_or(
+                DEFAULT_ACCEPTED_STATUS_CODES
+                    .into_iter()
+                    .copied()
+                    .map(StatusCode::try_from)
+                    .collect::<Result<_, _>>()?,
+            ),
         ),
-        site.scheme.unwrap_or_default(),
+        super::SchemeConfig::new(
+            site.scheme.unwrap_or_default().accept.unwrap_or(
+                DEFAULT_ACCEPTED_SCHEMES
+                    .into_iter()
+                    .map(ToOwned::to_owned)
+                    .collect(),
+            ),
+        ),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
         site.max_age.unwrap_or(DEFAULT_MAX_CACHE_AGE),
         site.recurse == Some(true),
-    )
+    ))
 }
