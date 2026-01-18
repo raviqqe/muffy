@@ -12,7 +12,7 @@ use muffy::{
 };
 use regex::Regex;
 use rlimit::{Resource, getrlimit};
-use std::{collections::HashMap, env::temp_dir, process::exit};
+use std::{collections::HashMap, env::temp_dir, path::PathBuf, process::exit};
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
@@ -34,23 +34,17 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Runs a bytecode file.
+    /// Runs a validation suite.
     Run(RunArguments),
-    /// Analyze profile records.
-    Analyze(AnalyzeArguments),
+    /// Check URLs.
+    Check(CheckArguments),
 }
 
 #[derive(clap::Args)]
 struct RunArguments {
-    /// A bytecode file.
-    #[arg(required(true))]
-    bytecode_file: PathBuf,
-    /// A profile file to which a profiler writes records.
-    #[arg(short = 'p', long = "profile", required(true))]
-    profile_file: PathBuf,
-    /// A heap size of a virtual machine.
-    #[arg(short = 's', long, default_value_t = DEFAULT_HEAP_SIZE)]
-    heap_size: usize,
+    /// A configuration file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
 }
 
 #[derive(Parser, Debug)]
