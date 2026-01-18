@@ -1,5 +1,3 @@
-mod serde;
-
 use crate::default_port;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
@@ -7,12 +5,15 @@ use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
+type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
+
 /// A validation configuration.
 #[derive(Clone, Debug)]
-pub struct SerializableConfig {
+pub struct Config {
+    roots: Vec<String>,
     excluded_links: Vec<Regex>,
     default: SiteConfig,
-    sites: HashMap<String, SiteConfig>,
+    sites: HashMap<String, HostConfig>,
 }
 
 impl Config {
