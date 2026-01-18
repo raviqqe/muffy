@@ -151,15 +151,10 @@ impl WebValidator {
                     .config()
                     .sites()
                     .get(host)
-                    .map(|port_configs| {
-                        port_configs
-                            .get(&url.port().unwrap_or_else(|| default_port(&url)))
-                            .map(|sites| {
-                                sites.iter().any(|(path, config)| {
-                                    url.path().starts_with(path) && config.recursive()
-                                })
-                            })
-                            .unwrap_or_default()
+                    .map(|sites| {
+                        sites.iter().any(|(path, config)| {
+                            url.path().starts_with(path) && config.recursive()
+                        })
                     })
                     .unwrap_or_default()
             })
