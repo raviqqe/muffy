@@ -238,7 +238,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_fails_on_invalid_header_name() {
+    fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: Default::default(),
             default: Some(SiteConfig {
@@ -250,12 +250,14 @@ mod tests {
             }),
         };
 
-        let error = compile_config(config).unwrap_err();
-        assert!(matches!(error, Error::HttpInvalidHeaderName(_)));
+        assert!(matches!(
+            compile_config(config),
+            Err(Error::HttpInvalidHeaderName(_))
+        ));
     }
 
     #[test]
-    fn compile_fails_on_invalid_header_value() {
+    fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: Default::default(),
             default: Some(SiteConfig {
@@ -267,8 +269,10 @@ mod tests {
             }),
         };
 
-        let error = compile_config(config).unwrap_err();
-        assert!(matches!(error, Error::HttpInvalidHeaderValue(_)));
+        assert!(matches!(
+            compile_config(config),
+            Err(Error::HttpInvalidHeaderValue(_))
+        ));
     }
 
     #[test]
@@ -281,7 +285,9 @@ mod tests {
             }),
         };
 
-        let error = compile_config(config).unwrap_err();
-        assert!(matches!(error, Error::HttpInvalidStatus(_)));
+        assert!(matches!(
+            compile_config(config),
+            Err(Error::HttpInvalidStatus(_))
+        ));
     }
 }
