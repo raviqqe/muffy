@@ -29,7 +29,7 @@ const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 #[command(about, version, args_conflicts_with_subcommands = false)]
 struct Arguments {
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
     /// Use a persistent cache.
     #[arg(long)]
     cache: bool,
@@ -49,7 +49,7 @@ enum Command {
     Check(CheckArguments),
 }
 
-#[derive(clap::Args)]
+#[derive(clap::Args, Default)]
 struct RunArguments {
     /// A configuration file.
     #[arg(short, long)]
@@ -94,7 +94,10 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let config = match arguments.command {
+    let config = match arguments
+        .command
+        .unwrap_or(Command::Run(Default::default()))
+    {
         Command::Run(_arguments) => todo!(),
         Command::Check(arguments) => compile_check_config(&arguments)?,
     };
