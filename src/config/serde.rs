@@ -244,6 +244,42 @@ mod tests {
     }
 
     #[test]
+    fn compile_non_root_site_config() {
+        let config = compile_config(SerializableConfig {
+            default: None,
+            sites: HashMap::from([
+                (
+                    "https://foo.com/".to_owned(),
+                    IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+                (
+                    "https://bar.com/".to_owned(),
+                    IncludedSiteConfig {
+                        status: Some(HashSet::from([200, 201])),
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+            ]),
+        })
+        .unwrap();
+
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec!["https://foo.com/",]
+        );
+        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(
+            config.sites().keys().sorted().collect::<Vec<_>>(),
+            vec!["bar.com", "foo.com"]
+        );
+    }
+
+    #[test]
     fn compile_invalid_site_url() {
         let config = SerializableConfig {
             default: None,
