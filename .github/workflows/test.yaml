@@ -66,7 +66,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
-      - run: cargo run ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
+      - run: cargo run -- ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
         env:
           RUST_LOG: muffy=trace
   docker_test:
