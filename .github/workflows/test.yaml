@@ -69,7 +69,7 @@ jobs:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
         with:
-          url: http://localhost:4321/muffy/
+          url: https://raviqqe.com/muffy
           accept-status: 200,403,429
           version: latest
   test:
