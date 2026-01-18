@@ -46,14 +46,12 @@ struct CacheConfig {
 }
 
 /// Compiles a configuration.
-pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error> {
-    for (_, site) in &config.sites {
+pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
+    for (url, site) in &config.sites {
         if let SiteConfig::Excluded { exclude } = site
             && !exclude
         {
-            return Err(ConfigError::InvalidConfig(
-                "exclude field must be true if present".to_owned(),
-            ));
+            return Err(ConfigError::ExcludeSite(url.clone()));
         }
     }
 
@@ -61,7 +59,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error
         .sites
         .iter()
         .flat_map(|(url, site)| {
-            if site.exclude == Some(true) {
+            if matches!(site, SiteConfig::Excluded { exclude: true }) {
                 Some(Regex::new(url))
             } else {
                 None
@@ -99,40 +97,50 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Error
     .set_excluded_links(excluded_links))
 }
 
-fn compile_site_config(site: SiteConfig) -> Result<super::SiteConfig, Error> {
-    Ok(super::SiteConfig::new(
-        site.headers
-            .unwrap_or_default()
-            .into_iter()
-            .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
-            .collect::<Result<_, Error>>()?,
-        super::StatusConfig::new(
-            site.status
-                .map(|codes| {
-                    codes
-                        .into_iter()
-                        .map(StatusCode::try_from)
-                        .collect::<Result<_, _>>()
-                })
-                .transpose()?
-                .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
-        ),
-        super::SchemeConfig::new(
-            site.scheme.unwrap_or(
-                DEFAULT_ACCEPTED_SCHEMES
-                    .iter()
-                    .copied()
-                    .map(ToOwned::to_owned)
-                    .collect(),
+fn compile_site_config(config: SiteConfig) -> Result<super::SiteConfig, ConfigError> {
+    Ok(match config {
+        SiteConfig::Included {
+            headers,
+            status,
+            scheme,
+            max_redirects,
+            cache,
+            recurse,
+        } => super::SiteConfig::new(
+            headers
+                .unwrap_or_default()
+                .into_iter()
+                .map(|(key, value)| Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?)))
+                .collect::<Result<_, Error>>()?,
+            super::StatusConfig::new(
+                status
+                    .map(|codes| {
+                        codes
+                            .into_iter()
+                            .map(StatusCode::try_from)
+                            .collect::<Result<_, _>>()
+                    })
+                    .transpose()?
+                    .unwrap_or_else(|| DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
             ),
+            super::SchemeConfig::new(
+                scheme.unwrap_or(
+                    DEFAULT_ACCEPTED_SCHEMES
+                        .iter()
+                        .copied()
+                        .map(ToOwned::to_owned)
+                        .collect(),
+                ),
+            ),
+            max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
+            cache
+                .and_then(|cache| cache.max_age)
+                .map(Duration::from_secs)
+                .unwrap_or(DEFAULT_MAX_CACHE_AGE),
+            recurse == Some(true),
         ),
-        site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
-        site.cache
-            .and_then(|cache| cache.max_age)
-            .map(Duration::from_secs)
-            .unwrap_or(DEFAULT_MAX_CACHE_AGE),
-        site.recurse == Some(true),
-    ))
+        Excluded { .. } => super::SiteConfig::default(),
+    })
 }
 
 #[cfg(test)]
@@ -225,37 +233,34 @@ mod tests {
             default: None,
             sites: HashMap::from([(
                 "not a url".to_owned(),
-                SiteConfig {
+                SiteConfig::Included {
                     recurse: Some(true),
                     ..Default::default()
                 },
             )]),
         };
 
-        assert!(matches!(compile_config(config), Err(Error::UrlParse(_))));
+        assert!(matches!(
+            compile_config(config),
+            Err(ConfigError::UrlParse(_))
+        ));
     }
 
     #[test]
     fn compile_invalid_excluded_site_url() {
         let config = SerializableConfig {
             default: None,
-            sites: HashMap::from([(
-                "[".to_owned(),
-                SiteConfig {
-                    exclude: Some(true),
-                    ..Default::default()
-                },
-            )]),
+            sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { exclude: true })]),
         };
 
-        assert!(matches!(compile_config(config), Err(Error::Regex(_))));
+        assert!(matches!(compile_config(config), Err(ConfigError::Regex(_))));
     }
 
     #[test]
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig {
+            default: Some(SiteConfig::Included {
                 headers: Some(HashMap::from([(
                     "invalid header".to_owned(),
                     "x".to_owned(),
@@ -266,7 +271,7 @@ mod tests {
 
         assert!(matches!(
             compile_config(config),
-            Err(Error::HttpInvalidHeaderName(_))
+            Err(ConfigError::HttpInvalidHeaderName(_))
         ));
     }
 
@@ -274,7 +279,7 @@ mod tests {
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig {
+            default: Some(SiteConfig::Included {
                 headers: Some(HashMap::from([(
                     "user-agent".to_owned(),
                     "\u{0}".to_owned(),
@@ -285,7 +290,7 @@ mod tests {
 
         assert!(matches!(
             compile_config(config),
-            Err(Error::HttpInvalidHeaderValue(_))
+            Err(ConfigError::HttpInvalidHeaderValue(_))
         ));
     }
 
@@ -293,7 +298,7 @@ mod tests {
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: Default::default(),
-            default: Some(SiteConfig {
+            default: Some(SiteConfig::Included {
                 status: Some(HashSet::from([99u16])),
                 ..Default::default()
             }),
@@ -301,7 +306,7 @@ mod tests {
 
         assert!(matches!(
             compile_config(config),
-            Err(Error::HttpInvalidStatus(_))
+            Err(ConfigError::HttpInvalidStatus(_))
         ));
     }
 }
