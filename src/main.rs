@@ -62,10 +62,10 @@ struct CheckArguments {
     #[arg(required(true))]
     url: Vec<String>,
     /// Set a maximum cache age in seconds.
-    #[arg(long, default_value_t = muffy::DEFAULT_MAX_CACHE_AGE)]
+    #[arg(long, default_value_t = muffy::DEFAULT_MAX_CACHE_AGE.as_secs())]
     max_age: u64,
     /// Set accepted status codes.
-    #[arg(long, default_value_t = muffy::DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().map(Into::into).collect())]
+    #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
     /// Set accepted schemes.
     #[arg(long, default_values = ["http", "https"])]
