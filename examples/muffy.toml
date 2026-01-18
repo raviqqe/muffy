@@ -16,12 +16,10 @@ exclude = true
 [default]
 max_redirects = 8
 scheme = ["http", "https"]
+status = [200, 403]
 
 [default.cache]
 max_age = 3600
 
 [default.headers]
 user-agent = "Muffy/1.0"
-
-[default.status]
-accept = [200, 403]
