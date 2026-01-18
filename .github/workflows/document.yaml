@@ -58,10 +58,6 @@ jobs:
           --accept-status 403
           --accept-status 429
           http://localhost:4321/muffy/
-      - uses: ./.
-        with:
-          url: http://localhost:4321/muffy/
-          accept-status: 200,403,429
   document:
     needs:
       - web_build
