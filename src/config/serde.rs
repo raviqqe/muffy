@@ -38,9 +38,9 @@ impl From<IncludedSiteConfig> for SiteConfig {
 struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
-    statuses: Option<HashSet<u16>>,
-    schemes: Option<HashSet<String>>,
     max_redirects: Option<usize>,
+    schemes: Option<HashSet<String>>,
+    statuses: Option<HashSet<u16>>,
     cache: Option<CacheConfig>,
 }
 
