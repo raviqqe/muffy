@@ -1,0 +1,16 @@
+sites:
+  https://raviqqe.com/:
+    recurse: true
+    check:
+      content: true
+  https://raviqqe.com/stak:
+    recurse: 42
+  https://raviqqe.com/muffet:
+  https://raviqqe.com/muffy:
+default:
+  headers:
+    user-agent: Muffy/1.0
+  max_redirects: 3
+  max_age: 7d
+exclude:
+  - https://www.gnu.org/guile

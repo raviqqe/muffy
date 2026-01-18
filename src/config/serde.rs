@@ -1,5 +1,3 @@
-mod serde;
-
 use crate::default_port;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
@@ -11,14 +9,14 @@ type HostConfig = HashMap<u16, Vec<(String, SiteConfig)>>;
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
-pub struct Config {
+pub struct SerializableConfig {
     roots: Vec<String>,
     excluded_links: Vec<Regex>,
     default: SiteConfig,
     sites: HashMap<String, HostConfig>,
 }
 
-impl Config {
+impl SerializableConfig {
     /// Creates a configuration.
     pub fn new(
         roots: Vec<String>,
