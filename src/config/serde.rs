@@ -9,6 +9,7 @@ use url::Url;
 
 const DEFAULT_MAX_REDIRECTS: usize = 16;
 const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+const DEFAULT_ACCEPTED_STATUS_CODES: [u16; 1] = [200];
 
 /// A validation configuration.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -32,7 +33,7 @@ struct SiteConfig {
 /// A status code configuration.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct StatusConfig {
-    accepted: Option<HashSet<u16>>,
+    accept: Option<HashSet<u16>>,
 }
 
 /// A scheme configuration.
@@ -93,11 +94,12 @@ fn compile_site_config(site: &SiteConfig) -> super::SiteConfig {
                 .into_iter()
                 .map(|(key, value)| (key.parse().unwrap(), value)),
         ),
-        {
-            let config = site.status.unwrap_or_default();
-
-            super::StatusConfig::new(config.accepted.unwrap_or_default())
-        },
+        super::StatusConfig::new(
+            site.status
+                .unwrap_or_default()
+                .accept
+                .unwrap_or(DEFAULT_ACCEPTED_STATUS_CODES.into_iter().collect()),
+        ),
         site.scheme.unwrap_or_default(),
         site.max_redirects.unwrap_or(DEFAULT_MAX_REDIRECTS),
         site.max_age.unwrap_or(DEFAULT_MAX_CACHE_AGE),
