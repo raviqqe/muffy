@@ -67,7 +67,9 @@ jobs:
           ) >> ${{ github.output }}
       - uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: |
+            linux/amd64
+            ${{ github.ref == 'refs/heads/main' && 'linux/arm64' || '' }}
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: |
             ${{ steps.meta.outputs.repository }}:latest
