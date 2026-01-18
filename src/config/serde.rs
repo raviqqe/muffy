@@ -37,5 +37,5 @@ struct SchemeConfig {
 pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
     let config = serde_yaml2::from_str(yaml)?;
 
-    Ok(Config::new())
+    Ok(super::Config::new())
 }
