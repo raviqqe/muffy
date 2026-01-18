@@ -39,6 +39,8 @@ struct SchemeConfig {
 }
 
 pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
+    let default_site_config = SiteConfig::default();
+
     Ok(super::Config::new(
         config
             .sites
@@ -46,19 +48,22 @@ pub fn compile_config(config: &Config) -> Result<super::Config, Error> {
             .filter(|(_, site)| site.recurse == Some(true))
             .map(|(url, _)| url.clone())
             .collect(),
-        compile_site_config(&config.default.unwrap_or_default()),
+        compile_site_config(config.default.as_ref().unwrap_or(&default_site_config)),
         config
             .sites
             .iter()
             .map(|(url, site)| Ok((Url::parse(url)?, site)))
-            .collect::<Result<Vec<_>, _>>()?
+            .collect::<Result<Vec<_>, Error>>()?
             .into_iter()
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_string())
+            .into_iter()
             .map(|(host, sites)| {
-                sites
-                    .iter()
-                    .map(|(url, site)| (url, compile_site_config(site)))
-                    .collect()
+                (
+                    host,
+                    sites
+                        .map(|(url, site)| (url.path().to_owned(), compile_site_config(site)))
+                        .collect(),
+                )
             })
             .collect(),
     )
