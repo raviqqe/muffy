@@ -97,7 +97,12 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Run(_arguments) => todo!(),
+        Command::Run(_arguments) => {
+            return Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "the 'run' subcommand is not implemented yet",
+            )));
+        }
         Command::Check(arguments) => compile_check_config(&arguments)?,
     };
 
