@@ -184,7 +184,70 @@ mod tests {
     }
 
     #[test]
-    fn compile_roots_and_excluded_links() {
+    fn compile_root_sites() {
+        let config = compile_config(SerializableConfig {
+            default: None,
+            sites: HashMap::from([
+                (
+                    "https://foo.com/".to_owned(),
+                    IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+                (
+                    "https://foo.com/foo".to_owned(),
+                    IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+                (
+                    "https://foo.com/bar".to_owned(),
+                    SiteConfig::Excluded { exclude: true },
+                ),
+                (
+                    "https://bar.com/".to_owned(),
+                    IncludedSiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+            ]),
+        })
+        .unwrap();
+
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec![
+                "https://bar.com/",
+                "https://foo.com/",
+                "https://foo.com/foo",
+            ]
+        );
+        assert_eq!(
+            config.sites().keys().sorted().collect::<Vec<_>>(),
+            ["bar.com", "foo.com"]
+        );
+        assert_eq!(
+            config
+                .sites()
+                .get("foo.com")
+                .unwrap()
+                .iter()
+                .map(|(path, _)| path.as_str())
+                .sorted()
+                .collect::<Vec<_>>(),
+            vec!["/", "/foo"]
+        );
+        assert_eq!(config.excluded_links().count(), 1);
+    }
+
+    #[test]
+    fn compile_excluded_sites() {
         let config = compile_config(SerializableConfig {
             default: None,
             sites: HashMap::from([
@@ -210,36 +273,18 @@ mod tests {
                 ),
                 (
                     "https://foo.net/".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
+                    SiteConfig::Excluded { exclude: true },
                 ),
             ]),
         })
         .unwrap();
 
         assert_eq!(
-            config.roots().sorted().collect::<Vec<_>>(),
-            vec![
-                "https://foo.com/",
-                "https://foo.com/foo",
-                "https://foo.net/"
-            ]
-        );
-        assert_eq!(config.excluded_links().count(), 1);
-        assert_eq!(config.sites().len(), 2);
-        assert_eq!(
             config
-                .sites()
-                .get("foo.com")
-                .unwrap()
-                .iter()
-                .map(|(path, _)| path.as_str())
-                .sorted()
+                .excluded_links()
+                .map(Regex::as_str)
                 .collect::<Vec<_>>(),
-            vec!["/", "/foo"]
+            ["https://foo.com/bar", "https://foo.net/"]
         );
     }
 
