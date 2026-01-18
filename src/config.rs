@@ -9,10 +9,14 @@ use url::Url;
 
 type HostConfig = Vec<(String, SiteConfig)>;
 
-const DEFAULT_MAX_REDIRECTS: usize = 16;
-const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
-const DEFAULT_ACCEPTED_STATUS_CODES: &[StatusCode] = &[StatusCode::OK];
-const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
+/// A default number of maximum redirects.
+pub const DEFAULT_MAX_REDIRECTS: usize = 16;
+/// A default maximum cache age.
+pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
+/// Default accepted HTTP status codes.
+pub const DEFAULT_ACCEPTED_STATUS_CODES: &[StatusCode] = &[StatusCode::OK];
+/// Default accepted URL schemes.
+pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
