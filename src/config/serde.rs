@@ -75,15 +75,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .into_iter()
         .filter_map(|(url, site)| {
-            if let SiteConfig::Included(site) = site
-                && matches!(
-                    &site,
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..
-                    }
-                )
-            {
+            if let SiteConfig::Included(site) = site {
                 Some((url, site))
             } else {
                 None
@@ -92,7 +84,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .collect::<Vec<_>>();
 
     Ok(super::Config::new(
-        included_sites.iter().map(|(url, _)| url.clone()).collect(),
+        included_sites
+            .iter()
+            .filter(|(_, site)| site.recurse == Some(true))
+            .map(|(url, _)| url.clone())
+            .collect(),
         compile_site_config(config.default.unwrap_or_default())?,
         included_sites
             .into_iter()
