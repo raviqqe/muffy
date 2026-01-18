@@ -30,8 +30,10 @@ pub enum Error {
     HtmlElementNotFound(String),
     /// An HTTP client error.
     HttpClient(HttpClientError),
-    /// An invalid status code in an HTTP response.
-    InvalidStatus(StatusCode),
+    /// An error status code in an HTTP response.
+    HttpStatus(StatusCode),
+    /// An invalid status code.
+    HttpInvalidStatus(http::status::InvalidStatusCode),
     /// An invalid scheme.
     InvalidScheme(String),
     /// An I/O error.
@@ -72,7 +74,8 @@ impl Display for Error {
                 write!(formatter, "HTML element for #{name} not found")
             }
             Self::HttpClient(error) => write!(formatter, "{error}"),
-            Self::InvalidStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::HttpInvalidStatus(error) => write!(formatter, "{error}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
@@ -120,6 +123,12 @@ impl From<HtmlError> for Error {
 impl From<HttpClientError> for Error {
     fn from(error: HttpClientError) -> Self {
         Self::HttpClient(error)
+    }
+}
+
+impl From<http::status::InvalidStatusCode> for Error {
+    fn from(error: http::status::InvalidStatusCode) -> Self {
+        Self::HttpInvalidStatus(error)
     }
 }
 

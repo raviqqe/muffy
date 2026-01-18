@@ -97,18 +97,19 @@ fn compile_site_config(site: &SiteConfig) -> Result<super::SiteConfig, Error> {
                 .map(|(key, value)| (key.parse().unwrap(), value)),
         ),
         super::StatusConfig::new(
-            site.status.unwrap_or_default().accept.unwrap_or(
-                DEFAULT_ACCEPTED_STATUS_CODES
-                    .into_iter()
-                    .copied()
-                    .map(StatusCode::try_from)
-                    .collect::<Result<_, _>>()?,
-            ),
+            site.status
+                .unwrap_or_default()
+                .accept
+                .unwrap_or(DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect())
+                .into_iter()
+                .map(StatusCode::try_from)
+                .collect::<Result<_, _>>()?,
         ),
         super::SchemeConfig::new(
             site.scheme.unwrap_or_default().accept.unwrap_or(
                 DEFAULT_ACCEPTED_SCHEMES
-                    .into_iter()
+                    .iter()
+                    .copied()
                     .map(ToOwned::to_owned)
                     .collect(),
             ),
