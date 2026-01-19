@@ -7,8 +7,8 @@ use url::Url;
 pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
-    max_age: Duration,
     timeout: Duration,
+    max_age: Duration,
 }
 
 impl Request {

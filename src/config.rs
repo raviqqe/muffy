@@ -19,7 +19,7 @@ pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
 /// A default number of maximum redirects.
 pub const DEFAULT_MAX_REDIRECTS: usize = 16;
 /// A default HTTP timeout.
-pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
@@ -80,7 +80,7 @@ impl Config {
 }
 
 /// A site configuration.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SiteConfig {
     headers: HeaderMap,
     status: StatusConfig,
@@ -107,8 +107,8 @@ impl SiteConfig {
             status,
             scheme,
             max_redirects,
-            max_age,
             timeout,
+            max_age,
             recursive,
         }
     }
@@ -192,7 +192,7 @@ impl SiteConfig {
 }
 
 /// A status code configuration.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct StatusConfig {
     accepted: HashSet<StatusCode>,
 }
@@ -218,7 +218,7 @@ impl Default for StatusConfig {
 }
 
 /// A scheme configuration.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SchemeConfig {
     accepted: HashSet<String>,
 }

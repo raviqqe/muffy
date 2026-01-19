@@ -85,7 +85,7 @@ struct CheckArguments {
     #[arg(long, default_value_t = muffy::DEFAULT_MAX_REDIRECTS)]
     max_redirects: usize,
     /// Set an HTTP timeout.
-    #[arg(long, default_value = "10s")]
+    #[arg(long, default_value = "30s")]
     timeout: String,
     /// Set patterns to exclude URLs.
     #[arg(long)]
@@ -284,4 +284,29 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .collect(),
     )
     .set_excluded_links(arguments.exclude_link.clone()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_check_arguments() {
+        let Command::Check(arguments) =
+            Arguments::parse_from(["command", "check", "http://example.com"])
+                .command
+                .unwrap()
+        else {
+            panic!("expected check command")
+        };
+
+        assert_eq!(
+            arguments.accept_status,
+            muffy::DEFAULT_ACCEPTED_STATUS_CODES
+        );
+        assert_eq!(
+            duration_str::parse(arguments.timeout).unwrap(),
+            muffy::DEFAULT_TIMEOUT
+        );
+    }
 }
