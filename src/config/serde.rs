@@ -163,7 +163,7 @@ fn compile_site_config(
             .map(super::SchemeConfig::new)
             .unwrap_or(default.scheme().clone()),
         site.max_redirects.unwrap_or(default.max_redirects()),
-        site.timeout.unwrap_or(default.timeout()).into(),
+        site.timeout.or(default.timeout()),
         site.cache
             .and_then(|cache| cache.max_age)
             .unwrap_or(default.max_age()),
