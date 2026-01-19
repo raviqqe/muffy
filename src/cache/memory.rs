@@ -30,11 +30,10 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
             return Ok(entry.get().clone());
         }
 
-        let value = Box::into_pin(future).await;
-
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
+                let value = Box::into_pin(future).await;
                 entry.insert_entry(value.clone());
                 value
             }
