@@ -112,13 +112,12 @@ impl WebValidator {
         let Some(response) = self
             .0
             .http_client
-            .get(&Request::new(
-                document_url,
-                context.config().site(&url).headers().clone(),
-                context.config().site(&url).max_redirects(),
-                context.config().site(&url).timeout(),
-                context.config().site(&url).max_age(),
-            ))
+            .get(
+                &Request::new(document_url, context.config().site(&url).headers().clone())
+                    .set_max_redirects(context.config().site(&url).max_redirects())
+                    .set_timeout(context.config().site(&url).timeout())
+                    .set_max_age(context.config().site(&url).max_age()),
+            )
             .await?
         else {
             return Ok(ItemOutput::default());

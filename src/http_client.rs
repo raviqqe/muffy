@@ -204,13 +204,9 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(
-                response.url.clone(),
-                Default::default(),
-                0,
-                Duration::MAX,
-                Duration::MAX
-            ))
+            .get(
+                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
+            )
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -245,13 +241,9 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(
-                response.url.clone(),
-                Default::default(),
-                0,
-                Duration::MAX,
-                Duration::MAX
-            ))
+            .get(
+                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
+            )
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -303,13 +295,11 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(
-                foo_response.url.clone(),
-                Default::default(),
-                1,
-                Duration::MAX,
-                Duration::MAX
-            ))
+            .get(
+                &Request::new(foo_response.url.clone(), Default::default())
+                    .set_max_redirects(1)
+                    .set_max_age(Duration::MAX)
+            )
             .await
             .unwrap(),
             Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
@@ -361,13 +351,10 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(&Request::new(
-                foo_response.url.clone(),
-                Default::default(),
-                0,
-                Duration::MAX,
-                Duration::MAX,
-            ))
+            .get(
+                &Request::new(foo_response.url.clone(), Default::default(),)
+                    .set_max_age(Duration::MAX)
+            )
             .await,
             Err(HttpClientError::TooManyRedirects)
         );
@@ -425,13 +412,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(
-                url,
-                Default::default(),
-                0,
-                Duration::MAX,
-                Duration::MAX
-            ))
+            .get(&Request::new(url, Default::default()).set_max_age(Duration::MAX))
             .await
             .unwrap(),
             Some(
@@ -499,13 +480,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(
-                url,
-                Default::default(),
-                0,
-                Duration::MAX,
-                Default::default(),
-            ))
+            .get(&Request::new(url, Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -541,13 +516,7 @@ mod tests {
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
             1,
         )
-        .get(&Request::new(
-            url,
-            Default::default(),
-            0,
-            Duration::from_millis(1),
-            Duration::MAX,
-        ))
+        .get(&Request::new(url, Default::default()).set_timeout(Duration::from_millis(1).into()))
         .await;
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));

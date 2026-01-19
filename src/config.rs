@@ -134,8 +134,8 @@ impl SiteConfig {
     }
 
     /// Returns a timeout.
-    pub fn timeout(&self) -> Duration {
-        self.timeout.unwrap_or(Duration::MAX)
+    pub const fn timeout(&self) -> Option<Duration> {
+        self.timeout
     }
 
     /// Returns a maximum cache age.
