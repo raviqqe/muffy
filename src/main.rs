@@ -30,6 +30,7 @@ use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
 const DATABASE_DIRECTORY: &str = "muffy";
+const SLED_DIRECTORY: &str = "sled";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
@@ -139,7 +140,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         let directory = cache_dir()
             .unwrap_or_else(temp_dir)
             .join(DATABASE_DIRECTORY)
-            .join(crate_version!());
+            .join(crate_version!())
+            .join(SLED_DIRECTORY);
         create_dir_all(&directory).await?;
         Some(sled::open(directory)?)
     } else {
