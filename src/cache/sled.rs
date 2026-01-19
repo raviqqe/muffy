@@ -68,6 +68,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        trace!("removing cache entry at {}", &key);
         self.tree.remove(key)?;
 
         Ok(())
