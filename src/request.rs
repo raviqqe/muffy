@@ -7,7 +7,7 @@ use url::Url;
 pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
-    timeout: Duration,
+    timeout: Option<Duration>,
     max_age: Duration,
 }
 
@@ -16,7 +16,7 @@ impl Request {
         url: Url,
         headers: HeaderMap,
         max_redirects: usize,
-        timeout: Duration,
+        timeout: Option<Duration>,
         max_age: Duration,
     ) -> Self {
         Self {
@@ -36,7 +36,7 @@ impl Request {
     }
 
     pub const fn timeout(&self) -> Duration {
-        self.timeout
+        self.timeout.unwrap_or(Duration::MAX)
     }
 
     pub const fn max_age(&self) -> Duration {
