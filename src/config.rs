@@ -86,7 +86,7 @@ pub struct SiteConfig {
     status: StatusConfig,
     scheme: SchemeConfig,
     max_redirects: usize,
-    timeout: Duration,
+    timeout: Option<Duration>,
     max_age: Duration,
     recursive: bool,
 }
@@ -98,7 +98,7 @@ impl SiteConfig {
         status: StatusConfig,
         scheme: SchemeConfig,
         max_redirects: usize,
-        timeout: Duration,
+        timeout: Option<Duration>,
         max_age: Duration,
         recursive: bool,
     ) -> Self {
@@ -134,8 +134,8 @@ impl SiteConfig {
     }
 
     /// Returns a timeout.
-    pub const fn timeout(&self) -> Duration {
-        self.timeout
+    pub fn timeout(&self) -> Duration {
+        self.timeout.unwrap_or(Duration::MAX)
     }
 
     /// Returns a maximum cache age.
@@ -185,7 +185,7 @@ impl SiteConfig {
     }
 
     /// Sets an HTTP timeout.
-    pub const fn set_timeout(mut self, duration: Duration) -> Self {
+    pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
         self.timeout = duration;
         self
     }

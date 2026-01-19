@@ -259,7 +259,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
-        .set_timeout(duration_str::parse(&arguments.timeout)?)
+        .set_timeout(duration_str::parse(&arguments.timeout)?.into())
         .set_max_age(Duration::from_secs(arguments.max_age));
 
     Ok(Config::new(
