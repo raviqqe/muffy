@@ -85,7 +85,7 @@ struct CheckArguments {
     #[arg(long, default_value_t = muffy::DEFAULT_MAX_REDIRECTS)]
     max_redirects: usize,
     /// Set an HTTP timeout.
-    #[arg(long, default_value = "10s")]
+    #[arg(long, default_value = "30s")]
     timeout: String,
     /// Set patterns to exclude URLs.
     #[arg(long)]
