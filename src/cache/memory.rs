@@ -1,10 +1,12 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
+use core::pin::Pin;
+use futures::{FutureExt, future::Shared};
 use scc::{HashMap, hash_map::Entry};
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    map: HashMap<String, T>,
+    map: HashMap<String, Shared<Pin<Box<dyn Future<Output = T> + Send>>>>,
 }
 
 impl<T> MemoryCache<T> {
@@ -23,19 +25,12 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        // Avoid awaiting while holding an `Entry` guard because the future may call
-        // back into the cache (e.g. for robots.txt), which can deadlock
-        // depending on hash bucket collisions.
-        if let Some(entry) = self.map.get_async(&key).await.as_ref() {
-            return Ok(entry.get().clone());
-        }
-
         Ok(match self.map.entry_async(key).await {
-            Entry::Occupied(entry) => entry.get().clone(),
+            Entry::Occupied(entry) => entry.get().clone().await,
             Entry::Vacant(entry) => {
-                let value = Box::into_pin(future).await;
-                entry.insert_entry(value.clone());
-                value
+                let shared = Box::into_pin(future).shared();
+                entry.insert_entry(shared.clone());
+                shared.await
             }
         })
     }
