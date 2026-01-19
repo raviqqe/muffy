@@ -296,7 +296,7 @@ mod tests {
                 1,
             )
             .get(
-                &Request::new(foo_response.url.clone(), Default::default(),)
+                &Request::new(foo_response.url.clone(), Default::default())
                     .set_max_redirects(1)
                     .set_max_age(Duration::MAX)
             )
