@@ -69,9 +69,9 @@ struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
-    /// Set a maximum cache age in seconds.
-    #[arg(long, default_value_t = muffy::DEFAULT_MAX_CACHE_AGE.as_secs())]
-    max_age: u64,
+    /// Set a maximum cache age.
+    #[arg(long, default_value = "1h")]
+    max_age: String,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -260,7 +260,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         )
         .set_max_redirects(arguments.max_redirects)
         .set_timeout(duration_str::parse(&arguments.timeout)?.into())
-        .set_max_age(Duration::from_secs(arguments.max_age));
+        .set_max_age(duration_str::parse(&arguments.max_age)?.into());
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn default_check_arguments() {
         let Command::Check(arguments) =
-            Arguments::parse_from(["command", "check", "http://example.com"])
+            Arguments::parse_from(["command", "check", "https://foo.com"])
                 .command
                 .unwrap()
         else {
@@ -307,6 +307,10 @@ mod tests {
         assert_eq!(
             duration_str::parse(arguments.timeout).unwrap(),
             muffy::DEFAULT_TIMEOUT
+        );
+        assert_eq!(
+            duration_str::parse(arguments.max_age).unwrap(),
+            muffy::DEFAULT_MAX_CACHE_AGE
         );
     }
 }
