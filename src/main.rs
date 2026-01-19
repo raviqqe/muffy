@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use clap::{Parser, crate_version};
-use core::{error::Error, str::FromStr, time::Duration};
+use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
@@ -69,9 +69,9 @@ struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
-    /// Set a maximum cache age in seconds.
-    #[arg(long, default_value_t = muffy::DEFAULT_MAX_CACHE_AGE.as_secs())]
-    max_age: u64,
+    /// Set a maximum cache age.
+    #[arg(long, default_value = "1h")]
+    max_age: String,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -87,9 +87,9 @@ struct CheckArguments {
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
     timeout: String,
-    /// Set patterns to exclude URLs.
+    /// Set URL patterns to exclude from validation.
     #[arg(long)]
-    exclude_link: Vec<Regex>,
+    exclude: Vec<Regex>,
 }
 
 #[tokio::main]
@@ -260,7 +260,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         )
         .set_max_redirects(arguments.max_redirects)
         .set_timeout(duration_str::parse(&arguments.timeout)?.into())
-        .set_max_age(Duration::from_secs(arguments.max_age));
+        .set_max_age(duration_str::parse(&arguments.max_age)?);
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -283,7 +283,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             })
             .collect(),
     )
-    .set_excluded_links(arguments.exclude_link.clone()))
+    .set_excluded_links(arguments.exclude.clone()))
 }
 
 #[cfg(test)]
@@ -293,7 +293,7 @@ mod tests {
     #[test]
     fn default_check_arguments() {
         let Command::Check(arguments) =
-            Arguments::parse_from(["command", "check", "http://example.com"])
+            Arguments::parse_from(["command", "check", "https://foo.com"])
                 .command
                 .unwrap()
         else {
@@ -307,6 +307,10 @@ mod tests {
         assert_eq!(
             duration_str::parse(arguments.timeout).unwrap(),
             muffy::DEFAULT_TIMEOUT
+        );
+        assert_eq!(
+            duration_str::parse(arguments.max_age).unwrap(),
+            muffy::DEFAULT_MAX_CACHE_AGE
         );
     }
 }
