@@ -260,7 +260,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         )
         .set_max_redirects(arguments.max_redirects)
         .set_timeout(duration_str::parse(&arguments.timeout)?.into())
-        .set_max_age(duration_str::parse(&arguments.max_age)?.into());
+        .set_max_age(duration_str::parse(&arguments.max_age)?);
 
     Ok(Config::new(
         arguments.url.to_vec(),
