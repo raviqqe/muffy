@@ -37,17 +37,17 @@ impl Request {
         self.max_age
     }
 
-    pub fn set_max_redirects(mut self, max_redirects: usize) -> Self {
+    pub const fn set_max_redirects(mut self, max_redirects: usize) -> Self {
         self.max_redirects = max_redirects;
         self
     }
 
-    pub fn set_timeout(mut self, timeout: Option<Duration>) -> Self {
+    pub const fn set_timeout(mut self, timeout: Option<Duration>) -> Self {
         self.timeout = timeout;
         self
     }
 
-    pub fn set_max_age(mut self, max_age: Duration) -> Self {
+    pub const fn set_max_age(mut self, max_age: Duration) -> Self {
         self.max_age = max_age;
         self
     }
