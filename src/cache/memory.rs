@@ -26,14 +26,8 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         // Avoid awaiting while holding an `Entry` guard because the future may call
         // back into the cache (e.g. for robots.txt), which can deadlock
         // depending on hash bucket collisions.
-        if let Some(value) = self
-            .map
-            .get_async(&key)
-            .await
-            .as_ref()
-            .map(|entry| entry.get().clone())
-        {
-            return Ok(value);
+        if let Some(entry) = self.map.get_async(&key).await.as_ref() {
+            return Ok(entry.get().clone());
         }
 
         let value = Box::into_pin(future).await;
