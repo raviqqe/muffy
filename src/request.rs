@@ -34,8 +34,8 @@ impl Request {
         self.timeout.unwrap_or(Duration::MAX)
     }
 
-    pub const fn max_age(&self) -> Duration {
-        self.max_age
+    pub const fn expiry(&self) -> Option<Instant> {
+        self.expiry
     }
 
     pub const fn set_max_redirects(mut self, max_redirects: usize) -> Self {
