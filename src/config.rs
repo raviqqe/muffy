@@ -86,7 +86,7 @@ pub struct SiteConfig {
     status: StatusConfig,
     scheme: SchemeConfig,
     max_redirects: usize,
-    timeout: Duration,
+    timeout: Option<Duration>,
     max_age: Duration,
     recursive: bool,
 }
@@ -98,7 +98,7 @@ impl SiteConfig {
         status: StatusConfig,
         scheme: SchemeConfig,
         max_redirects: usize,
-        timeout: Duration,
+        timeout: Option<Duration>,
         max_age: Duration,
         recursive: bool,
     ) -> Self {
