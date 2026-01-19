@@ -23,11 +23,17 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
+        // Avoid awaiting while holding an `Entry` guard because the future may call back into
+        // the cache (e.g. for robots.txt), which can deadlock depending on hash bucket collisions.
+        if let Some(value) = self.map.get_async(&key).await.as_ref().map(|entry| entry.get().clone()) {
+            return Ok(value);
+        }
+
+        let value = Box::into_pin(future).await;
+
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
-                // TODO Avoid deadlocks.
-                let value = Box::into_pin(future).await;
                 entry.insert_entry(value.clone());
                 value
             }
