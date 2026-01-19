@@ -26,13 +26,14 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
         Ok(match self.map.entry_async(key).await {
-            Entry::Occupied(entry) => entry.get().clone().await,
+            Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
                 let shared = Box::into_pin(future).shared();
                 entry.insert_entry(shared.clone());
-                shared.await
+                shared
             }
-        })
+        }
+        .await)
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
