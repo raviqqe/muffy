@@ -162,7 +162,7 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
-    use tokio::time::Instant;
+    use std::time::Instant;
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -295,7 +295,7 @@ mod tests {
             .get(
                 &Request::new(foo_response.url.clone(), Default::default())
                     .set_max_redirects(1)
-                    .set_expiry(Instant::now().checked_add(Duration::from_hours(1)))
+                    .set_expiry(Some(Instant::now() + Duration::from_hours(1)))
             )
             .await
             .unwrap(),

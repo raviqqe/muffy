@@ -1,7 +1,7 @@
 use crate::http_client::BareRequest;
 use core::time::Duration;
 use http::HeaderMap;
-use tokio::time::Instant;
+use std::time::Instant;
 use url::Url;
 
 #[derive(Clone, Debug)]

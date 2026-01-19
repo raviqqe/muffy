@@ -1,11 +1,13 @@
 use crate::{Config, document_output::DocumentOutput, error::Error};
 use scc::HashSet;
+use std::time::Instant;
 use tokio::sync::mpsc::Sender;
 
 pub struct Context {
     documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
     config: Config,
+    timestamp: Instant,
 }
 
 impl Context {
@@ -17,6 +19,7 @@ impl Context {
             documents: HashSet::with_capacity(1 << 10),
             job_sender,
             config,
+            timestamp: Instant::now(),
         }
     }
 
@@ -32,5 +35,9 @@ impl Context {
         &self,
     ) -> &Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>> {
         &self.job_sender
+    }
+
+    pub const fn timestamp(&self) -> Instant {
+        self.timestamp
     }
 }
