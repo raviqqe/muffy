@@ -105,7 +105,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             ),
             DEFAULT_MAX_REDIRECTS,
             DEFAULT_TIMEOUT.into(),
-            DEFAULT_MAX_CACHE_AGE,
+            DEFAULT_MAX_CACHE_AGE.into(),
             false,
         ),
     )?;
@@ -166,7 +166,7 @@ fn compile_site_config(
         site.timeout.or(default.timeout()),
         site.cache
             .and_then(|cache| cache.max_age)
-            .unwrap_or(default.max_age()),
+            .or(default.max_age()),
         site.recurse == Some(true),
     ))
 }
@@ -197,7 +197,7 @@ mod tests {
         let default = config.default;
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
-        assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE);
+        assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE.into());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));
@@ -260,7 +260,7 @@ mod tests {
                     crate::config::SchemeConfig::new(HashSet::from(["https".to_owned()])),
                     42,
                     Duration::from_secs(42).into(),
-                    Duration::from_secs(2045),
+                    Duration::from_secs(2045).into(),
                     true,
                 )
             )]

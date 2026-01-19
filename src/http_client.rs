@@ -80,15 +80,14 @@ impl HttpClient {
                 return Ok(response);
             }
 
-            request = request.with_url(
-                request.url().join(str::from_utf8(
-                    response
-                        .headers()
-                        .get("location")
-                        .ok_or(HttpClientError::RedirectLocation)?
-                        .as_bytes(),
-                )?)?,
-            );
+            let url = request.url().join(str::from_utf8(
+                response
+                    .headers()
+                    .get("location")
+                    .ok_or(HttpClientError::RedirectLocation)?
+                    .as_bytes(),
+            )?)?;
+            request = request.set_url(url);
         }
 
         Err(HttpClientError::TooManyRedirects)
@@ -130,7 +129,9 @@ impl HttpClient {
 
         let response = get().await??;
 
-        Ok(if response.is_expired(request.max_age()) {
+        Ok(if let Some(age) = request.max_age()
+            && response.is_expired(age)
+        {
             self.0.cache.remove(request.url().as_str()).await?;
 
             get().await??
@@ -144,7 +145,10 @@ impl HttpClient {
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
-            .get_inner(&request.with_url(request.url().join("/robots.txt")?), false)
+            .get_inner(
+                &request.clone().set_url(request.url().join("/robots.txt")?),
+                false,
+            )
             .await
             .ok()
             .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
@@ -204,9 +208,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(response.url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -241,9 +243,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(response.url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -295,11 +295,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(foo_response.url.clone(), Default::default())
-                    .set_max_redirects(1)
-                    .set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
             .await
             .unwrap(),
             Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
@@ -351,10 +347,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(foo_response.url.clone(), Default::default(),)
-                    .set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
             Err(HttpClientError::TooManyRedirects)
         );
@@ -412,7 +405,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default()).set_max_age(Duration::MAX))
+            .get(&Request::new(url, Default::default()))
             .await
             .unwrap(),
             Some(
@@ -480,7 +473,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
