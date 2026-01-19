@@ -19,7 +19,7 @@ pub const DEFAULT_MAX_CACHE_AGE: Duration = Duration::from_secs(3600);
 /// A default number of maximum redirects.
 pub const DEFAULT_MAX_REDIRECTS: usize = 16;
 /// A default HTTP timeout.
-pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// A validation configuration.
 #[derive(Clone, Debug)]
