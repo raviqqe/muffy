@@ -51,9 +51,9 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Runs a validation suite.
+    /// Runs validation with a configuration file. (experimental)
     Run(RunArguments),
-    /// Check URLs.
+    /// Validates URLs.
     Check(CheckArguments),
 }
 
