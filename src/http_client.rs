@@ -162,6 +162,7 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
+    use tokio::time::Instant;
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -204,9 +205,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(response.url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -241,9 +240,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(response.url.clone(), Default::default(),).set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(response.url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -298,7 +295,7 @@ mod tests {
             .get(
                 &Request::new(foo_response.url.clone(), Default::default())
                     .set_max_redirects(1)
-                    .set_max_age(Duration::MAX)
+                    .set_expiry(Instant::now().checked_add(Duration::from_hours(1)))
             )
             .await
             .unwrap(),
@@ -351,10 +348,7 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 1,
             )
-            .get(
-                &Request::new(foo_response.url.clone(), Default::default(),)
-                    .set_max_age(Duration::MAX)
-            )
+            .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
             Err(HttpClientError::TooManyRedirects)
         );
@@ -412,7 +406,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default()).set_max_age(Duration::MAX))
+            .get(&Request::new(url, Default::default()))
             .await
             .unwrap(),
             Some(
