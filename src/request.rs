@@ -1,7 +1,7 @@
 use crate::http_client::BareRequest;
 use core::time::Duration;
 use http::HeaderMap;
-use std::time::Instant;
+use std::time::SystemTime;
 use url::Url;
 
 #[derive(Clone, Debug)]
@@ -9,7 +9,7 @@ pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
     timeout: Option<Duration>,
-    expiry: Option<Instant>,
+    expiry: Option<SystemTime>,
 }
 
 impl Request {
@@ -34,7 +34,7 @@ impl Request {
         self.timeout.unwrap_or(Duration::MAX)
     }
 
-    pub const fn expiry(&self) -> Option<Instant> {
+    pub const fn expiry(&self) -> Option<SystemTime> {
         self.expiry
     }
 
@@ -48,7 +48,7 @@ impl Request {
         self
     }
 
-    pub const fn set_expiry(mut self, expiry: Option<Instant>) -> Self {
+    pub const fn set_expiry(mut self, expiry: Option<SystemTime>) -> Self {
         self.expiry = expiry;
         self
     }

@@ -130,7 +130,9 @@ impl HttpClient {
 
         let response = get().await??;
 
-        Ok(if response.is_expired(request.max_age()) {
+        Ok(if let Some(expiry) = request.expiry()
+            && response.is_expired(expiry)
+        {
             self.0.cache.remove(request.url().as_str()).await?;
 
             get().await??
@@ -162,7 +164,7 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
-    use std::time::Instant;
+    use std::time::SystemTime;
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -295,7 +297,7 @@ mod tests {
             .get(
                 &Request::new(foo_response.url.clone(), Default::default())
                     .set_max_redirects(1)
-                    .set_expiry(Some(Instant::now() + Duration::from_hours(1)))
+                    .set_expiry(Some(SystemTime::now() + Duration::from_hours(1)))
             )
             .await
             .unwrap(),
@@ -474,7 +476,10 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default()))
+            .get(
+                &Request::new(url, Default::default())
+                    .set_expiry(Some(SystemTime::now() + Duration::from_hours(1)))
+            )
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
