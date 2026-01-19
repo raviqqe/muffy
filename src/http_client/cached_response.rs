@@ -2,8 +2,7 @@ use crate::response::Response;
 use alloc::sync::Arc;
 use core::time::Duration;
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
-use std::time::UNIX_EPOCH;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CachedResponse {
