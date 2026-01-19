@@ -31,7 +31,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        trace!("getting cache at {}", &key);
+        trace!("getting cache at {key}");
 
         if self
             .tree
@@ -42,24 +42,24 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             )?
             .is_ok()
         {
-            trace!("awaiting future for cache at {}", &key);
+            trace!("awaiting future for cache at {key}");
             let value = Box::into_pin(future).await;
-            trace!("setting cache at {}", &key);
+            trace!("setting cache at {key}");
             self.tree
                 .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
-            trace!("set cache at {}", &key);
+            trace!("set cache at {key}");
 
             return Ok(value);
         }
 
         // Wait for another thread to insert a key-value pair.
-        trace!("waiting for cache at {}", &key);
+        trace!("waiting for cache at {key}");
 
         loop {
             if let Some(value) = self.tree.get(&key)?
                 && let Some(value) = bitcode::deserialize::<Option<T>>(&value)?
             {
-                trace!("waited for cache at {}", &key);
+                trace!("waited for cache at {key}");
                 return Ok(value);
             }
 
