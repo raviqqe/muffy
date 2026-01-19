@@ -283,7 +283,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             })
             .collect(),
     )
-    .set_excluded_links(arguments.exclude_link.clone()))
+    .set_excluded_links(arguments.exclude.clone()))
 }
 
 #[cfg(test)]
