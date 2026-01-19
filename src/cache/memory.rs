@@ -1,10 +1,14 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
+use core::pin::Pin;
+use futures::{FutureExt, future::Shared};
 use scc::{HashMap, hash_map::Entry};
+
+type ValueFuture<T> = Shared<Pin<Box<dyn Future<Output = T> + Send>>>;
 
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    map: HashMap<String, T>,
+    map: HashMap<String, ValueFuture<T>>,
 }
 
 impl<T> MemoryCache<T> {
@@ -26,12 +30,12 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
-                // TODO Avoid deadlocks.
-                let value = Box::into_pin(future).await;
-                entry.insert_entry(value.clone());
-                value
+                let shared = Box::into_pin(future).shared();
+                entry.insert_entry(shared.clone());
+                shared
             }
-        })
+        }
+        .await)
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
