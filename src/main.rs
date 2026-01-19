@@ -87,9 +87,9 @@ struct CheckArguments {
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
     timeout: String,
-    /// Set patterns to exclude URLs.
+    /// Set URL patterns to exclude from validation.
     #[arg(long)]
-    exclude_link: Vec<Regex>,
+    exclude: Vec<Regex>,
 }
 
 #[tokio::main]
