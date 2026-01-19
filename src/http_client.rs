@@ -473,7 +473,7 @@ mod tests {
                 Box::new(cache),
                 1,
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
