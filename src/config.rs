@@ -87,7 +87,7 @@ pub struct SiteConfig {
     scheme: SchemeConfig,
     max_redirects: usize,
     timeout: Option<Duration>,
-    max_age: Duration,
+    max_age: Option<Duration>,
     recursive: bool,
 }
 
@@ -99,7 +99,7 @@ impl SiteConfig {
         scheme: SchemeConfig,
         max_redirects: usize,
         timeout: Option<Duration>,
-        max_age: Duration,
+        max_age: Option<Duration>,
         recursive: bool,
     ) -> Self {
         Self {
@@ -139,7 +139,7 @@ impl SiteConfig {
     }
 
     /// Returns a maximum cache age.
-    pub const fn max_age(&self) -> Duration {
+    pub const fn max_age(&self) -> Option<Duration> {
         self.max_age
     }
 
@@ -173,7 +173,7 @@ impl SiteConfig {
     }
 
     /// Sets a maximum cache age.
-    pub const fn set_max_age(mut self, age: Duration) -> Self {
+    pub const fn set_max_age(mut self, age: Option<Duration>) -> Self {
         self.max_age = age;
         self
     }
