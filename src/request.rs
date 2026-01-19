@@ -1,6 +1,7 @@
 use crate::http_client::BareRequest;
 use core::time::Duration;
 use http::HeaderMap;
+use tokio::time::Instant;
 use url::Url;
 
 #[derive(Clone, Debug)]
@@ -8,7 +9,7 @@ pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
     timeout: Option<Duration>,
-    max_age: Duration,
+    expiry: Option<Instant>,
 }
 
 impl Request {
@@ -17,7 +18,7 @@ impl Request {
             bare: BareRequest { url, headers },
             max_redirects: Default::default(),
             timeout: Default::default(),
-            max_age: Default::default(),
+            expiry: Default::default(),
         }
     }
 
@@ -47,8 +48,8 @@ impl Request {
         self
     }
 
-    pub const fn set_max_age(mut self, max_age: Duration) -> Self {
-        self.max_age = max_age;
+    pub const fn set_expiry(mut self, expiry: Option<Instant>) -> Self {
+        self.expiry = expiry;
         self
     }
 
