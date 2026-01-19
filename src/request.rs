@@ -57,6 +57,7 @@ impl Request {
         &self.bare
     }
 
+    // TODO Rename this to `set_url`?
     pub fn with_url(&self, url: Url) -> Self {
         Self {
             bare: BareRequest {
