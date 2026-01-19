@@ -134,7 +134,7 @@ impl SiteConfig {
     }
 
     /// Returns a timeout.
-    pub const fn timeout(&self) -> Duration {
+    pub const fn timeout(&self) -> Option<Duration> {
         self.timeout
     }
 
