@@ -4,9 +4,11 @@ use core::pin::Pin;
 use futures::{FutureExt, future::Shared};
 use scc::{HashMap, hash_map::Entry};
 
+type ValueFuture<T> = Shared<Pin<Box<dyn Future<Output = T> + Send>>>;
+
 /// An in-memory cache.
 pub struct MemoryCache<T> {
-    map: HashMap<String, Shared<Pin<Box<dyn Future<Output = T> + Send>>>>,
+    map: HashMap<String, ValueFuture<T>>,
 }
 
 impl<T> MemoryCache<T> {
