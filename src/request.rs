@@ -8,7 +8,7 @@ pub struct Request {
     bare: BareRequest,
     max_redirects: usize,
     timeout: Option<Duration>,
-    max_age: Duration,
+    max_age: Option<Duration>,
 }
 
 impl Request {
@@ -33,8 +33,13 @@ impl Request {
         self.timeout.unwrap_or(Duration::MAX)
     }
 
-    pub const fn max_age(&self) -> Duration {
+    pub const fn max_age(&self) -> Option<Duration> {
         self.max_age
+    }
+
+    pub fn set_url(mut self, url: Url) -> Self {
+        self.bare.url = url;
+        self
     }
 
     pub const fn set_max_redirects(mut self, max_redirects: usize) -> Self {
@@ -47,22 +52,12 @@ impl Request {
         self
     }
 
-    pub const fn set_max_age(mut self, max_age: Duration) -> Self {
+    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
         self.max_age = max_age;
         self
     }
 
     pub const fn as_bare(&self) -> &BareRequest {
         &self.bare
-    }
-
-    pub fn with_url(&self, url: Url) -> Self {
-        Self {
-            bare: BareRequest {
-                url,
-                ..self.bare.clone()
-            },
-            ..self.clone()
-        }
     }
 }

@@ -130,7 +130,9 @@ impl HttpClient {
 
         let response = get().await??;
 
-        Ok(if response.is_expired(request.max_age()) {
+        Ok(if let Some(age) = request.max_age()
+            && response.is_expired(age)
+        {
             self.0.cache.remove(request.url().as_str()).await?;
 
             get().await??
