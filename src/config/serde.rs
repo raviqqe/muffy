@@ -104,7 +104,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     .collect(),
             ),
             DEFAULT_MAX_REDIRECTS,
-            DEFAULT_TIMEOUT,
+            DEFAULT_TIMEOUT.into(),
             DEFAULT_MAX_CACHE_AGE,
             false,
         ),
@@ -163,7 +163,7 @@ fn compile_site_config(
             .map(super::SchemeConfig::new)
             .unwrap_or(default.scheme().clone()),
         site.max_redirects.unwrap_or(default.max_redirects()),
-        site.timeout.unwrap_or(default.timeout()),
+        site.timeout.unwrap_or(default.timeout()).into(),
         site.cache
             .and_then(|cache| cache.max_age)
             .unwrap_or(default.max_age()),
@@ -259,7 +259,7 @@ mod tests {
                     ])),
                     crate::config::SchemeConfig::new(HashSet::from(["https".to_owned()])),
                     42,
-                    Duration::from_secs(42),
+                    Duration::from_secs(42).into(),
                     Duration::from_secs(2045),
                     true,
                 )
