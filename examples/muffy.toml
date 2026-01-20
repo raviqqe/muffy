@@ -1,33 +1,22 @@
-[templates.default]
+[sites.default]
 max_redirects = 8
 schemes = ["https"]
 statuses = [200]
 timeout = "30s"
 cache.max_age = "5m"
 
-[templates.default.headers]
+[sites.default.headers]
 user-agent = "Muffy/0.2.0"
 
-[templates.main]
+[sites.main]
 extend = "default"
+roots = [
+  "https://raviqqe.com/",
+  "https://raviqqe.com/muffet",
+  "https://raviqqe.com/muffy",
+  "https://raviqqe.com/stak"
+]
 recurse = true
-
-[templates.external]
-extend = "default"
-statuses = [200, 403, 429]
-cache.max_age = "1h"
-
-[sites."https://raviqqe.com/"]
-extend = "main"
-
-[sites."https://raviqqe.com/muffet"]
-extend = "main"
-
-[sites."https://raviqqe.com/muffy"]
-extend = "main"
-
-[sites."https://raviqqe.com/stak"]
-extend = "main"
 
 [sites."https://crates.io/"]
 extend = "external"
@@ -40,3 +29,8 @@ exclude = true
 
 [sites.other]
 extend = "external"
+
+[templates.external]
+extend = "default"
+statuses = [200, 403, 429]
+cache.max_age = "1h"
