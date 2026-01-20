@@ -1,3 +1,21 @@
+[configs.default]
+max_redirects = 8
+schemes = ["https"]
+statuses = [200]
+timeout = "30s"
+cache.max_age = "1h"
+
+[configs.default.headers]
+user-agent = "Muffy/0.2.0"
+
+[configs.main]
+extend = "default"
+recurse = true
+
+[configs.external]
+extend = "default"
+statuses = [200, 403, 429]
+
 [sites."https://raviqqe.com/"]
 recurse = true
 
@@ -18,21 +36,3 @@ exclude = true
 
 [sites."https://www.gnu.org/software/guile/"]
 exclude = true
-
-[configs.default]
-max_redirects = 8
-schemes = ["https"]
-statuses = [200]
-timeout = "30s"
-cache.max_age = "1h"
-
-[configs.default.headers]
-user-agent = "Muffy/0.2.0"
-
-[configs.main]
-extend = "default"
-recurse = true
-
-[configs.external]
-extend = "default"
-statuses = [200, 403, 429]
