@@ -80,9 +80,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 mod tests {
     use super::*;
     use alloc::sync::Arc;
-    use futures::future::join;
     use tempfile::TempDir;
-    use tokio::sync::Mutex;
 
     #[tokio::test]
     async fn get_or_set() {
@@ -126,34 +124,5 @@ mod tests {
                 .unwrap(),
             42,
         );
-    }
-
-    #[tokio::test]
-    async fn remove_while_get() {
-        let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
-
-        let mutex = Arc::new(Mutex::new(()));
-
-        let future1 = cache.get_with(
-            "key".into(),
-            Box::new({
-                let mutex = mutex.clone();
-
-                async move {
-                    let _ = mutex.lock().await;
-                    42
-                }
-            }),
-        );
-        let future2 = cache.get_with(
-            "key".into(),
-            Box::new(async move {
-                let _ = mutex.lock().await;
-                42
-            }),
-        );
-
-        let _ = join(future1, future2);
     }
 }
