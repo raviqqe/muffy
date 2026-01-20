@@ -101,4 +101,25 @@ mod tests {
             42,
         );
     }
+
+    #[tokio::test]
+    async fn remove_while_set() {
+        let file = TempDir::new().unwrap();
+        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
+    }
 }
