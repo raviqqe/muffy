@@ -52,17 +52,10 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Runs validation with a configuration file. (experimental)
-    Run(RunArguments),
     /// Validates URLs.
     Check(CheckArguments),
-}
-
-#[derive(clap::Args, Default)]
-struct RunArguments {
-    /// A configuration file.
-    #[arg(short, long)]
-    config: Option<PathBuf>,
+    /// Runs validation with a configuration file. (experimental)
+    Run(RunArguments),
 }
 
 #[derive(clap::Args, Debug)]
@@ -93,6 +86,13 @@ struct CheckArguments {
     exclude: Vec<Regex>,
 }
 
+#[derive(clap::Args, Default)]
+struct RunArguments {
+    /// A configuration file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() {
     env_logger::init();
@@ -109,6 +109,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
+        Command::Check(arguments) => compile_check_config(&arguments)?,
         Command::Run(arguments) => {
             let config_file = if let Some(file) = arguments.config {
                 file
@@ -132,7 +133,6 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
             muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
         }
-        Command::Check(arguments) => compile_check_config(&arguments)?,
     };
 
     let mut output = stdout();
