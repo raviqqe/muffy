@@ -56,12 +56,15 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         trace!("waiting for cache at {key}");
 
         loop {
-            // TODO Handle key removal.
-            if let Some(value) = self.tree.get(&key)?
-                && let Some(value) = bitcode::deserialize::<Option<T>>(&value)?
-            {
-                trace!("waited for cache at {key}");
-                return Ok(value);
+            if let Some(value) = self.tree.get(&key)? {
+                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
+                    trace!("waited for cache at {key}");
+                    return Ok(value);
+                }
+            } else {
+                // An entry was removed while we were waiting.
+                // Retry from the beginning.
+                return self.get_with(key, future).await;
             }
 
             sleep(DELAY).await;
