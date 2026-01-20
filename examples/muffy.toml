@@ -11,7 +11,7 @@ recurse = true
 recurse = true
 
 [sites."https://crates.io/"]
-statuses = [403, 404]
+extend = "external"
 
 [sites."https://aclanthology.org/"]
 exclude = true
@@ -28,3 +28,7 @@ cache.max_age = "1h"
 
 [configs.default.headers]
 user-agent = "Muffy/0.2.0"
+
+[configs.external]
+extend = "default"
+statuses = [200, 403, 429]
