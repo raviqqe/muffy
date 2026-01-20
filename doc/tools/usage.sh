@@ -10,12 +10,12 @@ set -e
 
 (
   echo '```text'
-  cargo run -- --help
+  cargo run -- check --help
   echo '```'
 ) >src/components/CheckHelp.md
 
 (
   echo '```text'
-  cargo run -- --help
+  cargo run -- run --help
   echo '```'
 ) >src/components/RunHelp.md
