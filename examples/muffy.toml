@@ -19,18 +19,10 @@ roots = [
 recurse = true
 
 [sites."https://crates.io/"]
-extend = "external"
-
-[sites."https://aclanthology.org/"]
-exclude = true
-
-[sites."https://www.gnu.org/software/guile/"]
-exclude = true
-
-[sites.other]
-extend = "external"
-
-[templates.external]
 extend = "default"
 statuses = [200, 403, 429]
 cache.max_age = "1h"
+
+[sites.excluded]
+roots = ["https://aclanthology.org/", "https://www.gnu.org/software/guile/"]
+exclude = true
