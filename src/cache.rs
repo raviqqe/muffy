@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 /// A cache.
 ///
-/// Every receiver function is transactional.
+/// Every function is transactional.
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
     /// Gets a cached value.
