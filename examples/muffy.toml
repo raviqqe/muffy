@@ -1,22 +1,18 @@
-[sites."https://raviqqe.com/"]
+[sites.main]
+roots = [
+  "https://raviqqe.com/",
+  "https://raviqqe.com/muffet",
+  "https://raviqqe.com/muffy",
+  "https://raviqqe.com/stak"
+]
 recurse = true
 
-[sites."https://raviqqe.com/muffet"]
-recurse = true
-
-[sites."https://raviqqe.com/muffy"]
-recurse = true
-
-[sites."https://raviqqe.com/stak"]
-recurse = true
-
-[sites."https://crates.io/"]
+[sites.external]
+roots = ["https://crates.io/"]
 statuses = [403, 404]
 
-[sites."https://aclanthology.org/"]
-exclude = true
-
-[sites."https://www.gnu.org/software/guile/"]
+[sites.exclude]
+roots = ["https://aclanthology.org/", "https://www.gnu.org/software/guile/"]
 exclude = true
 
 [default]
