@@ -33,40 +33,38 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
     ) -> Result<T, CacheError> {
         trace!("getting cache at {key}");
 
-        loop {
-            if self
-                .tree
-                .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
-                    &key,
-                    None,
-                    Some(bitcode::serialize(&Option::<T>::None)?),
-                )?
-                .is_ok()
-            {
-                trace!("awaiting future for cache at {key}");
-                let value = Box::into_pin(future).await;
-                trace!("setting cache at {key}");
-                self.tree
-                    .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
-                trace!("set cache at {key}");
+        if self
+            .tree
+            .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
+                &key,
+                None,
+                Some(bitcode::serialize(&Option::<T>::None)?),
+            )?
+            .is_ok()
+        {
+            trace!("awaiting future for cache at {key}");
+            let value = Box::into_pin(future).await;
+            trace!("setting cache at {key}");
+            self.tree
+                .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
+            trace!("set cache at {key}");
 
+            return Ok(value);
+        }
+
+        // Wait for another thread to insert a key-value pair.
+        trace!("waiting for cache at {key}");
+
+        loop {
+            // TODO Handle key removal.
+            if let Some(value) = self.tree.get(&key)?
+                && let Some(value) = bitcode::deserialize::<Option<T>>(&value)?
+            {
+                trace!("waited for cache at {key}");
                 return Ok(value);
             }
 
-            // Wait for another thread to insert a key-value pair.
-            trace!("waiting for cache at {key}");
-
-            loop {
-                // TODO Handle key removal.
-                if let Some(value) = self.tree.get(&key)?
-                    && let Some(value) = bitcode::deserialize::<Option<T>>(&value)?
-                {
-                    trace!("waited for cache at {key}");
-                    return Ok(value);
-                }
-
-                sleep(DELAY).await;
-            }
+            sleep(DELAY).await;
         }
     }
 
