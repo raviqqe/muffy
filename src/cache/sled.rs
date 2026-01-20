@@ -62,8 +62,8 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
                     return Ok(value);
                 }
             } else {
-                // An entry was removed while we were waiting.
-                // Retry from the beginning.
+                // An entry was removed while we were waiting. Retry from the beginning. We
+                // assume that it ends within a finite number of retries.
                 return self.get_with(key, future).await;
             }
 
