@@ -59,9 +59,7 @@ impl HttpClient {
         &self,
         request: &Request,
     ) -> Result<Option<Arc<Response>>, HttpClientError> {
-        let robots = self.get_robots(request).await?;
-
-        match self.get_inner(request, robots.as_ref()).await {
+        match self.get_inner(request, true).await {
             Ok(response) => Ok(Some(response)),
             Err(HttpClientError::RobotsTxt) => Ok(None),
             Err(error) => Err(error),
@@ -71,12 +69,12 @@ impl HttpClient {
     async fn get_inner(
         &self,
         request: &Request,
-        robots: Option<&Robots>,
+        robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_cache(&request, robots).await?;
+            let response = self.get_once(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -98,27 +96,26 @@ impl HttpClient {
     // TODO Configure rate limits.
     // TODO Configure retries.
     // TODO Configure maximum connections.
-    async fn get_cache(
+    async fn get_once(
         &self,
         request: &Request,
-        robots: Option<&Robots>,
+        robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        if robots
-            .map(|robots| !robots.is_absolute_allowed(request.url()))
-            .unwrap_or_default()
-        {
-            return Err(HttpClientError::RobotsTxt);
-        }
-
         let get = || {
             self.0.cache.get_with(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
 
                 Box::new(async move {
+                    if robots
+                        && let Some(robot) = client.get_robot(&request).await?
+                        && !robot.is_absolute_allowed(request.url())
+                    {
+                        return Err(HttpClientError::RobotsTxt);
+                    }
+
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
-                    // TODO Use a custom timeout implementation that would be reliable on CI.
                     let response =
                         timeout(request.timeout(), client.0.client.get(request.as_bare()))
                             .await??;
@@ -146,11 +143,11 @@ impl HttpClient {
     }
 
     #[async_recursion]
-    async fn get_robots(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
+    async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
             .get_inner(
                 &request.clone().set_url(request.url().join("/robots.txt")?),
-                None,
+                false,
             )
             .await
             .ok()
