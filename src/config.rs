@@ -22,9 +22,13 @@ pub const DEFAULT_MAX_REDIRECTS: usize = 16;
 /// A default HTTP timeout.
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
+const DEFAULT_MINIMUM_CONCURRENCY: usize = 256;
+
 /// Returns a default concurrency.
 pub fn default_concurrency() -> usize {
-    (getrlimit(Resource::NOFILE).unwrap().0 / 2) as _
+    getrlimit(Resource::NOFILE)
+        .map(|(count, _)| (count / 2) as _)
+        .unwrap_or(DEFAULT_MINIMUM_CONCURRENCY)
 }
 
 /// A validation configuration.
