@@ -513,4 +513,15 @@ mod tests {
             Err(ConfigError::HttpInvalidStatus(_))
         ));
     }
+
+    #[test]
+    fn compile_concurrency() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            default: None,
+            concurrency: Some(42),
+        };
+
+        assert!(matches!(compile_config(config).unwrap().concurrency(), 42,));
+    }
 }
