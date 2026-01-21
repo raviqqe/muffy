@@ -526,17 +526,9 @@ mod tests {
         assert_eq!(
             HttpClient::new(
                 StubHttpClient::new(
-                    [
-                        build_stub_response(
-                            response.url.join("/robots.txt").unwrap().as_str(),
-                            StatusCode::OK,
-                            Default::default(),
-                            vec![],
-                        ),
-                        (response.url.as_str().into(), Ok(response.clone()))
-                    ]
-                    .into_iter()
-                    .collect()
+                    [(response.url.as_str().into(), Ok(response.clone()))]
+                        .into_iter()
+                        .collect()
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
