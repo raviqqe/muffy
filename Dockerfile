@@ -1,4 +1,4 @@
-FROM rust:alpine AS build
+FROM rust:1.90.0-alpine AS build
 ADD . /src
 WORKDIR /src
 RUN apk add build-base
