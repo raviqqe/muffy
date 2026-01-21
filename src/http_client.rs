@@ -59,7 +59,9 @@ impl HttpClient {
         &self,
         request: &Request,
     ) -> Result<Option<Arc<Response>>, HttpClientError> {
-        match self.get_inner(request, true).await {
+        let robots = self.get_robots(&request).await?;
+
+        match self.get_inner(request, robots.as_ref()).await {
             Ok(response) => Ok(Some(response)),
             Err(HttpClientError::RobotsTxt) => Ok(None),
             Err(error) => Err(error),
@@ -69,7 +71,7 @@ impl HttpClient {
     async fn get_inner(
         &self,
         request: &Request,
-        robots: bool,
+        robots: Option<&Robots>,
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut request = request.clone();
 
@@ -98,17 +100,18 @@ impl HttpClient {
     async fn get_cache(
         &self,
         request: &Request,
-        robots: bool,
+        robots: Option<&Robots>,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
             self.0.cache.get_with(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
+                let robots = robots.cloned();
 
                 Box::new(async move {
                     if robots
-                        && let Some(robot) = client.get_robot(&request).await?
-                        && !robot.is_absolute_allowed(request.url())
+                        .map(|robots| !robots.is_absolute_allowed(request.url()))
+                        .unwrap_or_default()
                     {
                         return Err(HttpClientError::RobotsTxt);
                     }
@@ -142,11 +145,11 @@ impl HttpClient {
     }
 
     #[async_recursion]
-    async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
+    async fn get_robots(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
             .get_inner(
                 &request.clone().set_url(request.url().join("/robots.txt")?),
-                false,
+                None,
             )
             .await
             .ok()
