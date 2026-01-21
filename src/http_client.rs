@@ -59,7 +59,7 @@ impl HttpClient {
         &self,
         request: &Request,
     ) -> Result<Option<Arc<Response>>, HttpClientError> {
-        let robots = self.get_robots(&request).await?;
+        let robots = self.get_robots(request).await?;
 
         match self.get_inner(request, robots.as_ref()).await {
             Ok(response) => Ok(Some(response)),
