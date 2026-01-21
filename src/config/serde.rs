@@ -522,6 +522,6 @@ mod tests {
             concurrency: Some(42),
         };
 
-        assert!(matches!(compile_config(config).unwrap().concurrency(), 42,));
+        assert_eq!(compile_config(config).unwrap().concurrency(), 42);
     }
 }
