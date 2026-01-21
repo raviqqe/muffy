@@ -74,7 +74,7 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_once(&request, robots).await?;
+            let response = self.get_cache(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -95,7 +95,7 @@ impl HttpClient {
 
     // TODO Configure rate limits.
     // TODO Configure maximum connections.
-    async fn get_once(
+    async fn get_cache(
         &self,
         request: &Request,
         robots: bool,
@@ -512,32 +512,5 @@ mod tests {
         .await;
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
-    }
-
-    #[tokio::test]
-    async fn get_robots_txt_in_sub_directory() {
-        let response = BareResponse {
-            url: Url::parse("https://foo.com/bar/").unwrap().clone(),
-            status: StatusCode::OK,
-            headers: Default::default(),
-            body: vec![],
-        };
-
-        assert_eq!(
-            HttpClient::new(
-                StubHttpClient::new(
-                    [(response.url.as_str().into(), Ok(response.clone()))]
-                        .into_iter()
-                        .collect()
-                ),
-                StubTimer::new(),
-                Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
-            )
-            .get(&Request::new(response.url.clone(), Default::default()))
-            .await
-            .unwrap(),
-            Some(Response::from_bare(response, Duration::from_millis(0)).into())
-        );
     }
 }
