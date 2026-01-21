@@ -118,6 +118,7 @@ impl HttpClient {
                 Box::new(async move {
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
+                    // TODO Use a custom timeout implementation that would be reliable on CI.
                     let response =
                         timeout(request.timeout(), client.0.client.get(request.as_bare()))
                             .await??;
