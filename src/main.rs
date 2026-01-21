@@ -82,6 +82,9 @@ struct CheckArguments {
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
     timeout: String,
+    /// Set concurrency.
+    #[arg(long, default_value_t = (getrlimit(Resource::NOFILE).unwrap().0 / 2) as _)]
+    concurrency: usize,
     /// Set URL patterns to exclude from validation.
     #[arg(long)]
     exclude: Vec<Regex>,
@@ -157,7 +160,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
-            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+            config.concurrency(),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
