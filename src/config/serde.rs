@@ -3,8 +3,7 @@ use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
     DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
-use core::time::Duration;
-use duration_str::deserialize_option_duration;
+use duration_string::DurationString;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
@@ -40,8 +39,7 @@ struct IncludedSiteConfig {
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
-    #[serde(default, deserialize_with = "deserialize_option_duration")]
-    timeout: Option<Duration>,
+    timeout: Option<DurationString>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
     cache: Option<CacheConfig>,
@@ -50,8 +48,7 @@ struct IncludedSiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
-    #[serde(default, deserialize_with = "deserialize_option_duration")]
-    max_age: Option<Duration>,
+    max_age: Option<DurationString>,
 }
 
 /// Compiles a configuration.
@@ -163,9 +160,9 @@ fn compile_site_config(
             .map(super::SchemeConfig::new)
             .unwrap_or(default.scheme().clone()),
         site.max_redirects.unwrap_or(default.max_redirects()),
-        site.timeout.or(default.timeout()),
+        site.timeout.as_deref().copied().or(default.timeout()),
         site.cache
-            .and_then(|cache| cache.max_age)
+            .and_then(|cache| cache.max_age.as_deref().copied())
             .or(default.max_age()),
         site.recurse == Some(true),
     ))
@@ -178,6 +175,7 @@ mod tests {
         DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
         DEFAULT_MAX_REDIRECTS,
     };
+    use core::time::Duration;
     use http::HeaderMap;
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
@@ -215,14 +213,14 @@ mod tests {
                 recurse: Some(true),
                 schemes: Some(HashSet::from(["https".to_owned()])),
                 statuses: Some(HashSet::from([200, 403, 418])),
-                timeout: Some(Duration::from_secs(42)),
+                timeout: Some(Duration::from_secs(42).into()),
                 max_redirects: Some(42),
                 headers: Some(HashMap::from([(
                     "user-agent".to_owned(),
                     "my-agent".to_owned(),
                 )])),
                 cache: Some(CacheConfig {
-                    max_age: Some(Duration::from_secs(2045)),
+                    max_age: Some(Duration::from_secs(2045).into()),
                 }),
             }),
             sites: HashMap::from([(

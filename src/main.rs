@@ -3,6 +3,7 @@
 use clap::{Parser, crate_version};
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
+use duration_string::DurationString;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
@@ -52,17 +53,10 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Runs validation with a configuration file. (experimental)
-    Run(RunArguments),
     /// Validates URLs.
     Check(CheckArguments),
-}
-
-#[derive(clap::Args, Default)]
-struct RunArguments {
-    /// A configuration file.
-    #[arg(short, long)]
-    config: Option<PathBuf>,
+    /// Runs validation with a configuration file. (experimental)
+    Run(RunArguments),
 }
 
 #[derive(clap::Args, Debug)]
@@ -93,6 +87,13 @@ struct CheckArguments {
     exclude: Vec<Regex>,
 }
 
+#[derive(clap::Args, Default)]
+struct RunArguments {
+    /// A configuration file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() {
     env_logger::init();
@@ -109,6 +110,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
+        Command::Check(arguments) => compile_check_config(&arguments)?,
         Command::Run(arguments) => {
             let config_file = if let Some(file) = arguments.config {
                 file
@@ -132,7 +134,6 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
             muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
         }
-        Command::Check(arguments) => compile_check_config(&arguments)?,
     };
 
     let mut output = stdout();
@@ -261,8 +262,12 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
-        .set_timeout(duration_str::parse(&arguments.timeout)?.into())
-        .set_max_age(duration_str::parse(&arguments.max_age)?.into());
+        .set_timeout(Some(*DurationString::from_string(
+            arguments.timeout.clone(),
+        )?))
+        .set_max_age(Some(*DurationString::from_string(
+            arguments.max_age.clone(),
+        )?));
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -307,11 +312,11 @@ mod tests {
             muffy::DEFAULT_ACCEPTED_STATUS_CODES
         );
         assert_eq!(
-            duration_str::parse(arguments.timeout).unwrap(),
+            DurationString::from_string(arguments.timeout).unwrap(),
             muffy::DEFAULT_TIMEOUT
         );
         assert_eq!(
-            duration_str::parse(arguments.max_age).unwrap(),
+            DurationString::from_string(arguments.max_age).unwrap(),
             muffy::DEFAULT_MAX_CACHE_AGE
         );
     }
