@@ -102,20 +102,19 @@ impl HttpClient {
         request: &Request,
         robots: Option<&Robots>,
     ) -> Result<Arc<Response>, HttpClientError> {
+        if robots
+            .map(|robots| !robots.is_absolute_allowed(request.url()))
+            .unwrap_or_default()
+        {
+            return Err(HttpClientError::RobotsTxt);
+        }
+
         let get = || {
             self.0.cache.get_with(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
-                let robots = robots.cloned();
 
                 Box::new(async move {
-                    if robots
-                        .map(|robots| !robots.is_absolute_allowed(request.url()))
-                        .unwrap_or_default()
-                    {
-                        return Err(HttpClientError::RobotsTxt);
-                    }
-
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
                     let response =
