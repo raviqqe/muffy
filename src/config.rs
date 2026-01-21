@@ -5,6 +5,7 @@ pub use self::{error::ConfigError, serde::compile_config};
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
+use rlimit::{Resource, getrlimit};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
@@ -21,6 +22,15 @@ pub const DEFAULT_MAX_REDIRECTS: usize = 16;
 /// A default HTTP timeout.
 pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
+const DEFAULT_MINIMUM_CONCURRENCY: usize = 256;
+
+/// Returns a default concurrency.
+pub fn default_concurrency() -> usize {
+    getrlimit(Resource::NOFILE)
+        .map(|(count, _)| (count / 2) as _)
+        .unwrap_or(DEFAULT_MINIMUM_CONCURRENCY)
+}
+
 /// A validation configuration.
 #[derive(Clone, Debug)]
 pub struct Config {
@@ -28,6 +38,7 @@ pub struct Config {
     excluded_links: Vec<Regex>,
     default: SiteConfig,
     sites: HashMap<String, HostConfig>,
+    concurrency: Option<usize>,
 }
 
 impl Config {
@@ -36,12 +47,14 @@ impl Config {
         roots: Vec<String>,
         default: SiteConfig,
         sites: HashMap<String, HostConfig>,
+        concurrency: Option<usize>,
     ) -> Self {
         Self {
             roots,
             excluded_links: Default::default(),
             default,
             sites,
+            concurrency,
         }
     }
 
@@ -63,6 +76,11 @@ impl Config {
     /// Gets a site config
     pub fn site(&self, url: &Url) -> &SiteConfig {
         self.get_site(url).unwrap_or(&self.default)
+    }
+
+    /// Returns a concurrency.
+    pub fn concurrency(&self) -> usize {
+        self.concurrency.unwrap_or_else(default_concurrency)
     }
 
     /// Set excluded link patterns.

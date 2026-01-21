@@ -12,7 +12,6 @@ use muffy::{
     ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
-use rlimit::{Resource, getrlimit};
 use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
@@ -82,6 +81,9 @@ struct CheckArguments {
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
     timeout: String,
+    /// Set concurrency.
+    #[arg(long, default_value_t = muffy::default_concurrency())]
+    concurrency: usize,
     /// Set URL patterns to exclude from validation.
     #[arg(long)]
     exclude: Vec<Regex>,
@@ -157,7 +159,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
-            (getrlimit(Resource::NOFILE)?.0 / 2) as _,
+            config.concurrency(),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
@@ -289,6 +291,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 )
             })
             .collect(),
+        Some(arguments.concurrency),
     )
     .set_excluded_links(arguments.exclude.clone()))
 }

@@ -17,6 +17,7 @@ use url::Url;
 pub struct SerializableConfig {
     default: Option<IncludedSiteConfig>,
     sites: HashMap<String, SiteConfig>,
+    concurrency: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -126,7 +127,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         })
         .collect::<Result<_, ConfigError>>()?;
 
-    Ok(super::Config::new(roots, default, sites).set_excluded_links(excluded_links))
+    Ok(
+        super::Config::new(roots, default, sites, config.concurrency)
+            .set_excluded_links(excluded_links),
+    )
 }
 
 fn compile_site_config(
@@ -185,6 +189,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: Default::default(),
             default: Default::default(),
+            concurrency: Default::default(),
         })
         .unwrap();
 
@@ -231,6 +236,7 @@ mod tests {
                 }
                 .into(),
             )]),
+            concurrency: None,
         })
         .unwrap();
 
@@ -299,6 +305,7 @@ mod tests {
                     .into(),
                 ),
             ]),
+            concurrency: None,
         })
         .unwrap();
 
@@ -358,6 +365,7 @@ mod tests {
                     SiteConfig::Excluded { exclude: true },
                 ),
             ]),
+            concurrency: None,
         })
         .unwrap();
 
@@ -393,6 +401,7 @@ mod tests {
                     .into(),
                 ),
             ]),
+            concurrency: None,
         })
         .unwrap();
 
@@ -419,6 +428,7 @@ mod tests {
                 }
                 .into(),
             )]),
+            concurrency: None,
         };
 
         assert!(matches!(
@@ -432,6 +442,7 @@ mod tests {
         let config = SerializableConfig {
             default: None,
             sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { exclude: true })]),
+            concurrency: None,
         };
 
         assert!(matches!(compile_config(config), Err(ConfigError::Regex(_))));
@@ -451,6 +462,7 @@ mod tests {
                 }
                 .into(),
             ),
+            concurrency: None,
         };
 
         assert!(matches!(
@@ -473,6 +485,7 @@ mod tests {
                 }
                 .into(),
             ),
+            concurrency: None,
         };
 
         assert!(matches!(
@@ -492,11 +505,23 @@ mod tests {
                 }
                 .into(),
             ),
+            concurrency: None,
         };
 
         assert!(matches!(
             compile_config(config),
             Err(ConfigError::HttpInvalidStatus(_))
         ));
+    }
+
+    #[test]
+    fn compile_concurrency() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            default: None,
+            concurrency: Some(42),
+        };
+
+        assert_eq!(compile_config(config).unwrap().concurrency(), 42);
     }
 }

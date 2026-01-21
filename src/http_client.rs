@@ -74,7 +74,7 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_once(&request, robots).await?;
+            let response = self.get_cache(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -96,7 +96,7 @@ impl HttpClient {
     // TODO Configure rate limits.
     // TODO Configure retries.
     // TODO Configure maximum connections.
-    async fn get_once(
+    async fn get_cache(
         &self,
         request: &Request,
         robots: bool,
@@ -116,6 +116,7 @@ impl HttpClient {
 
                     let permit = client.0.semaphore.acquire().await.unwrap();
                     let start = client.0.timer.now();
+                    // TODO Use a custom timeout implementation that would be reliable on CI.
                     let response =
                         timeout(request.timeout(), client.0.client.get(request.as_bare()))
                             .await??;
