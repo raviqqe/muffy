@@ -504,6 +504,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
+            None,
         ))
         .await
     }
@@ -986,6 +987,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
+            None,
         ))
         .await
         .unwrap();
@@ -1049,6 +1051,7 @@ mod tests {
                 )]
                 .into_iter()
                 .collect(),
+                None,
             )
             .set_excluded_links(vec![Regex::new("bar").unwrap()]),
         )

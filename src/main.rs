@@ -12,7 +12,6 @@ use muffy::{
     ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
-use rlimit::{Resource, getrlimit};
 use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
@@ -83,7 +82,7 @@ struct CheckArguments {
     #[arg(long, default_value = "30s")]
     timeout: String,
     /// Set concurrency.
-    #[arg(long, default_value_t = (getrlimit(Resource::NOFILE).unwrap().0 / 2) as _)]
+    #[arg(long, default_value_t = muffy::default_concurrency())]
     concurrency: usize,
     /// Set URL patterns to exclude from validation.
     #[arg(long)]
@@ -292,6 +291,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 )
             })
             .collect(),
+        Some(arguments.concurrency),
     )
     .set_excluded_links(arguments.exclude.clone()))
 }
