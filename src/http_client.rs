@@ -114,16 +114,9 @@ impl HttpClient {
                         return Err(HttpClientError::RobotsTxt);
                     }
 
-                    let permit = client.0.semaphore.acquire().await.unwrap();
-                    let start = client.0.timer.now();
-                    // TODO Use a custom timeout implementation that would be reliable on CI.
-                    let response =
-                        timeout(request.timeout(), client.0.client.get(request.as_bare()))
-                            .await??;
-                    let duration = client.0.timer.now().duration_since(start);
-                    drop(permit);
+                    let response = client.get_throttled(&request).await?;
 
-                    Ok(Arc::new(Response::from_bare(response, duration).into()))
+                    Ok(Arc::new(response.into()))
                 })
             })
         };
@@ -143,15 +136,15 @@ impl HttpClient {
         .clone())
     }
 
-    async fn get_foo() {
-        let permit = client.0.semaphore.acquire().await.unwrap();
-        let start = client.0.timer.now();
+    async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let permit = self.0.semaphore.acquire().await.unwrap();
+        let start = self.0.timer.now();
         // TODO Use a custom timeout implementation that would be reliable on CI.
-        let response = timeout(request.timeout(), client.0.client.get(request.as_bare())).await??;
-        let duration = client.0.timer.now().duration_since(start);
+        let response = timeout(request.timeout(), self.0.client.get(request.as_bare())).await??;
+        let duration = self.0.timer.now().duration_since(start);
         drop(permit);
 
-        foo
+        Ok(Response::from_bare(response, duration))
     }
 
     #[async_recursion]
