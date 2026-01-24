@@ -143,6 +143,17 @@ impl HttpClient {
         .clone())
     }
 
+    async fn get_foo() {
+        let permit = client.0.semaphore.acquire().await.unwrap();
+        let start = client.0.timer.now();
+        // TODO Use a custom timeout implementation that would be reliable on CI.
+        let response = timeout(request.timeout(), client.0.client.get(request.as_bare())).await??;
+        let duration = client.0.timer.now().duration_since(start);
+        drop(permit);
+
+        foo
+    }
+
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
