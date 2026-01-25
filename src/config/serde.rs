@@ -45,7 +45,7 @@ pub struct SerializableConfig {
 #[serde(untagged)]
 enum SiteConfig {
     Included(Box<IncludedSiteConfig>),
-    Excluded { exclude: bool },
+    Excluded { ignore: bool },
 }
 
 impl From<IncludedSiteConfig> for SiteConfig {
@@ -76,10 +76,10 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { exclude } = site
-            && !exclude
+        if let SiteConfig::Excluded { ignore } = site
+            && !ignore
         {
-            return Err(ConfigError::InvalidSiteExclude(url.clone()));
+            return Err(ConfigError::InvalidSiteIgnore(url.clone()));
         }
     }
 
@@ -87,7 +87,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .iter()
         .flat_map(|(url, site)| {
-            if matches!(site, SiteConfig::Excluded { exclude: true }) {
+            if matches!(site, SiteConfig::Excluded { ignore: true }) {
                 Some(Regex::new(url))
             } else {
                 None
@@ -309,7 +309,7 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { exclude: true },
+                    SiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://bar.com/".to_owned(),
@@ -373,11 +373,11 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { exclude: true },
+                    SiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://foo.net/".to_owned(),
-                    SiteConfig::Excluded { exclude: true },
+                    SiteConfig::Excluded { ignore: true },
                 ),
             ]),
             concurrency: None,
@@ -456,7 +456,7 @@ mod tests {
     fn compile_invalid_excluded_site_url() {
         let config = SerializableConfig {
             default: None,
-            sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { exclude: true })]),
+            sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { ignore: true })]),
             concurrency: None,
         };
 
