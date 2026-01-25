@@ -981,7 +981,7 @@ mod tests {
                 [(
                     "".into(),
                     SiteConfig::default()
-                        .set_scheme(SchemeConfig::new(["https".into()].into_iter().collect()))
+                        .set_scheme(SchemeConfig::new(["https".into()].into()))
                         .set_recursive(true),
                 )]
                 .into_iter()
