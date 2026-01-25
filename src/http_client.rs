@@ -138,11 +138,17 @@ impl HttpClient {
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
         let permit = self.0.semaphore.acquire().await.unwrap();
+        let response = self.get_once(request).await?;
+        drop(permit);
+
+        Ok(response)
+    }
+
+    async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
         let start = self.0.timer.now();
         // TODO Use a custom timeout implementation that would be reliable on CI.
         let response = timeout(request.timeout(), self.0.client.get(request.as_bare())).await??;
         let duration = self.0.timer.now().duration_since(start);
-        drop(permit);
 
         Ok(Response::from_bare(response, duration))
     }
