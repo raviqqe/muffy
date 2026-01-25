@@ -49,6 +49,6 @@ impl BareHttpClient for ReqwestHttpClient {
 
 impl From<reqwest::Error> for HttpClientError {
     fn from(error: reqwest::Error) -> Self {
-        Self::new(error.to_string())
+        Self::Http(error.to_string().into())
     }
 }
