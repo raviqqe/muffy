@@ -544,7 +544,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[tokio::test]
-        async fn retry_once() {
+        async fn retry_once_with_http_error() {
             let url = Url::parse("https://foo.com").unwrap();
             let response = BareResponse {
                 url: url.clone(),
@@ -585,7 +585,43 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn retry_once_with_two_failures() {
+        async fn retry_once_with_non_http_error() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (
+                            url.as_str().into(),
+                            Err(HttpClientError::Http("foo".into()))
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(1))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_once_with_two_errors() {
             let url = Url::parse("https://foo.com").unwrap();
             let failed_response = BareResponse {
                 url: url.clone(),
@@ -621,6 +657,46 @@ mod tests {
                 .await
                 .unwrap(),
                 Some(Response::from_bare(failed_response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_twice_with_two_errors() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let failed_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::INTERNAL_SERVER_ERROR,
+                headers: Default::default(),
+                body: vec![],
+            };
+            let successful_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(successful_response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(2))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
             );
         }
     }
