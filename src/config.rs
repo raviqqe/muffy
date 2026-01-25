@@ -274,8 +274,10 @@ mod tests {
                 "example.com".to_string(),
                 vec![
                     ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
-                    ("/".to_string(), SiteConfig::new().set_recursive(false)),
                     ("/bar".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/".to_string(), SiteConfig::new().set_recursive(false)),
+                    ("/baz".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/qux".to_string(), SiteConfig::new().set_recursive(true)),
                 ],
             )]),
             None,
@@ -283,7 +285,22 @@ mod tests {
 
         assert!(
             config
-                .site(&Url::parse("http://example.com/foo/bar").unwrap())
+                .site(&Url::parse("http://example.com/foo").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/bar").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/baz").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/qux").unwrap())
                 .recursive()
         );
         assert!(
