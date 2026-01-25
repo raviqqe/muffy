@@ -8,8 +8,28 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::LazyLock,
+};
 use url::Url;
+
+static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
+    super::SiteConfig::new()
+        .set_status(super::StatusConfig::new(
+            DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
+        ))
+        .set_scheme(super::SchemeConfig::new(
+            DEFAULT_ACCEPTED_SCHEMES
+                .iter()
+                .copied()
+                .map(ToOwned::to_owned)
+                .collect(),
+        ))
+        .set_max_redirects(DEFAULT_MAX_REDIRECTS)
+        .set_timeout(DEFAULT_TIMEOUT.into())
+        .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
+});
 
 /// A serializable configuration.
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,13 +44,13 @@ pub struct SerializableConfig {
 #[serde(deny_unknown_fields)]
 #[serde(untagged)]
 enum SiteConfig {
-    Included(IncludedSiteConfig),
+    Included(Box<IncludedSiteConfig>),
     Excluded { exclude: bool },
 }
 
 impl From<IncludedSiteConfig> for SiteConfig {
     fn from(site: IncludedSiteConfig) -> Self {
-        Self::Included(site)
+        Self::Included(site.into())
     }
 }
 
@@ -43,6 +63,7 @@ struct IncludedSiteConfig {
     timeout: Option<DurationString>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
+    retries: Option<usize>,
     cache: Option<CacheConfig>,
 }
 
@@ -89,25 +110,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .filter(|(_, site)| site.recurse == Some(true))
         .map(|(url, _)| url.clone())
         .collect();
-    let default = compile_site_config(
-        config.default.unwrap_or_default(),
-        &super::SiteConfig::new()
-            .set_status(super::StatusConfig::new(
-                DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
-            ))
-            .set_scheme(super::SchemeConfig::new(
-                DEFAULT_ACCEPTED_SCHEMES
-                    .iter()
-                    .copied()
-                    .map(ToOwned::to_owned)
-                    .collect(),
-            ))
-            .set_max_redirects(DEFAULT_MAX_REDIRECTS)
-            .set_timeout(DEFAULT_TIMEOUT.into())
-            .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
-            // TODO
-            .set_retries(0),
-    )?;
+    let default = compile_site_config(config.default.unwrap_or_default(), &DEFAULT_SITE_CONFIG)?;
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -121,7 +124,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 host,
                 sites
                     .map(|(url, site)| {
-                        Ok((url.path().to_owned(), compile_site_config(site, &default)?))
+                        Ok((url.path().to_owned(), compile_site_config(*site, &default)?))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
@@ -177,8 +180,7 @@ fn compile_site_config(
                 .and_then(|cache| cache.max_age.as_deref().copied())
                 .or(default.max_age()),
         )
-        // TODO
-        .set_retries(0)
+        .set_retries(site.retries.unwrap_or(default.retries()))
         .set_recursive(site.recurse == Some(true)))
 }
 
@@ -234,6 +236,7 @@ mod tests {
                     "user-agent".to_owned(),
                     "my-agent".to_owned(),
                 )])),
+                retries: Some(193),
                 cache: Some(CacheConfig {
                     max_age: Some(Duration::from_secs(2045).into()),
                 }),
@@ -277,6 +280,7 @@ mod tests {
                     .set_max_redirects(42,)
                     .set_timeout(Duration::from_secs(42).into(),)
                     .set_max_age(Duration::from_secs(2045).into())
+                    .set_retries(193)
                     .set_recursive(true,)
             )]
         );

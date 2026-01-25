@@ -1,7 +1,9 @@
 use crate::http_client::{BareHttpClient, BareRequest, BareResponse, HttpClientError};
 use async_trait::async_trait;
-use core::time::Duration;
-use core::{sync::atomic::AtomicUsize, sync::atomic::Ordering};
+use core::{
+    sync::atomic::{AtomicUsize, Ordering},
+    time::Duration,
+};
 use http::{HeaderMap, StatusCode};
 use scc::HashMap;
 use tokio::time::sleep;
