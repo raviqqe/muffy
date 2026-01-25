@@ -8,8 +8,28 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::LazyLock,
+};
 use url::Url;
+
+static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
+    super::SiteConfig::new()
+        .set_status(super::StatusConfig::new(
+            DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
+        ))
+        .set_scheme(super::SchemeConfig::new(
+            DEFAULT_ACCEPTED_SCHEMES
+                .iter()
+                .copied()
+                .map(ToOwned::to_owned)
+                .collect(),
+        ))
+        .set_max_redirects(DEFAULT_MAX_REDIRECTS)
+        .set_timeout(DEFAULT_TIMEOUT.into())
+        .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
+});
 
 /// A serializable configuration.
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,13 +44,13 @@ pub struct SerializableConfig {
 #[serde(deny_unknown_fields)]
 #[serde(untagged)]
 enum SiteConfig {
-    Included(IncludedSiteConfig),
+    Included(Box<IncludedSiteConfig>),
     Excluded { exclude: bool },
 }
 
 impl From<IncludedSiteConfig> for SiteConfig {
     fn from(site: IncludedSiteConfig) -> Self {
-        Self::Included(site)
+        Self::Included(site.into())
     }
 }
 
@@ -43,6 +63,7 @@ struct IncludedSiteConfig {
     timeout: Option<DurationString>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
+    retries: Option<usize>,
     cache: Option<CacheConfig>,
 }
 
@@ -89,24 +110,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .filter(|(_, site)| site.recurse == Some(true))
         .map(|(url, _)| url.clone())
         .collect();
-    let default = compile_site_config(
-        config.default.unwrap_or_default(),
-        &super::SiteConfig::new(
-            Default::default(),
-            super::StatusConfig::new(DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect()),
-            super::SchemeConfig::new(
-                DEFAULT_ACCEPTED_SCHEMES
-                    .iter()
-                    .copied()
-                    .map(ToOwned::to_owned)
-                    .collect(),
-            ),
-            DEFAULT_MAX_REDIRECTS,
-            DEFAULT_TIMEOUT.into(),
-            DEFAULT_MAX_CACHE_AGE.into(),
-            false,
-        ),
-    )?;
+    let default = compile_site_config(config.default.unwrap_or_default(), &DEFAULT_SITE_CONFIG)?;
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -120,7 +124,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 host,
                 sites
                     .map(|(url, site)| {
-                        Ok((url.path().to_owned(), compile_site_config(site, &default)?))
+                        Ok((url.path().to_owned(), compile_site_config(*site, &default)?))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
@@ -137,39 +141,47 @@ fn compile_site_config(
     site: IncludedSiteConfig,
     default: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
-    Ok(super::SiteConfig::new(
-        site.headers
-            .map(|headers| {
-                headers
-                    .into_iter()
-                    .map(|(key, value)| {
-                        Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?))
-                    })
-                    .collect::<Result<_, ConfigError>>()
-            })
-            .transpose()?
-            .unwrap_or_else(|| default.headers().clone()),
-        site.statuses
-            .map(|codes| {
-                Ok::<_, ConfigError>(super::StatusConfig::new(
-                    codes
+    Ok(super::SiteConfig::new()
+        .set_headers(
+            site.headers
+                .map(|headers| {
+                    headers
                         .into_iter()
-                        .map(StatusCode::try_from)
-                        .collect::<Result<_, _>>()?,
-                ))
-            })
-            .transpose()?
-            .unwrap_or_else(|| default.status().clone()),
-        site.schemes
-            .map(super::SchemeConfig::new)
-            .unwrap_or(default.scheme().clone()),
-        site.max_redirects.unwrap_or(default.max_redirects()),
-        site.timeout.as_deref().copied().or(default.timeout()),
-        site.cache
-            .and_then(|cache| cache.max_age.as_deref().copied())
-            .or(default.max_age()),
-        site.recurse == Some(true),
-    ))
+                        .map(|(key, value)| {
+                            Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?))
+                        })
+                        .collect::<Result<_, ConfigError>>()
+                })
+                .transpose()?
+                .unwrap_or_else(|| default.headers().clone()),
+        )
+        .set_status(
+            site.statuses
+                .map(|codes| {
+                    Ok::<_, ConfigError>(super::StatusConfig::new(
+                        codes
+                            .into_iter()
+                            .map(StatusCode::try_from)
+                            .collect::<Result<_, _>>()?,
+                    ))
+                })
+                .transpose()?
+                .unwrap_or_else(|| default.status().clone()),
+        )
+        .set_scheme(
+            site.schemes
+                .map(super::SchemeConfig::new)
+                .unwrap_or(default.scheme().clone()),
+        )
+        .set_max_redirects(site.max_redirects.unwrap_or(default.max_redirects()))
+        .set_timeout(site.timeout.as_deref().copied().or(default.timeout()))
+        .set_max_age(
+            site.cache
+                .and_then(|cache| cache.max_age.as_deref().copied())
+                .or(default.max_age()),
+        )
+        .set_retries(site.retries.unwrap_or(default.retries()))
+        .set_recursive(site.recurse == Some(true)))
 }
 
 #[cfg(test)]
@@ -224,6 +236,7 @@ mod tests {
                     "user-agent".to_owned(),
                     "my-agent".to_owned(),
                 )])),
+                retries: Some(193),
                 cache: Some(CacheConfig {
                     max_age: Some(Duration::from_secs(2045).into()),
                 }),
@@ -251,22 +264,24 @@ mod tests {
             paths.as_slice(),
             &[(
                 "/".into(),
-                crate::config::SiteConfig::new(
-                    HeaderMap::from_iter([(
+                crate::config::SiteConfig::new()
+                    .set_headers(HeaderMap::from_iter([(
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
-                    )]),
-                    crate::config::StatusConfig::new(HashSet::from([
+                    )]),)
+                    .set_status(crate::config::StatusConfig::new(HashSet::from([
                         StatusCode::try_from(200).unwrap(),
                         StatusCode::try_from(403).unwrap(),
                         StatusCode::try_from(418).unwrap(),
-                    ])),
-                    crate::config::SchemeConfig::new(HashSet::from(["https".to_owned()])),
-                    42,
-                    Duration::from_secs(42).into(),
-                    Duration::from_secs(2045).into(),
-                    true,
-                )
+                    ])),)
+                    .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
+                        "https".to_owned()
+                    ])),)
+                    .set_max_redirects(42,)
+                    .set_timeout(Duration::from_secs(42).into(),)
+                    .set_max_age(Duration::from_secs(2045).into())
+                    .set_retries(193)
+                    .set_recursive(true,)
             )]
         );
     }

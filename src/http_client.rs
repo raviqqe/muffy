@@ -6,7 +6,7 @@ mod reqwest;
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::{StubHttpClient, build_stub_response};
+pub use self::stub::{StubHttpClient, StubSequenceHttpClient, build_stub_response};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
@@ -74,7 +74,7 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_cache(&request, robots).await?;
+            let response = self.get_cached(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -96,7 +96,7 @@ impl HttpClient {
     // TODO Configure rate limits.
     // TODO Configure retries.
     // TODO Configure maximum connections.
-    async fn get_cache(
+    async fn get_cached(
         &self,
         request: &Request,
         robots: bool,
@@ -114,16 +114,9 @@ impl HttpClient {
                         return Err(HttpClientError::RobotsTxt);
                     }
 
-                    let permit = client.0.semaphore.acquire().await.unwrap();
-                    let start = client.0.timer.now();
-                    // TODO Use a custom timeout implementation that would be reliable on CI.
-                    let response =
-                        timeout(request.timeout(), client.0.client.get(request.as_bare()))
-                            .await??;
-                    let duration = client.0.timer.now().duration_since(start);
-                    drop(permit);
+                    let response = client.get_retried(&request).await?;
 
-                    Ok(Arc::new(Response::from_bare(response, duration).into()))
+                    Ok(Arc::new(response.into()))
                 })
             })
         };
@@ -141,6 +134,38 @@ impl HttpClient {
         }
         .response()
         .clone())
+    }
+
+    async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let mut result = self.get_throttled(request).await;
+
+        for _ in 0..request.retries() {
+            if let Ok(response) = &result
+                && !response.status().is_server_error()
+            {
+                break;
+            }
+
+            // TODO Insert the exponential backoff.
+
+            result = self.get_throttled(request).await;
+        }
+
+        result
+    }
+
+    async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let _permit = self.0.semaphore.acquire().await.unwrap();
+        self.get_once(request).await
+    }
+
+    async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let start = self.0.timer.now();
+        // TODO Use a custom timeout implementation that would be reliable on CI.
+        let response = timeout(request.timeout(), self.0.client.get(request.as_bare())).await??;
+        let duration = self.0.timer.now().duration_since(start);
+
+        Ok(Response::from_bare(response, duration))
     }
 
     #[async_recursion]
@@ -161,7 +186,7 @@ mod tests {
     use super::*;
     use crate::{
         cache::MemoryCache,
-        http_client::{BareResponse, StubHttpClient},
+        http_client::{BareResponse, StubHttpClient, StubSequenceHttpClient, build_stub_response},
         timer::StubTimer,
     };
     use core::time::Duration;
@@ -514,5 +539,167 @@ mod tests {
         .await;
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
+    }
+
+    mod retry {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test]
+        async fn retry_once_with_http_error() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (
+                            url.as_str().into(),
+                            Ok(BareResponse {
+                                url: url.clone(),
+                                status: StatusCode::INTERNAL_SERVER_ERROR,
+                                headers: Default::default(),
+                                body: vec![],
+                            })
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(1))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_once_with_non_http_error() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (
+                            url.as_str().into(),
+                            Err(HttpClientError::Http("foo".into()))
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(1))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_once_with_two_errors() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let failed_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::INTERNAL_SERVER_ERROR,
+                headers: Default::default(),
+                body: vec![],
+            };
+            let successful_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(successful_response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(1))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(failed_response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_twice_with_two_errors() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let failed_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::INTERNAL_SERVER_ERROR,
+                headers: Default::default(),
+                body: vec![],
+            };
+            let successful_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(successful_response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(2))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
+            );
+        }
     }
 }
