@@ -44,11 +44,11 @@ export default defineConfig({
               link: "/usage/command",
             },
             {
-              label: "Command",
+              label: "GitHub Action",
               link: "/usage/github-action",
             },
             {
-              label: "Command",
+              label: "Docker",
               link: "/usage/docker",
             },
           ],
