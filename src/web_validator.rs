@@ -501,10 +501,9 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                vec![("".into(), SiteConfig::default().set_recursive(true))],
+                [("".into(), SiteConfig::default().set_recursive(true))].into(),
             )]
-            .into_iter()
-            .collect(),
+            .into(),
             None,
         ))
         .await
