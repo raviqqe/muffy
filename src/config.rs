@@ -277,7 +277,7 @@ mod tests {
         let config = Config::new(
             vec![],
             SiteConfig::new(),
-            HashMap::from([(
+            [(
                 "example.com".to_string(),
                 [
                     ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
@@ -288,7 +288,8 @@ mod tests {
                 ]
                 .into_iter()
                 .collect(),
-            )]),
+            )]
+            .into(),
             None,
         );
 
