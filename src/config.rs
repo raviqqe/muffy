@@ -260,3 +260,13 @@ impl Default for SchemeConfig {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_site_config_defaults() {
+        foo
+    }
+}
