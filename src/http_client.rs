@@ -138,6 +138,11 @@ impl HttpClient {
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
         let _ = self.0.semaphore.acquire().await.unwrap();
+        self.get_retried(request).await
+    }
+
+    async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
+        for requst
         self.get_once(request).await
     }
 

@@ -9,6 +9,7 @@ pub struct Request {
     max_redirects: usize,
     timeout: Option<Duration>,
     max_age: Option<Duration>,
+    retries: usize,
 }
 
 impl Request {
@@ -18,6 +19,7 @@ impl Request {
             max_redirects: Default::default(),
             timeout: Default::default(),
             max_age: Default::default(),
+            retries: Default::default(),
         }
     }
 
@@ -37,6 +39,10 @@ impl Request {
         self.max_age
     }
 
+    pub const fn retries(&self) -> usize {
+        self.retries
+    }
+
     pub fn set_url(mut self, url: Url) -> Self {
         self.bare.url = url;
         self
@@ -54,6 +60,11 @@ impl Request {
 
     pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
         self.max_age = max_age;
+        self
+    }
+
+    pub const fn set_retries(mut self, retries: usize) -> Self {
+        self.retries = retries;
         self
     }
 
