@@ -145,7 +145,9 @@ impl HttpClient {
         let mut result = self.get_once(request).await;
 
         for _ in 0..request.retries() {
-            if result.is_ok() {
+            if let Ok(response) = &result
+                && !response.status().is_server_error()
+            {
                 break;
             }
 
