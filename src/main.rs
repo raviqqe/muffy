@@ -84,9 +84,9 @@ struct CheckArguments {
     /// Set concurrency.
     #[arg(long, default_value_t = muffy::default_concurrency())]
     concurrency: usize,
-    /// Set URL patterns to exclude from validation.
+    /// Set URL patterns to ignore from validation.
     #[arg(long)]
-    exclude: Vec<Regex>,
+    ignore: Vec<Regex>,
 }
 
 #[derive(clap::Args, Default)]
@@ -293,7 +293,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .collect(),
         Some(arguments.concurrency),
     )
-    .set_excluded_links(arguments.exclude.clone()))
+    .set_excluded_links(arguments.ignore.clone()))
 }
 
 #[cfg(test)]

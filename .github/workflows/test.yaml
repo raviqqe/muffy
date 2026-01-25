@@ -36,15 +36,15 @@ jobs:
             - --accept-status 200
             - --accept-status 403
             - --accept-status 999
-            - --exclude https://aclanthology.org/
+            - --ignore https://aclanthology.org/
             - https://raviqqe.com
           - - check
             - --accept-status 200
             - --accept-status 403
             - --accept-status 429
-            - --exclude https://codspeed.io/raviqqe/stak
-            - --exclude https://r7rs.org/
-            - --exclude https://www.gnu.org/software/guile/
+            - --ignore https://codspeed.io/raviqqe/stak
+            - --ignore https://r7rs.org/
+            - --ignore https://www.gnu.org/software/guile/
             - --header user-agent:Muffy/1.0.0
             - --header accept:text/html,*/*
             - https://raviqqe.com/stak
