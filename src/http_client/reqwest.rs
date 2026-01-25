@@ -52,3 +52,13 @@ impl From<reqwest::Error> for HttpClientError {
         Self::Http(error.to_string().into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn create() {
+        let _ = ReqwestHttpClient::new().unwrap();
+    }
+}
