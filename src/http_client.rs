@@ -142,8 +142,17 @@ impl HttpClient {
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
-        for requst
-        self.get_once(request).await
+        let mut result = self.get_once(request).await;
+
+        for _ in 0..request.retries() {
+            if result.is_ok() {
+                break;
+            }
+
+            result = self.get_once(request).await;
+        }
+
+        result
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
