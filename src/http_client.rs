@@ -146,6 +146,8 @@ impl HttpClient {
                 break;
             }
 
+            // TODO Insert the exponential backoff.
+
             result = self.get_throttled(request).await;
         }
 
