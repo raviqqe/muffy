@@ -266,7 +266,29 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_site_config_defaults() {
-        foo
+    fn site_config_path_order() {
+        let config = Config::new(
+            vec![],
+            SiteConfig::new(),
+            HashMap::from([(
+                "example.com".to_string(),
+                vec![
+                    ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/".to_string(), SiteConfig::new().set_recursive(false)),
+                ],
+            )]),
+            None,
+        );
+
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/foo/bar").unwrap())
+                .recursive()
+        );
+        assert!(
+            !config
+                .site(&Url::parse("http://example.com/other").unwrap())
+                .recursive()
+        );
     }
 }
