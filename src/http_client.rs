@@ -536,4 +536,54 @@ mod tests {
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
     }
+
+    mod retry {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test]
+        async fn retry() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubHttpClient::new(
+                        [
+                            build_stub_response(
+                                url.join("/robots.txt").unwrap().as_str(),
+                                StatusCode::OK,
+                                Default::default(),
+                                vec![],
+                            ),
+                            (
+                                url.as_str().into(),
+                                Ok(BareResponse {
+                                    url: url.clone(),
+                                    status: StatusCode::INTERNAL_SERVER_ERROR,
+                                    headers: Default::default(),
+                                    body: vec![],
+                                })
+                            ),
+                            (url.as_str().into(), Ok(response.clone())),
+                        ]
+                        .into_iter()
+                        .collect()
+                    ),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                    1,
+                )
+                .get(&Request::new(url, Default::default()).set_retries(1))
+                .await
+                .unwrap(),
+                Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            );
+        }
+    }
 }

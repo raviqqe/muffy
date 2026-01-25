@@ -106,29 +106,14 @@ pub struct SiteConfig {
     max_redirects: usize,
     timeout: Option<Duration>,
     max_age: Option<Duration>,
+    retries: usize,
     recursive: bool,
 }
 
 impl SiteConfig {
     /// Creates a site configuration.
-    pub const fn new(
-        headers: HeaderMap,
-        status: StatusConfig,
-        scheme: SchemeConfig,
-        max_redirects: usize,
-        timeout: Option<Duration>,
-        max_age: Option<Duration>,
-        recursive: bool,
-    ) -> Self {
-        Self {
-            headers,
-            status,
-            scheme,
-            max_redirects,
-            timeout,
-            max_age,
-            recursive,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Returns headers attached to HTTP requests.
@@ -159,6 +144,11 @@ impl SiteConfig {
     /// Returns a maximum cache age.
     pub const fn max_age(&self) -> Option<Duration> {
         self.max_age
+    }
+
+    /// Returns a number of retries.
+    pub const fn retries(&self) -> usize {
+        self.retries
     }
 
     /// Returns whether we should validate the website recursively.
@@ -196,15 +186,21 @@ impl SiteConfig {
         self
     }
 
-    /// Sets whether we should validate the website recursively
-    pub const fn set_recursive(mut self, recursive: bool) -> Self {
-        self.recursive = recursive;
+    /// Sets a timeout.
+    pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
+        self.timeout = duration;
         self
     }
 
-    /// Sets an HTTP timeout.
-    pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
-        self.timeout = duration;
+    /// Sets a number of retries.
+    pub const fn set_retries(mut self, retries: usize) -> Self {
+        self.retries = retries;
+        self
+    }
+
+    /// Sets whether we should validate the website recursively
+    pub const fn set_recursive(mut self, recursive: bool) -> Self {
+        self.recursive = recursive;
         self
     }
 }
