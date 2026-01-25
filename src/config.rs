@@ -2,6 +2,7 @@ mod error;
 mod serde;
 
 pub use self::{error::ConfigError, serde::compile_config};
+use core::cmp::Reverse;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
@@ -57,7 +58,7 @@ impl Config {
                 .into_iter()
                 .map(|(host, value)| {
                     let mut paths = value.into_iter().collect::<Vec<_>>();
-                    paths.sort_by_key(|(path, _)| path.clone());
+                    paths.sort_by_key(|(path, _)| Reverse(path.clone()));
                     (host, paths)
                 })
                 .collect(),
