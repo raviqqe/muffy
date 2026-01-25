@@ -59,6 +59,6 @@ mod tests {
 
     #[test]
     fn create() {
-        let _ = ReqwestHttpClient::new().unwrap();
+        ReqwestHttpClient::new().unwrap();
     }
 }
