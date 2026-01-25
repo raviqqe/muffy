@@ -20,12 +20,6 @@ pub enum HttpClientError {
     Utf8(Arc<str>),
 }
 
-impl HttpClientError {
-    pub fn new(error: String) -> Self {
-        Self::Http(error.into())
-    }
-}
-
 impl Error for HttpClientError {}
 
 impl Display for HttpClientError {
