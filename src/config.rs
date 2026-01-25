@@ -275,6 +275,7 @@ mod tests {
                 vec![
                     ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
                     ("/".to_string(), SiteConfig::new().set_recursive(false)),
+                    ("/bar".to_string(), SiteConfig::new().set_recursive(true)),
                 ],
             )]),
             None,
