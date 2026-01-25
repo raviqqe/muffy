@@ -279,13 +279,15 @@ mod tests {
             SiteConfig::new(),
             HashMap::from([(
                 "example.com".to_string(),
-                vec![
+                [
                     ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
                     ("/bar".to_string(), SiteConfig::new().set_recursive(true)),
                     ("/".to_string(), SiteConfig::new().set_recursive(false)),
                     ("/baz".to_string(), SiteConfig::new().set_recursive(true)),
                     ("/qux".to_string(), SiteConfig::new().set_recursive(true)),
-                ],
+                ]
+                .into_iter()
+                .collect(),
             )]),
             None,
         );

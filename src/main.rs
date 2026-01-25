@@ -283,7 +283,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .sorted_by_key(|url| url.host_str().map(ToOwned::to_owned))
             .chunk_by(|url| url.host_str().unwrap_or_default().to_string())
             .into_iter()
-            .map(|(host, urls)| -> (String, Vec<(String, SiteConfig)>) {
+            .map(|(host, urls)| {
                 (
                     host,
                     urls.map(|url| (url.path().into(), site.clone().set_recursive(true)))
