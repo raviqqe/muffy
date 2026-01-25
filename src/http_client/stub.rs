@@ -1,12 +1,9 @@
 use crate::http_client::{BareHttpClient, BareRequest, BareResponse, HttpClientError};
 use async_trait::async_trait;
 use core::time::Duration;
-#[cfg(test)]
 use http::{HeaderMap, StatusCode};
 use scc::HashMap;
 use tokio::time::sleep;
-
-#[cfg(test)]
 use url::Url;
 
 #[derive(Debug)]
@@ -43,7 +40,6 @@ impl BareHttpClient for StubHttpClient {
     }
 }
 
-#[cfg(test)]
 pub fn build_stub_response(
     url: &str,
     status: StatusCode,
