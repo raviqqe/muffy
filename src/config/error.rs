@@ -8,7 +8,7 @@ use url::ParseError;
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
-    /// Invalid site exclusion.
+    /// Invalid site ignorance.
     InvalidSiteIgnore(String),
     /// An invalid status code.
     HttpInvalidStatus(http::status::InvalidStatusCode),
