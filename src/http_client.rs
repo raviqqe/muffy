@@ -6,7 +6,7 @@ mod reqwest;
 mod stub;
 
 #[cfg(test)]
-pub use self::stub::{StubHttpClient, build_stub_response};
+pub use self::stub::{StubHttpClient, StubSequenceHttpClient, build_stub_response};
 pub use self::{
     bare::{BareHttpClient, BareRequest, BareResponse},
     error::HttpClientError,
@@ -182,7 +182,7 @@ mod tests {
     use super::*;
     use crate::{
         cache::MemoryCache,
-        http_client::{BareResponse, StubHttpClient},
+        http_client::{BareResponse, StubHttpClient, StubSequenceHttpClient, build_stub_response},
         timer::StubTimer,
     };
     use core::time::Duration;
@@ -553,28 +553,24 @@ mod tests {
 
             assert_eq!(
                 HttpClient::new(
-                    StubHttpClient::new(
-                        [
-                            build_stub_response(
-                                url.join("/robots.txt").unwrap().as_str(),
-                                StatusCode::OK,
-                                Default::default(),
-                                vec![],
-                            ),
-                            (
-                                url.as_str().into(),
-                                Ok(BareResponse {
-                                    url: url.clone(),
-                                    status: StatusCode::INTERNAL_SERVER_ERROR,
-                                    headers: Default::default(),
-                                    body: vec![],
-                                })
-                            ),
-                            (url.as_str().into(), Ok(response.clone())),
-                        ]
-                        .into_iter()
-                        .collect()
-                    ),
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (
+                            url.as_str().into(),
+                            Ok(BareResponse {
+                                url: url.clone(),
+                                status: StatusCode::INTERNAL_SERVER_ERROR,
+                                headers: Default::default(),
+                                body: vec![],
+                            })
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,
@@ -604,21 +600,17 @@ mod tests {
 
             assert_eq!(
                 HttpClient::new(
-                    StubHttpClient::new(
-                        [
-                            build_stub_response(
-                                url.join("/robots.txt").unwrap().as_str(),
-                                StatusCode::OK,
-                                Default::default(),
-                                vec![],
-                            ),
-                            (url.as_str().into(), Ok(failed_response.clone())),
-                            (url.as_str().into(), Ok(failed_response.clone())),
-                            (url.as_str().into(), Ok(successful_response.clone())),
-                        ]
-                        .into_iter()
-                        .collect()
-                    ),
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(failed_response.clone())),
+                        (url.as_str().into(), Ok(successful_response.clone())),
+                    ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,

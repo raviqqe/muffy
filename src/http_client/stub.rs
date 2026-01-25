@@ -1,6 +1,7 @@
 use crate::http_client::{BareHttpClient, BareRequest, BareResponse, HttpClientError};
 use async_trait::async_trait;
 use core::time::Duration;
+use core::{sync::atomic::AtomicUsize, sync::atomic::Ordering};
 use http::{HeaderMap, StatusCode};
 use scc::HashMap;
 use tokio::time::sleep;
@@ -37,6 +38,36 @@ impl BareHttpClient for StubHttpClient {
             .expect("stub response")
             .get()
             .clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct StubSequenceHttpClient {
+    results: Vec<(String, Result<BareResponse, HttpClientError>)>,
+    index: AtomicUsize,
+}
+
+impl StubSequenceHttpClient {
+    pub fn new(results: Vec<(String, Result<BareResponse, HttpClientError>)>) -> Self {
+        Self {
+            results,
+            index: Default::default(),
+        }
+    }
+}
+
+#[async_trait]
+impl BareHttpClient for StubSequenceHttpClient {
+    async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
+        let (url, result) = &self.results[self.index.load(Ordering::SeqCst)];
+
+        if url != request.url.as_str() {
+            return Err(HttpClientError::Http("unexpected url".into()));
+        }
+
+        self.index.fetch_add(1, Ordering::SeqCst);
+
+        result.clone()
     }
 }
 
