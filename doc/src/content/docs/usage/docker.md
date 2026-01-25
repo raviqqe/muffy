@@ -1,6 +1,6 @@
 ---
 title: Docker
-description: Running Docker containers of Muffy
+description: Running Muffy as a Docker container
 ---
 
 > TBD

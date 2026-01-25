@@ -1,6 +1,6 @@
 ---
 title: GitHub Action
-description: Using Muffy on GitHub Actions
+description: Running Muffy as a GitHub Action
 ---
 
 > TBD
