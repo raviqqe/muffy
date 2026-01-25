@@ -17,3 +17,15 @@ impl Timer for ClockTimer {
         Instant::now()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn timer() {
+        let timer = ClockTimer::new();
+
+        assert!(timer.now() <= Instant::now());
+    }
+}
