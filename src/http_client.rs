@@ -74,7 +74,7 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_cache(&request, robots).await?;
+            let response = self.get_cached(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -96,7 +96,7 @@ impl HttpClient {
     // TODO Configure rate limits.
     // TODO Configure retries.
     // TODO Configure maximum connections.
-    async fn get_cache(
+    async fn get_cached(
         &self,
         request: &Request,
         robots: bool,
