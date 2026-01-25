@@ -2,6 +2,7 @@ mod error;
 mod serde;
 
 pub use self::{error::ConfigError, serde::compile_config};
+use core::cmp::Reverse;
 use core::{ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
@@ -9,7 +10,7 @@ use rlimit::{Resource, getrlimit};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-type HostConfig = Vec<(String, SiteConfig)>;
+type HostConfig = HashMap<String, SiteConfig>;
 
 /// Default accepted URL schemes.
 pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
@@ -37,7 +38,7 @@ pub struct Config {
     roots: Vec<String>,
     excluded_links: Vec<Regex>,
     default: SiteConfig,
-    sites: HashMap<String, HostConfig>,
+    sites: HashMap<String, Vec<(String, SiteConfig)>>,
     concurrency: Option<usize>,
 }
 
@@ -53,7 +54,14 @@ impl Config {
             roots,
             excluded_links: Default::default(),
             default,
-            sites,
+            sites: sites
+                .into_iter()
+                .map(|(host, value)| {
+                    let mut paths = value.into_iter().collect::<Vec<_>>();
+                    paths.sort_by_key(|(path, _)| Reverse(path.clone()));
+                    (host, paths)
+                })
+                .collect(),
             concurrency,
         }
     }
@@ -69,7 +77,7 @@ impl Config {
     }
 
     /// Returns websites.
-    pub const fn sites(&self) -> &HashMap<String, HostConfig> {
+    pub const fn sites(&self) -> &HashMap<String, Vec<(String, SiteConfig)>> {
         &self.sites
     }
 
@@ -258,5 +266,58 @@ impl Default for SchemeConfig {
                 .map(ToOwned::to_owned)
                 .collect(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn site_config_path_order() {
+        let config = Config::new(
+            vec![],
+            SiteConfig::new(),
+            [(
+                "example.com".to_string(),
+                [
+                    ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/bar".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/".to_string(), SiteConfig::new().set_recursive(false)),
+                    ("/baz".to_string(), SiteConfig::new().set_recursive(true)),
+                    ("/qux".to_string(), SiteConfig::new().set_recursive(true)),
+                ]
+                .into_iter()
+                .collect(),
+            )]
+            .into(),
+            None,
+        );
+
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/foo").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/bar").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/baz").unwrap())
+                .recursive()
+        );
+        assert!(
+            config
+                .site(&Url::parse("http://example.com/qux").unwrap())
+                .recursive()
+        );
+        assert!(
+            !config
+                .site(&Url::parse("http://example.com/other").unwrap())
+                .recursive()
+        );
     }
 }
