@@ -155,7 +155,7 @@ impl HttpClient {
     }
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let _ = self.0.semaphore.acquire().await.unwrap();
+        let _permit = self.0.semaphore.acquire().await.unwrap();
         self.get_once(request).await
     }
 
