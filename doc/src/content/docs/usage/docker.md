@@ -1,6 +1,6 @@
 ---
 title: Docker
-description: Running Muffy as a Docker container
+description: How to run Muffy as a Docker container
 ---
 
 > TBD
