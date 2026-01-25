@@ -114,7 +114,7 @@ impl HttpClient {
                         return Err(HttpClientError::RobotsTxt);
                     }
 
-                    let response = client.get_throttled(&request).await?;
+                    let response = client.get_retried(&request).await?;
 
                     Ok(Arc::new(response.into()))
                 })
@@ -136,13 +136,8 @@ impl HttpClient {
         .clone())
     }
 
-    async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let _ = self.0.semaphore.acquire().await.unwrap();
-        self.get_retried(request).await
-    }
-
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let mut result = self.get_once(request).await;
+        let mut result = self.get_throttled(request).await;
 
         for _ in 0..request.retries() {
             if let Ok(response) = &result
@@ -151,10 +146,15 @@ impl HttpClient {
                 break;
             }
 
-            result = self.get_once(request).await;
+            result = self.get_throttled(request).await;
         }
 
         result
+    }
+
+    async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let _ = self.0.semaphore.acquire().await.unwrap();
+        self.get_once(request).await
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
