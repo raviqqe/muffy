@@ -38,8 +38,21 @@ export default defineConfig({
           link: "/install",
         },
         {
+          items: [
+            {
+              label: "Command",
+              link: "/usage/command",
+            },
+            {
+              label: "Command",
+              link: "/usage/github-action",
+            },
+            {
+              label: "Command",
+              link: "/usage/docker",
+            },
+          ],
           label: "Usage",
-          link: "/usage",
         },
       ],
       social: [
