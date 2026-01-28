@@ -77,7 +77,7 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { ignore } = &site.inner
+        if let SiteConfigInner::Excluded { ignore } = &site.inner
             && !ignore
         {
             return Err(ConfigError::InvalidSiteIgnore(url.clone()));
@@ -88,7 +88,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .iter()
         .flat_map(|(url, site)| {
-            if matches!(site, SiteConfig::Excluded { ignore: true }) {
+            if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
                 Some(Regex::new(url))
             } else {
                 None
