@@ -35,15 +35,21 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    default: Option<IncludedSiteConfig>,
     sites: HashMap<String, SiteConfig>,
     concurrency: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+struct SiteConfig {
+    #[serde(flatten)]
+    inner: SiteConfigInner,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 #[serde(untagged)]
-enum SiteConfig {
+enum SiteConfigInner {
     Included(Box<IncludedSiteConfig>),
     Excluded { ignore: bool },
 }
