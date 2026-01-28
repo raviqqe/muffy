@@ -89,12 +89,15 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .iter()
         .flat_map(|(_, site)| {
             if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
-                site.roots.iter().map(ToString::to_string).collect()
+                site.roots
+                    .iter()
+                    .map(|url| Regex::new(url.as_str()))
+                    .collect()
             } else {
                 vec![]
             }
         })
-        .collect();
+        .collect::<Result<_, _>>();
     let included_sites = config
         .sites
         .into_iter()
