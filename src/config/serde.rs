@@ -54,12 +54,6 @@ enum SiteConfigInner {
     Excluded { ignore: bool },
 }
 
-impl From<IncludedSiteConfig> for SiteConfig {
-    fn from(site: IncludedSiteConfig) -> Self {
-        Self::Included(site.into())
-    }
-}
-
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct IncludedSiteConfig {
