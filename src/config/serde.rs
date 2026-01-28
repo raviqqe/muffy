@@ -91,6 +91,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
                 site.roots
                     .iter()
+                    // TODO Escape it first.
                     .map(|url| Regex::new(url.as_str()))
                     .collect()
             } else {
