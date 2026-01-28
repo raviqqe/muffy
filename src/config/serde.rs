@@ -44,7 +44,7 @@ pub struct SerializableConfig {
 struct SiteConfig {
     roots: Vec<Url>,
     #[serde(flatten)]
-    config: SiteConfigInner,
+    inner: SiteConfigInner,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -77,7 +77,7 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { ignore } = site
+        if let SiteConfig::Excluded { ignore } = &site.inner
             && !ignore
         {
             return Err(ConfigError::InvalidSiteIgnore(url.clone()));
