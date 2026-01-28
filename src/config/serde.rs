@@ -102,8 +102,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let included_sites = config
         .sites
         .into_iter()
-        .filter_map(|(url, site)| {
-            if let SiteConfig::Included(site) = site {
+        .filter_map(|(_, site)| {
+            if let SiteConfigInner::Included(site) = &site.inner {
                 Some((url, site))
             } else {
                 None
