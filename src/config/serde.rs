@@ -104,16 +104,19 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .into_iter()
         .flat_map(|(_, site)| {
             if let SiteConfigInner::Included(inner) = &site.inner {
-                site.roots.iter().map(ToString::to_string).collect()
+                site.roots
+                    .iter()
+                    .map(|url| (url.to_string(), inner))
+                    .collect()
             } else {
                 vec![]
             }
         })
-        .collect::<HashMap<_>>();
+        .collect::<HashMap<_, _>>();
     let roots = included_sites
         .iter()
         .filter(|(_, site)| site.recurse == Some(true))
-        .map(|(url, _)| url.to_string())
+        .map(|(url, _)| url.clone())
         .collect();
     let default = compile_site_config(config.default.unwrap_or_default(), &DEFAULT_SITE_CONFIG)?;
     let sites = included_sites
