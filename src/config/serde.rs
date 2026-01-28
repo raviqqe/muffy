@@ -94,7 +94,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 vec![]
             }
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Vec<_>>();
     let included_sites = config
         .sites
         .into_iter()
