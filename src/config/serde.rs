@@ -87,11 +87,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let excluded_links = config
         .sites
         .iter()
-        .flat_map(|(url, site)| {
+        .flat_map(|(_, site)| {
             if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
-                Some(Regex::new(url))
+                site.roots.iter().map(ToString::to_string).collect()
             } else {
-                None
+                vec![]
             }
         })
         .collect::<Result<Vec<_>, _>>()?;
