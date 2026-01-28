@@ -42,8 +42,9 @@ pub struct SerializableConfig {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
+    roots: Vec<Url>,
     #[serde(flatten)]
-    inner: SiteConfigInner,
+    config: SiteConfigInner,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
