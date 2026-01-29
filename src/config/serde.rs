@@ -121,18 +121,15 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             }
         })
         .collect::<Result<_, _>>()?;
-    // TODO
     let included_sites = config
         .sites
-        .iter()
-        .flat_map(|(_, site)| {
-            if let SiteConfig::Included(inner) = &site.config {
-                site.roots
-                    .iter()
-                    .map(|url| (url.to_string(), inner))
-                    .collect()
+        .sites
+        .into_iter()
+        .flat_map(|(name, site)| {
+            if let SiteConfig::Included(inner) = site.config {
+                Some((name.clone(), inner))
             } else {
-                vec![]
+                None
             }
         })
         .collect::<HashMap<_, _>>();
