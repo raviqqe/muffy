@@ -14,6 +14,8 @@ use std::{
 };
 use url::Url;
 
+const DEFAULT_SITE_NAME: &str = "default";
+
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
     super::SiteConfig::new()
         .set_status(super::StatusConfig::new(
@@ -35,8 +37,15 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    sites: HashMap<String, RootSiteConfig>,
+    sites: SiteSet,
     concurrency: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SiteSet {
+    default: Option<SiteConfig>,
+    #[serde(flatten)]
+    sites: HashMap<String, RootSiteConfig>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -76,15 +85,28 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { ignore } = &site.config
+    for (name, site) in config
+        .sites
+        .sites
+        .iter()
+        .map(|(name, site)| (name.as_str(), &site.config))
+        .chain(
+            config
+                .sites
+                .default
+                .as_ref()
+                .map(|site| (DEFAULT_SITE_NAME, site)),
+        )
+    {
+        if let SiteConfig::Excluded { ignore } = &site
             && !ignore
         {
-            return Err(ConfigError::InvalidSiteIgnore(url.clone()));
+            return Err(ConfigError::InvalidSiteIgnore(name.to_owned()));
         }
     }
 
     let excluded_links = config
+        .sites
         .sites
         .iter()
         .flat_map(|(_, site)| {
@@ -99,6 +121,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             }
         })
         .collect::<Result<_, _>>()?;
+    // TODO
     let included_sites = config
         .sites
         .iter()
