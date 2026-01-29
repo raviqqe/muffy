@@ -98,10 +98,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 vec![]
             }
         })
-        .collect::<Result<_, _>>();
+        .collect::<Result<_, _>>()?;
     let included_sites = config
         .sites
-        .into_iter()
+        .iter()
         .flat_map(|(_, site)| {
             if let SiteConfigInner::Included(inner) = &site.inner {
                 site.roots
@@ -118,7 +118,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .filter(|(_, site)| site.recurse == Some(true))
         .map(|(url, _)| url.clone())
         .collect();
-    let default = compile_site_config(config.default.unwrap_or_default(), &DEFAULT_SITE_CONFIG)?;
+    let default = if let Some(default) = included_sites.get("default") {
+        compile_site_config(&default, None)?
+    } else {
+        DEFAULT_SITE_CONFIG.clone()
+    };
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -132,7 +136,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 host,
                 sites
                     .map(|(url, site)| {
-                        Ok((url.path().to_owned(), compile_site_config(*site, &default)?))
+                        // TODO
+                        Ok((url.path().to_owned(), compile_site_config(&site, None)?))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
@@ -146,8 +151,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 }
 
 fn compile_site_config(
-    site: IncludedSiteConfig,
-    default: &super::SiteConfig,
+    site: &IncludedSiteConfig,
+    parent: Option<&super::SiteConfig>,
 ) -> Result<super::SiteConfig, ConfigError> {
     Ok(super::SiteConfig::new()
         .set_headers(
@@ -161,7 +166,7 @@ fn compile_site_config(
                         .collect::<Result<_, ConfigError>>()
                 })
                 .transpose()?
-                .unwrap_or_else(|| default.headers().clone()),
+                .unwrap_or_else(|| parent.headers().clone()),
         )
         .set_status(
             site.statuses
@@ -174,21 +179,21 @@ fn compile_site_config(
                     ))
                 })
                 .transpose()?
-                .unwrap_or_else(|| default.status().clone()),
+                .unwrap_or_else(|| parent.status().clone()),
         )
         .set_scheme(
             site.schemes
                 .map(super::SchemeConfig::new)
-                .unwrap_or(default.scheme().clone()),
+                .unwrap_or(parent.scheme().clone()),
         )
-        .set_max_redirects(site.max_redirects.unwrap_or(default.max_redirects()))
-        .set_timeout(site.timeout.as_deref().copied().or(default.timeout()))
+        .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
+        .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
         .set_max_age(
             site.cache
                 .and_then(|cache| cache.max_age.as_deref().copied())
-                .or(default.max_age()),
+                .or(parent.max_age()),
         )
-        .set_retries(site.retries.unwrap_or(default.retries()))
+        .set_retries(site.retries.unwrap_or(parent.retries()))
         .set_recursive(site.recurse == Some(true)))
 }
 
