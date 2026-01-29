@@ -35,22 +35,22 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    sites: HashMap<String, SiteConfig>,
+    sites: HashMap<String, RootSiteConfig>,
     concurrency: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct SiteConfig {
+struct RootSiteConfig {
     roots: Vec<Url>,
     #[serde(flatten)]
-    inner: SiteConfigInner,
+    config: SiteConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 #[serde(untagged)]
-enum SiteConfigInner {
+enum SiteConfig {
     Included(Box<IncludedSiteConfig>),
     Excluded { ignore: bool },
 }
@@ -77,7 +77,7 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     for (url, site) in &config.sites {
-        if let SiteConfigInner::Excluded { ignore } = &site.inner
+        if let SiteConfig::Excluded { ignore } = &site.config
             && !ignore
         {
             return Err(ConfigError::InvalidSiteIgnore(url.clone()));
@@ -88,7 +88,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .iter()
         .flat_map(|(_, site)| {
-            if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
+            if matches!(site.config, SiteConfig::Excluded { ignore: true }) {
                 site.roots
                     .iter()
                     // TODO Escape it first.
@@ -103,7 +103,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .iter()
         .flat_map(|(_, site)| {
-            if let SiteConfigInner::Included(inner) = &site.inner {
+            if let SiteConfig::Included(inner) = &site.config {
                 site.roots
                     .iter()
                     .map(|url| (url.to_string(), inner))
@@ -329,7 +329,7 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://bar.com/".to_owned(),
@@ -393,11 +393,11 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://foo.net/".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
             ]),
             concurrency: None,
@@ -476,7 +476,7 @@ mod tests {
     fn compile_invalid_excluded_site_url() {
         let config = SerializableConfig {
             default: None,
-            sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { ignore: true })]),
+            sites: HashMap::from([("[".to_owned(), RootSiteConfig::Excluded { ignore: true })]),
             concurrency: None,
         };
 
