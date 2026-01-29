@@ -35,23 +35,24 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    default: Option<IncludedSiteConfig>,
     sites: HashMap<String, SiteConfig>,
     concurrency: Option<usize>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[serde(untagged)]
-enum SiteConfig {
-    Included(Box<IncludedSiteConfig>),
-    Excluded { ignore: bool },
+struct SiteConfig {
+    roots: Vec<Url>,
+    #[serde(flatten)]
+    inner: SiteConfigInner,
 }
 
-impl From<IncludedSiteConfig> for SiteConfig {
-    fn from(site: IncludedSiteConfig) -> Self {
-        Self::Included(site.into())
-    }
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+#[serde(untagged)]
+enum SiteConfigInner {
+    Included(Box<IncludedSiteConfig>),
+    Excluded { ignore: bool },
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -76,7 +77,7 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { ignore } = site
+        if let SiteConfigInner::Excluded { ignore } = &site.inner
             && !ignore
         {
             return Err(ConfigError::InvalidSiteIgnore(url.clone()));
@@ -86,25 +87,32 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let excluded_links = config
         .sites
         .iter()
-        .flat_map(|(url, site)| {
-            if matches!(site, SiteConfig::Excluded { ignore: true }) {
-                Some(Regex::new(url))
+        .flat_map(|(_, site)| {
+            if matches!(site.inner, SiteConfigInner::Excluded { ignore: true }) {
+                site.roots
+                    .iter()
+                    // TODO Escape it first.
+                    .map(|url| Regex::new(url.as_str()))
+                    .collect()
             } else {
-                None
+                vec![]
             }
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<_, _>>();
     let included_sites = config
         .sites
         .into_iter()
-        .filter_map(|(url, site)| {
-            if let SiteConfig::Included(site) = site {
-                Some((url, site))
+        .flat_map(|(_, site)| {
+            if let SiteConfigInner::Included(inner) = &site.inner {
+                site.roots
+                    .iter()
+                    .map(|url| (url.to_string(), inner))
+                    .collect()
             } else {
-                None
+                vec![]
             }
         })
-        .collect::<Vec<_>>();
+        .collect::<HashMap<_, _>>();
     let roots = included_sites
         .iter()
         .filter(|(_, site)| site.recurse == Some(true))
