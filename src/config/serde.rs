@@ -119,28 +119,40 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 vec![]
             }
         })
+        .chain(
+            if matches!(
+                config.sites.default,
+                Some(SiteConfig::Excluded { ignore: true })
+            ) {
+                Some(Regex::new(".*"))
+            } else {
+                None
+            },
+        )
         .collect::<Result<_, _>>()?;
     let included_sites = config
         .sites
         .sites
         .into_iter()
         .flat_map(|(name, site)| {
-            if let SiteConfig::Included(inner) = site.config {
-                Some((name.clone(), inner))
+            if let SiteConfig::Included(config) = site.config {
+                Some((name.as_str(), (site.roots, config)))
             } else {
                 None
             }
         })
         .collect::<HashMap<_, _>>();
     let roots = included_sites
-        .iter()
-        .filter(|(_, site)| site.recurse == Some(true))
-        .map(|(url, _)| url.clone())
+        .values()
+        .filter(|(roots, config)| config.recurse == Some(true))
+        .flat_map(|(roots, config)| roots)
+        .map(|url| url.to_string())
         .collect();
-    let Some(default) = included_sites.get("default") else {
-        return Err(ConfigError::DefaultSiteMissing);
+    let default = if let Some(SiteConfig::Included(default)) = &config.sites.default {
+        compile_site_config(default, None)?
+    } else {
+        DEFAULT_SITE_CONFIG.clone()
     };
-    let default = compile_site_config(&default, None)?;
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
