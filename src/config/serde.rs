@@ -118,11 +118,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .filter(|(_, site)| site.recurse == Some(true))
         .map(|(url, _)| url.clone())
         .collect();
-    let default = if let Some(default) = included_sites.get("default") {
-        compile_site_config(&default, None)?
-    } else {
-        DEFAULT_SITE_CONFIG.clone()
+    let Some(default) = included_sites.get("default") else {
+        return Err(ConfigError::DefaultSiteMissing);
     };
+    let default = compile_site_config(&default, None)?;
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -154,9 +153,12 @@ fn compile_site_config(
     site: &IncludedSiteConfig,
     parent: Option<&super::SiteConfig>,
 ) -> Result<super::SiteConfig, ConfigError> {
+    let parent = parent.unwrap_or(&DEFAULT_SITE_CONFIG);
+
     Ok(super::SiteConfig::new()
         .set_headers(
             site.headers
+                .as_ref()
                 .map(|headers| {
                     headers
                         .into_iter()
@@ -170,10 +172,12 @@ fn compile_site_config(
         )
         .set_status(
             site.statuses
+                .as_ref()
                 .map(|codes| {
                     Ok::<_, ConfigError>(super::StatusConfig::new(
                         codes
                             .into_iter()
+                            .copied()
                             .map(StatusCode::try_from)
                             .collect::<Result<_, _>>()?,
                     ))
@@ -183,6 +187,8 @@ fn compile_site_config(
         )
         .set_scheme(
             site.schemes
+                .as_ref()
+                .cloned()
                 .map(super::SchemeConfig::new)
                 .unwrap_or(parent.scheme().clone()),
         )
@@ -190,6 +196,7 @@ fn compile_site_config(
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
         .set_max_age(
             site.cache
+                .as_ref()
                 .and_then(|cache| cache.max_age.as_deref().copied())
                 .or(parent.max_age()),
         )
