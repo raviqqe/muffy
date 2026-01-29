@@ -14,6 +14,8 @@ use std::{
 };
 use url::Url;
 
+const DEFAULT_SITE_NAME: &str = "default";
+
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
     super::SiteConfig::new()
         .set_status(super::StatusConfig::new(
@@ -35,9 +37,23 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    default: Option<IncludedSiteConfig>,
-    sites: HashMap<String, SiteConfig>,
+    sites: SiteSet,
     concurrency: Option<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SiteSet {
+    default: Option<SiteConfig>,
+    #[serde(flatten)]
+    sites: HashMap<String, RootSiteConfig>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RootSiteConfig {
+    roots: Vec<Url>,
+    #[serde(flatten)]
+    config: SiteConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,12 +62,6 @@ pub struct SerializableConfig {
 enum SiteConfig {
     Included(Box<IncludedSiteConfig>),
     Excluded { ignore: bool },
-}
-
-impl From<IncludedSiteConfig> for SiteConfig {
-    fn from(site: IncludedSiteConfig) -> Self {
-        Self::Included(site.into())
-    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -75,42 +85,74 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    for (url, site) in &config.sites {
-        if let SiteConfig::Excluded { ignore } = site
+    for (name, site) in config
+        .sites
+        .sites
+        .iter()
+        .map(|(name, site)| (name.as_str(), &site.config))
+        .chain(
+            config
+                .sites
+                .default
+                .as_ref()
+                .map(|site| (DEFAULT_SITE_NAME, site)),
+        )
+    {
+        if let SiteConfig::Excluded { ignore } = &site
             && !ignore
         {
-            return Err(ConfigError::InvalidSiteIgnore(url.clone()));
+            return Err(ConfigError::InvalidSiteIgnore(name.to_owned()));
         }
     }
 
     let excluded_links = config
         .sites
+        .sites
         .iter()
-        .flat_map(|(url, site)| {
-            if matches!(site, SiteConfig::Excluded { ignore: true }) {
-                Some(Regex::new(url))
+        .flat_map(|(_, site)| {
+            if matches!(site.config, SiteConfig::Excluded { ignore: true }) {
+                site.roots
+                    .iter()
+                    .map(|url| Regex::new(&regex::escape(url.as_str())))
+                    .collect()
             } else {
-                None
+                vec![]
             }
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .chain(
+            if matches!(
+                config.sites.default,
+                Some(SiteConfig::Excluded { ignore: true })
+            ) {
+                Some(Regex::new(".*"))
+            } else {
+                None
+            },
+        )
+        .collect::<Result<_, _>>()?;
     let included_sites = config
         .sites
+        .sites
         .into_iter()
-        .filter_map(|(url, site)| {
-            if let SiteConfig::Included(site) = site {
-                Some((url, site))
+        .flat_map(|(name, site)| {
+            if let SiteConfig::Included(config) = site.config {
+                Some((name.as_str(), (site.roots, config)))
             } else {
                 None
             }
         })
-        .collect::<Vec<_>>();
+        .collect::<HashMap<_, _>>();
     let roots = included_sites
-        .iter()
-        .filter(|(_, site)| site.recurse == Some(true))
-        .map(|(url, _)| url.clone())
+        .values()
+        .filter(|(roots, config)| config.recurse == Some(true))
+        .flat_map(|(roots, config)| roots)
+        .map(|url| url.to_string())
         .collect();
-    let default = compile_site_config(config.default.unwrap_or_default(), &DEFAULT_SITE_CONFIG)?;
+    let default = if let Some(SiteConfig::Included(default)) = &config.sites.default {
+        compile_site_config(default, None)?
+    } else {
+        DEFAULT_SITE_CONFIG.clone()
+    };
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -124,7 +166,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 host,
                 sites
                     .map(|(url, site)| {
-                        Ok((url.path().to_owned(), compile_site_config(*site, &default)?))
+                        // TODO
+                        Ok((url.path().to_owned(), compile_site_config(&site, None)?))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
@@ -138,12 +181,15 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 }
 
 fn compile_site_config(
-    site: IncludedSiteConfig,
-    default: &super::SiteConfig,
+    site: &IncludedSiteConfig,
+    parent: Option<&super::SiteConfig>,
 ) -> Result<super::SiteConfig, ConfigError> {
+    let parent = parent.unwrap_or(&DEFAULT_SITE_CONFIG);
+
     Ok(super::SiteConfig::new()
         .set_headers(
             site.headers
+                .as_ref()
                 .map(|headers| {
                     headers
                         .into_iter()
@@ -153,34 +199,39 @@ fn compile_site_config(
                         .collect::<Result<_, ConfigError>>()
                 })
                 .transpose()?
-                .unwrap_or_else(|| default.headers().clone()),
+                .unwrap_or_else(|| parent.headers().clone()),
         )
         .set_status(
             site.statuses
+                .as_ref()
                 .map(|codes| {
                     Ok::<_, ConfigError>(super::StatusConfig::new(
                         codes
                             .into_iter()
+                            .copied()
                             .map(StatusCode::try_from)
                             .collect::<Result<_, _>>()?,
                     ))
                 })
                 .transpose()?
-                .unwrap_or_else(|| default.status().clone()),
+                .unwrap_or_else(|| parent.status().clone()),
         )
         .set_scheme(
             site.schemes
+                .as_ref()
+                .cloned()
                 .map(super::SchemeConfig::new)
-                .unwrap_or(default.scheme().clone()),
+                .unwrap_or(parent.scheme().clone()),
         )
-        .set_max_redirects(site.max_redirects.unwrap_or(default.max_redirects()))
-        .set_timeout(site.timeout.as_deref().copied().or(default.timeout()))
+        .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
+        .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
         .set_max_age(
             site.cache
+                .as_ref()
                 .and_then(|cache| cache.max_age.as_deref().copied())
-                .or(default.max_age()),
+                .or(parent.max_age()),
         )
-        .set_retries(site.retries.unwrap_or(default.retries()))
+        .set_retries(site.retries.unwrap_or(parent.retries()))
         .set_recursive(site.recurse == Some(true)))
 }
 
@@ -309,7 +360,7 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://bar.com/".to_owned(),
@@ -373,11 +424,11 @@ mod tests {
                 ),
                 (
                     "https://foo.com/bar".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
                 (
                     "https://foo.net/".to_owned(),
-                    SiteConfig::Excluded { ignore: true },
+                    RootSiteConfig::Excluded { ignore: true },
                 ),
             ]),
             concurrency: None,
@@ -456,7 +507,7 @@ mod tests {
     fn compile_invalid_excluded_site_url() {
         let config = SerializableConfig {
             default: None,
-            sites: HashMap::from([("[".to_owned(), SiteConfig::Excluded { ignore: true })]),
+            sites: HashMap::from([("[".to_owned(), RootSiteConfig::Excluded { ignore: true })]),
             concurrency: None,
         };
 

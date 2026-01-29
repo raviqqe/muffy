@@ -8,6 +8,8 @@ use url::ParseError;
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
+    /// Default site missing.
+    DefaultSiteMissing,
     /// Invalid site ignorance.
     InvalidSiteIgnore(String),
     /// An invalid status code.
@@ -25,6 +27,9 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::DefaultSiteMissing => {
+                write!(formatter, "default site missing in configuration file")
+            }
             Self::InvalidSiteIgnore(url) => {
                 write!(formatter, "ignore field must be true if present: {url}")
             }
