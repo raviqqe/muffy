@@ -113,8 +113,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             if matches!(site.config, SiteConfig::Excluded { ignore: true }) {
                 site.roots
                     .iter()
-                    // TODO Escape it first.
-                    .map(|url| Regex::new(url.as_str()))
+                    .map(|url| Regex::new(&regex::escape(url.as_str())))
                     .collect()
             } else {
                 vec![]
