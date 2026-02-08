@@ -119,7 +119,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     .map(|url| Regex::new(&regex::escape(url.as_str())))
                     .collect()
             } else {
-                vec![]
+                Default::default()
             }
         })
         .chain(
