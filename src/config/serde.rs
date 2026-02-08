@@ -106,6 +106,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         }
     }
 
+    // TODO Check circular dependencies between sites.
+
     let excluded_links = config
         .sites
         .sites
