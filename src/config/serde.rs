@@ -73,6 +73,7 @@ struct IncludedSiteConfig {
     timeout: Option<DurationString>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
+    // TODO Generalize the retry configuration.
     retries: Option<usize>,
     cache: Option<CacheConfig>,
 }
