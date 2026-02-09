@@ -152,10 +152,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .map(|url| url.to_string())
         .collect();
     let default = if let Some(SiteConfig::Included(default)) = &config.sites.default {
-        compile_site_config(default, None)?
+        compile_site_config(default, &DEFAULT_SITE_CONFIG)?
     } else {
         DEFAULT_SITE_CONFIG.clone()
     };
+
     let sites = included_sites
         .into_iter()
         .map(|(url, site)| Ok((Url::parse(&url)?, site)))
@@ -185,10 +186,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
 fn compile_site_config(
     site: &IncludedSiteConfig,
-    parent: Option<&super::SiteConfig>,
+    parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
-    let parent = parent.unwrap_or(&DEFAULT_SITE_CONFIG);
-
     Ok(super::SiteConfig::new()
         .set_headers(
             site.headers
