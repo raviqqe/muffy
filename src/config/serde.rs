@@ -56,17 +56,9 @@ struct RootSiteConfig {
     config: SiteConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-#[serde(untagged)]
-enum SiteConfig {
-    Included(Box<IncludedSiteConfig>),
-    Excluded { ignore: bool },
-}
-
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct IncludedSiteConfig {
+struct SiteConfig {
     extend: Option<String>,
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
@@ -77,6 +69,7 @@ struct IncludedSiteConfig {
     // TODO Generalize the retry configuration.
     retries: Option<usize>,
     cache: Option<CacheConfig>,
+    ignore: bool,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
