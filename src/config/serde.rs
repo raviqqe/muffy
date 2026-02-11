@@ -413,7 +413,10 @@ mod tests {
                         "foo_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig { ignore: Some(true), ..Default::default() },
+                            config: SiteConfig {
+                                ignore: Some(true),
+                                ..Default::default()
+                            },
                         },
                     ),
                     (
@@ -488,14 +491,20 @@ mod tests {
                         "foo_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig { ignore: Some(true), ..Default::default() },
+                            config: SiteConfig {
+                                ignore: Some(true),
+                                ..Default::default()
+                            },
                         },
                     ),
                     (
                         "foo_net_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.net/").unwrap()],
-                            config: SiteConfig { ignore: Some(true), ..Default::default() },
+                            config: SiteConfig {
+                                ignore: Some(true),
+                                ..Default::default()
+                            },
                         },
                     ),
                 ]),
@@ -583,7 +592,10 @@ mod tests {
                     "foo".to_owned(),
                     RootSiteConfig {
                         roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: SiteConfig { ignore: Some(false), ..Default::default() },
+                        config: SiteConfig {
+                            ignore: Some(false),
+                            ..Default::default()
+                        },
                     },
                 )]),
             },
