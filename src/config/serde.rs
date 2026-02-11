@@ -147,7 +147,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .map(|url| url.to_string())
         .collect();
     let default = if let Some(default) = &config.sites.default {
-        compile_site_config(&default, &DEFAULT_SITE_CONFIG)?
+        compile_site_config(default, &DEFAULT_SITE_CONFIG)?
     } else {
         DEFAULT_SITE_CONFIG.clone()
     };
