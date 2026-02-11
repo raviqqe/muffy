@@ -165,8 +165,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                &site,
-                &site
+                site,
+                site
                     .extend
                     .as_ref()
                     .map(|name| {
@@ -175,7 +175,6 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                             .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))
                     })
                     .transpose()?
-                    .as_deref()
                     .unwrap_or(&DEFAULT_SITE_CONFIG),
             )?,
         );
@@ -185,7 +184,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .iter()
         .flat_map(|(name, (roots, site))| {
             roots
-                .into_iter()
+                .iter()
                 .map(|root| (root, (name, site)))
                 .collect::<Vec<_>>()
         })
@@ -199,7 +198,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     .map(|(url, (name, site))| {
                         Ok((
                             url.path().to_owned(),
-                            compile_site_config(&site, &configs[name.as_str()])?,
+                            compile_site_config(site, &configs[name.as_str()])?,
                         ))
                     })
                     .collect::<Result<_, ConfigError>>()?,
@@ -223,7 +222,7 @@ fn compile_site_config(
                 .as_ref()
                 .map(|headers| {
                     headers
-                        .into_iter()
+                        .iter()
                         .map(|(key, value)| {
                             Ok((HeaderName::try_from(key)?, HeaderValue::try_from(value)?))
                         })
@@ -238,7 +237,7 @@ fn compile_site_config(
                 .map(|codes| {
                     Ok::<_, ConfigError>(super::StatusConfig::new(
                         codes
-                            .into_iter()
+                            .iter()
                             .copied()
                             .map(StatusCode::try_from)
                             .collect::<Result<_, _>>()?,
