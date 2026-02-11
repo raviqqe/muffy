@@ -183,7 +183,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
     let sites = included_sites
         .iter()
-        .flat_map(|(name, (roots, site))| roots.into_iter().map(|root| (root, (name, &site))))
+        .flat_map(|(name, (roots, site))| {
+            roots
+                .into_iter()
+                .map(|root| (root, (name, site)))
+                .collect::<Vec<_>>()
+        })
         .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
         .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
         .into_iter()
