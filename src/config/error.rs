@@ -16,6 +16,8 @@ pub enum ConfigError {
     HttpInvalidHeaderName(http::header::InvalidHeaderName),
     /// An invalid header value.
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
+    /// Missing parent configuration.
+    MissingParentConfig(String),
     /// A regular expression error.
     Regex(regex::Error),
     /// A URL parse error.
@@ -36,6 +38,9 @@ impl Display for ConfigError {
             }
             Self::HttpInvalidHeaderValue(error) => {
                 write!(formatter, "{error}")
+            }
+            Self::MissingParentConfig(name) => {
+                write!(formatter, "missing parent configuration: {name}")
             }
             Self::Regex(error) => {
                 write!(formatter, "{error}")

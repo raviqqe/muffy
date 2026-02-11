@@ -67,6 +67,7 @@ enum SiteConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct IncludedSiteConfig {
+    extend: Option<String>,
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
@@ -156,6 +157,28 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     } else {
         DEFAULT_SITE_CONFIG.clone()
     };
+
+    // TODO Wrap site configs in `Arc`.
+    let mut configs = HashMap::<&str, super::SiteConfig>::default();
+
+    for (name, (_, site)) in &included_sites {
+        configs.insert(
+            name,
+            compile_site_config(
+                &site,
+                &site
+                    .extend
+                    .map(|name| {
+                        configs
+                            .get(name.as_ref())
+                            .ok_or_else(|| ConfigError::MissingParentConfig(name))
+                    })
+                    .transpose()?
+                    .as_deref()
+                    .unwrap_or(&DEFAULT_SITE_CONFIG),
+            )?,
+        );
+    }
 
     let sites = included_sites
         .into_iter()
