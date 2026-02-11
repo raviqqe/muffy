@@ -272,7 +272,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
 
-    fn included(site: IncludedSiteConfig) -> SiteConfig {
+    fn included(site: SiteConfig) -> SiteConfig {
         SiteConfig::Included(Box::new(site))
     }
 
@@ -314,7 +314,7 @@ mod tests {
     fn compile_default() {
         let config = compile_config(SerializableConfig {
             sites: SiteSet {
-                default: Some(included(IncludedSiteConfig {
+                default: Some(included(SiteConfig {
                     recurse: Some(true),
                     schemes: Some(HashSet::from(["https".to_owned()])),
                     statuses: Some(HashSet::from([200, 403, 418])),
@@ -334,7 +334,7 @@ mod tests {
                     "foo".to_owned(),
                     RootSiteConfig {
                         roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: included(IncludedSiteConfig {
+                        config: included(SiteConfig {
                             recurse: Some(true),
                             ..Default::default()
                         }),
@@ -397,7 +397,7 @@ mod tests {
                         "foo_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -407,7 +407,7 @@ mod tests {
                         "foo_sub".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -417,14 +417,14 @@ mod tests {
                         "foo_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig::Excluded { ignore: true },
+                            config: SiteConfig { ignore: Some(true), ..Default::default() },
                         },
                     ),
                     (
                         "bar_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -472,7 +472,7 @@ mod tests {
                         "foo_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -482,7 +482,7 @@ mod tests {
                         "foo_sub".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -492,14 +492,14 @@ mod tests {
                         "foo_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig::Excluded { ignore: true },
+                            config: SiteConfig { ignore: Some(true), ..Default::default() },
                         },
                     ),
                     (
                         "foo_net_excluded".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.net/").unwrap()],
-                            config: SiteConfig::Excluded { ignore: true },
+                            config: SiteConfig { ignore: Some(true), ..Default::default() },
                         },
                     ),
                 ]),
@@ -531,7 +531,7 @@ mod tests {
                         "foo".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
                             }),
@@ -541,7 +541,7 @@ mod tests {
                         "bar".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: included(IncludedSiteConfig {
+                            config: included(SiteConfig {
                                 statuses: Some(HashSet::from([200, 201])),
                                 ..Default::default()
                             }),
@@ -587,7 +587,7 @@ mod tests {
                     "foo".to_owned(),
                     RootSiteConfig {
                         roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: SiteConfig::Excluded { ignore: false },
+                        config: SiteConfig { ignore: Some(false), ..Default::default() },
                     },
                 )]),
             },
@@ -604,7 +604,7 @@ mod tests {
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(IncludedSiteConfig {
+                default: Some(included(SiteConfig {
                     headers: Some(HashMap::from([(
                         "invalid header".to_owned(),
                         "x".to_owned(),
@@ -626,7 +626,7 @@ mod tests {
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(IncludedSiteConfig {
+                default: Some(included(SiteConfig {
                     headers: Some(HashMap::from([(
                         "user-agent".to_owned(),
                         "\u{0}".to_owned(),
@@ -648,7 +648,7 @@ mod tests {
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(IncludedSiteConfig {
+                default: Some(included(SiteConfig {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
                 })),
