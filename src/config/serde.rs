@@ -271,19 +271,29 @@ mod tests {
     use super::*;
     use crate::config::{
         DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS,
+        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
     use http::HeaderMap;
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
 
+    fn included(site: IncludedSiteConfig) -> SiteConfig {
+        SiteConfig::Included(Box::new(site))
+    }
+
+    fn empty_sites() -> SiteSet {
+        SiteSet {
+            default: None,
+            sites: HashMap::new(),
+        }
+    }
+
     #[test]
     fn compile_empty() {
         let config = compile_config(SerializableConfig {
-            sites: Default::default(),
-            default: Default::default(),
-            concurrency: Default::default(),
+            sites: empty_sites(),
+            concurrency: None,
         })
         .unwrap();
 
@@ -294,6 +304,7 @@ mod tests {
         let default = config.default;
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
+        assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
         assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE.into());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
@@ -308,29 +319,34 @@ mod tests {
     #[test]
     fn compile_default() {
         let config = compile_config(SerializableConfig {
-            default: Some(IncludedSiteConfig {
-                recurse: Some(true),
-                schemes: Some(HashSet::from(["https".to_owned()])),
-                statuses: Some(HashSet::from([200, 403, 418])),
-                timeout: Some(Duration::from_secs(42).into()),
-                max_redirects: Some(42),
-                headers: Some(HashMap::from([(
-                    "user-agent".to_owned(),
-                    "my-agent".to_owned(),
-                )])),
-                retries: Some(193),
-                cache: Some(CacheConfig {
-                    max_age: Some(Duration::from_secs(2045).into()),
-                }),
-            }),
-            sites: HashMap::from([(
-                "https://foo.com/".to_owned(),
-                IncludedSiteConfig {
+            sites: SiteSet {
+                default: Some(included(IncludedSiteConfig {
                     recurse: Some(true),
+                    schemes: Some(HashSet::from(["https".to_owned()])),
+                    statuses: Some(HashSet::from([200, 403, 418])),
+                    timeout: Some(Duration::from_secs(42).into()),
+                    max_redirects: Some(42),
+                    headers: Some(HashMap::from([(
+                        "user-agent".to_owned(),
+                        "my-agent".to_owned(),
+                    )])),
+                    retries: Some(193),
+                    cache: Some(CacheConfig {
+                        max_age: Some(Duration::from_secs(2045).into()),
+                    }),
                     ..Default::default()
-                }
-                .into(),
-            )]),
+                })),
+                sites: HashMap::from([(
+                    "foo".to_owned(),
+                    RootSiteConfig {
+                        roots: vec![Url::parse("https://foo.com/").unwrap()],
+                        config: included(IncludedSiteConfig {
+                            recurse: Some(true),
+                            ..Default::default()
+                        }),
+                    },
+                )]),
+            },
             concurrency: None,
         })
         .unwrap();
@@ -340,68 +356,88 @@ mod tests {
             vec!["https://foo.com/"]
         );
 
+        assert_eq!(
+            config.default,
+            crate::config::SiteConfig::new()
+                .set_headers(HeaderMap::from_iter([(
+                    HeaderName::try_from("user-agent").unwrap(),
+                    HeaderValue::try_from("my-agent").unwrap(),
+                )]))
+                .set_status(crate::config::StatusConfig::new(HashSet::from([
+                    StatusCode::try_from(200).unwrap(),
+                    StatusCode::try_from(403).unwrap(),
+                    StatusCode::try_from(418).unwrap(),
+                ])))
+                .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
+                    "https".to_owned(),
+                ])))
+                .set_max_redirects(42)
+                .set_timeout(Duration::from_secs(42).into())
+                .set_max_age(Duration::from_secs(2045).into())
+                .set_retries(193)
+                .set_recursive(true)
+        );
+
         let paths = &config.sites().get("foo.com").unwrap();
 
         assert_eq!(
             paths.as_slice(),
-            &[(
+            &[ (
                 "/".into(),
                 crate::config::SiteConfig::new()
-                    .set_headers(HeaderMap::from_iter([(
-                        HeaderName::try_from("user-agent").unwrap(),
-                        HeaderValue::try_from("my-agent").unwrap(),
-                    )]),)
-                    .set_status(crate::config::StatusConfig::new(HashSet::from([
-                        StatusCode::try_from(200).unwrap(),
-                        StatusCode::try_from(403).unwrap(),
-                        StatusCode::try_from(418).unwrap(),
-                    ])),)
-                    .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
-                        "https".to_owned()
-                    ])),)
-                    .set_max_redirects(42,)
-                    .set_timeout(Duration::from_secs(42).into(),)
-                    .set_max_age(Duration::from_secs(2045).into())
-                    .set_retries(193)
-                    .set_recursive(true,)
-            )]
+                    .set_max_redirects(DEFAULT_MAX_REDIRECTS)
+                    .set_timeout(DEFAULT_TIMEOUT.into())
+                    .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
+                    .set_recursive(true)
+            ) ]
         );
     }
 
     #[test]
     fn compile_root_sites() {
         let config = compile_config(SerializableConfig {
-            default: None,
-            sites: HashMap::from([
-                (
-                    "https://foo.com/".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-                (
-                    "https://foo.com/foo".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-                (
-                    "https://foo.com/bar".to_owned(),
-                    RootSiteConfig::Excluded { ignore: true },
-                ),
-                (
-                    "https://bar.com/".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-            ]),
+            sites: SiteSet {
+                default: None,
+                sites: HashMap::from([
+                    (
+                        "foo_root".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                    (
+                        "foo_sub".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/foo").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                    (
+                        "foo_excluded".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/bar").unwrap()],
+                            config: SiteConfig::Excluded { ignore: true },
+                        },
+                    ),
+                    (
+                        "bar_root".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://bar.com/").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                ]),
+            },
             concurrency: None,
         })
         .unwrap();
@@ -435,33 +471,45 @@ mod tests {
     #[test]
     fn compile_excluded_sites() {
         let config = compile_config(SerializableConfig {
-            default: None,
-            sites: HashMap::from([
-                (
-                    "https://foo.com/".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-                (
-                    "https://foo.com/foo".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-                (
-                    "https://foo.com/bar".to_owned(),
-                    RootSiteConfig::Excluded { ignore: true },
-                ),
-                (
-                    "https://foo.net/".to_owned(),
-                    RootSiteConfig::Excluded { ignore: true },
-                ),
-            ]),
+            sites: SiteSet {
+                default: None,
+                sites: HashMap::from([
+                    (
+                        "foo_root".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                    (
+                        "foo_sub".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/foo").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                    (
+                        "foo_excluded".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/bar").unwrap()],
+                            config: SiteConfig::Excluded { ignore: true },
+                        },
+                    ),
+                    (
+                        "foo_net_excluded".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.net/").unwrap()],
+                            config: SiteConfig::Excluded { ignore: true },
+                        },
+                    ),
+                ]),
+            },
             concurrency: None,
         })
         .unwrap();
@@ -472,32 +520,41 @@ mod tests {
                 .map(Regex::as_str)
                 .sorted()
                 .collect::<Vec<_>>(),
-            ["https://foo.com/bar", "https://foo.net/"]
+            [
+                regex::escape("https://foo.com/bar"),
+                regex::escape("https://foo.net/"),
+            ]
         );
     }
 
     #[test]
     fn compile_non_root_site_config() {
         let config = compile_config(SerializableConfig {
-            default: None,
-            sites: HashMap::from([
-                (
-                    "https://foo.com/".to_owned(),
-                    IncludedSiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-                (
-                    "https://bar.com/".to_owned(),
-                    IncludedSiteConfig {
-                        statuses: Some(HashSet::from([200, 201])),
-                        ..Default::default()
-                    }
-                    .into(),
-                ),
-            ]),
+            sites: SiteSet {
+                default: None,
+                sites: HashMap::from([
+                    (
+                        "foo".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                recurse: Some(true),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                    (
+                        "bar".to_owned(),
+                        RootSiteConfig {
+                            roots: vec![Url::parse("https://bar.com/").unwrap()],
+                            config: included(IncludedSiteConfig {
+                                statuses: Some(HashSet::from([200, 201])),
+                                ..Default::default()
+                            }),
+                        },
+                    ),
+                ]),
+            },
             concurrency: None,
         })
         .unwrap();
@@ -515,50 +572,51 @@ mod tests {
 
     #[test]
     fn compile_invalid_site_url() {
+        assert!(toml::from_str::<SerializableConfig>(
+            r#"
+            [sites.foo]
+            roots = ["not a url"]
+            recurse = true
+            "#
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn compile_invalid_site_ignore() {
         let config = SerializableConfig {
-            default: None,
-            sites: HashMap::from([(
-                "not a url".to_owned(),
-                IncludedSiteConfig {
-                    recurse: Some(true),
-                    ..Default::default()
-                }
-                .into(),
-            )]),
+            sites: SiteSet {
+                default: None,
+                sites: HashMap::from([(
+                    "foo".to_owned(),
+                    RootSiteConfig {
+                        roots: vec![Url::parse("https://foo.com/").unwrap()],
+                        config: SiteConfig::Excluded { ignore: false },
+                    },
+                )]),
+            },
             concurrency: None,
         };
 
         assert!(matches!(
             compile_config(config),
-            Err(ConfigError::UrlParse(_))
+            Err(ConfigError::InvalidSiteIgnore(name)) if name == "foo"
         ));
-    }
-
-    #[test]
-    fn compile_invalid_excluded_site_url() {
-        let config = SerializableConfig {
-            default: None,
-            sites: HashMap::from([("[".to_owned(), RootSiteConfig::Excluded { ignore: true })]),
-            concurrency: None,
-        };
-
-        assert!(matches!(compile_config(config), Err(ConfigError::Regex(_))));
     }
 
     #[test]
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            default: Some(
-                IncludedSiteConfig {
+            sites: SiteSet {
+                default: Some(included(IncludedSiteConfig {
                     headers: Some(HashMap::from([(
                         "invalid header".to_owned(),
                         "x".to_owned(),
                     )])),
                     ..Default::default()
-                }
-                .into(),
-            ),
+                })),
+                sites: HashMap::new(),
+            },
             concurrency: None,
         };
 
@@ -571,17 +629,16 @@ mod tests {
     #[test]
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            default: Some(
-                IncludedSiteConfig {
+            sites: SiteSet {
+                default: Some(included(IncludedSiteConfig {
                     headers: Some(HashMap::from([(
                         "user-agent".to_owned(),
                         "\u{0}".to_owned(),
                     )])),
                     ..Default::default()
-                }
-                .into(),
-            ),
+                })),
+                sites: HashMap::new(),
+            },
             concurrency: None,
         };
 
@@ -594,14 +651,13 @@ mod tests {
     #[test]
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            default: Some(
-                IncludedSiteConfig {
+            sites: SiteSet {
+                default: Some(included(IncludedSiteConfig {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
-                }
-                .into(),
-            ),
+                })),
+                sites: HashMap::new(),
+            },
             concurrency: None,
         };
 
@@ -614,8 +670,7 @@ mod tests {
     #[test]
     fn compile_concurrency() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            default: None,
+            sites: empty_sites(),
             concurrency: Some(42),
         };
 
