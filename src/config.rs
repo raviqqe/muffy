@@ -2,8 +2,7 @@ mod error;
 mod serde;
 
 pub use self::{error::ConfigError, serde::compile_config};
-use core::cmp::Reverse;
-use core::{ops::Deref, time::Duration};
+use core::{cmp::Reverse, ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
 use rlimit::{Resource, getrlimit};

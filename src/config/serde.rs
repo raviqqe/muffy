@@ -166,8 +166,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             name,
             compile_site_config(
                 site,
-                site
-                    .extend
+                site.extend
                     .as_ref()
                     .map(|name| {
                         configs
@@ -381,14 +380,14 @@ mod tests {
 
         assert_eq!(
             paths.as_slice(),
-            &[ (
+            &[(
                 "/".into(),
                 crate::config::SiteConfig::new()
                     .set_max_redirects(DEFAULT_MAX_REDIRECTS)
                     .set_timeout(DEFAULT_TIMEOUT.into())
                     .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
                     .set_recursive(true)
-            ) ]
+            )]
         );
     }
 
@@ -571,14 +570,16 @@ mod tests {
 
     #[test]
     fn compile_invalid_site_url() {
-        assert!(toml::from_str::<SerializableConfig>(
-            r#"
+        assert!(
+            toml::from_str::<SerializableConfig>(
+                r#"
             [sites.foo]
             roots = ["not a url"]
             recurse = true
             "#
-        )
-        .is_err());
+            )
+            .is_err()
+        );
     }
 
     #[test]
