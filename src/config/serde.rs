@@ -153,7 +153,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     };
 
     // TODO Wrap site configs in `Arc`.
-    let mut configs = HashMap::<&str, super::SiteConfig>::default();
+    let mut configs =
+        HashMap::<&str, super::SiteConfig>::from([(DEFAULT_SITE_NAME, default.clone())]);
 
     for (name, site) in &included_sites {
         configs.insert(
