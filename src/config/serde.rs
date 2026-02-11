@@ -120,7 +120,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     .map(|url| Regex::new(&regex::escape(url.as_str())))
                     .collect()
             } else {
-                Default::default()
+                vec![]
             }
         })
         .chain(
@@ -140,7 +140,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .into_iter()
         .flat_map(|(name, site)| {
             if let SiteConfig::Included(config) = site.config {
-                Some((name.as_str(), (site.roots, config)))
+                Some((name, (site.roots, config)))
             } else {
                 None
             }
@@ -148,8 +148,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .collect::<HashMap<_, _>>();
     let roots = included_sites
         .values()
-        .filter(|(roots, config)| config.recurse == Some(true))
-        .flat_map(|(roots, config)| roots)
+        .filter(|(_roots, config)| config.recurse == Some(true))
+        .flat_map(|(roots, _config)| roots)
         .map(|url| url.to_string())
         .collect();
     let default = if let Some(SiteConfig::Included(default)) = &config.sites.default {
@@ -168,10 +168,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 &site,
                 &site
                     .extend
+                    .as_ref()
                     .map(|name| {
                         configs
-                            .get(name.as_ref())
-                            .ok_or_else(|| ConfigError::MissingParentConfig(name))
+                            .get(name.as_ref() as &str)
+                            .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))
                     })
                     .transpose()?
                     .as_deref()
@@ -181,10 +182,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     }
 
     let sites = included_sites
-        .into_iter()
-        .map(|(url, site)| Ok((Url::parse(&url)?, site)))
-        .collect::<Result<Vec<_>, ConfigError>>()?
-        .into_iter()
+        .iter()
+        .flat_map(|(name, (roots, site))| roots.into_iter().map(|root| (root, (name, &site))))
         .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
         .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
         .into_iter()
@@ -192,9 +191,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             Ok((
                 host,
                 sites
-                    .map(|(url, site)| {
-                        // TODO
-                        Ok((url.path().to_owned(), compile_site_config(&site, None)?))
+                    .map(|(url, (name, site))| {
+                        Ok((
+                            url.path().to_owned(),
+                            compile_site_config(&site, &configs[name.as_str()])?,
+                        ))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
