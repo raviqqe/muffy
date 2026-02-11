@@ -272,10 +272,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
 
-    fn included(site: SiteConfig) -> SiteConfig {
-        SiteConfig::Included(Box::new(site))
-    }
-
     fn empty_sites() -> SiteSet {
         SiteSet {
             default: None,
@@ -314,7 +310,7 @@ mod tests {
     fn compile_default() {
         let config = compile_config(SerializableConfig {
             sites: SiteSet {
-                default: Some(included(SiteConfig {
+                default: Some(SiteConfig {
                     recurse: Some(true),
                     schemes: Some(HashSet::from(["https".to_owned()])),
                     statuses: Some(HashSet::from([200, 403, 418])),
@@ -329,15 +325,15 @@ mod tests {
                         max_age: Some(Duration::from_secs(2045).into()),
                     }),
                     ..Default::default()
-                })),
+                }),
                 sites: HashMap::from([(
                     "foo".to_owned(),
                     RootSiteConfig {
                         roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: included(SiteConfig {
+                        config: SiteConfig {
                             recurse: Some(true),
                             ..Default::default()
-                        }),
+                        },
                     },
                 )]),
             },
@@ -397,20 +393,20 @@ mod tests {
                         "foo_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                     (
                         "foo_sub".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                     (
@@ -424,10 +420,10 @@ mod tests {
                         "bar_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                 ]),
@@ -472,20 +468,20 @@ mod tests {
                         "foo_root".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                     (
                         "foo_sub".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                     (
@@ -531,20 +527,20 @@ mod tests {
                         "foo".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 recurse: Some(true),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                     (
                         "bar".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: included(SiteConfig {
+                            config: SiteConfig {
                                 statuses: Some(HashSet::from([200, 201])),
                                 ..Default::default()
-                            }),
+                            },
                         },
                     ),
                 ]),
@@ -604,13 +600,13 @@ mod tests {
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(SiteConfig {
+                default: Some(SiteConfig {
                     headers: Some(HashMap::from([(
                         "invalid header".to_owned(),
                         "x".to_owned(),
                     )])),
                     ..Default::default()
-                })),
+                }),
                 sites: HashMap::new(),
             },
             concurrency: None,
@@ -626,13 +622,13 @@ mod tests {
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(SiteConfig {
+                default: Some(SiteConfig {
                     headers: Some(HashMap::from([(
                         "user-agent".to_owned(),
                         "\u{0}".to_owned(),
                     )])),
                     ..Default::default()
-                })),
+                }),
                 sites: HashMap::new(),
             },
             concurrency: None,
@@ -648,10 +644,10 @@ mod tests {
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: SiteSet {
-                default: Some(included(SiteConfig {
+                default: Some(SiteConfig {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
-                })),
+                }),
                 sites: HashMap::new(),
             },
             concurrency: None,
