@@ -133,10 +133,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .into_iter()
         .flat_map(|(name, site)| {
-            if site.config.ignore.is_none() {
-                Some((name, site))
-            } else {
+            if site.config.ignore.unwrap_or_default() {
                 None
+            } else {
+                Some((name, site))
             }
         })
         .collect::<HashMap<_, _>>();
