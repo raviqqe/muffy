@@ -154,26 +154,29 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         );
     }
 
-    let sites = included_sites
-        .iter()
-        .flat_map(|(name, site)| site.roots.iter().map(|root| (root, name.to_owned())))
-        .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
-        .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
-        .into_iter()
-        .map(|(host, sites)| {
-            Ok((
-                host,
-                sites
-                    .map(|(url, name)| Ok((url.path().to_owned(), configs[name.as_str()].clone())))
-                    .collect::<Result<_, ConfigError>>()?,
-            ))
-        })
-        .collect::<Result<_, ConfigError>>()?;
-
-    Ok(
-        super::Config::new(roots, default, sites, config.concurrency)
-            .set_excluded_links(excluded_links),
+    Ok(super::Config::new(
+        roots,
+        default,
+        included_sites
+            .iter()
+            .flat_map(|(name, site)| site.roots.iter().map(|root| (root, name.to_owned())))
+            .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
+            .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
+            .into_iter()
+            .map(|(host, sites)| {
+                Ok((
+                    host,
+                    sites
+                        .map(|(url, name)| {
+                            Ok((url.path().to_owned(), configs[name.as_str()].clone()))
+                        })
+                        .collect::<Result<_, ConfigError>>()?,
+                ))
+            })
+            .collect::<Result<_, ConfigError>>()?,
+        config.concurrency,
     )
+    .set_excluded_links(excluded_links))
 }
 
 fn compile_site_config(
