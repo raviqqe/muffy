@@ -8,14 +8,14 @@ use url::ParseError;
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
-    /// Invalid site ignorance.
-    InvalidSiteIgnore(String),
     /// An invalid status code.
     HttpInvalidStatus(http::status::InvalidStatusCode),
     /// An invalid header name.
     HttpInvalidHeaderName(http::header::InvalidHeaderName),
     /// An invalid header value.
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
+    /// Missing parent configuration.
+    MissingParentConfig(String),
     /// A regular expression error.
     Regex(regex::Error),
     /// A URL parse error.
@@ -25,9 +25,6 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidSiteIgnore(url) => {
-                write!(formatter, "ignore field must be true if present: {url}")
-            }
             Self::HttpInvalidStatus(error) => {
                 write!(formatter, "{error}")
             }
@@ -36,6 +33,9 @@ impl Display for ConfigError {
             }
             Self::HttpInvalidHeaderValue(error) => {
                 write!(formatter, "{error}")
+            }
+            Self::MissingParentConfig(name) => {
+                write!(formatter, "missing parent configuration: {name}")
             }
             Self::Regex(error) => {
                 write!(formatter, "{error}")

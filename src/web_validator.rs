@@ -501,7 +501,7 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [("".into(), SiteConfig::default().set_recursive(true))].into(),
+                [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
             )]
             .into(),
             None,
@@ -975,14 +975,15 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
-            SiteConfig::default(),
+            SiteConfig::default().into(),
             [(
                 url.host_str().unwrap_or_default().into(),
                 [(
                     "".into(),
                     SiteConfig::default()
                         .set_scheme(SchemeConfig::new(["https".into()].into()))
-                        .set_recursive(true),
+                        .set_recursive(true)
+                        .into(),
                 )]
                 .into_iter()
                 .collect(),
@@ -1049,7 +1050,7 @@ mod tests {
                 Default::default(),
                 [(
                     url.host_str().unwrap_or_default().into(),
-                    [("".into(), SiteConfig::default().set_recursive(true))]
+                    [("".into(), SiteConfig::default().set_recursive(true).into())]
                         .into_iter()
                         .collect(),
                 )]

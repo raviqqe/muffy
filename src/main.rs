@@ -273,7 +273,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
 
     Ok(Config::new(
         arguments.url.to_vec(),
-        site.clone(),
+        site.clone().into(),
         arguments
             .url
             .iter()
@@ -286,7 +286,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .map(|(host, urls)| {
                 (
                     host,
-                    urls.map(|url| (url.path().into(), site.clone().set_recursive(true)))
+                    urls.map(|url| (url.path().into(), site.clone().set_recursive(true).into()))
                         .collect(),
                 )
             })
