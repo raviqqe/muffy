@@ -81,24 +81,6 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    for (name, site) in config
-        .sites
-        .sites
-        .iter()
-        .map(|(name, site)| (name.as_str(), &site.config))
-        .chain(
-            config
-                .sites
-                .default
-                .as_ref()
-                .map(|site| (DEFAULT_SITE_NAME, site)),
-        )
-    {
-        if site.ignore == Some(false) {
-            return Err(ConfigError::InvalidSiteIgnore(name.to_owned()));
-        }
-    }
-
     // TODO Check circular dependencies between sites.
 
     let excluded_links = config
@@ -568,31 +550,6 @@ mod tests {
             )
             .is_err()
         );
-    }
-
-    #[test]
-    fn compile_invalid_site_ignore() {
-        let config = SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: HashMap::from([(
-                    "foo".to_owned(),
-                    RootSiteConfig {
-                        roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: SiteConfig {
-                            ignore: Some(false),
-                            ..Default::default()
-                        },
-                    },
-                )]),
-            },
-            concurrency: None,
-        };
-
-        assert!(matches!(
-            compile_config(config),
-            Err(ConfigError::InvalidSiteIgnore(name)) if name == "foo"
-        ));
     }
 
     #[test]

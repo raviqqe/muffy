@@ -8,8 +8,6 @@ use url::ParseError;
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
-    /// Invalid site ignorance.
-    InvalidSiteIgnore(String),
     /// An invalid status code.
     HttpInvalidStatus(http::status::InvalidStatusCode),
     /// An invalid header name.
@@ -27,9 +25,6 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidSiteIgnore(url) => {
-                write!(formatter, "ignore field must be true if present: {url}")
-            }
             Self::HttpInvalidStatus(error) => {
                 write!(formatter, "{error}")
             }
