@@ -42,7 +42,7 @@ pub struct SerializableConfig {
     concurrency: Option<usize>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 struct SiteSet {
     default: Option<SiteConfig>,
     #[serde(flatten)]
@@ -264,17 +264,10 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::collections::{HashMap, HashSet};
 
-    fn empty_sites() -> SiteSet {
-        SiteSet {
-            default: None,
-            sites: Default::default(),
-        }
-    }
-
     #[test]
     fn compile_empty() {
         let config = compile_config(SerializableConfig {
-            sites: empty_sites(),
+            sites: Default::default(),
             concurrency: None,
         })
         .unwrap();
@@ -668,7 +661,7 @@ mod tests {
     #[test]
     fn compile_concurrency() {
         let config = SerializableConfig {
-            sites: empty_sites(),
+            sites: Default::default(),
             concurrency: Some(42),
         };
 
