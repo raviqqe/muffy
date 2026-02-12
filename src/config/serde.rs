@@ -142,17 +142,13 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             name,
             compile_site_config(
                 &site.config,
-                site.config
-                    .extend
-                    .as_ref()
-                    .map(|name| {
-                        configs
-                            .get(name.as_str())
-                            .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))
-                    })
-                    .transpose()?
-                    .map(AsRef::as_ref)
-                    .unwrap_or(&DEFAULT_SITE_CONFIG),
+                if let Some(name) = &site.config.extend {
+                    configs
+                        .get(name.as_str())
+                        .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))?
+                } else {
+                    &DEFAULT_SITE_CONFIG
+                },
             )?
             .into(),
         );
