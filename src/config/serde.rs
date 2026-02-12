@@ -81,7 +81,7 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    // TODO Check circular dependencies between sites.
+    validate_circular_configs(&config.sites.sites)?;
 
     let excluded_links = config
         .sites
@@ -230,6 +230,44 @@ fn compile_site_config(
         )
         .set_retries(site.retries.unwrap_or(parent.retries()))
         .set_recursive(site.recurse == Some(true)))
+}
+
+fn validate_circular_configs(sites: &HashMap<String, SiteConfig>) -> Result<(), ConfigError> {
+    for (output, build) in outputs {
+        for input in build.inputs().iter().chain(build.order_only_inputs()) {
+            this.add_edge(output.clone(), input.clone());
+        }
+
+        // Is this output primary?
+        if output == &build.outputs()[0] {
+            this.primary_outputs.insert(output.clone(), output.clone());
+
+            for secondary in build.outputs().iter().skip(1) {
+                this.add_edge(secondary.clone(), output.clone());
+                this.primary_outputs
+                    .insert(secondary.clone(), output.clone());
+            }
+        }
+    }
+
+    if let Err(cycle) = toposort(&self.graph, None) {
+        let mut components = kosaraju_scc(&self.graph);
+
+        components.sort_by_key(|component| component.len());
+
+        return Err(ConfigError::CircularDependency(
+            components
+                .into_iter()
+                .rev()
+                .find(|component| component.contains(&cycle.node_id()))
+                .unwrap()
+                .into_iter()
+                .map(|id| self.graph[id].clone())
+                .collect(),
+        ));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
