@@ -42,6 +42,7 @@ pub struct SerializableConfig {
     concurrency: Option<usize>,
 }
 
+// TODO Move the `default` into the `sites` map.
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct SiteSet {
     default: Option<SiteConfig>,
