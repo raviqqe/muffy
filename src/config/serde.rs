@@ -160,7 +160,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         included_sites
             .iter()
             .flat_map(|(name, site)| site.roots.iter().map(|root| (root, name.to_owned())))
-            .sorted_by_key(|(url, _)| url.host_str().map(ToOwned::to_owned))
+            .sorted_by_key(|(url, _)| url.host_str())
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
             .into_iter()
             .map(|(host, sites)| {
