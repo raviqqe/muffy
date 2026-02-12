@@ -46,21 +46,14 @@ pub struct SerializableConfig {
 struct SiteSet {
     default: Option<SiteConfig>,
     #[serde(flatten)]
-    sites: HashMap<String, RootSiteConfig>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct RootSiteConfig {
-    roots: Vec<Url>,
-    #[serde(flatten)]
-    config: SiteConfig,
+    sites: HashMap<String, SiteConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
     extend: Option<String>,
+    roots: Option<Vec<Url>>,
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
@@ -88,9 +81,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .iter()
         .flat_map(|(_, site)| {
-            if site.config.ignore == Some(true) {
+            if site.ignore == Some(true) {
                 site.roots
                     .iter()
+                    .flatten()
                     .map(|url| Regex::new(&regex::escape(url.as_str())))
                     .collect()
             } else {
@@ -116,7 +110,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .sites
         .into_iter()
         .flat_map(|(name, site)| {
-            if site.config.ignore.unwrap_or_default() {
+            if site.ignore.unwrap_or_default() {
                 None
             } else {
                 Some((name, site))
@@ -125,8 +119,9 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .collect::<HashMap<_, _>>();
     let roots = included_sites
         .values()
-        .filter(|site| site.config.recurse == Some(true))
+        .filter(|site| site.recurse == Some(true))
         .flat_map(|site| &site.roots)
+        .flatten()
         .map(|url| url.to_string())
         .collect();
     let default = Arc::new(if let Some(default) = config.sites.default {
@@ -141,8 +136,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                &site.config,
-                if let Some(name) = &site.config.extend {
+                &site,
+                if let Some(name) = &site.extend {
                     configs
                         .get(name.as_str())
                         .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))?
@@ -159,7 +154,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         default,
         included_sites
             .iter()
-            .flat_map(|(name, site)| site.roots.iter().map(|root| (root, name.to_owned())))
+            .flat_map(|(name, site)| {
+                site.roots
+                    .iter()
+                    .flatten()
+                    .map(|root| (root, name.to_owned()))
+            })
             .sorted_by_key(|(url, _)| url.host_str())
             .chunk_by(|(url, _)| url.host_str().unwrap_or_default())
             .into_iter()
@@ -293,13 +293,11 @@ mod tests {
                 }),
                 sites: HashMap::from([(
                     "foo".to_owned(),
-                    RootSiteConfig {
-                        roots: vec![Url::parse("https://foo.com/").unwrap()],
-                        config: SiteConfig {
-                            extend: Some(DEFAULT_SITE_NAME.to_owned()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
+                    SiteConfig {
+                        extend: Some(DEFAULT_SITE_NAME.to_owned()),
+                        roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                        recurse: Some(true),
+                        ..Default::default()
                     },
                 )]),
             },
@@ -348,42 +346,34 @@ mod tests {
                 sites: HashMap::from([
                     (
                         "foo".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
                         "foo_sub".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/foo").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
                         "foo_excluded".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig {
-                                ignore: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/bar").unwrap()].into(),
+                            ignore: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
                         "bar".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://bar.com/").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                 ]),
@@ -426,22 +416,18 @@ mod tests {
                 sites: HashMap::from([
                     (
                         "foo".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
                         "foo_sub".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/foo").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/foo").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
@@ -456,12 +442,10 @@ mod tests {
                     ),
                     (
                         "foo_net".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.net/").unwrap()],
-                            config: SiteConfig {
-                                ignore: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.net/").unwrap()].into(),
+                            ignore: Some(true),
+                            ..Default::default()
                         },
                     ),
                 ]),
@@ -491,22 +475,18 @@ mod tests {
                 sites: HashMap::from([
                     (
                         "foo".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()],
-                            config: SiteConfig {
-                                recurse: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            recurse: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
                         "bar".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://bar.com/").unwrap()],
-                            config: SiteConfig {
-                                statuses: Some(HashSet::from([200, 201])),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://bar.com/").unwrap()].into(),
+                            statuses: Some(HashSet::from([200, 201])),
+                            ..Default::default()
                         },
                     ),
                 ]),
