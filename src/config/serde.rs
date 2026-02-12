@@ -7,6 +7,11 @@ use alloc::sync::Arc;
 use duration_string::DurationString;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
+use petgraph::{
+    Graph,
+    algo::{kosaraju_scc, toposort},
+    graph::{DefaultIx, NodeIndex},
+};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -233,20 +238,16 @@ fn compile_site_config(
 }
 
 fn validate_circular_configs(sites: &HashMap<String, SiteConfig>) -> Result<(), ConfigError> {
-    for (output, build) in outputs {
-        for input in build.inputs().iter().chain(build.order_only_inputs()) {
-            this.add_edge(output.clone(), input.clone());
-        }
+    let nodes = HashMap::<&str, NodeIndex<DefaultIx>>::default();
+    let graph = Graph::<&str, ()>::new();
 
-        // Is this output primary?
-        if output == &build.outputs()[0] {
-            this.primary_outputs.insert(output.clone(), output.clone());
+    for name in sites.keys() {
+        graph.add_node(name.clone());
+    }
 
-            for secondary in build.outputs().iter().skip(1) {
-                this.add_edge(secondary.clone(), output.clone());
-                this.primary_outputs
-                    .insert(secondary.clone(), output.clone());
-            }
+    for (name, site) in sites {
+        if let Some(input) = &site.extend {
+            graph.add_edge(name.clone(), self.nodes[&input], ());
         }
     }
 
