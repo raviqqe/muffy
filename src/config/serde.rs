@@ -3,6 +3,7 @@ use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
     DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
+use alloc::sync::Arc;
 use duration_string::DurationString;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
@@ -10,7 +11,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, LazyLock},
+    sync::LazyLock,
 };
 use url::Url;
 
