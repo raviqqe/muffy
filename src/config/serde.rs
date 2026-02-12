@@ -246,24 +246,24 @@ fn validate_circular_configs(sites: &HashMap<String, RootSiteConfig>) -> Result<
     }
 
     for (name, site) in sites {
-        if let Some(input) = &site.extend {
-            graph.add_edge(name.clone(), self.nodes[&input], ());
+        if let Some(parent) = &site.extend {
+            graph.add_edge(nodes[name.as_str()], nodes[&parent], ());
         }
     }
 
-    if let Err(cycle) = toposort(&self.graph, None) {
-        let mut components = kosaraju_scc(&self.graph);
+    if let Err(cycle) = toposort(&graph, None) {
+        let mut components = kosaraju_scc(&graph);
 
         components.sort_by_key(|component| component.len());
 
-        return Err(ConfigError::CircularDependency(
+        return Err(ConfigError::CircularSiteConfigs(
             components
                 .into_iter()
                 .rev()
                 .find(|component| component.contains(&cycle.node_id()))
                 .unwrap()
                 .into_iter()
-                .map(|id| self.graph[id].clone())
+                .map(|id| graph[id].clone())
                 .collect(),
         ));
     }
