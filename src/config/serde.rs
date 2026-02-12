@@ -312,8 +312,7 @@ mod tests {
             vec!["https://foo.com/"]
         );
 
-        assert_eq!(
-            config.default,
+        let compiled = Arc::new(
             crate::config::SiteConfig::new()
                 .set_headers(HeaderMap::from_iter([(
                     HeaderName::try_from("user-agent").unwrap(),
@@ -325,43 +324,20 @@ mod tests {
                     StatusCode::try_from(418).unwrap(),
                 ])))
                 .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
-                    "https".to_owned(),
+                    "https".to_owned()
                 ])))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
                 .set_max_age(Duration::from_secs(2045).into())
                 .set_retries(193)
-                .set_recursive(true)
-                .into()
+                .set_recursive(true),
         );
+
+        assert_eq!(config.default, compiled.clone());
 
         let paths = &config.sites().get("foo.com").unwrap();
 
-        assert_eq!(
-            paths.as_slice(),
-            &[(
-                "/".into(),
-                crate::config::SiteConfig::new()
-                    .set_recursive(true)
-                    .set_headers(HeaderMap::from_iter([(
-                        HeaderName::try_from("user-agent").unwrap(),
-                        HeaderValue::try_from("my-agent").unwrap(),
-                    )]),)
-                    .set_status(crate::config::StatusConfig::new(HashSet::from([
-                        StatusCode::try_from(200).unwrap(),
-                        StatusCode::try_from(403).unwrap(),
-                        StatusCode::try_from(418).unwrap(),
-                    ])),)
-                    .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
-                        "https".to_owned()
-                    ])),)
-                    .set_max_redirects(42)
-                    .set_timeout(Duration::from_secs(42).into(),)
-                    .set_max_age(Duration::from_secs(2045).into())
-                    .set_retries(193)
-                    .into()
-            )]
-        );
+        assert_eq!(paths.as_slice(), &[("/".into(), compiled)]);
     }
 
     #[test]
