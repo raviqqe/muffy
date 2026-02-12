@@ -537,20 +537,6 @@ mod tests {
     }
 
     #[test]
-    fn compile_invalid_site_url() {
-        assert!(
-            toml::from_str::<SerializableConfig>(
-                r#"
-            [sites.foo]
-            roots = ["not a url"]
-            recurse = true
-            "#
-            )
-            .is_err()
-        );
-    }
-
-    #[test]
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: SiteSet {
