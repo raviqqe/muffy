@@ -237,12 +237,12 @@ fn compile_site_config(
         .set_recursive(site.recurse == Some(true)))
 }
 
-fn validate_circular_configs(sites: &HashMap<String, SiteConfig>) -> Result<(), ConfigError> {
+fn validate_circular_configs(sites: &HashMap<String, RootSiteConfig>) -> Result<(), ConfigError> {
     let nodes = HashMap::<&str, NodeIndex<DefaultIx>>::default();
     let graph = Graph::<&str, ()>::new();
 
     for name in sites.keys() {
-        graph.add_node(name.clone());
+        graph.add_node(&name);
     }
 
     for (name, site) in sites {
