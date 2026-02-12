@@ -501,7 +501,7 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [("".into(), SiteConfig::default().set_recursive(true))].into(),
+                [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
             )]
             .into(),
             None,

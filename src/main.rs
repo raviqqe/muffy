@@ -269,7 +269,8 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         )?))
         .set_max_age(Some(*DurationString::from_string(
             arguments.max_age.clone(),
-        )?));
+        )?))
+        .into();
 
     Ok(Config::new(
         arguments.url.to_vec(),
