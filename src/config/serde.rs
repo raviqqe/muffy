@@ -266,7 +266,7 @@ mod tests {
     fn empty_sites() -> SiteSet {
         SiteSet {
             default: None,
-            sites: HashMap::new(),
+            sites: Default::default(),
         }
     }
 
@@ -612,7 +612,7 @@ mod tests {
                     )])),
                     ..Default::default()
                 }),
-                sites: HashMap::new(),
+                sites: Default::default(),
             },
             concurrency: None,
         };
@@ -634,7 +634,7 @@ mod tests {
                     )])),
                     ..Default::default()
                 }),
-                sites: HashMap::new(),
+                sites: Default::default(),
             },
             concurrency: None,
         };
@@ -653,7 +653,7 @@ mod tests {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
                 }),
-                sites: HashMap::new(),
+                sites: Default::default(),
             },
             concurrency: None,
         };
