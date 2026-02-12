@@ -137,7 +137,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                &site,
+                site,
                 if let Some(name) = &site.extend {
                     configs
                         .get(name.as_str())
