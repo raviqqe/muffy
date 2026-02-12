@@ -296,6 +296,7 @@ mod tests {
                     RootSiteConfig {
                         roots: vec![Url::parse("https://foo.com/").unwrap()],
                         config: SiteConfig {
+                            extend: Some(DEFAULT_SITE_NAME.to_owned()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -341,10 +342,23 @@ mod tests {
             &[(
                 "/".into(),
                 crate::config::SiteConfig::new()
-                    .set_max_redirects(DEFAULT_MAX_REDIRECTS)
-                    .set_timeout(DEFAULT_TIMEOUT.into())
-                    .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
                     .set_recursive(true)
+                    .set_headers(HeaderMap::from_iter([(
+                        HeaderName::try_from("user-agent").unwrap(),
+                        HeaderValue::try_from("my-agent").unwrap(),
+                    )]),)
+                    .set_status(crate::config::StatusConfig::new(HashSet::from([
+                        StatusCode::try_from(200).unwrap(),
+                        StatusCode::try_from(403).unwrap(),
+                        StatusCode::try_from(418).unwrap(),
+                    ])),)
+                    .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
+                        "https".to_owned()
+                    ])),)
+                    .set_max_redirects(42)
+                    .set_timeout(Duration::from_secs(42).into(),)
+                    .set_max_age(Duration::from_secs(2045).into())
+                    .set_retries(193)
                     .into()
             )]
         );
