@@ -101,7 +101,7 @@ impl Config {
         self.sites()
             .get(url.host_str()?)?
             .iter()
-            .find_map(|(path, config)| url.path().starts_with(path).then_some(config))
+            .find_map(|(path, config)| url.path().starts_with(path).then_some(config.as_ref()))
     }
 }
 
@@ -281,11 +281,26 @@ mod tests {
             [(
                 "example.com".to_string(),
                 [
-                    ("/foo".to_string(), SiteConfig::new().set_recursive(true)),
-                    ("/bar".to_string(), SiteConfig::new().set_recursive(true)),
-                    ("/".to_string(), SiteConfig::new().set_recursive(false)),
-                    ("/baz".to_string(), SiteConfig::new().set_recursive(true)),
-                    ("/qux".to_string(), SiteConfig::new().set_recursive(true)),
+                    (
+                        "/foo".to_string(),
+                        SiteConfig::new().set_recursive(true).into(),
+                    ),
+                    (
+                        "/bar".to_string(),
+                        SiteConfig::new().set_recursive(true).into(),
+                    ),
+                    (
+                        "/".to_string(),
+                        SiteConfig::new().set_recursive(false).into(),
+                    ),
+                    (
+                        "/baz".to_string(),
+                        SiteConfig::new().set_recursive(true).into(),
+                    ),
+                    (
+                        "/qux".to_string(),
+                        SiteConfig::new().set_recursive(true).into(),
+                    ),
                 ]
                 .into_iter()
                 .collect(),

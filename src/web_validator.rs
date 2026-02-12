@@ -480,7 +480,6 @@ mod tests {
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
-    use alloc::sync::Arc;
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
