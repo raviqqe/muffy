@@ -432,12 +432,10 @@ mod tests {
                     ),
                     (
                         "foo_excluded".to_owned(),
-                        RootSiteConfig {
-                            roots: vec![Url::parse("https://foo.com/bar").unwrap()],
-                            config: SiteConfig {
-                                ignore: Some(true),
-                                ..Default::default()
-                            },
+                        SiteConfig {
+                            roots: vec![Url::parse("https://foo.com/bar").unwrap()].into(),
+                            ignore: Some(true),
+                            ..Default::default()
                         },
                     ),
                     (
