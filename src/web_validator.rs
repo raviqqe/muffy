@@ -480,6 +480,7 @@ mod tests {
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
+    use alloc::sync::Arc;
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
@@ -975,14 +976,15 @@ mod tests {
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
-            SiteConfig::default(),
+            SiteConfig::default().into(),
             [(
                 url.host_str().unwrap_or_default().into(),
                 [(
                     "".into(),
                     SiteConfig::default()
                         .set_scheme(SchemeConfig::new(["https".into()].into()))
-                        .set_recursive(true),
+                        .set_recursive(true)
+                        .into(),
                 )]
                 .into_iter()
                 .collect(),
@@ -1049,7 +1051,7 @@ mod tests {
                 Default::default(),
                 [(
                     url.host_str().unwrap_or_default().into(),
-                    [("".into(), SiteConfig::default().set_recursive(true))]
+                    [("".into(), SiteConfig::default().set_recursive(true).into())]
                         .into_iter()
                         .collect(),
                 )]

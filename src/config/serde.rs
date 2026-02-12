@@ -10,7 +10,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    sync::LazyLock,
+    sync::{Arc, LazyLock},
 };
 use url::Url;
 
@@ -146,11 +146,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .flat_map(|site| &site.roots)
         .map(|url| url.to_string())
         .collect();
-    let default = if let Some(default) = config.sites.default {
+    let default = Arc::new(if let Some(default) = config.sites.default {
         compile_site_config(&default, &DEFAULT_SITE_CONFIG)?
     } else {
         DEFAULT_SITE_CONFIG.clone()
-    };
+    });
 
     // TODO Wrap site configs in `Arc`.
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
@@ -165,7 +165,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                     .as_ref()
                     .map(|name| {
                         configs
-                            .get(name.as_ref() as &str)
+                            .get(name.as_str())
                             .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))
                     })
                     .transpose()?

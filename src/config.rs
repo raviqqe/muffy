@@ -2,6 +2,7 @@ mod error;
 mod serde;
 
 pub use self::{error::ConfigError, serde::compile_config};
+use alloc::sync::Arc;
 use core::{cmp::Reverse, ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
 use regex::Regex;
@@ -9,7 +10,7 @@ use rlimit::{Resource, getrlimit};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-type HostConfig = HashMap<String, SiteConfig>;
+type HostConfig = HashMap<String, Arc<SiteConfig>>;
 
 /// Default accepted URL schemes.
 pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
@@ -36,8 +37,8 @@ pub fn default_concurrency() -> usize {
 pub struct Config {
     roots: Vec<String>,
     excluded_links: Vec<Regex>,
-    default: SiteConfig,
-    sites: HashMap<String, Vec<(String, SiteConfig)>>,
+    default: Arc<SiteConfig>,
+    sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: Option<usize>,
 }
 
@@ -45,7 +46,7 @@ impl Config {
     /// Creates a configuration.
     pub fn new(
         roots: Vec<String>,
-        default: SiteConfig,
+        default: Arc<SiteConfig>,
         sites: HashMap<String, HostConfig>,
         concurrency: Option<usize>,
     ) -> Self {
@@ -76,7 +77,7 @@ impl Config {
     }
 
     /// Returns websites.
-    pub const fn sites(&self) -> &HashMap<String, Vec<(String, SiteConfig)>> {
+    pub const fn sites(&self) -> &HashMap<String, Vec<(String, Arc<SiteConfig>)>> {
         &self.sites
     }
 
@@ -276,7 +277,7 @@ mod tests {
     fn site_config_path_order() {
         let config = Config::new(
             vec![],
-            SiteConfig::new(),
+            Default::default(),
             [(
                 "example.com".to_string(),
                 [
