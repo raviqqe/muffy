@@ -169,8 +169,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                             .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))
                     })
                     .transpose()?
+                    .map(AsRef::as_ref)
                     .unwrap_or(&DEFAULT_SITE_CONFIG),
-            )?,
+            )?
+            .into(),
         );
     }
 
@@ -190,10 +192,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 host,
                 sites
                     .map(|(url, (name, site))| {
-                        Ok((
-                            url.path().to_owned(),
-                            compile_site_config(&site.config, &configs[name.as_str()])?,
-                        ))
+                        Ok((url.path().to_owned(), configs[name.as_str()].clone()))
                     })
                     .collect::<Result<_, ConfigError>>()?,
             ))
