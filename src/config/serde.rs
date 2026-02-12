@@ -357,6 +357,7 @@ mod tests {
                 .set_max_age(Duration::from_secs(2045).into())
                 .set_retries(193)
                 .set_recursive(true)
+                .into()
         );
 
         let paths = &config.sites().get("foo.com").unwrap();
@@ -370,6 +371,7 @@ mod tests {
                     .set_timeout(DEFAULT_TIMEOUT.into())
                     .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
                     .set_recursive(true)
+                    .into()
             )]
         );
     }
