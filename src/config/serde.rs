@@ -161,11 +161,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .iter()
             .flat_map(|(name, site)| site.roots.iter().map(|root| (root, name.to_owned())))
             .sorted_by_key(|(url, _)| url.host_str())
-            .chunk_by(|(url, _)| url.host_str().unwrap_or_default().to_owned())
+            .chunk_by(|(url, _)| url.host_str().unwrap_or_default())
             .into_iter()
             .map(|(host, sites)| {
                 Ok((
-                    host,
+                    host.into(),
                     sites
                         .map(|(url, name)| {
                             Ok((url.path().to_owned(), configs[name.as_str()].clone()))
