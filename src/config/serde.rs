@@ -425,7 +425,7 @@ mod tests {
                 default: None,
                 sites: HashMap::from([
                     (
-                        "foo_root".to_owned(),
+                        "foo".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.com/").unwrap()],
                             config: SiteConfig {
@@ -455,7 +455,7 @@ mod tests {
                         },
                     ),
                     (
-                        "foo_net_excluded".to_owned(),
+                        "foo_net".to_owned(),
                         RootSiteConfig {
                             roots: vec![Url::parse("https://foo.net/").unwrap()],
                             config: SiteConfig {
