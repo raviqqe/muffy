@@ -601,4 +601,24 @@ mod tests {
 
         assert!(matches!(result, Err(ConfigError::NoRootRecursion(_))));
     }
+
+    #[test]
+    fn compile_parent_site_config_with_no_root() {
+        let result = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: None,
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            },
+            concurrency: None,
+        });
+
+        assert!(matches!(result, Err(ConfigError::NoRootRecursion(_))));
+    }
 }
