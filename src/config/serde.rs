@@ -477,7 +477,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: SiteSet {
                 default: None,
-                sites: HashMap::from([
+                sites: [
                     (
                         "foo".to_owned(),
                         SiteConfig {
@@ -494,7 +494,8 @@ mod tests {
                             ..Default::default()
                         },
                     ),
-                ]),
+                ]
+                .into(),
             },
             concurrency: None,
         })
@@ -582,5 +583,22 @@ mod tests {
         };
 
         assert_eq!(compile_config(config).unwrap().concurrency(), 42);
+    }
+
+    #[test]
+    fn compile_recursive_site_with_no_root() {
+        let result = compile_config(SerializableConfig {
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    recurse: Some(true),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+            concurrency: None,
+        });
+
+        assert!(matches!(result, Err(ConfigError::NoRootRecursion("foo"))));
     }
 }
