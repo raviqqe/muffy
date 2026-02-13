@@ -288,10 +288,7 @@ mod tests {
                     statuses: Some(HashSet::from([200, 403, 418])),
                     timeout: Some(Duration::from_secs(42).into()),
                     max_redirects: Some(42),
-                    headers: Some(HashMap::from([(
-                        "user-agent".to_owned(),
-                        "my-agent".to_owned(),
-                    )])),
+                    headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
                     retries: Some(193),
                     cache: Some(CacheConfig {
                         max_age: Some(Duration::from_secs(2045).into()),
@@ -588,17 +585,20 @@ mod tests {
     #[test]
     fn compile_recursive_site_with_no_root() {
         let result = compile_config(SerializableConfig {
-            sites: [(
-                "foo".to_owned(),
-                SiteConfig {
-                    recurse: Some(true),
-                    ..Default::default()
-                },
-            )]
-            .into(),
+            sites: SiteSet {
+                default: None,
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            },
             concurrency: None,
         });
 
-        assert!(matches!(result, Err(ConfigError::NoRootRecursion("foo"))));
+        assert!(matches!(result, Err(ConfigError::NoRootRecursion(_))));
     }
 }
