@@ -16,6 +16,8 @@ pub enum ConfigError {
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
     /// Missing parent configuration.
     MissingParentConfig(String),
+    /// No root recursion.
+    NoRootRecursion(String),
     /// A regular expression error.
     Regex(regex::Error),
     /// A URL parse error.
@@ -36,6 +38,9 @@ impl Display for ConfigError {
             }
             Self::MissingParentConfig(name) => {
                 write!(formatter, "missing parent configuration: {name}")
+            }
+            Self::NoRootRecursion(name) => {
+                write!(formatter, "recursion without roots: {name}")
             }
             Self::Regex(error) => {
                 write!(formatter, "{error}")
