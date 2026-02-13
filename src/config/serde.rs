@@ -247,6 +247,7 @@ fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, C
         nodes.insert(name.as_str(), index);
     }
 
+    // TODO Move the `default` site into the `sites` map to avoid this special case.
     for (name, site) in sites {
         if let Some(parent) = &site.extend
             && parent != DEFAULT_SITE_NAME
