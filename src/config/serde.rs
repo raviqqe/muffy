@@ -578,7 +578,7 @@ mod tests {
 
     #[test]
     fn compile_parent_site_config_with_no_root() {
-        let result = compile_config(SerializableConfig {
+        let config = compile_config(SerializableConfig {
             sites: SiteSet {
                 default: None,
                 sites: [
@@ -602,8 +602,27 @@ mod tests {
                 .into(),
             },
             concurrency: None,
-        });
+        })
+        .unwrap();
 
-        assert!(matches!(result, Err(ConfigError::NoRootRecursion(_))));
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec!["https://bar.com/",]
+        );
+        assert_eq!(
+            config.sites().keys().sorted().collect::<Vec<_>>(),
+            ["bar.com"]
+        );
+        assert_eq!(
+            config
+                .sites()
+                .get("bar.com")
+                .unwrap()
+                .iter()
+                .map(|(path, _)| path.as_str())
+                .sorted()
+                .collect::<Vec<_>>(),
+            ["/"]
+        );
     }
 }
