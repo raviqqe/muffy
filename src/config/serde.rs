@@ -622,53 +622,52 @@ mod tests {
         assert_eq!(compile_config(config).unwrap().concurrency(), 42);
     }
 
-    // TODO Enable after the topological sort is implemented.
-    // #[test]
-    // fn compile_parent_site_config_with_no_root() {
-    //     let config = compile_config(SerializableConfig {
-    //         sites: SiteSet {
-    //             default: None,
-    //             sites: [
-    //                 (
-    //                     "foo".to_owned(),
-    //                     SiteConfig {
-    //                         recurse: Some(true),
-    //                         ..Default::default()
-    //                     },
-    //                 ),
-    //                 (
-    //                     "bar".to_owned(),
-    //                     SiteConfig {
-    //                         extend: Some("foo".into()),
-    //                         roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-    //                         ..Default::default()
-    //                     },
-    //                 ),
-    //             ]
-    //             .into(),
-    //         },
-    //         concurrency: None,
-    //     })
-    //     .unwrap();
-    //
-    //     assert_eq!(
-    //         config.roots().sorted().collect::<Vec<_>>(),
-    //         vec!["https://bar.com/",]
-    //     );
-    //     assert_eq!(
-    //         config.sites().keys().sorted().collect::<Vec<_>>(),
-    //         ["bar.com"]
-    //     );
-    //     assert_eq!(
-    //         config
-    //             .sites()
-    //             .get("bar.com")
-    //             .unwrap()
-    //             .iter()
-    //             .map(|(path, _)| path.as_str())
-    //             .sorted()
-    //             .collect::<Vec<_>>(),
-    //         ["/"]
-    //     );
-    // }
+    #[test]
+    fn compile_parent_site_config_with_no_root() {
+        let config = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: None,
+                sites: [
+                    (
+                        "foo".to_owned(),
+                        SiteConfig {
+                            recurse: Some(true),
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        "bar".to_owned(),
+                        SiteConfig {
+                            extend: Some("foo".into()),
+                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .into(),
+            },
+            concurrency: None,
+        })
+        .unwrap();
+
+        assert_eq!(
+            config.roots().sorted().collect::<Vec<_>>(),
+            vec!["https://bar.com/",]
+        );
+        assert_eq!(
+            config.sites().keys().sorted().collect::<Vec<_>>(),
+            ["bar.com"]
+        );
+        assert_eq!(
+            config
+                .sites()
+                .get("bar.com")
+                .unwrap()
+                .iter()
+                .map(|(path, _)| path.as_str())
+                .sorted()
+                .collect::<Vec<_>>(),
+            ["/"]
+        );
+    }
 }
