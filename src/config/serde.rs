@@ -15,7 +15,7 @@ use petgraph::{
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     sync::LazyLock,
 };
 use url::Url;
@@ -80,7 +80,7 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    validate_circular_configs(&config.sites.sites)?;
+    let names = sort_site_configs(&config.sites.sites)?;
 
     let excluded_links = config
         .sites
@@ -114,12 +114,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let included_sites = config
         .sites
         .sites
-        .into_iter()
+        .iter()
         .flat_map(|(name, site)| {
             if site.ignore.unwrap_or_default() {
                 None
             } else {
-                Some((name, site))
+                Some((name.as_str(), site))
             }
         })
         .collect::<HashMap<_, _>>();
@@ -138,7 +138,9 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
 
-    for (name, site) in &included_sites {
+    for name in names {
+        let site = &included_sites[name];
+
         configs.insert(
             name,
             compile_site_config(
@@ -173,9 +175,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 Ok((
                     host.into(),
                     sites
-                        .map(|(url, name)| {
-                            Ok((url.path().to_owned(), configs[name.as_str()].clone()))
-                        })
+                        .map(|(url, name)| Ok((url.path().to_owned(), configs[name].clone())))
                         .collect::<Result<_, ConfigError>>()?,
                 ))
             })
@@ -238,38 +238,41 @@ fn compile_site_config(
         .set_recursive(site.recurse == Some(true)))
 }
 
-fn validate_circular_configs(sites: &HashMap<String, RootSiteConfig>) -> Result<(), ConfigError> {
-    let nodes = HashMap::<&str, NodeIndex<DefaultIx>>::default();
-    let graph = Graph::<&str, ()>::new();
+fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
+    let mut nodes = HashMap::<&str, NodeIndex<DefaultIx>>::default();
+    let mut graph = Graph::<&str, ()>::new();
 
     for name in sites.keys() {
-        graph.add_node(&name);
+        let index = graph.add_node(&name);
+        nodes.insert(name.as_str(), index);
     }
 
     for (name, site) in sites {
         if let Some(parent) = &site.extend {
-            graph.add_edge(nodes[name.as_str()], nodes[&parent], ());
+            graph.add_edge(nodes[name.as_str()], nodes[parent.as_str()], ());
         }
     }
 
-    if let Err(cycle) = toposort(&graph, None) {
-        let mut components = kosaraju_scc(&graph);
+    let names = BTreeMap::from_iter(nodes.iter().map(|(name, index)| (*index, *name)));
 
-        components.sort_by_key(|component| component.len());
+    toposort(&graph, None)
+        .map(|indices| indices.into_iter().map(|index| names[&index]).collect())
+        .map_err(|cycle| {
+            let mut components = kosaraju_scc(&graph);
 
-        return Err(ConfigError::CircularSiteConfigs(
-            components
-                .into_iter()
-                .rev()
-                .find(|component| component.contains(&cycle.node_id()))
-                .unwrap()
-                .into_iter()
-                .map(|id| graph[id].clone())
-                .collect(),
-        ));
-    }
+            components.sort_by_key(|component| component.len());
 
-    Ok(())
+            ConfigError::CircularSiteConfigs(
+                components
+                    .into_iter()
+                    .rev()
+                    .find(|component| component.contains(&cycle.node_id()))
+                    .unwrap()
+                    .into_iter()
+                    .map(|id| graph[id].to_owned())
+                    .collect(),
+            )
+        })
 }
 
 #[cfg(test)]
