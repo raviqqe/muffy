@@ -594,7 +594,6 @@ mod tests {
                         SiteConfig {
                             extend: Some("foo".into()),
                             roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                            recurse: Some(true),
                             ..Default::default()
                         },
                     ),
