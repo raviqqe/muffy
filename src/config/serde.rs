@@ -54,7 +54,7 @@ struct SiteSet {
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
     extend: Option<String>,
-    roots: Option<Vec<Url>>,
+    roots: Option<HashSet<Url>>,
     recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
     max_redirects: Option<usize>,
@@ -76,12 +76,6 @@ struct CacheConfig {
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     // TODO Check circular dependencies between sites.
-
-    for (name, site) in &config.sites.sites {
-        if site.roots.is_none() && site.recurse == Some(true) {
-            return Err(ConfigError::NoRootRecursion(name.into()));
-        }
-    }
 
     let excluded_links = config
         .sites
@@ -299,7 +293,7 @@ mod tests {
                     "foo".to_owned(),
                     SiteConfig {
                         extend: Some(DEFAULT_SITE_NAME.to_owned()),
-                        roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         recurse: Some(true),
                         ..Default::default()
                     },
@@ -351,7 +345,7 @@ mod tests {
                     (
                         "foo".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -359,7 +353,7 @@ mod tests {
                     (
                         "foo_sub".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/foo").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -367,7 +361,7 @@ mod tests {
                     (
                         "foo_excluded".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/bar").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                             ignore: Some(true),
                             ..Default::default()
                         },
@@ -375,7 +369,7 @@ mod tests {
                     (
                         "bar".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://bar.com/").unwrap()].into(),
+                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -421,7 +415,7 @@ mod tests {
                     (
                         "foo".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -429,7 +423,7 @@ mod tests {
                     (
                         "foo_sub".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/foo").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -437,7 +431,7 @@ mod tests {
                     (
                         "foo_excluded".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/bar").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                             ignore: Some(true),
                             ..Default::default()
                         },
@@ -445,7 +439,7 @@ mod tests {
                     (
                         "foo_net".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.net/").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.net/").unwrap()].into()),
                             ignore: Some(true),
                             ..Default::default()
                         },
@@ -478,7 +472,7 @@ mod tests {
                     (
                         "foo".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://foo.com/").unwrap()].into(),
+                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                             recurse: Some(true),
                             ..Default::default()
                         },
@@ -486,7 +480,7 @@ mod tests {
                     (
                         "bar".to_owned(),
                         SiteConfig {
-                            roots: vec![Url::parse("https://bar.com/").unwrap()].into(),
+                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
                             statuses: Some(HashSet::from([200, 201])),
                             ..Default::default()
                         },
@@ -583,37 +577,28 @@ mod tests {
     }
 
     #[test]
-    fn compile_recursive_site_with_no_root() {
-        let result = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [(
-                    "foo".to_owned(),
-                    SiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    },
-                )]
-                .into(),
-            },
-            concurrency: None,
-        });
-
-        assert!(matches!(result, Err(ConfigError::NoRootRecursion(_))));
-    }
-
-    #[test]
     fn compile_parent_site_config_with_no_root() {
         let result = compile_config(SerializableConfig {
             sites: SiteSet {
                 default: None,
-                sites: [(
-                    "foo".to_owned(),
-                    SiteConfig {
-                        recurse: Some(true),
-                        ..Default::default()
-                    },
-                )]
+                sites: [
+                    (
+                        "foo".to_owned(),
+                        SiteConfig {
+                            recurse: Some(true),
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        "bar".to_owned(),
+                        SiteConfig {
+                            extend: Some("foo".into()),
+                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                            recurse: Some(true),
+                            ..Default::default()
+                        },
+                    ),
+                ]
                 .into(),
             },
             concurrency: None,
