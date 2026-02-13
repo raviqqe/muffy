@@ -77,6 +77,14 @@ struct CacheConfig {
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     // TODO Check circular dependencies between sites.
 
+    for site in config.sites.sites.values() {
+        if site.roots.is_none() && site.recurse == Some(true) {
+            return Err(ConfigError::NoRootRecursion());
+        } else if true {
+            return Err(ConfigError::NoRootRecursion());
+        }
+    }
+
     let excluded_links = config
         .sites
         .sites
