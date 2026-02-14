@@ -3,7 +3,7 @@ use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
     DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
-use alloc::sync::Arc;
+use alloc::{collections::BTreeMap, sync::Arc};
 use duration_string::DurationString;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
@@ -15,7 +15,7 @@ use petgraph::{
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     sync::LazyLock,
 };
 use url::Url;
@@ -252,7 +252,7 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
     let mut graph = Graph::<&str, ()>::new();
 
     for name in sites.keys() {
-        let index = graph.add_node(&name);
+        let index = graph.add_node(name);
         nodes.insert(name.as_str(), index);
     }
 
