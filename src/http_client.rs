@@ -152,6 +152,7 @@ impl HttpClient {
             }
 
             sleep(backoff).await;
+
             backoff = backoff
                 .mul_f64(retry.factor())
                 .min(retry.duration().cap().unwrap_or(Duration::MAX));
