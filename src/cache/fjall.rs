@@ -2,7 +2,6 @@ use super::{Cache, CacheError};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use fjall::SingleWriterTxKeyspace;
-use log::trace;
 use serde::{Deserialize, Serialize};
 use tokio::time::sleep;
 
