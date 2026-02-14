@@ -306,9 +306,12 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+    use crate::{
+        config::{
+            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+            DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+        },
+        default_concurrency,
     };
     use core::time::Duration;
     use http::HeaderMap;
@@ -327,6 +330,8 @@ mod tests {
         assert_eq!(config.roots().count(), 0);
         assert_eq!(config.excluded_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
+        assert!(!config.persistent_cache());
+        assert_eq!(config.concurrency(), default_concurrency());
 
         let default = config.default;
 
@@ -657,6 +662,19 @@ mod tests {
         };
 
         assert_eq!(compile_config(config).unwrap().concurrency(), 42);
+    }
+
+    #[test]
+    fn compile_global_cache_config() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            concurrency: None,
+            cache: Some(GlobalCacheConfig {
+                persistent: Some(true),
+            }),
+        };
+
+        assert!(compile_config(config).unwrap().persistent_cache());
     }
 
     #[test]
