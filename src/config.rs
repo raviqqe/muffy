@@ -10,8 +10,6 @@ use rlimit::{Resource, getrlimit};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-type HostConfig = HashMap<String, Arc<SiteConfig>>;
-
 /// Default accepted URL schemes.
 pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 /// Default accepted HTTP status codes.
@@ -48,7 +46,7 @@ impl Config {
     pub fn new(
         roots: Vec<String>,
         default: Arc<SiteConfig>,
-        sites: HashMap<String, HostConfig>,
+        sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
         concurrency: Option<usize>,
         persistent_cache: bool,
     ) -> Self {
@@ -139,7 +137,7 @@ impl SiteConfig {
     }
 
     /// Returns a concurrency.
-    pub fn concurrency(&self) -> Option<usize> {
+    pub const fn concurrency(&self) -> Option<usize> {
         self.concurrency
     }
 
