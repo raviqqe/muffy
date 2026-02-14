@@ -112,7 +112,7 @@ pub struct SiteConfig {
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
-    retries: usize,
+    retry: Arc<RetryConfig>,
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
@@ -132,6 +132,11 @@ impl SiteConfig {
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
+    }
+
+    /// Returns a retry configuration.
+    pub const fn retry(&self) -> &Arc<RetryConfig> {
+        &self.retry
     }
 
     /// Returns a status code configuration.
@@ -154,11 +159,6 @@ impl SiteConfig {
         self.timeout
     }
 
-    /// Returns a number of retries.
-    pub const fn retries(&self) -> usize {
-        self.retries
-    }
-
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
@@ -173,6 +173,12 @@ impl SiteConfig {
     /// Sets request headers.
     pub fn set_headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
+        self
+    }
+
+    /// Sets a retry configuration.
+    pub fn set_retry(mut self, retry: Arc<RetryConfig>) -> Self {
+        self.retry = retry;
         self
     }
 
@@ -197,12 +203,6 @@ impl SiteConfig {
     /// Sets a timeout.
     pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
         self.timeout = duration;
-        self
-    }
-
-    /// Sets a number of retries.
-    pub const fn set_retries(mut self, retries: usize) -> Self {
-        self.retries = retries;
         self
     }
 
@@ -289,6 +289,30 @@ impl CacheConfig {
     /// Sets a maximum age.
     pub const fn set_max_age(mut self, age: Option<Duration>) -> Self {
         self.max_age = age;
+        self
+    }
+}
+
+/// A retry configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RetryConfig {
+    count: usize,
+}
+
+impl RetryConfig {
+    /// Creates a retry configuration.
+    pub const fn new() -> Self {
+        Self { count: 0 }
+    }
+
+    /// Returns a retry count.
+    pub const fn count(&self) -> usize {
+        self.count
+    }
+
+    /// Sets a retry count.
+    pub const fn set_count(mut self, count: usize) -> Self {
+        self.count = count;
         self
     }
 }

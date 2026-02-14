@@ -48,24 +48,29 @@ pub struct SerializableConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
+    cache: Option<CacheConfig>,
     extend: Option<String>,
-    roots: Option<HashSet<Url>>,
-    recurse: Option<bool>,
     headers: Option<HashMap<String, String>>,
+    ignore: Option<bool>,
     max_redirects: Option<usize>,
-    timeout: Option<DurationString>,
+    recurse: Option<bool>,
+    retry: Option<RetryConfig>,
+    roots: Option<HashSet<Url>>,
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
-    // TODO Generalize the retry configuration.
-    retries: Option<usize>,
-    cache: Option<CacheConfig>,
-    ignore: Option<bool>,
+    timeout: Option<DurationString>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
     max_age: Option<DurationString>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RetryConfig {
+    count: Option<usize>,
 }
 
 /// Compiles a configuration.
@@ -233,7 +238,15 @@ fn compile_site_config(
         )
         .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
-        .set_retries(site.retries.unwrap_or(parent.retries()))
+        .set_retry({
+            if let Some(retry) = &site.retry {
+                super::RetryConfig::default()
+                    .set_count(retry.count.unwrap_or_else(|| parent.retry().count()))
+                    .into()
+            } else {
+                parent.retry().clone()
+            }
+        })
         .set_recursive(site.recurse == Some(true)))
 }
 
@@ -332,7 +345,7 @@ mod tests {
                         timeout: Some(Duration::from_secs(42).into()),
                         max_redirects: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
-                        retries: Some(193),
+                        retry: Some(RetryConfig { count: Some(193) }),
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),
@@ -379,7 +392,7 @@ mod tests {
                 ])))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
-                .set_retries(193)
+                .set_retry(crate::config::RetryConfig::default().set_count(193).into())
                 .set_recursive(true),
         );
 

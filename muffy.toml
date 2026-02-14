@@ -7,9 +7,10 @@ schemes = ["https"]
 statuses = [200]
 timeout = "30s"
 
+[sites.default.retry]
+count = 3
+
 # TODO Allow more retry options.
-# [sites.default.retry]
-# count = 3
 # factor = 2
 #
 # [sites.default.retry.duration]
@@ -40,8 +41,10 @@ statuses = [200, 403, 404]
 [sites.haskell]
 extend = "default"
 roots = ["https://gitlab.haskell.org/"]
+
+[sites.haskell.retry]
+count = 5
 # TODO Increase a backoff.
-retries = 5
 
 [sites.forbidden]
 extend = "default"

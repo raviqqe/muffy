@@ -1,4 +1,5 @@
-use crate::http_client::BareRequest;
+use crate::{RetryConfig, http_client::BareRequest};
+use alloc::sync::Arc;
 use core::time::Duration;
 use http::HeaderMap;
 use url::Url;
@@ -6,21 +7,25 @@ use url::Url;
 #[derive(Clone, Debug)]
 pub struct Request {
     bare: BareRequest,
-    max_redirects: usize,
-    timeout: Option<Duration>,
     max_age: Option<Duration>,
-    retries: usize,
+    max_redirects: usize,
+    retry: Arc<RetryConfig>,
+    timeout: Option<Duration>,
 }
 
 impl Request {
     pub fn new(url: Url, headers: HeaderMap) -> Self {
         Self {
             bare: BareRequest { url, headers },
-            max_redirects: Default::default(),
-            timeout: Default::default(),
             max_age: Default::default(),
-            retries: Default::default(),
+            max_redirects: Default::default(),
+            retry: Default::default(),
+            timeout: Default::default(),
         }
+    }
+
+    pub const fn as_bare(&self) -> &BareRequest {
+        &self.bare
     }
 
     pub const fn url(&self) -> &Url {
@@ -39,12 +44,12 @@ impl Request {
         self.max_age
     }
 
-    pub const fn retries(&self) -> usize {
-        self.retries
+    pub fn retry(&self) -> &RetryConfig {
+        &self.retry
     }
 
-    pub fn set_url(mut self, url: Url) -> Self {
-        self.bare.url = url;
+    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
+        self.max_age = max_age;
         self
     }
 
@@ -58,17 +63,13 @@ impl Request {
         self
     }
 
-    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
-        self.max_age = max_age;
+    pub fn set_retry(mut self, config: Arc<RetryConfig>) -> Self {
+        self.retry = config;
         self
     }
 
-    pub const fn set_retries(mut self, retries: usize) -> Self {
-        self.retries = retries;
+    pub fn set_url(mut self, url: Url) -> Self {
+        self.bare.url = url;
         self
-    }
-
-    pub const fn as_bare(&self) -> &BareRequest {
-        &self.bare
     }
 }

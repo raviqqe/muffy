@@ -139,7 +139,7 @@ impl HttpClient {
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
         let mut result = self.get_throttled(request).await;
 
-        for _ in 0..request.retries() {
+        for _ in 0..request.retry().count() {
             if let Ok(response) = &result
                 && !response.status().is_server_error()
             {
@@ -543,6 +543,8 @@ mod tests {
     }
 
     mod retry {
+        use crate::RetryConfig;
+
         use super::*;
         use pretty_assertions::assert_eq;
 
@@ -580,7 +582,10 @@ mod tests {
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,
                 )
-                .get(&Request::new(url, Default::default()).set_retries(1))
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_retry(RetryConfig::default().set_count(1).into())
+                )
                 .await
                 .unwrap(),
                 Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -616,7 +621,10 @@ mod tests {
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,
                 )
-                .get(&Request::new(url, Default::default()).set_retries(1))
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_retry(RetryConfig::default().set_count(1).into())
+                )
                 .await
                 .unwrap(),
                 Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -656,7 +664,10 @@ mod tests {
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,
                 )
-                .get(&Request::new(url, Default::default()).set_retries(1))
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_retry(RetryConfig::default().set_count(1).into())
+                )
                 .await
                 .unwrap(),
                 Some(Response::from_bare(failed_response, Duration::from_millis(0)).into())
@@ -696,7 +707,10 @@ mod tests {
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     1,
                 )
-                .get(&Request::new(url, Default::default()).set_retries(2))
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_retry(RetryConfig::default().set_count(2).into())
+                )
                 .await
                 .unwrap(),
                 Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
