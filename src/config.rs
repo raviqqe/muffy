@@ -159,11 +159,6 @@ impl SiteConfig {
         self.timeout
     }
 
-    /// Returns a number of retries.
-    pub const fn retries(&self) -> usize {
-        self.retries
-    }
-
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
@@ -208,12 +203,6 @@ impl SiteConfig {
     /// Sets a timeout.
     pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
         self.timeout = duration;
-        self
-    }
-
-    /// Sets a number of retries.
-    pub const fn set_retries(mut self, retries: usize) -> Self {
-        self.retries = retries;
         self
     }
 
@@ -307,7 +296,7 @@ impl CacheConfig {
 /// A retry configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct RetryConfig {
-    retries: usize,
+    count: usize,
 }
 
 #[cfg(test)]
