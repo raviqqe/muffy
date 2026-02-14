@@ -138,7 +138,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
 
-    for name in names.iter().rev() {
+    for name in names {
         let Some(site) = included_sites.get(name) else {
             continue;
         };
@@ -259,25 +259,26 @@ fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, C
     }
 
     let names = BTreeMap::from_iter(nodes.iter().map(|(name, index)| (*index, *name)));
+    let mut indices = toposort(&graph, None).map_err(|cycle| {
+        let mut components = kosaraju_scc(&graph);
 
-    toposort(&graph, None)
-        .map(|indices| indices.into_iter().map(|index| names[&index]).collect())
-        .map_err(|cycle| {
-            let mut components = kosaraju_scc(&graph);
+        components.sort_by_key(|component| component.len());
 
-            components.sort_by_key(|component| component.len());
+        ConfigError::CircularSiteConfigs(
+            components
+                .into_iter()
+                .rev()
+                .find(|component| component.contains(&cycle.node_id()))
+                .unwrap()
+                .into_iter()
+                .map(|id| graph[id].to_owned())
+                .collect(),
+        )
+    })?;
 
-            ConfigError::CircularSiteConfigs(
-                components
-                    .into_iter()
-                    .rev()
-                    .find(|component| component.contains(&cycle.node_id()))
-                    .unwrap()
-                    .into_iter()
-                    .map(|id| graph[id].to_owned())
-                    .collect(),
-            )
-        })
+    indices.reverse();
+
+    Ok(indices.into_iter().map(|index| names[&index]).collect())
 }
 
 #[cfg(test)]
