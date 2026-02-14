@@ -258,14 +258,22 @@ fn compile_site_config(
         )
         .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
-        .set_retry({
-            if let Some(retry) = &site.retry {
-                super::RetryConfig::default()
-                    .set_count(retry.count.unwrap_or(parent.retry().count()))
-                    .into()
-            } else {
-                parent.retry().clone()
-            }
+        .set_retry(if let Some(retry) = &site.retry {
+            super::RetryConfig::default()
+                .set_count(retry.count.unwrap_or(parent.retry().count()))
+                .set_factor(retry.factor.unwrap_or(parent.retry().factor()))
+                .set_duration(if let Some(duration) = &retry.duration {
+                    let parent = parent.retry().duration();
+
+                    super::RetryDurationConfig::default()
+                        .set_initial(duration.initial.map(Into::into).or(parent.initial()))
+                        .set_cap(duration.cap.map(Into::into).or(parent.cap()))
+                } else {
+                    parent.retry.duration().clone()
+                })
+                .into()
+        } else {
+            parent.retry().clone()
         })
         .set_recursive(site.recurse == Some(true)))
 }
