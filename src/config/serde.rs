@@ -423,6 +423,7 @@ mod tests {
                     crate::config::CacheConfig::default()
                         .set_max_age(Duration::from_secs(2045).into()),
                 )
+                .set_concurrency(Some(42))
                 .set_headers(HeaderMap::from_iter([(
                     HeaderName::try_from("user-agent").unwrap(),
                     HeaderValue::try_from("my-agent").unwrap(),

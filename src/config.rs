@@ -184,6 +184,12 @@ impl SiteConfig {
         self
     }
 
+    /// Sets a concurrency.
+    pub const fn set_concurrency(mut self, concurrency: Option<usize>) -> Self {
+        self.concurrency = concurrency;
+        self
+    }
+
     /// Sets request headers.
     pub fn set_headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
