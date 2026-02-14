@@ -8,8 +8,9 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    CacheConfig, ClockTimer, Config, FjallCache, HtmlParser, HttpClient, MokaCache, RenderFormat,
-    RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, StatusConfig, WebValidator,
+    CacheConfig, ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat,
+    RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig,
+    WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -30,7 +31,7 @@ use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
 const DATABASE_DIRECTORY: &str = "muffy";
-const FJALL_DIRECTORY: &str = "fjall";
+const SLED_DIRECTORY: &str = "sled";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
@@ -144,9 +145,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
             .unwrap_or_else(temp_dir)
             .join(DATABASE_DIRECTORY)
             .join(crate_version!())
-            .join(FJALL_DIRECTORY);
+            .join(SLED_DIRECTORY);
         create_dir_all(&directory).await?;
-        Some(fjall::SingleWriterTxDatabase::builder(directory).open()?)
+        Some(sled::open(directory)?)
     } else {
         None
     };
@@ -155,9 +156,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             ReqwestHttpClient::new()?,
             ClockTimer::new(),
             if let Some(db) = &db {
-                Box::new(FjallCache::new(
-                    db.keyspace(RESPONSE_NAMESPACE, Default::default)?,
-                ))
+                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
