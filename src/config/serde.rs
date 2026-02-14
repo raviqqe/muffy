@@ -140,7 +140,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 .filter(|site| site.roots == Some(Default::default()))
                 .collect::<Vec<_>>();
 
-            // TODO Should we prevent the `ignore = true` option for default site configuration?
+            // TODO Should we prevent the `ignore = true` option for default site
+            // configuration?
             match &configs[..] {
                 [config] => compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into(),
                 [_, ..] => {
