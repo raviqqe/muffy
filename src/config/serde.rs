@@ -431,6 +431,11 @@ mod tests {
                     crate::config::RetryConfig::default()
                         .set_count(193)
                         .set_factor(4.2.into())
+                        .set_duration(
+                            crate::config::RetryDurationConfig::default()
+                                .set_initial(Duration::from_millis(42).into())
+                                .set_cap(Duration::from_secs(42).into()),
+                        )
                         .into(),
                 )
                 .set_recursive(true),
