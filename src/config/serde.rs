@@ -139,10 +139,20 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 .values()
                 .filter(|site| site.roots == Some(Default::default()))
                 .collect::<Vec<_>>();
-            if let Some(config) = configs.into_iter().next() {
-                compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into()
-            } else {
-                DEFAULT_SITE_CONFIG.clone().into()
+
+            match &configs[..] {
+                [config] => compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into(),
+                [_, ..] => {
+                    return Err(ConfigError::MultipleDefaultSiteConfigs(
+                        config
+                            .sites
+                            .iter()
+                            .filter(|(_, site)| site.roots == Some(Default::default()))
+                            .map(|(name, _)| name.to_owned())
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+                _ => DEFAULT_SITE_CONFIG.clone().into(),
             }
         },
         included_sites
