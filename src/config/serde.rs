@@ -261,7 +261,7 @@ fn compile_site_config(
         .set_retry({
             if let Some(retry) = &site.retry {
                 super::RetryConfig::default()
-                    .set_count(retry.count.unwrap_or_else(|| parent.retry().count()))
+                    .set_count(retry.count.unwrap_or(parent.retry().count()))
                     .into()
             } else {
                 parent.retry().clone()
