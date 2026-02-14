@@ -79,6 +79,7 @@ struct CacheConfig {
 struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
+    duration: Option<RetryDurationConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
