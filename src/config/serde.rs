@@ -70,7 +70,7 @@ struct CacheConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RetryConfig {
-    count: usize,
+    count: Option<usize>,
 }
 
 /// Compiles a configuration.
@@ -241,11 +241,7 @@ fn compile_site_config(
         .set_retry({
             if let Some(retry) = &site.retry {
                 super::RetryConfig::default()
-                    .set_count(if retry.count == 0 {
-                        parent.retry().count()
-                    } else {
-                        retry.count
-                    })
+                    .set_count(retry.count.unwrap_or_else(|| parent.retry().count()))
                     .into()
             } else {
                 parent.retry().clone()
@@ -349,7 +345,7 @@ mod tests {
                         timeout: Some(Duration::from_secs(42).into()),
                         max_redirects: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
-                        retry: Some(RetryConfig { count: 193 }),
+                        retry: Some(RetryConfig { count: Some(193) }),
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),
