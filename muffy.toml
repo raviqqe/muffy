@@ -1,6 +1,7 @@
 concurrency = 64
 
 [sites.default]
+roots = []
 max_redirects = 8
 schemes = ["https"]
 statuses = [200]
@@ -31,7 +32,7 @@ statuses = [200, 403, 404]
 [sites.haskell]
 extend = "default"
 roots = ["https://gitlab.haskell.org/"]
-retry = 3
+retry = 5
 
 [sites.forbidden]
 extend = "default"
