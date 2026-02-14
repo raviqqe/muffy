@@ -12,7 +12,10 @@ pub use self::{
     error::HttpClientError,
     reqwest::ReqwestHttpClient,
 };
-use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
+use crate::{
+    ConcurrencyConfig, cache::Cache, default_concurrency, request::Request, response::Response,
+    timer::Timer,
+};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
@@ -41,14 +44,14 @@ impl HttpClient {
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
-        concurrency: usize,
+        concurrency: &ConcurrencyConfig,
     ) -> Self {
         Self(
             HttpClientInner {
                 client: Box::new(client),
                 timer: Box::new(timer),
                 cache,
-                semaphore: Semaphore::new(concurrency),
+                semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
             }
             .into(),
         )

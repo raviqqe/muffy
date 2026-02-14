@@ -160,7 +160,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
-            config.concurrency(),
+            config.concurrency().clone(),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
