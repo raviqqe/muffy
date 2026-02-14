@@ -20,8 +20,6 @@ use std::{
 };
 use url::Url;
 
-const DEFAULT_SITE_NAME: &str = "default";
-
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
     super::SiteConfig::new()
         .set_status(super::StatusConfig::new(
@@ -77,7 +75,6 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let excluded_links = config
         .sites
         .iter()
-        .filter(|(name, _)| name.as_str() != DEFAULT_SITE_NAME)
         .flat_map(|(_, site)| {
             if site.ignore == Some(true) {
                 site.roots
@@ -89,35 +86,16 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 vec![]
             }
         })
-        .chain(
-            if config
-                .sites
-                .get(DEFAULT_SITE_NAME)
-                .and_then(|config| config.ignore)
-                == Some(true)
-            {
-                Some(Regex::new(".*"))
-            } else {
-                None
-            },
-        )
         .collect::<Result<_, _>>()?;
     let included_sites = config
         .sites
         .iter()
-        .filter(|(name, site)| {
-            name.as_str() != DEFAULT_SITE_NAME && !site.ignore.unwrap_or_default()
-        })
+        .filter(|(name, site)| !site.ignore.unwrap_or_default())
         .map(|(name, site)| (name.as_str(), site))
         .collect::<HashMap<_, _>>();
-    let default = Arc::new(if let Some(default) = config.sites.get(DEFAULT_SITE_NAME) {
-        compile_site_config(default, &DEFAULT_SITE_CONFIG)?
-    } else {
-        DEFAULT_SITE_CONFIG.clone()
-    });
 
-    let mut recursion = HashMap::<&str, _>::from_iter([(DEFAULT_SITE_NAME, false)]);
-    let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
+    let mut recursion = HashMap::<&str, _>::default();
+    let mut configs = HashMap::<&str, Arc<_>>::default();
 
     for name in names {
         let Some(site) = included_sites.get(name) else {
@@ -155,7 +133,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .flatten()
             .map(|url| url.to_string())
             .collect(),
-        default,
+        // TODO
+        DEFAULT_SITE_CONFIG.clone().into(),
         included_sites
             .iter()
             .flat_map(|(name, site)| {
@@ -239,22 +218,12 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
     let mut graph = Graph::<&str, ()>::new();
 
     for name in sites.keys() {
-        if name == DEFAULT_SITE_NAME {
-            continue;
-        }
-
         let index = graph.add_node(name);
         nodes.insert(name.as_str(), index);
     }
 
     for (name, site) in sites {
-        if name == DEFAULT_SITE_NAME {
-            continue;
-        }
-
-        if let Some(parent) = &site.extend
-            && parent != DEFAULT_SITE_NAME
-        {
+        if let Some(parent) = &site.extend {
             let Some(&parent_index) = nodes.get(parent.as_str()) else {
                 return Err(ConfigError::MissingParentConfig(parent.to_owned()));
             };
