@@ -309,13 +309,6 @@ pub struct RetryConfig {
     duration: RetryDurationConfig,
 }
 
-/// A retry duration configuration.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct RetryDurationConfig {
-    initial: Option<Duration>,
-    cap: Option<Duration>,
-}
-
 impl RetryConfig {
     /// Creates a configuration.
     pub fn new() -> Self {
@@ -341,12 +334,62 @@ impl RetryConfig {
         &self.duration
     }
 
-    /// Sets a retry count.
+    /// Sets a count.
     pub const fn set_count(mut self, count: usize) -> Self {
         self.count = count;
         self
     }
+
+    /// Sets a factor.
+    pub const fn set_factor(mut self, factor: f64) -> Self {
+        self.factor = factor;
+        self
+    }
+
+    /// Sets a duration configuration.
+    pub const fn set_duration(mut self, duration: RetryDurationConfig) -> Self {
+        self.duration = duration;
+        self
+    }
 }
+
+/// A retry duration configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RetryDurationConfig {
+    initial: Option<Duration>,
+    cap: Option<Duration>,
+}
+
+impl RetryDurationConfig {
+    /// Creates a configuration.
+    pub const fn new() -> Self {
+        Self {
+            initial: None,
+            cap: None,
+        }
+    }
+
+    /// Returns an initial duration.
+    pub const fn initial(&self) -> Option<Duration> {
+        self.initial
+    }
+
+    /// Returns a cap duration.
+    pub const fn cap(&self) -> Option<Duration> {
+        self.cap
+    }
+
+    /// Sets an initial duration.
+    pub const fn set_initial(mut self, duration: Option<Duration>) -> Self {
+        self.initial = duration;
+        self
+    }
+
+    /// Sets a cap duration.
+    pub const fn set_cap(mut self, duration: Option<Duration>) -> Self {
+        self.cap = duration;
+        self
+    }
 
 #[cfg(test)]
 mod tests {
