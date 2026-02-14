@@ -78,6 +78,14 @@ struct CacheConfig {
 #[serde(deny_unknown_fields)]
 struct RetryConfig {
     count: Option<usize>,
+    factor: Option<f64>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RetryDurationConfig {
+    initial: Option<DurationString>,
+    cap: Option<DurationString>,
 }
 
 /// Compiles a configuration.
