@@ -114,7 +114,7 @@ impl Config {
 }
 
 /// A site configuration.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
     cache: CacheConfig,
     headers: HeaderMap,
@@ -302,25 +302,89 @@ impl CacheConfig {
 }
 
 /// A retry configuration.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct RetryConfig {
     count: usize,
+    factor: f64,
+    duration: RetryDurationConfig,
 }
 
 impl RetryConfig {
-    /// Creates a retry configuration.
-    pub const fn new() -> Self {
-        Self { count: 0 }
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self {
+            count: 0,
+            factor: 1.0,
+            duration: Default::default(),
+        }
     }
 
-    /// Returns a retry count.
+    /// Returns a count.
     pub const fn count(&self) -> usize {
         self.count
     }
 
-    /// Sets a retry count.
+    /// Returns a factor.
+    pub const fn factor(&self) -> f64 {
+        self.factor
+    }
+
+    /// Returns a duration configuration.
+    pub const fn duration(&self) -> &RetryDurationConfig {
+        &self.duration
+    }
+
+    /// Sets a count.
     pub const fn set_count(mut self, count: usize) -> Self {
         self.count = count;
+        self
+    }
+
+    /// Sets a factor.
+    pub const fn set_factor(mut self, factor: f64) -> Self {
+        self.factor = factor;
+        self
+    }
+
+    /// Sets a duration configuration.
+    pub const fn set_duration(mut self, duration: RetryDurationConfig) -> Self {
+        self.duration = duration;
+        self
+    }
+}
+
+/// A retry duration configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RetryDurationConfig {
+    initial: Duration,
+    cap: Option<Duration>,
+}
+
+impl RetryDurationConfig {
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns an initial duration.
+    pub const fn initial(&self) -> Duration {
+        self.initial
+    }
+
+    /// Returns a cap duration.
+    pub const fn cap(&self) -> Option<Duration> {
+        self.cap
+    }
+
+    /// Sets an initial duration.
+    pub const fn set_initial(mut self, duration: Duration) -> Self {
+        self.initial = duration;
+        self
+    }
+
+    /// Sets a cap duration.
+    pub const fn set_cap(mut self, duration: Option<Duration>) -> Self {
+        self.cap = duration;
         self
     }
 }

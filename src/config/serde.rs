@@ -78,6 +78,15 @@ struct CacheConfig {
 #[serde(deny_unknown_fields)]
 struct RetryConfig {
     count: Option<usize>,
+    factor: Option<f64>,
+    duration: Option<RetryDurationConfig>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RetryDurationConfig {
+    initial: Option<DurationString>,
+    cap: Option<DurationString>,
 }
 
 /// Compiles a configuration.
@@ -249,14 +258,22 @@ fn compile_site_config(
         )
         .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
-        .set_retry({
-            if let Some(retry) = &site.retry {
-                super::RetryConfig::default()
-                    .set_count(retry.count.unwrap_or_else(|| parent.retry().count()))
-                    .into()
-            } else {
-                parent.retry().clone()
-            }
+        .set_retry(if let Some(retry) = &site.retry {
+            super::RetryConfig::default()
+                .set_count(retry.count.unwrap_or(parent.retry().count()))
+                .set_factor(retry.factor.unwrap_or(parent.retry().factor()))
+                .set_duration(if let Some(duration) = &retry.duration {
+                    let parent = parent.retry().duration();
+
+                    super::RetryDurationConfig::default()
+                        .set_initial(duration.initial.map(Into::into).unwrap_or(parent.initial()))
+                        .set_cap(duration.cap.map(Into::into).or(parent.cap()))
+                } else {
+                    parent.retry().duration().clone()
+                })
+                .into()
+        } else {
+            parent.retry().clone()
         })
         .set_recursive(site.recurse == Some(true)))
 }
@@ -362,7 +379,15 @@ mod tests {
                         timeout: Some(Duration::from_secs(42).into()),
                         max_redirects: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
-                        retry: Some(RetryConfig { count: Some(193) }),
+                        retry: Some(RetryConfig {
+                            count: 193.into(),
+                            factor: 4.2.into(),
+                            duration: RetryDurationConfig {
+                                initial: Some(Duration::from_millis(42).into()),
+                                cap: Some(Duration::from_secs(42).into()),
+                            }
+                            .into(),
+                        }),
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),
@@ -410,7 +435,17 @@ mod tests {
                 ])))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
-                .set_retry(crate::config::RetryConfig::default().set_count(193).into())
+                .set_retry(
+                    crate::config::RetryConfig::default()
+                        .set_count(193)
+                        .set_factor(4.2.into())
+                        .set_duration(
+                            crate::config::RetryDurationConfig::default()
+                                .set_initial(Duration::from_millis(42).into())
+                                .set_cap(Duration::from_secs(42).into()),
+                        )
+                        .into(),
+                )
                 .set_recursive(true),
         );
 
