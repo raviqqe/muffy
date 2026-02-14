@@ -40,6 +40,7 @@ pub struct Config {
     default: Arc<SiteConfig>,
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: Option<usize>,
+    persistent_cache: bool,
 }
 
 impl Config {
@@ -49,6 +50,7 @@ impl Config {
         default: Arc<SiteConfig>,
         sites: HashMap<String, HostConfig>,
         concurrency: Option<usize>,
+        persistent_cache: bool,
     ) -> Self {
         Self {
             roots,
@@ -63,6 +65,7 @@ impl Config {
                 })
                 .collect(),
             concurrency,
+            persistent_cache,
         }
     }
 
@@ -89,6 +92,11 @@ impl Config {
     /// Returns a concurrency.
     pub fn concurrency(&self) -> usize {
         self.concurrency.unwrap_or_else(default_concurrency)
+    }
+
+    /// Returns whether a cache is persistent.
+    pub const fn persistent_cache(&self) -> bool {
+        self.persistent_cache
     }
 
     /// Set excluded link patterns.
@@ -355,6 +363,7 @@ mod tests {
             )]
             .into(),
             None,
+            false,
         );
 
         assert!(

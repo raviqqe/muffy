@@ -26,20 +26,17 @@ jobs:
         with:
           fail_ci_if_error: true
           files: lcov.info
-  command_test:
+  check_command_test:
     strategy:
       fail-fast: false
       matrix:
         arguments:
-          - - run
-          - - check
-            - --accept-status 200
+          - - --accept-status 200
             - --accept-status 403
             - --accept-status 999
             - --ignore https://aclanthology.org/
             - https://raviqqe.com
-          - - check
-            - --accept-status 200
+          - - --accept-status 200
             - --accept-status 403
             - --accept-status 429
             - --ignore https://codspeed.io/raviqqe/stak
@@ -48,12 +45,10 @@ jobs:
             - --header user-agent:Muffy/1.0.0
             - --header accept:text/html,*/*
             - https://raviqqe.com/stak
-          - - check
-            - --accept-status 200
+          - - --accept-status 200
             - --accept-status 403
             - https://raviqqe.com/muffy
-          - - check
-            - --ignore https://goreportcard.com/
+          - - --ignore https://goreportcard.com/
             - https://raviqqe.com/muffet
         cache_options:
           -
@@ -62,7 +57,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
-      - run: cargo run -- ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
+      - run: cargo run -- check ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
+        env:
+          RUST_LOG: muffy=trace
+  run_command_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: raviqqe/cargo-cache@v1
+      - run: cargo run
         env:
           RUST_LOG: muffy=trace
   docker_test:
@@ -83,7 +86,8 @@ jobs:
     needs:
       - build
       - unit_test
-      - command_test
+      - check_command_test
+      - run_command_test
       - docker_test
       - coverage
     if: always()

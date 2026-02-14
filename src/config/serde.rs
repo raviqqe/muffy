@@ -43,6 +43,13 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 pub struct SerializableConfig {
     sites: BTreeMap<String, SiteConfig>,
     concurrency: Option<usize>,
+    cache: Option<GlobalCacheConfig>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct GlobalCacheConfig {
+    persistent: Option<bool>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -183,6 +190,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             })
             .collect::<Result<_, ConfigError>>()?,
         config.concurrency,
+        config
+            .cache
+            .and_then(|cache| cache.persistent)
+            .unwrap_or_default(),
     )
     .set_excluded_links(excluded_links))
 }
@@ -295,9 +306,12 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+    use crate::{
+        config::{
+            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+            DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+        },
+        default_concurrency,
     };
     use core::time::Duration;
     use http::HeaderMap;
@@ -309,12 +323,15 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: Default::default(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
         assert_eq!(config.roots().count(), 0);
         assert_eq!(config.excluded_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
+        assert!(!config.persistent_cache());
+        assert_eq!(config.concurrency(), default_concurrency());
 
         let default = config.default;
 
@@ -364,6 +381,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -442,6 +460,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -510,6 +529,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -549,6 +569,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -578,6 +599,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -601,6 +623,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -621,6 +644,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -634,9 +658,23 @@ mod tests {
         let config = SerializableConfig {
             sites: Default::default(),
             concurrency: Some(42),
+            cache: None,
         };
 
         assert_eq!(compile_config(config).unwrap().concurrency(), 42);
+    }
+
+    #[test]
+    fn compile_global_cache_config() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            concurrency: None,
+            cache: Some(GlobalCacheConfig {
+                persistent: Some(true),
+            }),
+        };
+
+        assert!(compile_config(config).unwrap().persistent_cache());
     }
 
     #[test]
@@ -661,6 +699,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -708,6 +747,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(
@@ -730,6 +770,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(result, Err(ConfigError::MissingParentConfig(name)) if name == "missing"));
@@ -756,6 +797,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(
@@ -777,6 +819,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
