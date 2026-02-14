@@ -390,6 +390,7 @@ impl RetryDurationConfig {
         self.cap = duration;
         self
     }
+}
 
 #[cfg(test)]
 mod tests {
