@@ -427,7 +427,12 @@ mod tests {
                 ])))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
-                .set_retry(crate::config::RetryConfig::default().set_count(193).into())
+                .set_retry(
+                    crate::config::RetryConfig::default()
+                        .set_count(193)
+                        .set_factor(4.2.into())
+                        .into(),
+                )
                 .set_recursive(true),
         );
 
