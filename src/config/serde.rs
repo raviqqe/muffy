@@ -34,7 +34,7 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
         ))
         .set_max_redirects(DEFAULT_MAX_REDIRECTS)
         .set_timeout(DEFAULT_TIMEOUT.into())
-        .set_max_age(DEFAULT_MAX_CACHE_AGE.into())
+        .set_cache(super::CacheConfig::default().set_max_age(DEFAULT_MAX_CACHE_AGE.into()))
 });
 
 /// A serializable configuration.
@@ -140,7 +140,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 .filter(|site| site.roots == Some(Default::default()))
                 .collect::<Vec<_>>();
 
-            // TODO Should we prevent the `ignore = true` option for default site configuration?
+            // TODO Should we prevent the `ignore = true` option for default site
+            // configuration?
             match &configs[..] {
                 [config] => compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into(),
                 [_, ..] => {
@@ -186,6 +187,14 @@ fn compile_site_config(
     parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
     Ok(super::SiteConfig::new()
+        .set_cache(
+            super::CacheConfig::default().set_max_age(
+                site.cache
+                    .as_ref()
+                    .and_then(|cache| cache.max_age.as_deref().copied())
+                    .or(parent.cache().max_age()),
+            ),
+        )
         .set_headers(
             site.headers
                 .as_ref()
@@ -224,12 +233,6 @@ fn compile_site_config(
         )
         .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
-        .set_max_age(
-            site.cache
-                .as_ref()
-                .and_then(|cache| cache.max_age.as_deref().copied())
-                .or(parent.max_age()),
-        )
         .set_retries(site.retries.unwrap_or(parent.retries()))
         .set_recursive(site.recurse == Some(true)))
 }
@@ -304,7 +307,7 @@ mod tests {
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
-        assert_eq!(default.max_age(), DEFAULT_MAX_CACHE_AGE.into());
+        assert_eq!(default.cache().max_age(), DEFAULT_MAX_CACHE_AGE.into());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));
@@ -358,6 +361,10 @@ mod tests {
 
         let compiled = Arc::new(
             crate::config::SiteConfig::new()
+                .set_cache(
+                    crate::config::CacheConfig::default()
+                        .set_max_age(Duration::from_secs(2045).into()),
+                )
                 .set_headers(HeaderMap::from_iter([(
                     HeaderName::try_from("user-agent").unwrap(),
                     HeaderValue::try_from("my-agent").unwrap(),
@@ -372,7 +379,6 @@ mod tests {
                 ])))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
-                .set_max_age(Duration::from_secs(2045).into())
                 .set_retries(193)
                 .set_recursive(true),
         );

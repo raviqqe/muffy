@@ -116,7 +116,7 @@ impl WebValidator {
                 &Request::new(document_url, context.config().site(&url).headers().clone())
                     .set_max_redirects(context.config().site(&url).max_redirects())
                     .set_timeout(context.config().site(&url).timeout())
-                    .set_max_age(context.config().site(&url).max_age())
+                    .set_max_age(context.config().site(&url).cache().max_age())
                     .set_retries(context.config().site(&url).retries()),
             )
             .await?
