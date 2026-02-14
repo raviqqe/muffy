@@ -123,19 +123,13 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             }
         })
         .collect::<HashMap<_, _>>();
-    let roots = included_sites
-        .values()
-        .filter(|site| site.recurse == Some(true))
-        .flat_map(|site| &site.roots)
-        .flatten()
-        .map(|url| url.to_string())
-        .collect();
     let default = Arc::new(if let Some(default) = config.sites.default {
         compile_site_config(&default, &DEFAULT_SITE_CONFIG)?
     } else {
         DEFAULT_SITE_CONFIG.clone()
     });
 
+    let mut recursion = HashMap::<&str, _>::default();
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
 
     for name in names {
@@ -143,6 +137,15 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             continue;
         };
 
+        recursion.insert(
+            name,
+            site.recurse == Some(true)
+                || site
+                    .extend
+                    .as_ref()
+                    .map(|name| recursion[name.as_str()])
+                    .unwrap_or_default(),
+        );
         configs.insert(
             name,
             compile_site_config(
@@ -160,7 +163,13 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     }
 
     Ok(super::Config::new(
-        roots,
+        included_sites
+            .iter()
+            .filter(|(name, _)| recursion[*name])
+            .flat_map(|(_, site)| &site.roots)
+            .flatten()
+            .map(|url| url.to_string())
+            .collect(),
         default,
         included_sites
             .iter()
