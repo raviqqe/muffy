@@ -129,7 +129,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         DEFAULT_SITE_CONFIG.clone()
     });
 
-    let mut recursion = HashMap::<&str, _>::default();
+    let mut recursion = HashMap::<&str, _>::from_iter([(DEFAULT_SITE_NAME, false)]);
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
 
     for name in names {
