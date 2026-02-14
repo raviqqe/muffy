@@ -109,13 +109,13 @@ impl Config {
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SiteConfig {
     headers: HeaderMap,
-    status: StatusConfig,
-    scheme: SchemeConfig,
-    max_redirects: usize,
-    timeout: Option<Duration>,
     max_age: Option<Duration>,
-    retries: usize,
+    max_redirects: usize,
     recursive: bool,
+    retries: usize,
+    scheme: SchemeConfig,
+    status: StatusConfig,
+    timeout: Option<Duration>,
 }
 
 impl SiteConfig {
