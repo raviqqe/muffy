@@ -28,6 +28,11 @@ extend = "default"
 roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
 
+[sites.haskell]
+extend = "default"
+roots = ["https://gitlab.haskell.org/"]
+retry = 3
+
 [sites.forbidden]
 extend = "default"
 roots = [
