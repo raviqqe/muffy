@@ -117,6 +117,7 @@ impl Config {
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
     cache: CacheConfig,
+    concurrency: Option<usize>,
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
@@ -135,6 +136,11 @@ impl SiteConfig {
     /// Returns a cache configuration.
     pub const fn cache(&self) -> &CacheConfig {
         &self.cache
+    }
+
+    /// Returns a concurrency.
+    pub fn concurrency(&self) -> usize {
+        self.concurrency.unwrap_or_else(default_concurrency)
     }
 
     /// Returns headers attached to HTTP requests.
