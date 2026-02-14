@@ -214,7 +214,7 @@ mod tests {
             StubHttpClient::new(Default::default()),
             StubTimer::new(),
             Box::new(MemoryCache::new(0)),
-            1,
+            &Default::default(),
         );
     }
 
@@ -244,7 +244,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await
@@ -279,7 +279,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await

@@ -493,7 +493,12 @@ mod tests {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0)), 1),
+            HttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MokaCache::new(0)),
+                &Default::default(),
+            ),
             HtmlParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
@@ -970,7 +975,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
-                1,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -1042,7 +1047,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
-                1,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )

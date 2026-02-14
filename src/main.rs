@@ -8,9 +8,9 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    CacheConfig, ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat,
-    RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig,
-    WebValidator,
+    CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
+    RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache,
+    StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -160,7 +160,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
-            config.concurrency().clone(),
+            config.concurrency(),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
@@ -294,7 +294,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 )
             })
             .collect(),
-        Some(arguments.concurrency),
+        ConcurrencyConfig::default().set_global(Some(arguments.concurrency)),
         arguments.cache,
     )
     .set_excluded_links(arguments.ignore.clone()))
