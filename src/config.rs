@@ -302,20 +302,43 @@ impl CacheConfig {
 }
 
 /// A retry configuration.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct RetryConfig {
     count: usize,
+    factor: f64,
+    duration: RetryDurationConfig,
+}
+
+/// A retry duration configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RetryDurationConfig {
+    initial: Option<Duration>,
+    cap: Option<Duration>,
 }
 
 impl RetryConfig {
-    /// Creates a retry configuration.
-    pub const fn new() -> Self {
-        Self { count: 0 }
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self {
+            count: 0,
+            factor: 1.0,
+            duration: Default::default(),
+        }
     }
 
-    /// Returns a retry count.
+    /// Returns a count.
     pub const fn count(&self) -> usize {
         self.count
+    }
+
+    /// Returns a factor.
+    pub const fn factor(&self) -> f64 {
+        self.factor
+    }
+
+    /// Returns a duration configuration.
+    pub const fn duration(&self) -> &RetryDurationConfig {
+        &self.duration
     }
 
     /// Sets a retry count.
