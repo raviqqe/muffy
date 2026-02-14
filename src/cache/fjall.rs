@@ -30,12 +30,13 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        let placeholder = bitcode::serialize(&Option::<T>::None)?;
+        let placeholder = bitcode::serialize(&None::<T>)?;
 
         let previous = self.keyspace.fetch_update(key.clone(), |previous| {
-            Some(match previous {
-                None => placeholder.clone().into(),
-                Some(value) => value.to_vec().into(),
+            Some(if let Some(value) = previous {
+                value.to_vec().into()
+            } else {
+                placeholder.clone().into()
             })
         })?;
 
