@@ -138,8 +138,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
     let mut configs = HashMap::from([(DEFAULT_SITE_NAME, default.clone())]);
 
-    for name in names {
-        let site = &included_sites[name];
+    for name in names.iter().rev() {
+        let Some(site) = included_sites.get(name) else {
+            continue;
+        };
 
         configs.insert(
             name,
