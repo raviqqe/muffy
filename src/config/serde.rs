@@ -52,7 +52,7 @@ pub struct SerializableConfig {
 struct SiteSet {
     default: Option<SiteConfig>,
     #[serde(flatten)]
-    sites: HashMap<String, SiteConfig>,
+    sites: BTreeMap<String, SiteConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -249,7 +249,7 @@ fn compile_site_config(
         .set_recursive(site.recurse == Some(true)))
 }
 
-fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
+fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
     let mut nodes = HashMap::<&str, NodeIndex<DefaultIx>>::default();
     let mut graph = Graph::<&str, ()>::new();
 
@@ -263,7 +263,11 @@ fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, C
         if let Some(parent) = &site.extend
             && parent != DEFAULT_SITE_NAME
         {
-            graph.add_edge(nodes[name.as_str()], nodes[parent.as_str()], ());
+            let Some(&parent_index) = nodes.get(parent.as_str()) else {
+                return Err(ConfigError::MissingParentConfig(parent.to_owned()));
+            };
+
+            graph.add_edge(nodes[name.as_str()], parent_index, ());
         }
     }
 
@@ -346,7 +350,7 @@ mod tests {
                     }),
                     ..Default::default()
                 }),
-                sites: HashMap::from([(
+                sites: [(
                     "foo".to_owned(),
                     SiteConfig {
                         extend: Some(DEFAULT_SITE_NAME.to_owned()),
@@ -354,7 +358,8 @@ mod tests {
                         recurse: Some(true),
                         ..Default::default()
                     },
-                )]),
+                )]
+                .into(),
             },
             concurrency: None,
         })
@@ -398,7 +403,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: SiteSet {
                 default: None,
-                sites: HashMap::from([
+                sites: [
                     (
                         "foo".to_owned(),
                         SiteConfig {
@@ -431,7 +436,8 @@ mod tests {
                             ..Default::default()
                         },
                     ),
-                ]),
+                ]
+                .into(),
             },
             concurrency: None,
         })
@@ -468,7 +474,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: SiteSet {
                 default: None,
-                sites: HashMap::from([
+                sites: [
                     (
                         "foo".to_owned(),
                         SiteConfig {
@@ -501,7 +507,8 @@ mod tests {
                             ..Default::default()
                         },
                     ),
-                ]),
+                ]
+                .into(),
             },
             concurrency: None,
         })
@@ -710,6 +717,78 @@ mod tests {
             concurrency: None,
         });
 
-        assert!(matches!(result, Err(ConfigError::CircularSiteConfigs(_))));
+        assert!(matches!(
+            result,
+            Err(ConfigError::CircularSiteConfigs(names))
+            if names == ["bar", "foo"]
+        ));
+    }
+
+    #[test]
+    fn compile_missing_parent_site_config() {
+        let result = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: None,
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        extend: Some("missing".into()),
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            },
+            concurrency: None,
+        });
+
+        assert!(matches!(result, Err(ConfigError::MissingParentConfig(name)) if name == "missing"));
+    }
+
+    #[test]
+    fn compile_ignored_default_site_config() {
+        let config = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: Some(SiteConfig {
+                    ignore: Some(true),
+                    ..Default::default()
+                }),
+                sites: Default::default(),
+            },
+            concurrency: None,
+        })
+        .unwrap();
+
+        assert_eq!(config.roots().count(), 0);
+        assert_eq!(
+            config
+                .excluded_links()
+                .map(Regex::as_str)
+                .collect::<Vec<_>>(),
+            [".*"]
+        );
+    }
+
+    #[test]
+    fn compile_non_recursive_root_not_included() {
+        let config = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: None,
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        recurse: Some(false),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            },
+            concurrency: None,
+        })
+        .unwrap();
+
+        assert_eq!(config.roots().count(), 0);
+        assert!(config.sites().contains_key("foo.com"));
     }
 }
