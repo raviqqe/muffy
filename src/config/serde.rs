@@ -269,7 +269,7 @@ fn compile_site_config(
                         .set_initial(duration.initial.map(Into::into).unwrap_or(parent.initial()))
                         .set_cap(duration.cap.map(Into::into).or(parent.cap()))
                 } else {
-                    parent.retry.duration().clone()
+                    parent.retry().duration().clone()
                 })
                 .into()
         } else {
