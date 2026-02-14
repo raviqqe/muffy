@@ -681,4 +681,35 @@ mod tests {
             ["/"]
         );
     }
+
+    #[test]
+    fn compile_circular_site_configs() {
+        let result = compile_config(SerializableConfig {
+            sites: SiteSet {
+                default: None,
+                sites: [
+                    (
+                        "foo".to_owned(),
+                        SiteConfig {
+                            extend: Some("bar".into()),
+                            recurse: Some(true),
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        "bar".to_owned(),
+                        SiteConfig {
+                            extend: Some("foo".into()),
+                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .into(),
+            },
+            concurrency: None,
+        });
+
+        assert!(matches!(result, Err(ConfigError::CircularSiteConfigs(_))));
+    }
 }
