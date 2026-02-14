@@ -94,7 +94,7 @@ impl Config {
         self.concurrency.unwrap_or_else(default_concurrency)
     }
 
-    /// Returns whether we should use a persistent cache.
+    /// Returns whether a cache is persistent.
     pub const fn persistent_cache(&self) -> bool {
         self.persistent_cache
     }
