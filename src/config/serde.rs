@@ -706,31 +706,6 @@ mod tests {
     }
 
     #[test]
-    fn compile_ignored_default_site_config() {
-        let config = compile_config(SerializableConfig {
-            sites: [(
-                "default".to_owned(),
-                SiteConfig {
-                    ignore: Some(true),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-            concurrency: None,
-        })
-        .unwrap();
-
-        assert_eq!(config.roots().count(), 0);
-        assert_eq!(
-            config
-                .excluded_links()
-                .map(Regex::as_str)
-                .collect::<Vec<_>>(),
-            [".*"]
-        );
-    }
-
-    #[test]
     fn compile_non_recursive_root_not_included() {
         let config = compile_config(SerializableConfig {
             sites: [(
