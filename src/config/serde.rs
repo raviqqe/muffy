@@ -716,6 +716,35 @@ mod tests {
     }
 
     #[test]
+    fn compile_multiple_default_site_configs() {
+        let result = compile_config(SerializableConfig {
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some(Default::default()),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        roots: Some(Default::default()),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
+            concurrency: None,
+        });
+
+        assert!(matches!(
+            result,
+            Err(ConfigError::MultipleDefaultSiteConfigs(names)) if names == ["foo", "bar"]
+        ));
+    }
+
+    #[test]
     fn compile_non_recursive_root_not_included() {
         let config = compile_config(SerializableConfig {
             sites: [(
