@@ -90,7 +90,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let included_sites = config
         .sites
         .iter()
-        .filter(|(name, site)| !site.ignore.unwrap_or_default())
+        .filter(|(_, site)| !site.ignore.unwrap_or_default())
         .map(|(name, site)| (name.as_str(), site))
         .collect::<HashMap<_, _>>();
 
@@ -299,7 +299,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: [
                 (
-                    DEFAULT_SITE_NAME.to_owned(),
+                    "default".to_owned(),
                     SiteConfig {
                         recurse: Some(true),
                         schemes: Some(HashSet::from(["https".to_owned()])),
@@ -317,7 +317,7 @@ mod tests {
                 (
                     "foo".to_owned(),
                     SiteConfig {
-                        extend: Some(DEFAULT_SITE_NAME.to_owned()),
+                        extend: Some("default".to_owned()),
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         recurse: Some(true),
                         ..Default::default()
@@ -526,7 +526,7 @@ mod tests {
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
             sites: [(
-                DEFAULT_SITE_NAME.to_owned(),
+                "default".to_owned(),
                 SiteConfig {
                     headers: Some(HashMap::from([(
                         "invalid header".to_owned(),
@@ -549,7 +549,7 @@ mod tests {
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
             sites: [(
-                DEFAULT_SITE_NAME.to_owned(),
+                "default".to_owned(),
                 SiteConfig {
                     headers: Some(HashMap::from([(
                         "user-agent".to_owned(),
@@ -572,7 +572,7 @@ mod tests {
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
             sites: [(
-                DEFAULT_SITE_NAME.to_owned(),
+                "default".to_owned(),
                 SiteConfig {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
@@ -698,7 +698,7 @@ mod tests {
     fn compile_ignored_default_site_config() {
         let config = compile_config(SerializableConfig {
             sites: [(
-                DEFAULT_SITE_NAME.to_owned(),
+                "default".to_owned(),
                 SiteConfig {
                     ignore: Some(true),
                     ..Default::default()
