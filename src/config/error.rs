@@ -18,6 +18,8 @@ pub enum ConfigError {
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
     /// Missing parent configuration.
     MissingParentConfig(String),
+    /// Multiple default site configurations.
+    MultipleDefaultSiteConfigs(Vec<String>),
     /// A regular expression error.
     Regex(regex::Error),
     /// A URL parse error.
@@ -45,6 +47,13 @@ impl Display for ConfigError {
             }
             Self::MissingParentConfig(name) => {
                 write!(formatter, "missing parent configuration: {name}")
+            }
+            Self::MultipleDefaultSiteConfigs(names) => {
+                write!(
+                    formatter,
+                    "multiple default site configurations: {}",
+                    names.join(", ")
+                )
             }
             Self::Regex(error) => {
                 write!(formatter, "{error}")

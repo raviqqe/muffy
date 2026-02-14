@@ -516,6 +516,7 @@ mod tests {
             body: vec![],
         };
 
+        // TODO Use a fake timer.
         let result = HttpClient::new(
             StubHttpClient::new(
                 [
@@ -530,7 +531,7 @@ mod tests {
                 .into_iter()
                 .collect(),
             )
-            .set_delay(Duration::from_millis(2)),
+            .set_delay(Duration::from_millis(50)),
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
             1,

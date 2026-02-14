@@ -1,6 +1,7 @@
 concurrency = 64
 
 [sites.default]
+roots = []
 max_redirects = 8
 schemes = ["https"]
 statuses = [200]
@@ -23,10 +24,26 @@ roots = [
 ]
 recurse = true
 
-[sites.external]
+[sites.crates_io]
 extend = "default"
-roots = ["https://armoredcore.fandom.com/", "https://dragonquest.fandom.com/", "https://crates.io/"]
+roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
+
+[sites.haskell]
+extend = "default"
+roots = ["https://gitlab.haskell.org/"]
+# TODO Increase a backoff.
+retries = 5
+
+[sites.forbidden]
+extend = "default"
+roots = [
+  "https://armoredcore.fandom.com/",
+  "https://dragonquest.fandom.com/",
+  "https://en.wikipedia.org/wiki/",
+  "https://zsh.sourceforge.io/",
+]
+statuses = [200, 403]
 
 [sites.ignored]
 roots = [
