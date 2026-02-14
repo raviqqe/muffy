@@ -7,9 +7,10 @@ schemes = ["https"]
 statuses = [200]
 timeout = "30s"
 
+[sites.default.retry]
+count = 3
+
 # TODO Allow more retry options.
-# [sites.default.retry]
-# count = 3
 # factor = 2
 #
 # [sites.default.retry.duration]
