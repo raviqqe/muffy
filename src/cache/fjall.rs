@@ -31,8 +31,6 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send>,
     ) -> Result<T, CacheError> {
-        trace!("getting cache at {key}");
-
         let placeholder = bitcode::serialize(&Option::<T>::None)?;
 
         let previous = self.keyspace.fetch_update(key.clone(), |previous| {
@@ -43,23 +41,16 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         })?;
 
         if previous.is_none() {
-            trace!("awaiting future for cache at {key}");
             let value = Box::into_pin(future).await;
-            trace!("setting cache at {key}");
             self.keyspace
                 .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
-            trace!("set cache at {key}");
 
             return Ok(value);
         }
 
-        // Wait for another thread to insert a key-value pair.
-        trace!("waiting for cache at {key}");
-
         loop {
             if let Some(value) = self.keyspace.get(key.as_bytes())? {
                 if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    trace!("waited for cache at {key}");
                     return Ok(value);
                 }
             } else {
@@ -73,7 +64,6 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
-        trace!("removing cache entry at {key}");
         self.keyspace.remove(key)?;
 
         Ok(())
