@@ -12,13 +12,11 @@ timeout = "30s"
 
 [sites.default.retry]
 count = 3
+factor = 2
 
-# TODO Allow more retry options.
-# factor = 2
-#
-# [sites.default.retry.duration]
-# initial = "1s"
-# cap = "10s"
+[sites.default.retry.duration]
+initial = "1s"
+cap = "10s"
 
 [sites.default.cache]
 max_age = "1h"
