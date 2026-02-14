@@ -331,7 +331,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
             .await
@@ -383,7 +383,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
@@ -441,7 +441,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(cache),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(url, Default::default()))
             .await
@@ -509,7 +509,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(cache),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
             .await
@@ -546,7 +546,7 @@ mod tests {
             .set_delay(Duration::from_millis(50)),
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
-            1,
+            &Default::default(),
         )
         .get(&Request::new(url, Default::default()).set_timeout(Duration::from_millis(1).into()))
         .await;
@@ -592,7 +592,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -631,7 +631,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -674,7 +674,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -717,7 +717,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
