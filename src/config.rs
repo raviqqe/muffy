@@ -135,7 +135,7 @@ impl SiteConfig {
     }
 
     /// Returns a retry configuration.
-    pub const fn retry(&self) -> &RetryConfig {
+    pub const fn retry(&self) -> &Arc<RetryConfig> {
         &self.retry
     }
 
