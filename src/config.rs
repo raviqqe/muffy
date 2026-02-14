@@ -139,8 +139,8 @@ impl SiteConfig {
     }
 
     /// Returns a concurrency.
-    pub fn concurrency(&self) -> usize {
-        self.concurrency.unwrap_or_else(default_concurrency)
+    pub fn concurrency(&self) -> Option<usize> {
+        self.concurrency
     }
 
     /// Returns headers attached to HTTP requests.
