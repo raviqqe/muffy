@@ -390,8 +390,8 @@ mod tests {
                             .into(),
                         }),
                         roots: Some(Default::default()),
-                        schemes: Some(HashSet::from(["https".to_owned()])),
-                        statuses: Some(HashSet::from([200, 403, 418])),
+                        schemes: Some(["https".to_owned()].into()),
+                        statuses: Some([200, 403, 418].into()),
                         timeout: Some(Duration::from_secs(42).into()),
                         ..Default::default()
                     },
@@ -427,14 +427,17 @@ mod tests {
                     HeaderName::try_from("user-agent").unwrap(),
                     HeaderValue::try_from("my-agent").unwrap(),
                 )]))
-                .set_status(crate::config::StatusConfig::new(HashSet::from([
-                    StatusCode::try_from(200).unwrap(),
-                    StatusCode::try_from(403).unwrap(),
-                    StatusCode::try_from(418).unwrap(),
-                ])))
-                .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
-                    "https".to_owned()
-                ])))
+                .set_status(crate::config::StatusConfig::new(
+                    [
+                        StatusCode::try_from(200).unwrap(),
+                        StatusCode::try_from(403).unwrap(),
+                        StatusCode::try_from(418).unwrap(),
+                    ]
+                    .into(),
+                ))
+                .set_scheme(crate::config::SchemeConfig::new(
+                    ["https".to_owned()].into(),
+                ))
                 .set_max_redirects(42)
                 .set_timeout(Duration::from_secs(42).into())
                 .set_retry(
@@ -599,7 +602,7 @@ mod tests {
                     "bar".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                        statuses: Some(HashSet::from([200, 201])),
+                        statuses: Some([200, 201].into()),
                         ..Default::default()
                     },
                 ),
