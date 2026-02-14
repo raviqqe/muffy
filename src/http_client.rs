@@ -16,9 +16,8 @@ use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
-use core::str;
+use core::{str, time::Duration};
 use robotxt::Robots;
-use core::time::Duration;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
