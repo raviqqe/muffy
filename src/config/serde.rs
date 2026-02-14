@@ -373,13 +373,13 @@ mod tests {
                 (
                     "default".to_owned(),
                     SiteConfig {
-                        roots: Some(Default::default()),
-                        recurse: Some(true),
-                        schemes: Some(HashSet::from(["https".to_owned()])),
-                        statuses: Some(HashSet::from([200, 403, 418])),
-                        timeout: Some(Duration::from_secs(42).into()),
-                        max_redirects: Some(42),
+                        cache: Some(CacheConfig {
+                            max_age: Some(Duration::from_secs(2045).into()),
+                        }),
+                        concurrency: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
+                        max_redirects: Some(42),
+                        recurse: Some(true),
                         retry: Some(RetryConfig {
                             count: 193.into(),
                             factor: 4.2.into(),
@@ -389,9 +389,10 @@ mod tests {
                             }
                             .into(),
                         }),
-                        cache: Some(CacheConfig {
-                            max_age: Some(Duration::from_secs(2045).into()),
-                        }),
+                        roots: Some(Default::default()),
+                        schemes: Some(HashSet::from(["https".to_owned()])),
+                        statuses: Some(HashSet::from([200, 403, 418])),
+                        timeout: Some(Duration::from_secs(42).into()),
                         ..Default::default()
                     },
                 ),
