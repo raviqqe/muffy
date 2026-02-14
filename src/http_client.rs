@@ -18,7 +18,10 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
-use tokio::{sync::Semaphore, time::timeout};
+use tokio::{
+    sync::Semaphore,
+    time::{sleep, timeout},
+};
 
 const USER_AGENT: &str = "muffy";
 
@@ -137,16 +140,23 @@ impl HttpClient {
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
+        let retry = request.retry();
         let mut result = self.get_throttled(request).await;
+        let mut backoff = retry.duration().initial();
 
-        for _ in 0..request.retry().count() {
+        for _ in 0..retry.count() {
             if let Ok(response) = &result
                 && !response.status().is_server_error()
             {
                 break;
             }
 
-            // TODO Insert the exponential backoff.
+            sleep(backoff).await;
+            backoff = backoff.mul_f64(retry.factor());
+
+            if let Some(cap) = retry.duration().cap() {
+                backoff = backoff.min(cap);
+            }
 
             result = self.get_throttled(request).await;
         }

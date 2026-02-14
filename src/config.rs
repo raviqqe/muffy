@@ -356,21 +356,18 @@ impl RetryConfig {
 /// A retry duration configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct RetryDurationConfig {
-    initial: Option<Duration>,
+    initial: Duration,
     cap: Option<Duration>,
 }
 
 impl RetryDurationConfig {
     /// Creates a configuration.
-    pub const fn new() -> Self {
-        Self {
-            initial: None,
-            cap: None,
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Returns an initial duration.
-    pub const fn initial(&self) -> Option<Duration> {
+    pub const fn initial(&self) -> Duration {
         self.initial
     }
 
@@ -380,7 +377,7 @@ impl RetryDurationConfig {
     }
 
     /// Sets an initial duration.
-    pub const fn set_initial(mut self, duration: Option<Duration>) -> Self {
+    pub const fn set_initial(mut self, duration: Duration) -> Self {
         self.initial = duration;
         self
     }

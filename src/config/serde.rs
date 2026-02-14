@@ -266,7 +266,7 @@ fn compile_site_config(
                     let parent = parent.retry().duration();
 
                     super::RetryDurationConfig::default()
-                        .set_initial(duration.initial.map(Into::into).or(parent.initial()))
+                        .set_initial(duration.initial.map(Into::into).unwrap_or(parent.initial()))
                         .set_cap(duration.cap.map(Into::into).or(parent.cap()))
                 } else {
                     parent.retry.duration().clone()
