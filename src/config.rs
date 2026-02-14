@@ -281,7 +281,7 @@ impl CacheConfig {
         Self { max_age: None }
     }
 
-    /// Returns a maximum cache age.
+    /// Returns a maximum age.
     pub const fn max_age(&self) -> Option<Duration> {
         self.max_age
     }
