@@ -151,9 +151,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             compile_site_config(
                 site,
                 if let Some(name) = &site.extend {
-                    configs
-                        .get(name.as_str())
-                        .ok_or_else(|| ConfigError::MissingParentConfig(name.to_owned()))?
+                    &configs[name.as_str()]
                 } else {
                     &DEFAULT_SITE_CONFIG
                 },
