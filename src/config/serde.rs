@@ -233,7 +233,7 @@ fn compile_site_config(
         )
         .set_max_redirects(site.max_redirects.unwrap_or(parent.max_redirects()))
         .set_timeout(site.timeout.as_deref().copied().or(parent.timeout()))
-        .set_retries(site.retries.unwrap_or(parent.retries()))
+        .set_retry(site.retries.unwrap_or(parent.retries()))
         .set_recursive(site.recurse == Some(true)))
 }
 

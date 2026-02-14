@@ -7,21 +7,25 @@ use url::Url;
 #[derive(Clone, Debug)]
 pub struct Request {
     bare: BareRequest,
-    max_redirects: usize,
-    timeout: Option<Duration>,
     max_age: Option<Duration>,
+    max_redirects: usize,
     retry: Arc<RetryConfig>,
+    timeout: Option<Duration>,
 }
 
 impl Request {
     pub fn new(url: Url, headers: HeaderMap) -> Self {
         Self {
             bare: BareRequest { url, headers },
-            max_redirects: Default::default(),
-            timeout: Default::default(),
             max_age: Default::default(),
+            max_redirects: Default::default(),
             retry: Default::default(),
+            timeout: Default::default(),
         }
+    }
+
+    pub const fn as_bare(&self) -> &BareRequest {
+        &self.bare
     }
 
     pub const fn url(&self) -> &Url {
@@ -44,8 +48,8 @@ impl Request {
         &self.retry
     }
 
-    pub fn set_url(mut self, url: Url) -> Self {
-        self.bare.url = url;
+    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
+        self.max_age = max_age;
         self
     }
 
@@ -64,7 +68,8 @@ impl Request {
         self
     }
 
-    pub const fn as_bare(&self) -> &BareRequest {
-        &self.bare
+    pub fn set_url(mut self, url: Url) -> Self {
+        self.bare.url = url;
+        self
     }
 }
