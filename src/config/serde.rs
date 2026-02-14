@@ -740,7 +740,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(ConfigError::MultipleDefaultSiteConfigs(names)) if names == ["foo", "bar"]
+            Err(ConfigError::MultipleDefaultSiteConfigs(names)) if names == ["bar", "foo"]
         ));
     }
 
