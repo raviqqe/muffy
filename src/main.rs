@@ -40,9 +40,6 @@ const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 struct Arguments {
     #[command(subcommand)]
     command: Option<Command>,
-    /// Use a persistent cache.
-    #[arg(long, global = true)]
-    cache: bool,
     /// Set an output format.
     #[arg(long, default_value = "text", global = true)]
     format: RenderFormat,
@@ -64,6 +61,9 @@ struct CheckArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
+    /// Use a persistent cache.
+    #[arg(long)]
+    cache: bool,
     /// Set a maximum cache age.
     #[arg(long, default_value = "1h")]
     max_age: String,
@@ -140,7 +140,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
 
     let mut output = stdout();
-    let db = if arguments.cache {
+    let db = if config.persistent_cache() {
         let directory = cache_dir()
             .unwrap_or_else(temp_dir)
             .join(DATABASE_DIRECTORY)
@@ -295,6 +295,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             })
             .collect(),
         Some(arguments.concurrency),
+        arguments.cache,
     )
     .set_excluded_links(arguments.ignore.clone()))
 }

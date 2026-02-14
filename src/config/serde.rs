@@ -43,6 +43,13 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 pub struct SerializableConfig {
     sites: BTreeMap<String, SiteConfig>,
     concurrency: Option<usize>,
+    cache: Option<GlobalCacheConfig>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct GlobalCacheConfig {
+    persistent: Option<bool>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -183,6 +190,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             })
             .collect::<Result<_, ConfigError>>()?,
         config.concurrency,
+        config
+            .cache
+            .and_then(|cache| cache.persistent)
+            .unwrap_or_default(),
     )
     .set_excluded_links(excluded_links))
 }
@@ -309,6 +320,7 @@ mod tests {
         let config = compile_config(SerializableConfig {
             sites: Default::default(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -364,6 +376,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -442,6 +455,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -510,6 +524,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -549,6 +564,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -578,6 +594,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -601,6 +618,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -621,6 +639,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         };
 
         assert!(matches!(
@@ -634,6 +653,7 @@ mod tests {
         let config = SerializableConfig {
             sites: Default::default(),
             concurrency: Some(42),
+            cache: None,
         };
 
         assert_eq!(compile_config(config).unwrap().concurrency(), 42);
@@ -661,6 +681,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
@@ -708,6 +729,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(
@@ -730,6 +752,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(result, Err(ConfigError::MissingParentConfig(name)) if name == "missing"));
@@ -756,6 +779,7 @@ mod tests {
             ]
             .into(),
             concurrency: None,
+            cache: None,
         });
 
         assert!(matches!(
@@ -777,6 +801,7 @@ mod tests {
             )]
             .into(),
             concurrency: None,
+            cache: None,
         })
         .unwrap();
 
