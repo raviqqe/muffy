@@ -18,7 +18,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
-use std::time::Duration;
+use core::time::Duration;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
