@@ -311,6 +311,7 @@ mod tests {
                 (
                     "default".to_owned(),
                     SiteConfig {
+                        roots: Some(Default::default()),
                         recurse: Some(true),
                         schemes: Some(HashSet::from(["https".to_owned()])),
                         statuses: Some(HashSet::from([200, 403, 418])),
