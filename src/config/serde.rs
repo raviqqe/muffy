@@ -40,19 +40,11 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 });
 
 /// A serializable configuration.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    sites: SiteSet,
-    concurrency: Option<usize>,
-}
-
-// TODO Move the `default` into the `sites` map.
-#[derive(Debug, Default, Serialize, Deserialize)]
-struct SiteSet {
-    default: Option<SiteConfig>,
-    #[serde(flatten)]
     sites: BTreeMap<String, SiteConfig>,
+    concurrency: Option<usize>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -80,12 +72,12 @@ struct CacheConfig {
 
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
-    let names = sort_site_configs(&config.sites.sites)?;
+    let names = sort_site_configs(&config.sites)?;
 
     let excluded_links = config
         .sites
-        .sites
         .iter()
+        .filter(|(name, _)| name.as_str() != DEFAULT_SITE_NAME)
         .flat_map(|(_, site)| {
             if site.ignore == Some(true) {
                 site.roots
@@ -100,8 +92,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .chain(
             if config
                 .sites
-                .default
-                .as_ref()
+                .get(DEFAULT_SITE_NAME)
                 .and_then(|config| config.ignore)
                 == Some(true)
             {
@@ -113,18 +104,14 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         .collect::<Result<_, _>>()?;
     let included_sites = config
         .sites
-        .sites
         .iter()
-        .flat_map(|(name, site)| {
-            if site.ignore.unwrap_or_default() {
-                None
-            } else {
-                Some((name.as_str(), site))
-            }
+        .filter(|(name, site)| {
+            name.as_str() != DEFAULT_SITE_NAME && !site.ignore.unwrap_or_default()
         })
+        .map(|(name, site)| (name.as_str(), site))
         .collect::<HashMap<_, _>>();
-    let default = Arc::new(if let Some(default) = config.sites.default {
-        compile_site_config(&default, &DEFAULT_SITE_CONFIG)?
+    let default = Arc::new(if let Some(default) = config.sites.get(DEFAULT_SITE_NAME) {
+        compile_site_config(default, &DEFAULT_SITE_CONFIG)?
     } else {
         DEFAULT_SITE_CONFIG.clone()
     });
@@ -252,12 +239,19 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
     let mut graph = Graph::<&str, ()>::new();
 
     for name in sites.keys() {
+        if name == DEFAULT_SITE_NAME {
+            continue;
+        }
+
         let index = graph.add_node(name);
         nodes.insert(name.as_str(), index);
     }
 
-    // TODO Move the `default` site into the `sites` map to avoid this special case.
     for (name, site) in sites {
+        if name == DEFAULT_SITE_NAME {
+            continue;
+        }
+
         if let Some(parent) = &site.extend
             && parent != DEFAULT_SITE_NAME
         {
