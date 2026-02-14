@@ -117,7 +117,7 @@ impl WebValidator {
                     .set_max_redirects(context.config().site(&url).max_redirects())
                     .set_timeout(context.config().site(&url).timeout())
                     .set_max_age(context.config().site(&url).cache().max_age())
-                    .set_retries(context.config().site(&url).retries()),
+                    .set_retry(context.config().site(&url).retries()),
             )
             .await?
         else {

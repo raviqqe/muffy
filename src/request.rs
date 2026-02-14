@@ -1,4 +1,5 @@
-use crate::http_client::BareRequest;
+use crate::{RetryConfig, http_client::BareRequest};
+use alloc::sync::Arc;
 use core::time::Duration;
 use http::HeaderMap;
 use url::Url;
@@ -9,7 +10,7 @@ pub struct Request {
     max_redirects: usize,
     timeout: Option<Duration>,
     max_age: Option<Duration>,
-    retries: usize,
+    retry: Arc<RetryConfig>,
 }
 
 impl Request {
@@ -19,7 +20,7 @@ impl Request {
             max_redirects: Default::default(),
             timeout: Default::default(),
             max_age: Default::default(),
-            retries: Default::default(),
+            retry: Default::default(),
         }
     }
 
@@ -39,8 +40,8 @@ impl Request {
         self.max_age
     }
 
-    pub const fn retries(&self) -> usize {
-        self.retries
+    pub fn retry(&self) -> &RetryConfig {
+        &self.retry
     }
 
     pub fn set_url(mut self, url: Url) -> Self {
@@ -58,13 +59,8 @@ impl Request {
         self
     }
 
-    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
-        self.max_age = max_age;
-        self
-    }
-
-    pub const fn set_retries(mut self, retries: usize) -> Self {
-        self.retries = retries;
+    pub fn set_retry(mut self, config: Arc<RetryConfig>) -> Self {
+        self.retry = config;
         self
     }
 

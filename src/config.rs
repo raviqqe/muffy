@@ -299,6 +299,24 @@ pub struct RetryConfig {
     count: usize,
 }
 
+impl RetryConfig {
+    /// Creates a retry configuration.
+    pub const fn new() -> Self {
+        Self { count: 0 }
+    }
+
+    /// Returns a retry count.
+    pub const fn count(&self) -> usize {
+        self.count
+    }
+
+    /// Sets a retry count.
+    pub const fn set_count(mut self, count: usize) -> Self {
+        self.count = count;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
