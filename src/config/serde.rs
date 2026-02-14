@@ -371,7 +371,15 @@ mod tests {
                         timeout: Some(Duration::from_secs(42).into()),
                         max_redirects: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
-                        retry: Some(RetryConfig { count: Some(193) }),
+                        retry: Some(RetryConfig {
+                            count: 193.into(),
+                            factor: 4.2.into(),
+                            duration: RetryDurationConfig {
+                                initial: Some(Duration::from_millis(42).into()),
+                                cap: Some(Duration::from_secs(42).into()),
+                            }
+                            .into(),
+                        }),
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),

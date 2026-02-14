@@ -114,7 +114,7 @@ impl Config {
 }
 
 /// A site configuration.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
     cache: CacheConfig,
     headers: HeaderMap,
