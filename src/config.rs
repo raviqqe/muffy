@@ -112,7 +112,7 @@ pub struct SiteConfig {
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
-    retries: usize,
+    retry: RetryConfig,
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
@@ -132,6 +132,11 @@ impl SiteConfig {
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
+    }
+
+    /// Returns a retry configuration.
+    pub const fn retry(&self) -> &RetryConfig {
+        &self.retry
     }
 
     /// Returns a status code configuration.
@@ -173,6 +178,12 @@ impl SiteConfig {
     /// Sets request headers.
     pub fn set_headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
+        self
+    }
+
+    /// Sets a retry configuration.
+    pub const fn set_retry(mut self, retry: RetryConfig) -> Self {
+        self.retry = retry;
         self
     }
 
@@ -291,6 +302,12 @@ impl CacheConfig {
         self.max_age = age;
         self
     }
+}
+
+/// A retry configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RetryConfig {
+    retries: usize,
 }
 
 #[cfg(test)]
