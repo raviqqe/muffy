@@ -328,21 +328,24 @@ mod tests {
     #[test]
     fn compile_default() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: Some(SiteConfig {
-                    recurse: Some(true),
-                    schemes: Some(HashSet::from(["https".to_owned()])),
-                    statuses: Some(HashSet::from([200, 403, 418])),
-                    timeout: Some(Duration::from_secs(42).into()),
-                    max_redirects: Some(42),
-                    headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
-                    retries: Some(193),
-                    cache: Some(CacheConfig {
-                        max_age: Some(Duration::from_secs(2045).into()),
-                    }),
-                    ..Default::default()
-                }),
-                sites: [(
+            sites: [
+                (
+                    DEFAULT_SITE_NAME.to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        schemes: Some(HashSet::from(["https".to_owned()])),
+                        statuses: Some(HashSet::from([200, 403, 418])),
+                        timeout: Some(Duration::from_secs(42).into()),
+                        max_redirects: Some(42),
+                        headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
+                        retries: Some(193),
+                        cache: Some(CacheConfig {
+                            max_age: Some(Duration::from_secs(2045).into()),
+                        }),
+                        ..Default::default()
+                    },
+                ),
+                (
                     "foo".to_owned(),
                     SiteConfig {
                         extend: Some(DEFAULT_SITE_NAME.to_owned()),
@@ -350,9 +353,9 @@ mod tests {
                         recurse: Some(true),
                         ..Default::default()
                     },
-                )]
-                .into(),
-            },
+                ),
+            ]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -393,44 +396,41 @@ mod tests {
     #[test]
     fn compile_root_sites() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [
-                    (
-                        "foo".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "foo_sub".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "foo_excluded".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
-                            ignore: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "bar".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                ]
-                .into(),
-            },
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo_sub".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo_excluded".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
+                        ignore: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -464,44 +464,41 @@ mod tests {
     #[test]
     fn compile_excluded_sites() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [
-                    (
-                        "foo".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "foo_sub".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "foo_excluded".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
-                            ignore: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "foo_net".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.net/").unwrap()].into()),
-                            ignore: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                ]
-                .into(),
-            },
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo_sub".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/foo").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo_excluded".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
+                        ignore: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo_net".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.net/").unwrap()].into()),
+                        ignore: Some(true),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -522,28 +519,25 @@ mod tests {
     #[test]
     fn compile_non_root_site_config() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [
-                    (
-                        "foo".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "bar".to_owned(),
-                        SiteConfig {
-                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                            statuses: Some(HashSet::from([200, 201])),
-                            ..Default::default()
-                        },
-                    ),
-                ]
-                .into(),
-            },
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                        statuses: Some(HashSet::from([200, 201])),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -562,16 +556,17 @@ mod tests {
     #[test]
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
-            sites: SiteSet {
-                default: Some(SiteConfig {
+            sites: [(
+                DEFAULT_SITE_NAME.to_owned(),
+                SiteConfig {
                     headers: Some(HashMap::from([(
                         "invalid header".to_owned(),
                         "x".to_owned(),
                     )])),
                     ..Default::default()
-                }),
-                sites: Default::default(),
-            },
+                },
+            )]
+            .into(),
             concurrency: None,
         };
 
@@ -584,16 +579,17 @@ mod tests {
     #[test]
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
-            sites: SiteSet {
-                default: Some(SiteConfig {
+            sites: [(
+                DEFAULT_SITE_NAME.to_owned(),
+                SiteConfig {
                     headers: Some(HashMap::from([(
                         "user-agent".to_owned(),
                         "\u{0}".to_owned(),
                     )])),
                     ..Default::default()
-                }),
-                sites: Default::default(),
-            },
+                },
+            )]
+            .into(),
             concurrency: None,
         };
 
@@ -606,13 +602,14 @@ mod tests {
     #[test]
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
-            sites: SiteSet {
-                default: Some(SiteConfig {
+            sites: [(
+                DEFAULT_SITE_NAME.to_owned(),
+                SiteConfig {
                     statuses: Some(HashSet::from([99u16])),
                     ..Default::default()
-                }),
-                sites: Default::default(),
-            },
+                },
+            )]
+            .into(),
             concurrency: None,
         };
 
@@ -635,27 +632,24 @@ mod tests {
     #[test]
     fn compile_parent_site_config_with_no_root() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [
-                    (
-                        "foo".to_owned(),
-                        SiteConfig {
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "bar".to_owned(),
-                        SiteConfig {
-                            extend: Some("foo".into()),
-                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                            ..Default::default()
-                        },
-                    ),
-                ]
-                .into(),
-            },
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        extend: Some("foo".into()),
+                        roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -684,28 +678,25 @@ mod tests {
     #[test]
     fn compile_circular_site_configs() {
         let result = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [
-                    (
-                        "foo".to_owned(),
-                        SiteConfig {
-                            extend: Some("bar".into()),
-                            recurse: Some(true),
-                            ..Default::default()
-                        },
-                    ),
-                    (
-                        "bar".to_owned(),
-                        SiteConfig {
-                            extend: Some("foo".into()),
-                            roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                            ..Default::default()
-                        },
-                    ),
-                ]
-                .into(),
-            },
+            sites: [
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        extend: Some("bar".into()),
+                        recurse: Some(true),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        extend: Some("foo".into()),
+                        roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
             concurrency: None,
         });
 
@@ -719,18 +710,15 @@ mod tests {
     #[test]
     fn compile_missing_parent_site_config() {
         let result = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [(
-                    "foo".to_owned(),
-                    SiteConfig {
-                        extend: Some("missing".into()),
-                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
-                        ..Default::default()
-                    },
-                )]
-                .into(),
-            },
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    extend: Some("missing".into()),
+                    roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                    ..Default::default()
+                },
+            )]
+            .into(),
             concurrency: None,
         });
 
@@ -740,13 +728,14 @@ mod tests {
     #[test]
     fn compile_ignored_default_site_config() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: Some(SiteConfig {
+            sites: [(
+                DEFAULT_SITE_NAME.to_owned(),
+                SiteConfig {
                     ignore: Some(true),
                     ..Default::default()
-                }),
-                sites: Default::default(),
-            },
+                },
+            )]
+            .into(),
             concurrency: None,
         })
         .unwrap();
@@ -764,18 +753,15 @@ mod tests {
     #[test]
     fn compile_non_recursive_root_not_included() {
         let config = compile_config(SerializableConfig {
-            sites: SiteSet {
-                default: None,
-                sites: [(
-                    "foo".to_owned(),
-                    SiteConfig {
-                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
-                        recurse: Some(false),
-                        ..Default::default()
-                    },
-                )]
-                .into(),
-            },
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                    recurse: Some(false),
+                    ..Default::default()
+                },
+            )]
+            .into(),
             concurrency: None,
         })
         .unwrap();
