@@ -18,6 +18,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::str;
 use robotxt::Robots;
+use std::time::Duration;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
@@ -152,11 +153,9 @@ impl HttpClient {
             }
 
             sleep(backoff).await;
-            backoff = backoff.mul_f64(retry.factor());
-
-            if let Some(cap) = retry.duration().cap() {
-                backoff = backoff.min(cap);
-            }
+            backoff = backoff
+                .mul_f64(retry.factor())
+                .min(retry.duration().cap().unwrap_or(Duration::MAX));
 
             result = self.get_throttled(request).await;
         }
