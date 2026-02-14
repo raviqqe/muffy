@@ -8,8 +8,9 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat, RenderOptions,
-    ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig, WebValidator,
+    CacheConfig, ClockTimer, Config, HtmlParser, HttpClient, MokaCache, RenderFormat,
+    RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache, StatusConfig,
+    WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -237,6 +238,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
+        .set_cache(
+            CacheConfig::default().set_max_age(Some(*DurationString::from_string(
+                arguments.max_age.clone(),
+            )?)),
+        )
         .set_status(StatusConfig::new(
             arguments
                 .accept_status
@@ -266,9 +272,6 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         .set_max_redirects(arguments.max_redirects)
         .set_timeout(Some(*DurationString::from_string(
             arguments.timeout.clone(),
-        )?))
-        .set_max_age(Some(*DurationString::from_string(
-            arguments.max_age.clone(),
         )?));
 
     Ok(Config::new(

@@ -108,8 +108,8 @@ impl Config {
 /// A site configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SiteConfig {
+    cache: CacheConfig,
     headers: HeaderMap,
-    max_age: Option<Duration>,
     max_redirects: usize,
     recursive: bool,
     retries: usize,
@@ -122,6 +122,11 @@ impl SiteConfig {
     /// Creates a site configuration.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Returns a cache configuration.
+    pub const fn cache(&self) -> &CacheConfig {
+        &self.cache
     }
 
     /// Returns headers attached to HTTP requests.
@@ -149,11 +154,6 @@ impl SiteConfig {
         self.timeout
     }
 
-    /// Returns a maximum cache age.
-    pub const fn max_age(&self) -> Option<Duration> {
-        self.max_age
-    }
-
     /// Returns a number of retries.
     pub const fn retries(&self) -> usize {
         self.retries
@@ -162,6 +162,12 @@ impl SiteConfig {
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
+    }
+
+    /// Sets a cache configuration.
+    pub fn set_cache(mut self, cache: CacheConfig) -> Self {
+        self.cache = cache;
+        self
     }
 
     /// Sets request headers.
@@ -185,12 +191,6 @@ impl SiteConfig {
     /// Sets a maximum number of redirects.
     pub const fn set_max_redirects(mut self, count: usize) -> Self {
         self.max_redirects = count;
-        self
-    }
-
-    /// Sets a maximum cache age.
-    pub const fn set_max_age(mut self, age: Option<Duration>) -> Self {
-        self.max_age = age;
         self
     }
 
@@ -266,6 +266,30 @@ impl Default for SchemeConfig {
                 .map(ToOwned::to_owned)
                 .collect(),
         }
+    }
+}
+
+/// A cache configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct CacheConfig {
+    max_age: Option<Duration>,
+}
+
+impl CacheConfig {
+    /// Creates a cache configuration.
+    pub const fn new() -> Self {
+        Self { max_age: None }
+    }
+
+    /// Returns a maximum cache age.
+    pub const fn max_age(&self) -> Option<Duration> {
+        self.max_age
+    }
+
+    /// Sets a maximum age.
+    pub const fn set_max_age(mut self, age: Option<Duration>) -> Self {
+        self.max_age = age;
+        self
     }
 }
 
