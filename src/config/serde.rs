@@ -420,48 +420,50 @@ mod tests {
             vec!["https://foo.com/"]
         );
 
-        let compiled = Arc::new(
-            crate::config::SiteConfig::new("".into())
-                .set_cache(
-                    crate::config::CacheConfig::default()
-                        .set_max_age(Duration::from_secs(2045).into()),
-                )
-                .set_headers(HeaderMap::from_iter([(
-                    HeaderName::try_from("user-agent").unwrap(),
-                    HeaderValue::try_from("my-agent").unwrap(),
-                )]))
-                .set_status(crate::config::StatusConfig::new(
-                    [
-                        StatusCode::try_from(200).unwrap(),
-                        StatusCode::try_from(403).unwrap(),
-                        StatusCode::try_from(418).unwrap(),
-                    ]
-                    .into(),
-                ))
-                .set_scheme(crate::config::SchemeConfig::new(
-                    ["https".to_owned()].into(),
-                ))
-                .set_max_redirects(42)
-                .set_timeout(Duration::from_secs(42).into())
-                .set_retry(
-                    crate::config::RetryConfig::default()
-                        .set_count(193)
-                        .set_factor(4.2.into())
-                        .set_duration(
-                            crate::config::RetryDurationConfig::default()
-                                .set_initial(Duration::from_millis(42).into())
-                                .set_cap(Duration::from_secs(42).into()),
-                        )
+        let compile_config = |id: &str| {
+            Arc::new(
+                crate::config::SiteConfig::new(id.to_owned())
+                    .set_cache(
+                        crate::config::CacheConfig::default()
+                            .set_max_age(Duration::from_secs(2045).into()),
+                    )
+                    .set_headers(HeaderMap::from_iter([(
+                        HeaderName::try_from("user-agent").unwrap(),
+                        HeaderValue::try_from("my-agent").unwrap(),
+                    )]))
+                    .set_status(crate::config::StatusConfig::new(
+                        [
+                            StatusCode::try_from(200).unwrap(),
+                            StatusCode::try_from(403).unwrap(),
+                            StatusCode::try_from(418).unwrap(),
+                        ]
                         .into(),
-                )
-                .set_recursive(true),
-        );
+                    ))
+                    .set_scheme(crate::config::SchemeConfig::new(
+                        ["https".to_owned()].into(),
+                    ))
+                    .set_max_redirects(42)
+                    .set_timeout(Duration::from_secs(42).into())
+                    .set_retry(
+                        crate::config::RetryConfig::default()
+                            .set_count(193)
+                            .set_factor(4.2.into())
+                            .set_duration(
+                                crate::config::RetryDurationConfig::default()
+                                    .set_initial(Duration::from_millis(42).into())
+                                    .set_cap(Duration::from_secs(42).into()),
+                            )
+                            .into(),
+                    )
+                    .set_recursive(true),
+            )
+        };
 
-        assert_eq!(config.default, compiled.clone());
+        assert_eq!(config.default, compile_config(""));
 
         let paths = &config.sites().get("foo.com").unwrap();
 
-        assert_eq!(paths.as_slice(), &[("/".into(), compiled)]);
+        assert_eq!(paths.as_slice(), &[("/".into(), compile_config("foo"))]);
     }
 
     #[test]
