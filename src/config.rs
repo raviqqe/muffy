@@ -165,7 +165,7 @@ impl SiteConfig {
     }
 
     /// Sets a cache configuration.
-    pub fn set_cache(mut self, cache: CacheConfig) -> Self {
+    pub const fn set_cache(mut self, cache: CacheConfig) -> Self {
         self.cache = cache;
         self
     }
