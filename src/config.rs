@@ -112,7 +112,7 @@ pub struct SiteConfig {
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
-    retry: RetryConfig,
+    retry: Arc<RetryConfig>,
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
@@ -177,7 +177,7 @@ impl SiteConfig {
     }
 
     /// Sets a retry configuration.
-    pub const fn set_retry(mut self, retry: RetryConfig) -> Self {
+    pub fn set_retry(mut self, retry: Arc<RetryConfig>) -> Self {
         self.retry = retry;
         self
     }
