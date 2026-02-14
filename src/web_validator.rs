@@ -504,7 +504,7 @@ mod tests {
                 [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
             )]
             .into(),
-            None,
+            Default::default(),
             false,
         ))
         .await
@@ -991,7 +991,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
-            None,
+            Default::default(),
             false,
         ))
         .await
@@ -1058,7 +1058,7 @@ mod tests {
                 )]
                 .into_iter()
                 .collect(),
-                None,
+                Default::default(),
                 false,
             )
             .set_excluded_links(vec![Regex::new("bar").unwrap()]),

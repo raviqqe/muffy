@@ -47,7 +47,7 @@ impl Config {
         roots: Vec<String>,
         default: Arc<SiteConfig>,
         sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
-        concurrency: Option<usize>,
+        concurrency: ConcurrencyConfig,
         persistent_cache: bool,
     ) -> Self {
         Self {
@@ -88,8 +88,8 @@ impl Config {
     }
 
     /// Returns a concurrency.
-    pub fn concurrency(&self) -> usize {
-        self.concurrency.unwrap_or_else(default_concurrency)
+    pub fn concurrency(&self) -> &ConcurrencyConfig {
+        &self.concurrency
     }
 
     /// Returns whether a cache is persistent.
@@ -127,8 +127,11 @@ pub struct SiteConfig {
 
 impl SiteConfig {
     /// Creates a site configuration.
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(id: String) -> Self {
+        Self {
+            id,
+            ..Default::default()
+        }
     }
 
     /// Returns an ID.
@@ -443,30 +446,30 @@ mod tests {
                 [
                     (
                         "/foo".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::new("foo".into()).set_recursive(true).into(),
                     ),
                     (
                         "/bar".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::new("bar".into()).set_recursive(true).into(),
                     ),
                     (
                         "/".to_string(),
-                        SiteConfig::new().set_recursive(false).into(),
+                        SiteConfig::new("top".into()).set_recursive(false).into(),
                     ),
                     (
                         "/baz".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::new("baz".into()).set_recursive(true).into(),
                     ),
                     (
                         "/qux".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::new("qux".into()).set_recursive(true).into(),
                     ),
                 ]
                 .into_iter()
                 .collect(),
             )]
             .into(),
-            None,
+            Default::default(),
             false,
         );
 

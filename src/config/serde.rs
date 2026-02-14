@@ -21,7 +21,7 @@ use std::{
 use url::Url;
 
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
-    super::SiteConfig::new()
+    super::SiteConfig::new("".into())
         .set_status(super::StatusConfig::new(
             DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
         ))
@@ -136,6 +136,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
+                name.to_owned(),
                 site,
                 if let Some(name) = &site.extend {
                     &configs[name.as_str()]
@@ -165,7 +166,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             // TODO Should we prevent the `ignore = true` option for default site
             // configuration?
             match &configs[..] {
-                [config] => compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into(),
+                [config] => compile_site_config("".into(), config, &DEFAULT_SITE_CONFIG)?.into(),
                 [_, ..] => {
                     return Err(ConfigError::MultipleDefaultSiteConfigs(
                         config
@@ -199,7 +200,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 ))
             })
             .collect::<Result<_, ConfigError>>()?,
-        config.concurrency,
+        super::ConcurrencyConfig {
+            global: config.concurrency,
+            // TODO
+            sites: Default::default(),
+        },
         config
             .cache
             .and_then(|cache| cache.persistent)
@@ -209,10 +214,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 }
 
 fn compile_site_config(
+    id: String,
     site: &SiteConfig,
     parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
-    Ok(super::SiteConfig::new()
+    Ok(super::SiteConfig::new(id)
         .set_cache(
             super::CacheConfig::default().set_max_age(
                 site.cache
@@ -221,7 +227,6 @@ fn compile_site_config(
                     .or(parent.cache().max_age()),
             ),
         )
-        .set_concurrency(site.concurrency.or(parent.concurrency()))
         .set_headers(
             site.headers
                 .as_ref()
@@ -325,12 +330,9 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        config::{
-            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-            DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
-        },
-        default_concurrency,
+    use crate::config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
     use http::HeaderMap;
@@ -350,7 +352,7 @@ mod tests {
         assert_eq!(config.excluded_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
         assert!(!config.persistent_cache());
-        assert_eq!(config.concurrency(), default_concurrency());
+        assert_eq!(config.concurrency(), &Default::default());
 
         let default = config.default;
 
@@ -419,12 +421,11 @@ mod tests {
         );
 
         let compiled = Arc::new(
-            crate::config::SiteConfig::new()
+            crate::config::SiteConfig::new("".into())
                 .set_cache(
                     crate::config::CacheConfig::default()
                         .set_max_age(Duration::from_secs(2045).into()),
                 )
-                .set_concurrency(Some(42))
                 .set_headers(HeaderMap::from_iter([(
                     HeaderName::try_from("user-agent").unwrap(),
                     HeaderValue::try_from("my-agent").unwrap(),
@@ -703,7 +704,13 @@ mod tests {
             cache: None,
         };
 
-        assert_eq!(compile_config(config).unwrap().concurrency(), 42);
+        assert_eq!(
+            compile_config(config).unwrap().concurrency(),
+            &crate::config::ConcurrencyConfig {
+                global: Some(42),
+                sites: Default::default(),
+            }
+        );
     }
 
     #[test]
