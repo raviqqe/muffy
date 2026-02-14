@@ -1,5 +1,3 @@
-concurrency = 128
-
 [cache]
 persistent = true
 
@@ -38,6 +36,11 @@ recurse = true
 extend = "default"
 roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
+
+[sites.github]
+extend = "default"
+roots = ["https://github.com/"]
+concurrency = 64
 
 [sites.haskell]
 extend = "default"
