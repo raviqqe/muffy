@@ -221,6 +221,7 @@ fn compile_site_config(
                     .or(parent.cache().max_age()),
             ),
         )
+        .set_concurrency(site.concurrency.or(parent.concurrency()))
         .set_headers(
             site.headers
                 .as_ref()
