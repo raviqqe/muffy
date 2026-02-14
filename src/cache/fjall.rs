@@ -42,6 +42,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 
         if previous.is_none() {
             let value = Box::into_pin(future).await;
+
             self.keyspace
                 .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
 
