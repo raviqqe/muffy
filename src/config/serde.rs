@@ -248,7 +248,7 @@ fn compile_site_config(
                     })
                     .into()
             } else {
-                Default::default()
+                parent.retry().clone()
             }
         })
         .set_recursive(site.recurse == Some(true)))
