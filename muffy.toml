@@ -23,10 +23,19 @@ roots = [
 ]
 recurse = true
 
-[sites.external]
+[sites.crates_io]
 extend = "default"
-roots = ["https://armoredcore.fandom.com/", "https://dragonquest.fandom.com/", "https://crates.io/"]
+roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
+
+[sites.forbidden]
+extend = "default"
+rots = [
+  "https://armoredcore.fandom.com/",
+  "https://dragonquest.fandom.com/",
+  "https://en.wikipedia.org/wiki/",
+]
+statuses = [200, 403]
 
 [sites.ignored]
 roots = [
