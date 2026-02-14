@@ -56,6 +56,7 @@ struct GlobalCacheConfig {
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
     cache: Option<CacheConfig>,
+    concurrency: Option<usize>,
     extend: Option<String>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
