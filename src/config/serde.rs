@@ -133,8 +133,18 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .flatten()
             .map(|url| url.to_string())
             .collect(),
-        // TODO
-        DEFAULT_SITE_CONFIG.clone().into(),
+        {
+            let configs = config
+                .sites
+                .values()
+                .filter(|site| site.roots == Some(Default::default()))
+                .collect::<Vec<_>>();
+            if let Some(config) = configs.into_iter().next() {
+                compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into()
+            } else {
+                DEFAULT_SITE_CONFIG.clone().into()
+            }
+        },
         included_sites
             .iter()
             .flat_map(|(name, site)| {
