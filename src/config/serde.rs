@@ -254,7 +254,6 @@ fn sort_site_configs(sites: &HashMap<String, SiteConfig>) -> Result<Vec<&str>, C
         if let Some(parent) = &site.extend
             && parent != DEFAULT_SITE_NAME
         {
-            dbg!(parent);
             graph.add_edge(nodes[name.as_str()], nodes[parent.as_str()], ());
         }
     }
