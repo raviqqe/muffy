@@ -37,7 +37,7 @@ pub struct Config {
     excluded_links: Vec<Regex>,
     default: Arc<SiteConfig>,
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
-    concurrency: Option<usize>,
+    concurrency: ConcurrencyConfig,
     persistent_cache: bool,
 }
 
@@ -114,8 +114,8 @@ impl Config {
 /// A site configuration.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
+    id: String,
     cache: CacheConfig,
-    concurrency: Option<usize>,
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
@@ -131,14 +131,14 @@ impl SiteConfig {
         Self::default()
     }
 
+    /// Returns an ID.
+    pub const fn id(&self) -> &str {
+        self.id.as_str()
+    }
+
     /// Returns a cache configuration.
     pub const fn cache(&self) -> &CacheConfig {
         &self.cache
-    }
-
-    /// Returns a concurrency.
-    pub const fn concurrency(&self) -> Option<usize> {
-        self.concurrency
     }
 
     /// Returns headers attached to HTTP requests.
@@ -179,12 +179,6 @@ impl SiteConfig {
     /// Sets a cache configuration.
     pub const fn set_cache(mut self, cache: CacheConfig) -> Self {
         self.cache = cache;
-        self
-    }
-
-    /// Sets a concurrency.
-    pub const fn set_concurrency(mut self, concurrency: Option<usize>) -> Self {
-        self.concurrency = concurrency;
         self
     }
 
@@ -395,6 +389,42 @@ impl RetryDurationConfig {
     /// Sets a cap duration.
     pub const fn set_cap(mut self, duration: Option<Duration>) -> Self {
         self.cap = duration;
+        self
+    }
+}
+
+/// A concurrency configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ConcurrencyConfig {
+    global: Option<usize>,
+    sites: HashMap<String, usize>,
+}
+
+impl ConcurrencyConfig {
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns a global concurrency.
+    pub const fn global(&self) -> Option<usize> {
+        self.global
+    }
+
+    /// Returns concurrency per site.
+    pub const fn sites(&self) -> &HashMap<String, usize> {
+        &self.sites
+    }
+
+    /// Sets a global concurrency.
+    pub const fn set_global(mut self, concurrency: Option<usize>) -> Self {
+        self.global = concurrency;
+        self
+    }
+
+    /// Sets concurrency per site.
+    pub fn set_sites(mut self, sites: HashMap<String, usize>) -> Self {
+        self.sites = sites;
         self
     }
 }
