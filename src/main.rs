@@ -303,6 +303,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::time::Duration;
 
     #[test]
     fn default_check_arguments() {
@@ -324,7 +325,7 @@ mod tests {
         );
         assert_eq!(
             DurationString::from_string(arguments.max_age).unwrap(),
-            muffy::DEFAULT_MAX_CACHE_AGE
+            Duration::default()
         );
     }
 }
