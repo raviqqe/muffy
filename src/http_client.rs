@@ -595,9 +595,9 @@ mod tests {
         impl BareHttpClient for BlockingBareHttpClient {
             async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
                 let in_flight = self.in_flight.fetch_add(1, Ordering::SeqCst) + 1;
+
                 self.max_in_flight.fetch_max(in_flight, Ordering::SeqCst);
                 self.started.send(()).unwrap();
-
                 self.notify.notified().await;
 
                 self.in_flight.fetch_sub(1, Ordering::SeqCst);
