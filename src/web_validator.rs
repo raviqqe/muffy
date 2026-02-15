@@ -118,7 +118,8 @@ impl WebValidator {
                     .set_max_redirects(site.max_redirects())
                     .set_timeout(site.timeout())
                     .set_max_age(site.cache().max_age())
-                    .set_retry(site.retry().clone()),
+                    .set_retry(site.retry().clone())
+                    .set_site_id(site.id()),
             )
             .await?
         else {
