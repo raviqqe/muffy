@@ -74,6 +74,11 @@ impl Request {
         self
     }
 
+    pub fn set_site_id(mut self, site_id: Option<Arc<str>>) -> Self {
+        self.site_id = site_id;
+        self
+    }
+
     pub fn set_url(mut self, url: Url) -> Self {
         self.bare.url = url;
         self

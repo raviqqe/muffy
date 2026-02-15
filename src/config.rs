@@ -132,8 +132,8 @@ impl SiteConfig {
     }
 
     /// Returns an ID.
-    pub fn id(&self) -> Option<&str> {
-        self.id.as_deref()
+    pub fn id(&self) -> Option<&Arc<str>> {
+        self.id.as_ref()
     }
 
     /// Returns a cache configuration.

@@ -115,11 +115,11 @@ impl WebValidator {
             .http_client
             .get(
                 &Request::new(document_url, site.headers().clone())
-                    .set_max_redirects(site.max_redirects())
-                    .set_timeout(site.timeout())
                     .set_max_age(site.cache().max_age())
+                    .set_max_redirects(site.max_redirects())
                     .set_retry(site.retry().clone())
-                    .set_site_id(site.id()),
+                    .set_site_id(site.id().cloned())
+                    .set_timeout(site.timeout()),
             )
             .await?
         else {
