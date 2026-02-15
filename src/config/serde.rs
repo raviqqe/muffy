@@ -202,8 +202,11 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .collect::<Result<_, ConfigError>>()?,
         super::ConcurrencyConfig {
             global: config.concurrency,
-            // TODO
-            sites: Default::default(),
+            sites: config
+                .sites
+                .iter()
+                .filter_map(|(name, site)| site.concurrency.map(|c| (name.clone(), c)))
+                .collect(),
         },
         config
             .cache
