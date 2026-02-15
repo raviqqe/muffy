@@ -107,8 +107,6 @@ impl HttpClient {
     }
 
     // TODO Configure rate limits.
-    // TODO Configure retries.
-    // TODO Configure maximum connections.
     async fn get_cached(
         &self,
         request: &Request,
