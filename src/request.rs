@@ -10,6 +10,7 @@ pub struct Request {
     max_age: Option<Duration>,
     max_redirects: usize,
     retry: Arc<RetryConfig>,
+    site_id: Option<Arc<str>>,
     timeout: Option<Duration>,
 }
 
@@ -17,6 +18,7 @@ impl Request {
     pub fn new(url: Url, headers: HeaderMap) -> Self {
         Self {
             bare: BareRequest { url, headers },
+            site_id: None,
             max_age: Default::default(),
             max_redirects: Default::default(),
             retry: Default::default(),
@@ -34,6 +36,10 @@ impl Request {
 
     pub const fn max_redirects(&self) -> usize {
         self.max_redirects
+    }
+
+    pub fn site_id(&self) -> Option<&str> {
+        self.site_id.as_deref()
     }
 
     pub fn timeout(&self) -> Duration {
