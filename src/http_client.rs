@@ -37,7 +37,7 @@ struct HttpClientInner {
     timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
-    site_semaphore: HashMap<String, Semaphore>,
+    site_semaphores: HashMap<String, Semaphore>,
 }
 
 impl HttpClient {
@@ -54,6 +54,11 @@ impl HttpClient {
                 timer: Box::new(timer),
                 cache,
                 semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
+                site_semaphores: concurrency
+                    .sites()
+                    .iter()
+                    .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
+                    .collect(),
             }
             .into(),
         )
