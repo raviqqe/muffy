@@ -665,13 +665,13 @@ mod tests {
 
         #[tokio::test]
         async fn per_site_concurrency_is_independent() {
-            let (started_tx, mut started_rx) = mpsc::unbounded_channel();
+            let (sender, mut receiver) = mpsc::unbounded_channel();
             let notify = Arc::new(Notify::new());
             let in_flight = Arc::new(AtomicUsize::new(0));
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
             let bare = FakeBareHttpClient {
-                started: started_tx,
+                started: sender,
                 notify: notify.clone(),
                 in_flight: in_flight.clone(),
                 max_in_flight: max_in_flight.clone(),
@@ -714,8 +714,8 @@ mod tests {
                 async move { client.get_throttled(&request2).await }
             });
 
-            started_rx.recv().await.unwrap();
-            started_rx.recv().await.unwrap();
+            receiver.recv().await.unwrap();
+            receiver.recv().await.unwrap();
 
             assert_eq!(in_flight.load(Ordering::SeqCst), 2);
             assert_eq!(max_in_flight.load(Ordering::SeqCst), 2);
