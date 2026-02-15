@@ -621,7 +621,7 @@ mod tests {
                 FakeHttpClient {
                     started: sender,
                     notify: notify.clone(),
-                    in_flight: Arc::new(AtomicUsize::new(0)),
+                    in_flight: Default::default(),
                     max_in_flight: max_in_flight.clone(),
                 },
                 StubTimer::new(),
