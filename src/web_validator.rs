@@ -109,15 +109,16 @@ impl WebValidator {
         // We keep this fragment removal not configurable as otherwise we might have a
         // lot more requests for the same HTML pages, which makes crawling
         // unacceptably inefficient.
+        let site = context.config().site(&url);
         let Some(response) = self
             .0
             .http_client
             .get(
-                &Request::new(document_url, context.config().site(&url).headers().clone())
-                    .set_max_redirects(context.config().site(&url).max_redirects())
-                    .set_timeout(context.config().site(&url).timeout())
-                    .set_max_age(context.config().site(&url).cache().max_age())
-                    .set_retry(context.config().site(&url).retry().clone()),
+                &Request::new(document_url, site.headers().clone())
+                    .set_max_redirects(site.max_redirects())
+                    .set_timeout(site.timeout())
+                    .set_max_age(site.cache().max_age())
+                    .set_retry(site.retry().clone()),
             )
             .await?
         else {
