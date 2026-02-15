@@ -210,6 +210,7 @@ impl HttpClient {
 mod tests {
     use super::*;
     use crate::{
+        ConcurrencyConfig,
         cache::MemoryCache,
         http_client::{BareResponse, StubHttpClient, StubSequenceHttpClient, build_stub_response},
         timer::StubTimer,
@@ -217,6 +218,13 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
+    use std::{
+        collections::HashMap,
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
+    };
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -569,22 +577,12 @@ mod tests {
 
     mod concurrency {
         use super::*;
-        use crate::ConcurrencyConfig;
         use async_trait::async_trait;
-        use core::time::Duration;
         use pretty_assertions::assert_eq;
-        use std::{
-            collections::HashMap,
-            sync::{
-                Arc,
-                atomic::{AtomicUsize, Ordering},
-            },
-        };
         use tokio::{
             sync::{Notify, mpsc},
             time::timeout,
         };
-        use url::Url;
 
         struct BlockingBareHttpClient {
             started: mpsc::UnboundedSender<()>,

@@ -88,7 +88,7 @@ impl Config {
     }
 
     /// Returns a concurrency.
-    pub fn concurrency(&self) -> &ConcurrencyConfig {
+    pub const fn concurrency(&self) -> &ConcurrencyConfig {
         &self.concurrency
     }
 
@@ -132,7 +132,7 @@ impl SiteConfig {
     }
 
     /// Returns an ID.
-    pub fn id(&self) -> Option<&Arc<str>> {
+    pub const fn id(&self) -> Option<&Arc<str>> {
         self.id.as_ref()
     }
 
