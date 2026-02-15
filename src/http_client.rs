@@ -587,11 +587,12 @@ mod tests {
             max_in_flight: Arc<AtomicUsize>,
         }
 
-        async fn send_request(
+        fn send_request(
             client: HttpClient,
             request: Request,
-        ) -> Result<Result<Response, HttpClientError>, tokio::task::JoinError> {
-            tokio::spawn(async move { client.get_throttled(&request).await }).await
+        ) -> impl Future<Output = Result<Result<Response, HttpClientError>, tokio::task::JoinError>>
+        {
+            tokio::spawn(async move { client.get_throttled(&request).await })
         }
 
         #[async_trait]
