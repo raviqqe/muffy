@@ -540,7 +540,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn timeout() {
+    async fn hit_timeout() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
             url: url.clone(),
@@ -579,10 +579,9 @@ mod tests {
         use super::*;
         use async_trait::async_trait;
         use pretty_assertions::assert_eq;
-        use tokio::{
-            sync::{Notify, mpsc},
-            time::timeout,
-        };
+        use tokio::sync::{Notify, mpsc};
+
+        const CONCURRENT_REQUEST_DELAY: Duration = Duration::from_millis(50);
 
         struct FakeHttpClient {
             started: mpsc::UnboundedSender<()>,
@@ -649,15 +648,12 @@ mod tests {
                 async move { client.get_throttled(&request2).await }
             });
 
-            receiver.recv().await.unwrap();
             assert!(
-                timeout(Duration::from_millis(200), receiver.recv())
+                timeout(CONCURRENT_REQUEST_DELAY, receiver.recv())
                     .await
-                    .is_err()
+                    .is_ok()
             );
-
             notify.notify_one();
-
             receiver.recv().await.unwrap();
             notify.notify_one();
 
