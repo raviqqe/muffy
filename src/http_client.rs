@@ -583,7 +583,7 @@ mod tests {
 
         const CONCURRENT_REQUEST_DELAY: Duration = Duration::from_millis(50);
 
-        struct FakeHttpClient {
+        struct FakeBareHttpClient {
             started: mpsc::UnboundedSender<()>,
             notify: Arc<Notify>,
             in_flight: Arc<AtomicUsize>,
@@ -591,7 +591,7 @@ mod tests {
         }
 
         #[async_trait]
-        impl BareHttpClient for FakeHttpClient {
+        impl BareHttpClient for FakeBareHttpClient {
             async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
                 let in_flight = self.in_flight.fetch_add(1, Ordering::SeqCst) + 1;
 
@@ -617,7 +617,7 @@ mod tests {
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
             let client = HttpClient::new(
-                FakeHttpClient {
+                FakeBareHttpClient {
                     started: sender,
                     notify: notify.clone(),
                     in_flight: Default::default(),
@@ -670,7 +670,7 @@ mod tests {
             let in_flight = Arc::new(AtomicUsize::new(0));
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
-            let bare = FakeHttpClient {
+            let bare = FakeBareHttpClient {
                 started: started_tx,
                 notify: notify.clone(),
                 in_flight: in_flight.clone(),
