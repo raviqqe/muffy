@@ -567,6 +567,183 @@ mod tests {
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
     }
 
+    mod concurrency {
+        use super::*;
+        use crate::ConcurrencyConfig;
+        use async_trait::async_trait;
+        use core::time::Duration;
+        use pretty_assertions::assert_eq;
+        use std::{
+            collections::HashMap,
+            sync::{
+                Arc,
+                atomic::{AtomicUsize, Ordering},
+            },
+        };
+        use tokio::{
+            sync::{Notify, mpsc},
+            time::timeout,
+        };
+        use url::Url;
+
+        #[derive(Clone)]
+        struct BlockingBareHttpClient {
+            started: mpsc::UnboundedSender<()>,
+            proceed: Arc<Notify>,
+            in_flight: Arc<AtomicUsize>,
+            max_in_flight: Arc<AtomicUsize>,
+        }
+
+        #[async_trait]
+        impl BareHttpClient for BlockingBareHttpClient {
+            async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
+                let in_flight = self.in_flight.fetch_add(1, Ordering::SeqCst) + 1;
+                self.max_in_flight.fetch_max(in_flight, Ordering::SeqCst);
+                self.started.send(()).unwrap();
+
+                self.proceed.notified().await;
+
+                self.in_flight.fetch_sub(1, Ordering::SeqCst);
+
+                Ok(BareResponse {
+                    url: request.url.clone(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: vec![],
+                })
+            }
+        }
+
+        #[tokio::test]
+        async fn limit_concurrency_per_site() {
+            let (sender, mut receiver) = mpsc::unbounded_channel();
+            let notify = Arc::new(Notify::new());
+            let max_in_flight = Arc::new(AtomicUsize::new(0));
+
+            let bare = BlockingBareHttpClient {
+                started: sender,
+                proceed: notify.clone(),
+                in_flight: Arc::new(AtomicUsize::new(0)),
+                max_in_flight: max_in_flight.clone(),
+            };
+
+            let mut sites = HashMap::new();
+            sites.insert("foo".to_string(), 1);
+
+            let concurrency = ConcurrencyConfig::default()
+                .set_global(Some(2))
+                .set_sites(sites);
+
+            let client = HttpClient::new(
+                bare,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                &concurrency,
+            );
+
+            let request1 = Request::new(
+                Url::parse("https://example.com/a").unwrap(),
+                Default::default(),
+            )
+            .set_site_id(Some("foo".into()));
+            let request2 = request1
+                .clone()
+                .set_url(Url::parse("https://example.com/b").unwrap());
+
+            let handle1 = tokio::spawn({
+                let client = client.cloned();
+
+                async move { client.get_throttled(&request1).await }
+            });
+            let handle2 = tokio::spawn({
+                let client = client.cloned();
+
+                async move { client.get_throttled(&request2).await }
+            });
+
+            receiver.recv().await.unwrap();
+            assert!(
+                timeout(Duration::from_millis(200), receiver.recv())
+                    .await
+                    .is_err()
+            );
+
+            notify.notify_one();
+
+            receiver.recv().await.unwrap();
+            notify.notify_one();
+
+            handle1.await.unwrap().unwrap();
+            handle2.await.unwrap().unwrap();
+
+            assert_eq!(max_in_flight.load(Ordering::SeqCst), 1);
+        }
+
+        #[tokio::test]
+        async fn per_site_concurrency_is_independent() {
+            let (started_tx, mut started_rx) = mpsc::unbounded_channel();
+            let proceed = Arc::new(Notify::new());
+            let in_flight = Arc::new(AtomicUsize::new(0));
+            let max_in_flight = Arc::new(AtomicUsize::new(0));
+
+            let bare = BlockingBareHttpClient {
+                started: started_tx,
+                proceed: proceed.clone(),
+                in_flight: in_flight.clone(),
+                max_in_flight: max_in_flight.clone(),
+            };
+
+            let mut sites = HashMap::new();
+            sites.insert("foo".to_string(), 1);
+            sites.insert("bar".to_string(), 1);
+
+            let concurrency = ConcurrencyConfig::default()
+                .set_global(Some(2))
+                .set_sites(sites);
+
+            let client = HttpClient::new(
+                bare,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                &concurrency,
+            );
+
+            let request1 = Request::new(
+                Url::parse("https://example.com/a").unwrap(),
+                Default::default(),
+            )
+            .set_site_id(Some("foo".into()));
+            let request2 = Request::new(
+                Url::parse("https://example.com/b").unwrap(),
+                Default::default(),
+            )
+            .set_site_id(Some("bar".into()));
+
+            let handle1 = tokio::spawn({
+                let client = client.cloned();
+
+                async move { client.get_throttled(&request1).await }
+            });
+            let handle2 = tokio::spawn({
+                let client = client.cloned();
+
+                async move { client.get_throttled(&request2).await }
+            });
+
+            started_rx.recv().await.unwrap();
+            started_rx.recv().await.unwrap();
+
+            assert_eq!(in_flight.load(Ordering::SeqCst), 2);
+            assert_eq!(max_in_flight.load(Ordering::SeqCst), 2);
+
+            proceed.notify_one();
+            proceed.notify_one();
+
+            handle1.await.unwrap().unwrap();
+            handle2.await.unwrap().unwrap();
+        }
+    }
+
     mod retry {
         use crate::RetryConfig;
 
