@@ -636,7 +636,7 @@ mod tests {
                     .set_site_id(Some("foo".into()));
             let request2 = request1
                 .clone()
-                .set_url(Url::parse("https://bar.com/").unwrap());
+                .set_url(Url::parse("https://foo.com/bar").unwrap());
 
             let handle1 = tokio::spawn({
                 let client = client.cloned();
