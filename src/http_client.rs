@@ -617,10 +617,6 @@ mod tests {
             let notify = Arc::new(Notify::new());
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
-            let concurrency = ConcurrencyConfig::default()
-                .set_global(Some(2))
-                .set_sites([("foo".to_string(), 1)].into());
-
             let client = HttpClient::new(
                 FakeHttpClient {
                     started: sender,
@@ -630,7 +626,9 @@ mod tests {
                 },
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                &concurrency,
+                &ConcurrencyConfig::default()
+                    .set_global(Some(2))
+                    .set_sites([("foo".to_string(), 1)].into()),
             );
 
             let request1 =
