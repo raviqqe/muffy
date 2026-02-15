@@ -21,6 +21,7 @@ use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::{str, time::Duration};
 use robotxt::Robots;
+use std::collections::HashMap;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
@@ -36,6 +37,7 @@ struct HttpClientInner {
     timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
+    site_semaphore: HashMap<String, Semaphore>,
 }
 
 impl HttpClient {
