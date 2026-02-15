@@ -218,12 +218,9 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
-    use std::{
-        collections::HashMap,
-        sync::{
-            Arc,
-            atomic::{AtomicUsize, Ordering},
-        },
+    use std::sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
     };
     use url::Url;
 
