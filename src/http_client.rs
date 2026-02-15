@@ -641,14 +641,12 @@ mod tests {
                 &concurrency,
             );
 
-            let request1 = Request::new(
-                Url::parse("https://example.com/a").unwrap(),
-                Default::default(),
-            )
-            .set_site_id(Some("foo".into()));
+            let request1 =
+                Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
+                    .set_site_id(Some("foo".into()));
             let request2 = request1
                 .clone()
-                .set_url(Url::parse("https://example.com/b").unwrap());
+                .set_url(Url::parse("https://bar.com/").unwrap());
 
             let handle1 = tokio::spawn({
                 let client = client.cloned();
