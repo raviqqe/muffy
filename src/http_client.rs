@@ -173,7 +173,8 @@ impl HttpClient {
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
         let _global = self.0.semaphore.acquire().await.unwrap();
-        let _site = if let Some(semaphore) = self.0.site_semaphores.get(request.concurrency_group())
+        let _site = if let Some(id) = request.site_id()
+            && let Some(semaphore) = self.0.site_semaphores.get(id)
         {
             Some(semaphore.acquire().await.unwrap())
         } else {
