@@ -205,7 +205,10 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             sites: config
                 .sites
                 .iter()
-                .filter_map(|(name, site)| site.concurrency.map(|c| (name.clone(), c)))
+                .filter_map(|(name, site)| {
+                    site.concurrency
+                        .map(|concurrency| (name.clone(), concurrency))
+                })
                 .collect(),
         },
         config
@@ -709,16 +712,23 @@ mod tests {
     #[test]
     fn compile_concurrency() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            concurrency: Some(42),
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    concurrency: Some(42),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+            concurrency: Some(2045),
             cache: None,
         };
 
         assert_eq!(
             compile_config(config).unwrap().concurrency(),
             &crate::config::ConcurrencyConfig {
-                global: Some(42),
-                sites: Default::default(),
+                global: Some(2045),
+                sites: [("foo".into(), 42)].into(),
             }
         );
     }
