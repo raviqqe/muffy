@@ -589,7 +589,7 @@ mod tests {
         #[derive(Clone)]
         struct BlockingBareHttpClient {
             started: mpsc::UnboundedSender<()>,
-            proceed: Arc<Notify>,
+            notify: Arc<Notify>,
             in_flight: Arc<AtomicUsize>,
             max_in_flight: Arc<AtomicUsize>,
         }
@@ -601,7 +601,7 @@ mod tests {
                 self.max_in_flight.fetch_max(in_flight, Ordering::SeqCst);
                 self.started.send(()).unwrap();
 
-                self.proceed.notified().await;
+                self.notify.notified().await;
 
                 self.in_flight.fetch_sub(1, Ordering::SeqCst);
 
@@ -622,7 +622,7 @@ mod tests {
 
             let bare = BlockingBareHttpClient {
                 started: sender,
-                proceed: notify.clone(),
+                notify: notify.clone(),
                 in_flight: Arc::new(AtomicUsize::new(0)),
                 max_in_flight: max_in_flight.clone(),
             };
@@ -680,13 +680,13 @@ mod tests {
         #[tokio::test]
         async fn per_site_concurrency_is_independent() {
             let (started_tx, mut started_rx) = mpsc::unbounded_channel();
-            let proceed = Arc::new(Notify::new());
+            let notify = Arc::new(Notify::new());
             let in_flight = Arc::new(AtomicUsize::new(0));
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
             let bare = BlockingBareHttpClient {
                 started: started_tx,
-                proceed: proceed.clone(),
+                notify: notify.clone(),
                 in_flight: in_flight.clone(),
                 max_in_flight: max_in_flight.clone(),
             };
@@ -734,8 +734,8 @@ mod tests {
             assert_eq!(in_flight.load(Ordering::SeqCst), 2);
             assert_eq!(max_in_flight.load(Ordering::SeqCst), 2);
 
-            proceed.notify_one();
-            proceed.notify_one();
+            notify.notify_one();
+            notify.notify_one();
 
             handle1.await.unwrap().unwrap();
             handle2.await.unwrap().unwrap();
