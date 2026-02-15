@@ -587,6 +587,13 @@ mod tests {
             max_in_flight: Arc<AtomicUsize>,
         }
 
+        async fn send_request(
+            client: HttpClient,
+            request: Request,
+        ) -> Result<Result<Response, HttpClientError>, tokio::task::JoinError> {
+            tokio::spawn(async move { client.get_throttled(&request).await }).await
+        }
+
         #[async_trait]
         impl BareHttpClient for FakeBareHttpClient {
             async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
@@ -634,21 +641,14 @@ mod tests {
                 .clone()
                 .set_url(Url::parse("https://foo.com/bar").unwrap());
 
-            let handle1 = tokio::spawn({
-                let client = client.cloned();
+            let handle1 = send_request(client.cloned(), request1);
+            let handle2 = send_request(client.cloned(), request2);
 
-                async move { client.get_throttled(&request1).await }
-            });
-            let handle2 = tokio::spawn({
-                let client = client.cloned();
-
-                async move { client.get_throttled(&request2).await }
-            });
-
+            receiver.recv().await.unwrap();
             assert!(
                 timeout(CONCURRENT_REQUEST_DELAY, receiver.recv())
                     .await
-                    .is_ok()
+                    .is_err()
             );
             notify.notify_one();
             receiver.recv().await.unwrap();
@@ -691,16 +691,8 @@ mod tests {
                 Request::new(Url::parse("https://bar.com/").unwrap(), Default::default())
                     .set_site_id(Some("bar".into()));
 
-            let handle1 = tokio::spawn({
-                let client = client.cloned();
-
-                async move { client.get_throttled(&request1).await }
-            });
-            let handle2 = tokio::spawn({
-                let client = client.cloned();
-
-                async move { client.get_throttled(&request2).await }
-            });
+            let handle1 = send_request(client.cloned(), request1);
+            let handle2 = send_request(client.cloned(), request2);
 
             receiver.recv().await.unwrap();
             receiver.recv().await.unwrap();
