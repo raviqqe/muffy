@@ -677,14 +677,9 @@ mod tests {
                 max_in_flight: max_in_flight.clone(),
             };
 
-            let mut sites = HashMap::new();
-            sites.insert("foo".to_string(), 1);
-            sites.insert("bar".to_string(), 1);
-
             let concurrency = ConcurrencyConfig::default()
                 .set_global(Some(2))
-                .set_sites(sites);
-
+                .set_sites([("foo".to_string(), 1), ("bar".to_string(), 1)].into());
             let client = HttpClient::new(
                 bare,
                 StubTimer::new(),
