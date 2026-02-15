@@ -21,7 +21,7 @@ use std::{
 use url::Url;
 
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
-    super::SiteConfig::new("".into())
+    super::SiteConfig::default()
         .set_status(super::StatusConfig::new(
             DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
         ))
@@ -218,7 +218,8 @@ fn compile_site_config(
     site: &SiteConfig,
     parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
-    Ok(super::SiteConfig::new(id)
+    Ok(super::SiteConfig::default()
+        .set_id(Some(id.into()))
         .set_cache(
             super::CacheConfig::default().set_max_age(
                 site.cache
@@ -420,9 +421,10 @@ mod tests {
             vec!["https://foo.com/"]
         );
 
-        let compile_config = |id: &str| {
+        let compile_config = |id: Option<&str>| {
             Arc::new(
-                crate::config::SiteConfig::new(id.to_owned())
+                crate::config::SiteConfig::default()
+                    .set_id(id.map(Into::into))
                     .set_cache(
                         crate::config::CacheConfig::default()
                             .set_max_age(Duration::from_secs(2045).into()),
@@ -459,11 +461,14 @@ mod tests {
             )
         };
 
-        assert_eq!(config.default, compile_config(""));
+        assert_eq!(config.default, compile_config(None));
 
         let paths = &config.sites().get("foo.com").unwrap();
 
-        assert_eq!(paths.as_slice(), &[("/".into(), compile_config("foo"))]);
+        assert_eq!(
+            paths.as_slice(),
+            &[("/".into(), compile_config("foo".into()))]
+        );
     }
 
     #[test]

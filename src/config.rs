@@ -114,7 +114,7 @@ impl Config {
 /// A site configuration.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
-    id: String,
+    id: Option<Arc<str>>,
     cache: CacheConfig,
     headers: HeaderMap,
     max_redirects: usize,
@@ -127,16 +127,13 @@ pub struct SiteConfig {
 
 impl SiteConfig {
     /// Creates a site configuration.
-    pub fn new(id: String) -> Self {
-        Self {
-            id,
-            ..Default::default()
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Returns an ID.
-    pub const fn id(&self) -> &str {
-        self.id.as_str()
+    pub fn id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
 
     /// Returns a cache configuration.
@@ -177,6 +174,12 @@ impl SiteConfig {
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
+    }
+
+    /// Sets an ID.
+    pub fn set_id(mut self, id: Option<Arc<str>>) -> Self {
+        self.id = id;
+        self
     }
 
     /// Sets a cache configuration.
@@ -446,23 +449,38 @@ mod tests {
                 [
                     (
                         "/foo".to_string(),
-                        SiteConfig::new("foo".into()).set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("foo".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/bar".to_string(),
-                        SiteConfig::new("bar".into()).set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("bar".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/".to_string(),
-                        SiteConfig::new("top".into()).set_recursive(false).into(),
+                        SiteConfig::default()
+                            .set_id(Some("top".into()))
+                            .set_recursive(false)
+                            .into(),
                     ),
                     (
                         "/baz".to_string(),
-                        SiteConfig::new("baz".into()).set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("baz".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/qux".to_string(),
-                        SiteConfig::new("qux".into()).set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("qux".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                 ]
                 .into_iter()
