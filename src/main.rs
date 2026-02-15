@@ -65,7 +65,7 @@ struct CheckArguments {
     #[arg(long)]
     cache: bool,
     /// Set a maximum cache age.
-    #[arg(long, default_value = "1h")]
+    #[arg(long, default_value = "0s")]
     max_age: String,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
