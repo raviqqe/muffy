@@ -692,16 +692,12 @@ mod tests {
                 &concurrency,
             );
 
-            let request1 = Request::new(
-                Url::parse("https://example.com/a").unwrap(),
-                Default::default(),
-            )
-            .set_site_id(Some("foo".into()));
-            let request2 = Request::new(
-                Url::parse("https://example.com/b").unwrap(),
-                Default::default(),
-            )
-            .set_site_id(Some("bar".into()));
+            let request1 =
+                Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
+                    .set_site_id(Some("foo".into()));
+            let request2 =
+                Request::new(Url::parse("https://bar.com/").unwrap(), Default::default())
+                    .set_site_id(Some("bar".into()));
 
             let handle1 = tokio::spawn({
                 let client = client.cloned();
