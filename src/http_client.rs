@@ -584,7 +584,7 @@ mod tests {
             time::timeout,
         };
 
-        struct BlockingBareHttpClient {
+        struct FakeHttpClient {
             started: mpsc::UnboundedSender<()>,
             notify: Arc<Notify>,
             in_flight: Arc<AtomicUsize>,
@@ -592,7 +592,7 @@ mod tests {
         }
 
         #[async_trait]
-        impl BareHttpClient for BlockingBareHttpClient {
+        impl BareHttpClient for FakeHttpClient {
             async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
                 let in_flight = self.in_flight.fetch_add(1, Ordering::SeqCst) + 1;
 
@@ -617,22 +617,17 @@ mod tests {
             let notify = Arc::new(Notify::new());
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
-            let bare = BlockingBareHttpClient {
-                started: sender,
-                notify: notify.clone(),
-                in_flight: Arc::new(AtomicUsize::new(0)),
-                max_in_flight: max_in_flight.clone(),
-            };
-
-            let mut sites = HashMap::new();
-            sites.insert("foo".to_string(), 1);
-
             let concurrency = ConcurrencyConfig::default()
                 .set_global(Some(2))
-                .set_sites(sites);
+                .set_sites([("foo".to_string(), 1)].into());
 
             let client = HttpClient::new(
-                bare,
+                FakeHttpClient {
+                    started: sender,
+                    notify: notify.clone(),
+                    in_flight: Arc::new(AtomicUsize::new(0)),
+                    max_in_flight: max_in_flight.clone(),
+                },
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &concurrency,
@@ -681,7 +676,7 @@ mod tests {
             let in_flight = Arc::new(AtomicUsize::new(0));
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
-            let bare = BlockingBareHttpClient {
+            let bare = FakeHttpClient {
                 started: started_tx,
                 notify: notify.clone(),
                 in_flight: in_flight.clone(),
