@@ -586,7 +586,6 @@ mod tests {
         };
         use url::Url;
 
-        #[derive(Clone)]
         struct BlockingBareHttpClient {
             started: mpsc::UnboundedSender<()>,
             notify: Arc<Notify>,
