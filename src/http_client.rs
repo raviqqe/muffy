@@ -611,7 +611,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn limit_concurrency_per_site() {
+        async fn limit_concurrency_of_site() {
             let (sender, mut receiver) = mpsc::unbounded_channel();
             let notify = Arc::new(Notify::new());
             let max_in_flight = Arc::new(AtomicUsize::new(0));
@@ -664,7 +664,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn per_site_concurrency_is_independent() {
+        async fn limit_concurrency_of_two_sites() {
             let (sender, mut receiver) = mpsc::unbounded_channel();
             let notify = Arc::new(Notify::new());
             let in_flight = Arc::new(AtomicUsize::new(0));
