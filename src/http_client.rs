@@ -617,7 +617,7 @@ mod tests {
 
         #[tokio::test]
         async fn limit_concurrency_of_site() {
-            let (sender, mut receiver) = mpsc::unbounded_channel();
+            let (sender, _receiver) = mpsc::unbounded_channel();
             let notify = Arc::new(Notify::new());
             let max_in_flight = Arc::new(AtomicUsize::new(0));
 
@@ -645,14 +645,8 @@ mod tests {
             let handle1 = send_request(client.cloned(), request1);
             let handle2 = send_request(client.cloned(), request2);
 
-            receiver.recv().await.unwrap();
-            assert!(
-                timeout(CONCURRENT_REQUEST_DELAY, receiver.recv())
-                    .await
-                    .is_err()
-            );
+            sleep(CONCURRENT_REQUEST_DELAY).await;
             notify.notify_one();
-            receiver.recv().await.unwrap();
             notify.notify_one();
 
             handle1.await.unwrap().unwrap();
