@@ -109,15 +109,17 @@ impl WebValidator {
         // We keep this fragment removal not configurable as otherwise we might have a
         // lot more requests for the same HTML pages, which makes crawling
         // unacceptably inefficient.
+        let site = context.config().site(&url);
         let Some(response) = self
             .0
             .http_client
             .get(
-                &Request::new(document_url, context.config().site(&url).headers().clone())
-                    .set_max_redirects(context.config().site(&url).max_redirects())
-                    .set_timeout(context.config().site(&url).timeout())
-                    .set_max_age(context.config().site(&url).cache().max_age())
-                    .set_retry(context.config().site(&url).retry().clone()),
+                &Request::new(document_url, site.headers().clone())
+                    .set_max_age(site.cache().max_age())
+                    .set_max_redirects(site.max_redirects())
+                    .set_retry(site.retry().clone())
+                    .set_site_id(site.id().cloned())
+                    .set_timeout(site.timeout()),
             )
             .await?
         else {
@@ -493,7 +495,12 @@ mod tests {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
-            HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0)), 1),
+            HttpClient::new(
+                client,
+                StubTimer::new(),
+                Box::new(MokaCache::new(0)),
+                &Default::default(),
+            ),
             HtmlParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
@@ -504,7 +511,7 @@ mod tests {
                 [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
             )]
             .into(),
-            None,
+            Default::default(),
             false,
         ))
         .await
@@ -970,7 +977,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
-                1,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -991,7 +998,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
-            None,
+            Default::default(),
             false,
         ))
         .await
@@ -1042,7 +1049,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
-                1,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -1058,7 +1065,7 @@ mod tests {
                 )]
                 .into_iter()
                 .collect(),
-                None,
+                Default::default(),
                 false,
             )
             .set_excluded_links(vec![Regex::new("bar").unwrap()]),

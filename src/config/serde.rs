@@ -21,7 +21,7 @@ use std::{
 use url::Url;
 
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
-    super::SiteConfig::new()
+    super::SiteConfig::default()
         .set_status(super::StatusConfig::new(
             DEFAULT_ACCEPTED_STATUS_CODES.iter().copied().collect(),
         ))
@@ -56,6 +56,7 @@ struct GlobalCacheConfig {
 #[serde(deny_unknown_fields)]
 struct SiteConfig {
     cache: Option<CacheConfig>,
+    concurrency: Option<usize>,
     extend: Option<String>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
@@ -135,6 +136,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
+                name.into(),
                 site,
                 if let Some(name) = &site.extend {
                     &configs[name.as_str()]
@@ -164,7 +166,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             // TODO Should we prevent the `ignore = true` option for default site
             // configuration?
             match &configs[..] {
-                [config] => compile_site_config(config, &DEFAULT_SITE_CONFIG)?.into(),
+                [config] => compile_site_config(None, config, &DEFAULT_SITE_CONFIG)?.into(),
                 [_, ..] => {
                     return Err(ConfigError::MultipleDefaultSiteConfigs(
                         config
@@ -198,7 +200,17 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 ))
             })
             .collect::<Result<_, ConfigError>>()?,
-        config.concurrency,
+        super::ConcurrencyConfig {
+            global: config.concurrency,
+            sites: config
+                .sites
+                .iter()
+                .filter_map(|(name, site)| {
+                    site.concurrency
+                        .map(|concurrency| (name.clone(), concurrency))
+                })
+                .collect(),
+        },
         config
             .cache
             .and_then(|cache| cache.persistent)
@@ -208,10 +220,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 }
 
 fn compile_site_config(
+    id: Option<&str>,
     site: &SiteConfig,
     parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
-    Ok(super::SiteConfig::new()
+    Ok(super::SiteConfig::default()
+        .set_id(id.map(Into::into))
         .set_cache(
             super::CacheConfig::default().set_max_age(
                 site.cache
@@ -323,12 +337,9 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        config::{
-            DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-            DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
-        },
-        default_concurrency,
+    use crate::config::{
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
+        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
     use http::HeaderMap;
@@ -348,7 +359,7 @@ mod tests {
         assert_eq!(config.excluded_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
         assert!(!config.persistent_cache());
-        assert_eq!(config.concurrency(), default_concurrency());
+        assert_eq!(config.concurrency(), &Default::default());
 
         let default = config.default;
 
@@ -372,13 +383,13 @@ mod tests {
                 (
                     "default".to_owned(),
                     SiteConfig {
-                        roots: Some(Default::default()),
-                        recurse: Some(true),
-                        schemes: Some(HashSet::from(["https".to_owned()])),
-                        statuses: Some(HashSet::from([200, 403, 418])),
-                        timeout: Some(Duration::from_secs(42).into()),
-                        max_redirects: Some(42),
+                        cache: Some(CacheConfig {
+                            max_age: Some(Duration::from_secs(2045).into()),
+                        }),
+                        concurrency: Some(42),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
+                        max_redirects: Some(42),
+                        recurse: Some(true),
                         retry: Some(RetryConfig {
                             count: 193.into(),
                             factor: 4.2.into(),
@@ -388,9 +399,10 @@ mod tests {
                             }
                             .into(),
                         }),
-                        cache: Some(CacheConfig {
-                            max_age: Some(Duration::from_secs(2045).into()),
-                        }),
+                        roots: Some(Default::default()),
+                        schemes: Some(["https".to_owned()].into()),
+                        statuses: Some([200, 403, 418].into()),
+                        timeout: Some(Duration::from_secs(42).into()),
                         ..Default::default()
                     },
                 ),
@@ -415,45 +427,54 @@ mod tests {
             vec!["https://foo.com/"]
         );
 
-        let compiled = Arc::new(
-            crate::config::SiteConfig::new()
-                .set_cache(
-                    crate::config::CacheConfig::default()
-                        .set_max_age(Duration::from_secs(2045).into()),
-                )
-                .set_headers(HeaderMap::from_iter([(
-                    HeaderName::try_from("user-agent").unwrap(),
-                    HeaderValue::try_from("my-agent").unwrap(),
-                )]))
-                .set_status(crate::config::StatusConfig::new(HashSet::from([
-                    StatusCode::try_from(200).unwrap(),
-                    StatusCode::try_from(403).unwrap(),
-                    StatusCode::try_from(418).unwrap(),
-                ])))
-                .set_scheme(crate::config::SchemeConfig::new(HashSet::from([
-                    "https".to_owned()
-                ])))
-                .set_max_redirects(42)
-                .set_timeout(Duration::from_secs(42).into())
-                .set_retry(
-                    crate::config::RetryConfig::default()
-                        .set_count(193)
-                        .set_factor(4.2.into())
-                        .set_duration(
-                            crate::config::RetryDurationConfig::default()
-                                .set_initial(Duration::from_millis(42).into())
-                                .set_cap(Duration::from_secs(42).into()),
-                        )
+        let compile_config = |id: Option<&str>| {
+            Arc::new(
+                crate::config::SiteConfig::default()
+                    .set_id(id.map(Into::into))
+                    .set_cache(
+                        crate::config::CacheConfig::default()
+                            .set_max_age(Duration::from_secs(2045).into()),
+                    )
+                    .set_headers(HeaderMap::from_iter([(
+                        HeaderName::try_from("user-agent").unwrap(),
+                        HeaderValue::try_from("my-agent").unwrap(),
+                    )]))
+                    .set_status(crate::config::StatusConfig::new(
+                        [
+                            StatusCode::try_from(200).unwrap(),
+                            StatusCode::try_from(403).unwrap(),
+                            StatusCode::try_from(418).unwrap(),
+                        ]
                         .into(),
-                )
-                .set_recursive(true),
-        );
+                    ))
+                    .set_scheme(crate::config::SchemeConfig::new(
+                        ["https".to_owned()].into(),
+                    ))
+                    .set_max_redirects(42)
+                    .set_timeout(Duration::from_secs(42).into())
+                    .set_retry(
+                        crate::config::RetryConfig::default()
+                            .set_count(193)
+                            .set_factor(4.2.into())
+                            .set_duration(
+                                crate::config::RetryDurationConfig::default()
+                                    .set_initial(Duration::from_millis(42).into())
+                                    .set_cap(Duration::from_secs(42).into()),
+                            )
+                            .into(),
+                    )
+                    .set_recursive(true),
+            )
+        };
 
-        assert_eq!(config.default, compiled.clone());
+        assert_eq!(config.default, compile_config(None));
 
         let paths = &config.sites().get("foo.com").unwrap();
 
-        assert_eq!(paths.as_slice(), &[("/".into(), compiled)]);
+        assert_eq!(
+            paths.as_slice(),
+            &[("/".into(), compile_config("foo".into()))]
+        );
     }
 
     #[test]
@@ -597,7 +618,7 @@ mod tests {
                     "bar".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
-                        statuses: Some(HashSet::from([200, 201])),
+                        statuses: Some([200, 201].into()),
                         ..Default::default()
                     },
                 ),
@@ -691,12 +712,25 @@ mod tests {
     #[test]
     fn compile_concurrency() {
         let config = SerializableConfig {
-            sites: Default::default(),
-            concurrency: Some(42),
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    concurrency: Some(42),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+            concurrency: Some(2045),
             cache: None,
         };
 
-        assert_eq!(compile_config(config).unwrap().concurrency(), 42);
+        assert_eq!(
+            compile_config(config).unwrap().concurrency(),
+            &crate::config::ConcurrencyConfig {
+                global: Some(2045),
+                sites: [("foo".into(), 42)].into(),
+            }
+        );
     }
 
     #[test]

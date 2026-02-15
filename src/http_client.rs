@@ -12,12 +12,16 @@ pub use self::{
     error::HttpClientError,
     reqwest::ReqwestHttpClient,
 };
-use crate::{cache::Cache, request::Request, response::Response, timer::Timer};
+use crate::{
+    ConcurrencyConfig, cache::Cache, default_concurrency, request::Request, response::Response,
+    timer::Timer,
+};
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::{str, time::Duration};
 use robotxt::Robots;
+use std::collections::HashMap;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
@@ -33,6 +37,7 @@ struct HttpClientInner {
     timer: Box<dyn Timer>,
     cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
+    site_semaphores: HashMap<String, Semaphore>,
 }
 
 impl HttpClient {
@@ -41,14 +46,19 @@ impl HttpClient {
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
-        concurrency: usize,
+        concurrency: &ConcurrencyConfig,
     ) -> Self {
         Self(
             HttpClientInner {
                 client: Box::new(client),
                 timer: Box::new(timer),
                 cache,
-                semaphore: Semaphore::new(concurrency),
+                semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
+                site_semaphores: concurrency
+                    .sites()
+                    .iter()
+                    .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
+                    .collect(),
             }
             .into(),
         )
@@ -97,8 +107,6 @@ impl HttpClient {
     }
 
     // TODO Configure rate limits.
-    // TODO Configure retries.
-    // TODO Configure maximum connections.
     async fn get_cached(
         &self,
         request: &Request,
@@ -164,7 +172,15 @@ impl HttpClient {
     }
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let _permit = self.0.semaphore.acquire().await.unwrap();
+        let _global = self.0.semaphore.acquire().await.unwrap();
+        let _site = if let Some(id) = request.site_id()
+            && let Some(semaphore) = self.0.site_semaphores.get(id)
+        {
+            Some(semaphore.acquire().await.unwrap())
+        } else {
+            None
+        };
+
         self.get_once(request).await
     }
 
@@ -194,6 +210,7 @@ impl HttpClient {
 mod tests {
     use super::*;
     use crate::{
+        ConcurrencyConfig,
         cache::MemoryCache,
         http_client::{BareResponse, StubHttpClient, StubSequenceHttpClient, build_stub_response},
         timer::StubTimer,
@@ -201,6 +218,10 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
+    use std::sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    };
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -211,7 +232,7 @@ mod tests {
             StubHttpClient::new(Default::default()),
             StubTimer::new(),
             Box::new(MemoryCache::new(0)),
-            1,
+            &Default::default(),
         );
     }
 
@@ -241,7 +262,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await
@@ -276,7 +297,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await
@@ -328,7 +349,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
             .await
@@ -380,7 +401,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
@@ -438,7 +459,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(cache),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(url, Default::default()))
             .await
@@ -506,7 +527,7 @@ mod tests {
                 ),
                 StubTimer::new(),
                 Box::new(cache),
-                1,
+                &Default::default(),
             )
             .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
             .await
@@ -516,7 +537,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn timeout() {
+    async fn hit_timeout() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
             url: url.clone(),
@@ -543,12 +564,143 @@ mod tests {
             .set_delay(Duration::from_millis(50)),
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
-            1,
+            &Default::default(),
         )
         .get(&Request::new(url, Default::default()).set_timeout(Duration::from_millis(1).into()))
         .await;
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
+    }
+
+    mod concurrency {
+        use super::*;
+        use async_trait::async_trait;
+        use pretty_assertions::assert_eq;
+        use tokio::sync::{Notify, mpsc};
+
+        const CONCURRENT_REQUEST_DELAY: Duration = Duration::from_millis(50);
+
+        struct FakeBareHttpClient {
+            started: mpsc::UnboundedSender<()>,
+            notify: Arc<Notify>,
+            in_flight: Arc<AtomicUsize>,
+            max_in_flight: Arc<AtomicUsize>,
+        }
+
+        fn send_request(
+            client: HttpClient,
+            request: Request,
+        ) -> impl Future<Output = Result<Result<Response, HttpClientError>, tokio::task::JoinError>>
+        {
+            tokio::spawn(async move { client.get_throttled(&request).await })
+        }
+
+        #[async_trait]
+        impl BareHttpClient for FakeBareHttpClient {
+            async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
+                let in_flight = self.in_flight.fetch_add(1, Ordering::SeqCst) + 1;
+
+                self.max_in_flight.fetch_max(in_flight, Ordering::SeqCst);
+                self.started.send(()).unwrap();
+                self.notify.notified().await;
+
+                self.in_flight.fetch_sub(1, Ordering::SeqCst);
+
+                Ok(BareResponse {
+                    url: request.url.clone(),
+                    status: StatusCode::OK,
+                    headers: Default::default(),
+                    body: Default::default(),
+                })
+            }
+        }
+
+        #[tokio::test]
+        async fn limit_concurrency_of_site() {
+            let (sender, _receiver) = mpsc::unbounded_channel();
+            let notify = Arc::new(Notify::new());
+            let max_in_flight = Arc::new(AtomicUsize::new(0));
+
+            let client = HttpClient::new(
+                FakeBareHttpClient {
+                    started: sender,
+                    notify: notify.clone(),
+                    in_flight: Default::default(),
+                    max_in_flight: max_in_flight.clone(),
+                },
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                &ConcurrencyConfig::default()
+                    .set_global(Some(2))
+                    .set_sites([("foo".to_string(), 1)].into()),
+            );
+
+            let request1 =
+                Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
+                    .set_site_id(Some("foo".into()));
+            let request2 = request1
+                .clone()
+                .set_url(Url::parse("https://foo.com/bar").unwrap());
+
+            let handle1 = send_request(client.cloned(), request1);
+            let handle2 = send_request(client.cloned(), request2);
+
+            sleep(CONCURRENT_REQUEST_DELAY).await;
+            notify.notify_one();
+            notify.notify_one();
+
+            handle1.await.unwrap().unwrap();
+            handle2.await.unwrap().unwrap();
+
+            assert_eq!(max_in_flight.load(Ordering::SeqCst), 1);
+        }
+
+        #[tokio::test]
+        async fn limit_concurrency_of_two_sites() {
+            let (sender, mut receiver) = mpsc::unbounded_channel();
+            let notify = Arc::new(Notify::new());
+            let in_flight = Arc::new(AtomicUsize::new(0));
+            let max_in_flight = Arc::new(AtomicUsize::new(0));
+
+            let bare = FakeBareHttpClient {
+                started: sender,
+                notify: notify.clone(),
+                in_flight: in_flight.clone(),
+                max_in_flight: max_in_flight.clone(),
+            };
+
+            let concurrency = ConcurrencyConfig::default()
+                .set_global(Some(2))
+                .set_sites([("foo".to_string(), 1), ("bar".to_string(), 1)].into());
+            let client = HttpClient::new(
+                bare,
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                &concurrency,
+            );
+
+            let request1 =
+                Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
+                    .set_site_id(Some("foo".into()));
+            let request2 =
+                Request::new(Url::parse("https://bar.com/").unwrap(), Default::default())
+                    .set_site_id(Some("bar".into()));
+
+            let handle1 = send_request(client.cloned(), request1);
+            let handle2 = send_request(client.cloned(), request2);
+
+            receiver.recv().await.unwrap();
+            receiver.recv().await.unwrap();
+
+            assert_eq!(in_flight.load(Ordering::SeqCst), 2);
+            assert_eq!(max_in_flight.load(Ordering::SeqCst), 2);
+
+            notify.notify_one();
+            notify.notify_one();
+
+            handle1.await.unwrap().unwrap();
+            handle2.await.unwrap().unwrap();
+        }
     }
 
     mod retry {
@@ -589,7 +741,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -628,7 +780,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -671,7 +823,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -714,7 +866,7 @@ mod tests {
                     ]),
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
-                    1,
+                    &Default::default(),
                 )
                 .get(
                     &Request::new(url, Default::default())

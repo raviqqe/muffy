@@ -5,7 +5,7 @@ use core::{
     time::Duration,
 };
 use http::{HeaderMap, StatusCode};
-use scc::HashMap;
+use std::collections::HashMap;
 use tokio::time::sleep;
 use url::Url;
 
@@ -35,10 +35,8 @@ impl BareHttpClient for StubHttpClient {
         sleep(self.delay).await;
 
         self.results
-            .get_async(request.url.as_str())
-            .await
+            .get(request.url.as_str())
             .expect("stub response")
-            .get()
             .clone()
     }
 }

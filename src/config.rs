@@ -10,8 +10,6 @@ use rlimit::{Resource, getrlimit};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-type HostConfig = HashMap<String, Arc<SiteConfig>>;
-
 /// Default accepted URL schemes.
 pub const DEFAULT_ACCEPTED_SCHEMES: &[&str] = &["http", "https"];
 /// Default accepted HTTP status codes.
@@ -39,7 +37,7 @@ pub struct Config {
     excluded_links: Vec<Regex>,
     default: Arc<SiteConfig>,
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
-    concurrency: Option<usize>,
+    concurrency: ConcurrencyConfig,
     persistent_cache: bool,
 }
 
@@ -48,8 +46,8 @@ impl Config {
     pub fn new(
         roots: Vec<String>,
         default: Arc<SiteConfig>,
-        sites: HashMap<String, HostConfig>,
-        concurrency: Option<usize>,
+        sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
+        concurrency: ConcurrencyConfig,
         persistent_cache: bool,
     ) -> Self {
         Self {
@@ -90,8 +88,8 @@ impl Config {
     }
 
     /// Returns a concurrency.
-    pub fn concurrency(&self) -> usize {
-        self.concurrency.unwrap_or_else(default_concurrency)
+    pub const fn concurrency(&self) -> &ConcurrencyConfig {
+        &self.concurrency
     }
 
     /// Returns whether a cache is persistent.
@@ -116,6 +114,7 @@ impl Config {
 /// A site configuration.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct SiteConfig {
+    id: Option<Arc<str>>,
     cache: CacheConfig,
     headers: HeaderMap,
     max_redirects: usize,
@@ -130,6 +129,11 @@ impl SiteConfig {
     /// Creates a site configuration.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Returns an ID.
+    pub const fn id(&self) -> Option<&Arc<str>> {
+        self.id.as_ref()
     }
 
     /// Returns a cache configuration.
@@ -170,6 +174,12 @@ impl SiteConfig {
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
+    }
+
+    /// Sets an ID.
+    pub fn set_id(mut self, id: Option<Arc<str>>) -> Self {
+        self.id = id;
+        self
     }
 
     /// Sets a cache configuration.
@@ -389,6 +399,42 @@ impl RetryDurationConfig {
     }
 }
 
+/// A concurrency configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ConcurrencyConfig {
+    global: Option<usize>,
+    sites: HashMap<String, usize>,
+}
+
+impl ConcurrencyConfig {
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns a global concurrency.
+    pub const fn global(&self) -> Option<usize> {
+        self.global
+    }
+
+    /// Returns concurrency per site.
+    pub const fn sites(&self) -> &HashMap<String, usize> {
+        &self.sites
+    }
+
+    /// Sets a global concurrency.
+    pub const fn set_global(mut self, concurrency: Option<usize>) -> Self {
+        self.global = concurrency;
+        self
+    }
+
+    /// Sets concurrency per site.
+    pub fn set_sites(mut self, sites: HashMap<String, usize>) -> Self {
+        self.sites = sites;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -403,30 +449,45 @@ mod tests {
                 [
                     (
                         "/foo".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("foo".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/bar".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("bar".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/".to_string(),
-                        SiteConfig::new().set_recursive(false).into(),
+                        SiteConfig::default()
+                            .set_id(Some("top".into()))
+                            .set_recursive(false)
+                            .into(),
                     ),
                     (
                         "/baz".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("baz".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                     (
                         "/qux".to_string(),
-                        SiteConfig::new().set_recursive(true).into(),
+                        SiteConfig::default()
+                            .set_id(Some("qux".into()))
+                            .set_recursive(true)
+                            .into(),
                     ),
                 ]
                 .into_iter()
                 .collect(),
             )]
             .into(),
-            None,
+            Default::default(),
             false,
         );
 
