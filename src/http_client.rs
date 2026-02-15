@@ -606,7 +606,7 @@ mod tests {
                     url: request.url.clone(),
                     status: StatusCode::OK,
                     headers: Default::default(),
-                    body: vec![],
+                    body: Default::default(),
                 })
             }
         }
