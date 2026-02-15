@@ -136,7 +136,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                name.to_owned(),
+                name.into(),
                 site,
                 if let Some(name) = &site.extend {
                     &configs[name.as_str()]
@@ -166,7 +166,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             // TODO Should we prevent the `ignore = true` option for default site
             // configuration?
             match &configs[..] {
-                [config] => compile_site_config("".into(), config, &DEFAULT_SITE_CONFIG)?.into(),
+                [config] => compile_site_config(None, config, &DEFAULT_SITE_CONFIG)?.into(),
                 [_, ..] => {
                     return Err(ConfigError::MultipleDefaultSiteConfigs(
                         config
@@ -214,12 +214,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 }
 
 fn compile_site_config(
-    id: String,
+    id: Option<&str>,
     site: &SiteConfig,
     parent: &super::SiteConfig,
 ) -> Result<super::SiteConfig, ConfigError> {
     Ok(super::SiteConfig::default()
-        .set_id(Some(id.into()))
+        .set_id(id.map(Into::into))
         .set_cache(
             super::CacheConfig::default().set_max_age(
                 site.cache
