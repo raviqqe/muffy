@@ -66,7 +66,7 @@ struct CheckArguments {
     cache: bool,
     /// Set a maximum cache age.
     #[arg(long, default_value = "0s")]
-    max_age: String,
+    max_age: DurationString,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -81,7 +81,7 @@ struct CheckArguments {
     max_redirects: usize,
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
-    timeout: String,
+    timeout: DurationString,
     /// Set concurrency.
     #[arg(long, default_value_t = muffy::default_concurrency())]
     concurrency: usize,
@@ -247,10 +247,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
-        .set_cache(
-            CacheConfig::default()
-                .set_max_age(*DurationString::from_string(arguments.max_age.clone())?),
-        )
+        .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
         .set_status(StatusConfig::new(
             arguments
                 .accept_status
@@ -278,9 +275,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
-        .set_timeout(Some(*DurationString::from_string(
-            arguments.timeout.clone(),
-        )?));
+        .set_timeout(Some(*arguments.timeout));
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -327,13 +322,7 @@ mod tests {
             arguments.accept_status,
             muffy::DEFAULT_ACCEPTED_STATUS_CODES
         );
-        assert_eq!(
-            DurationString::from_string(arguments.timeout).unwrap(),
-            muffy::DEFAULT_TIMEOUT
-        );
-        assert_eq!(
-            DurationString::from_string(arguments.max_age).unwrap(),
-            Duration::default()
-        );
+        assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
+        assert_eq!(arguments.max_age, Duration::default());
     }
 }
