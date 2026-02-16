@@ -772,9 +772,9 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
-            Some(&crate::config::RateLimitConfig::default().set_global(
+            &crate::config::RateLimitConfig::default().set_global(
                 crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
-            ))
+            )
         );
     }
 

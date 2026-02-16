@@ -114,7 +114,7 @@ impl Config {
     }
 
     /// Sets a rate limit.
-    pub const fn set_rate_limit(mut self, rate_limit: RateLimitConfig) -> Self {
+    pub fn set_rate_limit(mut self, rate_limit: RateLimitConfig) -> Self {
         self.rate_limit = rate_limit;
         self
     }
