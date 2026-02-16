@@ -30,7 +30,7 @@ impl RateLimiter {
 
     fn add_supply(&self) -> Instant {
         let old = self.window_count.load(Ordering::Relaxed);
-        let new = (Instant::now() - self.time).div_duration_f64(self.window);
+        let new = (Instant::now() - self.time).div_duration_f64(self.window) as _;
 
         while self
             .window_count
