@@ -12,7 +12,7 @@ impl RateLimiter {
         }
     }
 
-    pub fn increment(&self) {
+    pub async fn run(&self) {
         self.count.fetch_add(1, Ordering::SeqCst);
     }
 
