@@ -13,8 +13,8 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, cache::Cache, default_concurrency, request::Request, response::Response,
-    timer::Timer,
+    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, request::Request,
+    response::Response, timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
@@ -28,6 +28,7 @@ use tokio::{
 };
 
 const USER_AGENT: &str = "muffy";
+const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.
 pub struct HttpClient(Arc<HttpClientInner>);
@@ -35,7 +36,8 @@ pub struct HttpClient(Arc<HttpClientInner>);
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
-    cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+    local_cache: MemoryCache<Result<Arc<Response>, HttpClientError>>,
+    global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
 }
@@ -52,7 +54,8 @@ impl HttpClient {
             HttpClientInner {
                 client: Box::new(client),
                 timer: Box::new(timer),
-                cache,
+                local_cache: MemoryCache::new(INITIAL_CACHE_CAPACITY),
+                global_cache: cache,
                 semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
                 site_semaphores: concurrency
                     .sites()
@@ -87,7 +90,7 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_cached(&request, robots).await?;
+            let response = self.get_cached_locally(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -106,14 +109,31 @@ impl HttpClient {
         Err(HttpClientError::TooManyRedirects)
     }
 
+    async fn get_cached_locally(
+        &self,
+        request: &Request,
+        robots: bool,
+    ) -> Result<Arc<Response>, HttpClientError> {
+        Ok(self
+            .0
+            .local_cache
+            .get_with(request.url().to_string(), {
+                let request = request.clone();
+                let client = self.cloned();
+
+                Box::new(async move { client.get_cached_globally(&request, robots).await })
+            })
+            .await??)
+    }
+
     // TODO Configure rate limits.
-    async fn get_cached(
+    async fn get_cached_globally(
         &self,
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
-            self.0.cache.get_with(request.url().to_string(), {
+            self.0.global_cache.get_with(request.url().to_string(), {
                 let request = request.clone();
                 let client = self.cloned();
 
@@ -137,7 +157,7 @@ impl HttpClient {
         Ok(if let Some(age) = request.max_age()
             && response.is_expired(age)
         {
-            self.0.cache.remove(request.url().as_str()).await?;
+            self.0.global_cache.remove(request.url().as_str()).await?;
 
             get().await??
         } else {
