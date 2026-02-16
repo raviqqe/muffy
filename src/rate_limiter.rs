@@ -1,5 +1,5 @@
 use core::{
-    sync::atomic::{AtomicU64, Ordering},
+    sync::atomic::{AtomicU32, AtomicU64, Ordering},
     time::Duration,
 };
 use tokio::time::Instant;
@@ -7,7 +7,7 @@ use tokio::time::Instant;
 /// A token bucket rate limiter.
 pub struct RateLimiter {
     token_count: AtomicU64,
-    window_count: AtomicU64,
+    window_count: AtomicU32,
     time: Instant,
     supply: u64,
     window: Duration,
@@ -25,21 +25,27 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
-        if self.window_count.load(Ordering::Relaxed) == 0 {
-            let elapsed = self.time.elapsed();
-            if elapsed >= self.window {
-                self.token_count.store(self.supply, Ordering::Relaxed);
-                self.window_count.store(0, Ordering::Relaxed);
-                self.time = Instant::now();
-            } else {
-                tokio::time::sleep(self.window - elapsed).await;
-                self.token_count.store(self.supply, Ordering::Relaxed);
-                self.window_count.store(0, Ordering::Relaxed);
-                self.time = Instant::now();
-            }
-        }
+        // if self.window_count.load(Ordering::Relaxed) == 0 {
+        //     let elapsed = self.time.elapsed();
+        //     if elapsed >= self.window {
+        //         self.token_count.store(self.supply, Ordering::Relaxed);
+        //         self.window_count.store(0, Ordering::Relaxed);
+        //         self.time = Instant::now();
+        //     } else {
+        //         tokio::time::sleep(self.window - elapsed).await;
+        //         self.token_count.store(self.supply, Ordering::Relaxed);
+        //         self.window_count.store(0, Ordering::Relaxed);
+        //         self.time = Instant::now();
+        //     }
+        // }
 
         future.await
+    }
+
+    fn add_supply(&self) -> Instant {
+        let time = self.time + self.window * self.window_count.load(Ordering::Relaxed);
+
+        while let Err(foo) = self.window_count.foo() {}
     }
 }
 
