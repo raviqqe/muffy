@@ -245,7 +245,7 @@ fn compile_site_config(
                 site.cache
                     .as_ref()
                     .and_then(|cache| cache.max_age.as_deref().copied())
-                    .or(parent.cache().max_age()),
+                    .unwrap_or(parent.cache().max_age()),
             ),
         )
         .set_headers(
@@ -380,7 +380,7 @@ mod tests {
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
-        assert_eq!(default.cache().max_age(), Default::default());
+        assert_eq!(default.cache().max_age(), Duration::default());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));

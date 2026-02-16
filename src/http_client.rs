@@ -157,9 +157,7 @@ impl HttpClient {
 
         let response = get().await??;
 
-        Ok(if let Some(age) = request.max_age()
-            && response.is_expired(age)
-        {
+        Ok(if response.is_expired(request.max_age()) {
             self.0.global_cache.remove(request.url().as_str()).await?;
 
             get().await??
@@ -238,6 +236,7 @@ impl HttpClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RetryConfig;
     use crate::{
         ConcurrencyConfig,
         cache::MemoryCache,
@@ -254,6 +253,7 @@ mod tests {
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
+    const CACHE_MAX_AGE: Duration = Duration::from_hours(1);
 
     #[test]
     fn build_client() {
@@ -496,7 +496,7 @@ mod tests {
                 &Default::default(),
                 None,
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&Request::new(url, Default::default()).set_max_age(CACHE_MAX_AGE))
             .await
             .unwrap(),
             Some(
@@ -565,7 +565,7 @@ mod tests {
                 &Default::default(),
                 None,
             )
-            .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
+            .get(&Request::new(url, Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -743,8 +743,6 @@ mod tests {
     }
 
     mod retry {
-        use crate::RetryConfig;
-
         use super::*;
         use pretty_assertions::assert_eq;
 
@@ -785,6 +783,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -825,6 +824,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -869,6 +869,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -913,6 +914,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(2).into())
                 )
                 .await

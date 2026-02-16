@@ -242,9 +242,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
 fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_cache(
-            CacheConfig::default().set_max_age(Some(*DurationString::from_string(
-                arguments.max_age.clone(),
-            )?)),
+            CacheConfig::default()
+                .set_max_age(*DurationString::from_string(arguments.max_age.clone())?),
         )
         .set_status(StatusConfig::new(
             arguments
