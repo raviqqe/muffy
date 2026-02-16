@@ -72,13 +72,13 @@ mod tests {
 
     #[tokio::test]
     async fn run_many_times() {
-        let limiter = Arc::new(RateLimiter::new(1, Duration::from_secs(1)));
+        let limiter = Arc::new(RateLimiter::new(5, Duration::from_secs(1)));
         let mut futures = vec![];
 
         for _ in 0..10000 {
             let limiter = limiter.clone();
 
-            futures.push(spawn(async move { limiter.run(async { 42 }) }));
+            futures.push(spawn(async move { limiter.run(async { 42 }).await }));
         }
 
         join_all(futures).await;
