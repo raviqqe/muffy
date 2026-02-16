@@ -31,10 +31,7 @@ const USER_AGENT: &str = "muffy";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.
-pub struct HttpClient(Arc<HttpClientInner>);
-
-// TODO Delegate `Arc` wrapping to users?
-struct HttpClientInner {
+pub struct HttpClient {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
@@ -53,22 +50,19 @@ impl HttpClient {
         concurrency: &ConcurrencyConfig,
         rate_limiter: Option<RateLimiter>,
     ) -> Self {
-        Self(
-            HttpClientInner {
-                client: Box::new(client),
-                timer: Box::new(timer),
-                local_cache: MokaCache::new(INITIAL_CACHE_CAPACITY),
-                global_cache: cache,
-                semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
-                site_semaphores: concurrency
-                    .sites()
-                    .iter()
-                    .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
-                    .collect(),
-                rate_limiter,
-            }
-            .into(),
-        )
+        Self {
+            client: Box::new(client),
+            timer: Box::new(timer),
+            local_cache: MokaCache::new(INITIAL_CACHE_CAPACITY),
+            global_cache: cache,
+            semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
+            site_semaphores: concurrency
+                .sites()
+                .iter()
+                .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
+                .collect(),
+            rate_limiter,
+        }
     }
 
     pub(crate) async fn get(
@@ -114,8 +108,7 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        self.0
-            .local_cache
+        self.local_cache
             .get_with(
                 request.url().to_string(),
                 Box::new(async move { self.get_cached_globally(&request, robots).await }),
@@ -130,7 +123,7 @@ impl HttpClient {
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
-            self.0.global_cache.get_with(
+            self.global_cache.get_with(
                 request.url().to_string(),
                 Box::new(async move {
                     if robots
@@ -150,7 +143,7 @@ impl HttpClient {
         let response = get().await??;
 
         Ok(if response.is_expired(request.max_age()) {
-            self.0.global_cache.remove(request.url().as_str()).await?;
+            self.global_cache.remove(request.url().as_str()).await?;
 
             get().await??
         } else {
@@ -185,9 +178,9 @@ impl HttpClient {
     }
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let _global = self.0.semaphore.acquire().await.unwrap();
+        let _global = self.semaphore.acquire().await.unwrap();
         let _site = if let Some(id) = request.site_id()
-            && let Some(semaphore) = self.0.site_semaphores.get(id)
+            && let Some(semaphore) = self.site_semaphores.get(id)
         {
             Some(semaphore.acquire().await.unwrap())
         } else {
@@ -196,7 +189,7 @@ impl HttpClient {
 
         let future = self.get_once(request);
 
-        if let Some(limiter) = &self.0.rate_limiter {
+        if let Some(limiter) = &self.rate_limiter {
             limiter.run(future).await
         } else {
             future.await
@@ -204,10 +197,10 @@ impl HttpClient {
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let start = self.0.timer.now();
+        let start = self.timer.now();
         // TODO Use a custom timeout implementation that would be reliable on CI.
-        let response = timeout(request.timeout(), self.0.client.get(request.as_bare())).await??;
-        let duration = self.0.timer.now().duration_since(start);
+        let response = timeout(request.timeout(), self.client.get(request.as_bare())).await??;
+        let duration = self.timer.now().duration_since(start);
 
         Ok(Response::from_bare(response, duration))
     }
