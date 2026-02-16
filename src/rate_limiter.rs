@@ -51,7 +51,7 @@ impl RateLimiter {
                 .compare_exchange(old, new, Ordering::SeqCst, Ordering::SeqCst)
                 .is_ok()
         {
-            self.token_count.fetch_add(self.supply, Ordering::SeqCst);
+            self.token_count.store(self.supply, Ordering::SeqCst);
         }
     }
 }
