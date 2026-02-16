@@ -221,9 +221,8 @@ impl HttpClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::RetryConfig;
     use crate::{
-        ConcurrencyConfig,
+        ConcurrencyConfig, RetryConfig,
         cache::MemoryCache,
         http_client::{BareResponse, StubHttpClient, StubSequenceHttpClient, build_stub_response},
         timer::StubTimer,
