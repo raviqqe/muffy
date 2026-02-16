@@ -60,6 +60,7 @@ struct SiteConfig {
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
+    // TODO Add rate limiting per site.
     recurse: Option<bool>,
     retry: Option<RetryConfig>,
     roots: Option<HashSet<Url>>,
