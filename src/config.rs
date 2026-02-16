@@ -97,9 +97,15 @@ impl Config {
         self.persistent_cache
     }
 
-    /// Set excluded link patterns.
+    /// Sets excluded link patterns.
     pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
         self.excluded_links = links;
+        self
+    }
+
+    /// Sets persistent cache.
+    pub const fn set_persistent_cache(mut self, persistent_cache: bool) -> Self {
+        self.persistent_cache = persistent_cache;
         self
     }
 
