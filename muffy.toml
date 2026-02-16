@@ -45,13 +45,12 @@ extend = "external"
 roots = ["https://github.com/"]
 concurrency = 64
 
-[sites.haskell]
+[sites.flaky]
 extend = "external"
-roots = ["https://gitlab.haskell.org/"]
+roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
 
-[sites.haskell.retry]
+[sites.flaky.retry]
 count = 5
-# TODO Increase a backoff.
 
 [sites.forbidden]
 extend = "external"
@@ -59,7 +58,6 @@ roots = [
   "https://armoredcore.fandom.com/",
   "https://dragonquest.fandom.com/",
   "https://en.wikipedia.org/wiki/",
-  "https://zsh.sourceforge.io/",
 ]
 statuses = [200, 403]
 
