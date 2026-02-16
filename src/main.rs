@@ -9,8 +9,8 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache,
-    StatusConfig, WebValidator,
+    RateLimiter, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig,
+    SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -161,6 +161,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
             config.concurrency(),
+            config
+                .rate_limit()
+                .map(|limit| RateLimiter::new(limit.supply(), limit.window())),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );

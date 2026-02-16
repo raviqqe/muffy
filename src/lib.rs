@@ -28,6 +28,7 @@ pub use self::{
     html_parser::HtmlParser,
     http_client::{BareHttpClient, HttpClient, ReqwestHttpClient},
     metrics::Metrics,
+    rate_limiter::RateLimiter,
     render::{RenderFormat, RenderOptions, render_document},
     timer::ClockTimer,
     web_validator::WebValidator,

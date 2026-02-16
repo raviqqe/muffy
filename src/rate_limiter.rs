@@ -16,6 +16,7 @@ pub struct RateLimiter {
 }
 
 impl RateLimiter {
+    /// Creates a rate limiter.
     pub fn new(supply: u64, window: Duration) -> Self {
         Self {
             token_count: AtomicU64::new(supply),
@@ -26,6 +27,7 @@ impl RateLimiter {
         }
     }
 
+    /// Runs a future with rate limiting.
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
         while {
             self.add_supply();
