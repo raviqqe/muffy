@@ -146,7 +146,7 @@ impl WebValidator {
             return Err(Error::HtmlElementNotFound(fragment.into()));
         }
 
-        if !url
+        if url
             .host_str()
             .map(|host| {
                 context
@@ -161,32 +161,31 @@ impl WebValidator {
                     .unwrap_or_default()
             })
             .unwrap_or_default()
-            || context
+            && context
                 .documents()
                 .insert_async(response.url().to_string())
                 .await
-                .is_err()
+                .is_ok()
         {
-            return Ok(ItemOutput::new().with_response(response));
+            let handle = spawn({
+                let this = self.cloned();
+                let context = context.clone();
+                let response = response.clone();
+
+                async move {
+                    this.validate_document(context.clone(), response, document_type)
+                        .await
+                }
+            });
+
+            context
+                .job_sender()
+                .send(Box::new(async move {
+                    handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
+                }))
+                .await
+                .unwrap();
         }
-
-        let handle = spawn({
-            let this = self.cloned();
-            let context = context.clone();
-            let response = response.clone();
-
-            async move {
-                this.validate_document(context.clone(), response, document_type)
-                    .await
-            }
-        });
-        context
-            .job_sender()
-            .send(Box::new(async move {
-                handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
-            }))
-            .await
-            .unwrap();
 
         Ok(ItemOutput::new().with_response(response))
     }
@@ -230,11 +229,11 @@ impl WebValidator {
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
-        } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
-            Err(Error::InvalidScheme(url.scheme().into()))
-        } else {
+        } else if context.config().site(&url).scheme().accepted(url.scheme()) {
             self.validate_link(context, url.to_string(), document_type)
                 .await
+        } else {
+            Err(Error::InvalidScheme(url.scheme().into()))
         }
     }
 
