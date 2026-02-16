@@ -180,9 +180,7 @@ impl WebValidator {
 
             context
                 .job_sender()
-                .send(Box::new(async move {
-                    handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
-                }))
+                .send(Box::new(async move { handle.await? }))
                 .await
                 .unwrap();
         }
