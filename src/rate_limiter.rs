@@ -25,27 +25,19 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
-        // if self.window_count.load(Ordering::Relaxed) == 0 {
-        //     let elapsed = self.time.elapsed();
-        //     if elapsed >= self.window {
-        //         self.token_count.store(self.supply, Ordering::Relaxed);
-        //         self.window_count.store(0, Ordering::Relaxed);
-        //         self.time = Instant::now();
-        //     } else {
-        //         tokio::time::sleep(self.window - elapsed).await;
-        //         self.token_count.store(self.supply, Ordering::Relaxed);
-        //         self.window_count.store(0, Ordering::Relaxed);
-        //         self.time = Instant::now();
-        //     }
-        // }
-
         future.await
     }
 
     fn add_supply(&self) -> Instant {
         let time = self.time + self.window * self.window_count.load(Ordering::Relaxed);
 
-        while let Err(foo) = self.window_count.foo() {}
+        if time < self.time + self.window {
+            foo
+        } else {
+            while let Err(foo) = self.window_count.compare_exchange() {}
+
+            panic!()
+        }
     }
 }
 
