@@ -36,7 +36,9 @@ impl RateLimiter {
                 })
                 .is_err()
         } {
-            sleep(SUPPLY_DELAY).await;
+            let elapsed = self.time.elapsed();
+
+            sleep(elapsed - self.window * elapsed.div_duration_f64(self.window) as _).await;
         }
 
         future.await
