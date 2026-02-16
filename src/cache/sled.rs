@@ -26,10 +26,10 @@ impl<T> SledCache<T> {
 
 #[async_trait]
 impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for SledCache<T> {
-    async fn get_with(
+    async fn get_with<'a>(
         &self,
         key: String,
-        future: Box<dyn Future<Output = T> + Send>,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
         trace!("getting cache at {key}");
 

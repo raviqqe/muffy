@@ -19,10 +19,10 @@ impl<T: Clone + Send + Sync + 'static> MokaCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
-    async fn get_with(
+    async fn get_with<'a>(
         &self,
         key: String,
-        future: Box<dyn Future<Output = T> + Send>,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
         Ok(self.cache.get_with(key, Box::into_pin(future)).await)
     }

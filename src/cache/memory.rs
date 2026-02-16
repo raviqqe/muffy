@@ -1,14 +1,12 @@
 use super::{Cache, CacheError};
 use async_trait::async_trait;
-use core::pin::Pin;
-use futures::{FutureExt, future::Shared};
 use scc::{HashMap, hash_map::Entry};
 
-type ValueFuture<T> = Shared<Pin<Box<dyn Future<Output = T> + Send>>>;
-
 /// An in-memory cache.
+///
+/// It can cause deadlocks when keys are put into the same shards.
 pub struct MemoryCache<T> {
-    map: HashMap<String, ValueFuture<T>>,
+    map: HashMap<String, T>,
 }
 
 impl<T> MemoryCache<T> {
@@ -22,20 +20,19 @@ impl<T> MemoryCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
-    async fn get_with(
+    async fn get_with<'a>(
         &self,
         key: String,
-        future: Box<dyn Future<Output = T> + Send>,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
         Ok(match self.map.entry_async(key).await {
             Entry::Occupied(entry) => entry.get().clone(),
             Entry::Vacant(entry) => {
-                let shared = Box::into_pin(future).shared();
-                entry.insert_entry(shared.clone());
-                shared
+                let value = Box::into_pin(future).await;
+                entry.insert_entry(value.clone());
+                value
             }
-        }
-        .await)
+        })
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
