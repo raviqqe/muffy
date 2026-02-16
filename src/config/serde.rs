@@ -1,7 +1,6 @@
 use super::error::ConfigError;
 use crate::config::{
-    DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-    DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+    DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
 };
 use alloc::{collections::BTreeMap, sync::Arc};
 use duration_string::DurationString;
@@ -34,7 +33,6 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
         ))
         .set_max_redirects(DEFAULT_MAX_REDIRECTS)
         .set_timeout(DEFAULT_TIMEOUT.into())
-        .set_cache(super::CacheConfig::default().set_max_age(DEFAULT_MAX_CACHE_AGE.into()))
 });
 
 /// A serializable configuration.
@@ -338,8 +336,8 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 mod tests {
     use super::*;
     use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_CACHE_AGE,
-        DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
+        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS,
+        DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
     use http::HeaderMap;
@@ -365,7 +363,7 @@ mod tests {
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
-        assert_eq!(default.cache().max_age(), DEFAULT_MAX_CACHE_AGE.into());
+        assert_eq!(default.cache().max_age(), Default::default());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));

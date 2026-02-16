@@ -16,11 +16,14 @@ factor = 2
 initial = "500ms"
 cap = "10s"
 
-[sites.default.cache]
-max_age = "1h"
-
 [sites.default.headers]
 user-agent = "Muffy/0.2.0"
+
+[sites.external]
+extend = "default"
+
+[sites.external.cache]
+max_age = "1h"
 
 [sites.main]
 extend = "default"
@@ -33,30 +36,28 @@ roots = [
 recurse = true
 
 [sites.crates_io]
-extend = "default"
+extend = "external"
 roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
 
 [sites.github]
-extend = "default"
+extend = "external"
 roots = ["https://github.com/"]
 concurrency = 64
 
-[sites.haskell]
-extend = "default"
-roots = ["https://gitlab.haskell.org/"]
+[sites.flaky]
+extend = "external"
+roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
 
-[sites.haskell.retry]
+[sites.flaky.retry]
 count = 5
-# TODO Increase a backoff.
 
 [sites.forbidden]
-extend = "default"
+extend = "external"
 roots = [
   "https://armoredcore.fandom.com/",
   "https://dragonquest.fandom.com/",
   "https://en.wikipedia.org/wiki/",
-  "https://zsh.sourceforge.io/",
 ]
 statuses = [200, 403]
 
