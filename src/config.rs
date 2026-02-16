@@ -288,22 +288,22 @@ impl Default for SchemeConfig {
 /// A cache configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct CacheConfig {
-    max_age: Option<Duration>,
+    max_age: Duration,
 }
 
 impl CacheConfig {
     /// Creates a cache configuration.
-    pub const fn new() -> Self {
-        Self { max_age: None }
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Returns a maximum age.
-    pub const fn max_age(&self) -> Duration {
-        self.max_age.unwrap_or_default()
+    pub fn max_age(&self) -> Duration {
+        self.max_age
     }
 
     /// Sets a maximum age.
-    pub const fn set_max_age(mut self, age: Option<Duration>) -> Self {
+    pub const fn set_max_age(mut self, age: Duration) -> Self {
         self.max_age = age;
         self
     }

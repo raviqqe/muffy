@@ -7,7 +7,7 @@ use url::Url;
 #[derive(Clone, Debug)]
 pub struct Request {
     bare: BareRequest,
-    max_age: Option<Duration>,
+    max_age: Duration,
     max_redirects: usize,
     retry: Arc<RetryConfig>,
     site_id: Option<Arc<str>>,
@@ -46,7 +46,7 @@ impl Request {
         self.timeout.unwrap_or(Duration::MAX)
     }
 
-    pub const fn max_age(&self) -> Option<Duration> {
+    pub const fn max_age(&self) -> Duration {
         self.max_age
     }
 

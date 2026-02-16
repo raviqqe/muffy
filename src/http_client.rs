@@ -153,9 +153,7 @@ impl HttpClient {
 
         let response = get().await??;
 
-        Ok(if let Some(age) = request.max_age()
-            && response.is_expired(age)
-        {
+        Ok(if response.is_expired(request.max_age()) {
             self.0.global_cache.remove(request.url().as_str()).await?;
 
             get().await??
@@ -548,7 +546,7 @@ mod tests {
                 Box::new(cache),
                 &Default::default(),
             )
-            .get(&Request::new(url, Default::default()).set_max_age(Some(Duration::ZERO)))
+            .get(&Request::new(url, Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
