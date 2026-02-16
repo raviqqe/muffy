@@ -13,8 +13,8 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, request::Request,
-    response::Response, timer::Timer,
+    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, rate_limiter::RateLimiter,
+    request::Request, response::Response, timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
@@ -40,6 +40,7 @@ struct HttpClientInner {
     global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
+    rate_limiter: RateLimiter,
 }
 
 impl HttpClient {
@@ -62,6 +63,7 @@ impl HttpClient {
                     .iter()
                     .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
                     .collect(),
+                rate_limiter: RateLimiter::new(),
             }
             .into(),
         )

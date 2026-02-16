@@ -2,7 +2,7 @@ use core::sync::atomic::AtomicUsize;
 use tokio::time::Instant;
 
 pub struct RateLimiter {
-    count: AtomicUsize,
+    rate: AtomicUsize,
     time: Instant,
 }
 
