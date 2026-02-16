@@ -111,7 +111,7 @@ impl HttpClient {
         self.local_cache
             .get_with(
                 request.url().to_string(),
-                Box::new(self.get_cached_globally(&request, robots)),
+                Box::new(self.get_cached_globally(request, robots)),
             )
             .await?
     }
@@ -127,13 +127,13 @@ impl HttpClient {
                 request.url().to_string(),
                 Box::new(async move {
                     if robots
-                        && let Some(robot) = self.get_robot(&request).await?
+                        && let Some(robot) = self.get_robot(request).await?
                         && !robot.is_absolute_allowed(request.url())
                     {
                         return Err(HttpClientError::RobotsTxt);
                     }
 
-                    let response = self.get_retried(&request).await?;
+                    let response = self.get_retried(request).await?;
 
                     Ok(Arc::new(response.into()))
                 }),
