@@ -3,12 +3,14 @@ use core::sync::atomic::Ordering;
 
 pub struct RateLimiter {
     count: AtomicUsize,
+    time: Instant,
 }
 
 impl RateLimiter {
     pub fn new() -> Self {
         Self {
             count: Default::default(),
+            time: Instnat::now(),
         }
     }
 
