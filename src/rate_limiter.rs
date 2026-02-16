@@ -4,7 +4,8 @@ use tokio::time::Instant;
 
 /// A token bucket rate limiter.
 pub struct RateLimiter {
-    count: AtomicU64,
+    token_count: AtomicU64,
+    window_count: AtomicU64,
     time: Instant,
     supply: u64,
     window: Duration,
@@ -13,7 +14,8 @@ pub struct RateLimiter {
 impl RateLimiter {
     pub fn new(supply: u64, window: Duration) -> Self {
         Self {
-            count: AtomicU64::new(supply),
+            token_count: AtomicU64::new(supply),
+            window_count: Default::default(),
             time: Instant::now(),
             supply,
             window,
@@ -21,7 +23,7 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
-        future.await
+        self.count.future.await
     }
 }
 
