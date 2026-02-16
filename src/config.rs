@@ -37,6 +37,7 @@ pub struct Config {
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: ConcurrencyConfig,
     persistent_cache: bool,
+    rate_limit: Option<RateLimitConfig>,
 }
 
 impl Config {
@@ -62,6 +63,7 @@ impl Config {
                 .collect(),
             concurrency,
             persistent_cache,
+            rate_limit: None,
         }
     }
 
@@ -98,6 +100,12 @@ impl Config {
     /// Set excluded link patterns.
     pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
         self.excluded_links = links;
+        self
+    }
+
+    /// Sets a rate limit.
+    pub const fn set_rate_limit(mut self, rate_limit: Option<RateLimitConfig>) -> Self {
+        self.rate_limit = rate_limit;
         self
     }
 
@@ -429,6 +437,42 @@ impl ConcurrencyConfig {
     /// Sets concurrency per site.
     pub fn set_sites(mut self, sites: HashMap<String, usize>) -> Self {
         self.sites = sites;
+        self
+    }
+}
+
+/// A rate limit configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RateLimitConfig {
+    supply: u64,
+    window: Duration,
+}
+
+impl RateLimitConfig {
+    /// Creates a configuration.
+    pub const fn new(supply: u64, window: Duration) -> Self {
+        Self { supply, window }
+    }
+
+    /// Returns a supply.
+    pub const fn supply(&self) -> u64 {
+        self.supply
+    }
+
+    /// Returns a window.
+    pub const fn window(&self) -> Duration {
+        self.window
+    }
+
+    /// Sets a supply.
+    pub const fn set_supply(mut self, supply: u64) -> Self {
+        self.supply = supply;
+        self
+    }
+
+    /// Sets a window.
+    pub const fn set_window(mut self, window: Duration) -> Self {
+        self.window = window;
         self
     }
 }
