@@ -1,5 +1,7 @@
-use core::sync::atomic::AtomicU64;
-use core::time::Duration;
+use core::{
+    sync::atomic::{AtomicU64, Ordering},
+    time::Duration,
+};
 use tokio::time::Instant;
 
 /// A token bucket rate limiter.
@@ -23,7 +25,21 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
-        self.count.future.await
+        if self.window_count.load(Ordering::Relaxed) == 0 {
+            let elapsed = self.time.elapsed();
+            if elapsed >= self.window {
+                self.token_count.store(self.supply, Ordering::Relaxed);
+                self.window_count.store(0, Ordering::Relaxed);
+                self.time = Instant::now();
+            } else {
+                tokio::time::sleep(self.window - elapsed).await;
+                self.token_count.store(self.supply, Ordering::Relaxed);
+                self.window_count.store(0, Ordering::Relaxed);
+                self.time = Instant::now();
+            }
+        }
+
+        future.await
     }
 }
 
