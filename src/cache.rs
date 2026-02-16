@@ -21,10 +21,10 @@ pub trait Cache<T: Clone>: Send + Sync {
     ///
     /// If a cached value is not found, it awaits the given future and sets its
     /// resulting value into the cache and returns the value.
-    async fn get_with(
+    async fn get_with<'a>(
         &self,
         key: String,
-        future: Box<dyn Future<Output = T> + Send>,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError>;
 
     /// Removes a cached value corresponding to the given key.

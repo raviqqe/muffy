@@ -122,9 +122,8 @@ impl HttpClient {
             .local_cache
             .get_with(request.url().to_string(), {
                 let request = request.clone();
-                let client = self.cloned();
 
-                Box::new(async move { client.get_cached_globally(&request, robots).await })
+                Box::new(async move { self.get_cached_globally(&request, robots).await })
             })
             .await?
     }
