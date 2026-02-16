@@ -120,11 +120,10 @@ impl HttpClient {
     ) -> Result<Arc<Response>, HttpClientError> {
         self.0
             .local_cache
-            .get_with(request.url().to_string(), {
-                let request = request.clone();
-
-                Box::new(async move { self.get_cached_globally(&request, robots).await })
-            })
+            .get_with(
+                request.url().to_string(),
+                Box::new(async move { self.get_cached_globally(&request, robots).await }),
+            )
             .await?
     }
 
