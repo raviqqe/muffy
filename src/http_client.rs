@@ -226,6 +226,7 @@ impl HttpClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::RetryConfig;
     use crate::{
         ConcurrencyConfig,
         cache::MemoryCache,
@@ -721,8 +722,6 @@ mod tests {
     }
 
     mod retry {
-        use crate::RetryConfig;
-
         use super::*;
         use pretty_assertions::assert_eq;
 
