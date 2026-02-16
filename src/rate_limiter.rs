@@ -31,6 +31,7 @@ impl RateLimiter {
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
         while {
             self.add_supply();
+
             self.token_count
                 .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
                     if count == 0 { None } else { Some(count - 1) }
