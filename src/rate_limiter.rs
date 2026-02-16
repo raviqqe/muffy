@@ -28,11 +28,7 @@ impl RateLimiter {
         while self
             .token_count
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
-                if count.is_zero() {
-                    None
-                } else {
-                    Some(count - 1)
-                }
+                if count == 0 { None } else { Some(count - 1) }
             })
             .is_err()
         {
