@@ -41,22 +41,26 @@ jobs:
             - --ignore https://codspeed.io/raviqqe/stak
             - --ignore https://r7rs.org/
             - --ignore https://www.gnu.org/software/guile/
-            - --header user-agent:Muffy/1.0.0
             - --header accept:text/html,*/*
             - https://raviqqe.com/stak
           - - --accept-status 200
             - --accept-status 403
+            - --ignore https://crates.io/crates/muffy
             - https://raviqqe.com/muffy
           - - --ignore https://goreportcard.com/
             - https://raviqqe.com/muffet
-        cache_options:
-          -
-          - --cache
+        cache:
+          - false
+          - true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: raviqqe/cargo-cache@v1
-      - run: cargo run -- check ${{ matrix.cache_options }} ${{ join(matrix.arguments, ' ') }}
+      - run: >
+          cargo run -- check
+          --header user-agent:Muffy/0.2.0
+          ${{ matrix.cache && '--cache' || '' }}
+          ${{ join(matrix.arguments, ' ') }}
         env:
           RUST_LOG: muffy=trace
   run_command_test:
