@@ -168,12 +168,11 @@ impl WebValidator {
                 .is_ok()
         {
             let handle = spawn({
-                let this = self.cloned();
                 let context = context.clone();
                 let response = response.clone();
 
                 async move {
-                    this.validate_document(context.clone(), response, document_type)
+                    self.validate_document(context, response, document_type)
                         .await
                 }
             });
