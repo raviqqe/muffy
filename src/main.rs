@@ -93,7 +93,7 @@ struct CheckArguments {
     rate_limit_count: u64,
     /// Set a rate limit window.
     #[arg(long, default_value = "1s")]
-    rate_limit_window: usize,
+    rate_limit_window: DurationString,
 }
 
 #[derive(clap::Args, Default)]
