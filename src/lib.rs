@@ -13,6 +13,7 @@ mod html_parser;
 mod http_client;
 mod item_output;
 mod metrics;
+mod rate_limiter;
 mod render;
 mod request;
 mod response;

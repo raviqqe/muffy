@@ -1,3 +1,6 @@
+use core::sync::atomic::AtomicUsize;
+use core::sync::atomic::Ordering;
+
 pub struct RateLimiter {
     count: AtomicUsize,
 }
@@ -5,7 +8,7 @@ pub struct RateLimiter {
 impl RateLimiter {
     pub fn new() -> Self {
         Self {
-            count: AtomicUsize::new(0),
+            count: Default::default(),
         }
     }
 
