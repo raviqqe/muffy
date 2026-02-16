@@ -4,8 +4,6 @@ use core::{
 };
 use tokio::time::{Instant, sleep};
 
-const SUPPLY_DELAY: Duration = Duration::from_millis(100);
-
 // TODO Use `Timer`?
 
 /// A token bucket rate limiter.
