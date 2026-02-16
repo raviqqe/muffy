@@ -209,6 +209,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 })
                 .collect(),
         },
+    )
+    .set_persistent_cache(
         config
             .cache
             .and_then(|cache| cache.persistent)

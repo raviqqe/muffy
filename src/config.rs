@@ -47,7 +47,6 @@ impl Config {
         default: Arc<SiteConfig>,
         sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
         concurrency: ConcurrencyConfig,
-        persistent_cache: bool,
     ) -> Self {
         Self {
             roots,
@@ -62,7 +61,7 @@ impl Config {
                 })
                 .collect(),
             concurrency,
-            persistent_cache,
+            persistent_cache: false,
             rate_limit: None,
         }
     }
@@ -536,7 +535,6 @@ mod tests {
             )]
             .into(),
             Default::default(),
-            false,
         );
 
         assert!(
