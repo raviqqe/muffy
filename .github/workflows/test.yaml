@@ -49,9 +49,9 @@ jobs:
             - https://raviqqe.com/muffy
           - - --ignore https://goreportcard.com/
             - https://raviqqe.com/muffet
-        cache_options:
-          -
-          - --cache
+        cache:
+          - false
+          - true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -59,7 +59,7 @@ jobs:
       - run: >
           cargo run -- check
           --header user-agent:Muffy/0.2.0
-          ${{ matrix.cache_options }}
+          ${{ matrix.cache && '--cache' || '' }}
           ${{ join(matrix.arguments, ' ') }}
         env:
           RUST_LOG: muffy=trace
