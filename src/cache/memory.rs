@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use scc::{HashMap, hash_map::Entry};
 
 /// An in-memory cache.
+///
+/// It can cause deadlocks when keys are put into the same shards.
 pub struct MemoryCache<T> {
     map: HashMap<String, T>,
 }

@@ -13,7 +13,7 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, rate_limiter::RateLimiter,
+    ConcurrencyConfig, MokaCache, cache::Cache, default_concurrency, rate_limiter::RateLimiter,
     request::Request, response::Response, timer::Timer,
 };
 use alloc::sync::Arc;
@@ -37,7 +37,7 @@ pub struct HttpClient(Arc<HttpClientInner>);
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
-    local_cache: MemoryCache<Result<Arc<Response>, HttpClientError>>,
+    local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
     global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
@@ -57,7 +57,7 @@ impl HttpClient {
             HttpClientInner {
                 client: Box::new(client),
                 timer: Box::new(timer),
-                local_cache: MemoryCache::new(INITIAL_CACHE_CAPACITY),
+                local_cache: MokaCache::new(INITIAL_CACHE_CAPACITY),
                 global_cache: cache,
                 semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
                 site_semaphores: concurrency
