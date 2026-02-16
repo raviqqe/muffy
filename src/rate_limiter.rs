@@ -88,6 +88,9 @@ mod tests {
 
         join_all(futures).await;
 
-        assert!(time.elapsed() >= WINDOW * (REQUEST_COUNT / SUPPLY) as _);
+        let duration = WINDOW * (REQUEST_COUNT / SUPPLY) as _;
+
+        assert!(time.elapsed() >= duration);
+        assert!(time.elapsed() < duration.mul_f64(1.5));
     }
 }
