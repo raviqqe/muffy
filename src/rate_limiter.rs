@@ -25,18 +25,24 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
+        self.add_supply();
+
         future.await
     }
 
-    fn add_supply(&self) -> Instant {
-        let _ = self.window_count.compare_exchange(
-            self.window_count.load(Ordering::Relaxed),
-            (Instant::now() - self.time).div_duration_f64(self.window) as _,
-            Ordering::SeqCst,
-            Ordering::SeqCst,
-        );
-
-        todo!()
+    fn add_supply(&self) {
+        if self
+            .window_count
+            .compare_exchange(
+                self.window_count.load(Ordering::Relaxed),
+                (Instant::now() - self.time).div_duration_f64(self.window) as _,
+                Ordering::SeqCst,
+                Ordering::SeqCst,
+            )
+            .is_ok()
+        {
+            self.token_count.fetch_add(self.supply, Ordering::SeqCst);
+        }
     }
 }
 
