@@ -33,7 +33,7 @@ impl RateLimiter {
             < self.time + self.window * (1 + self.window_count.load(Ordering::Relaxed))
             && self
                 .window_count
-                .compare_exchange(self.window.supply, Ordering::SeqCst)
+                .compare_exchange(self.supply, Ordering::SeqCst)
                 .is_err()
         {}
 
