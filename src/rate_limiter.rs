@@ -9,7 +9,7 @@ pub struct RateLimiter {
 impl RateLimiter {
     pub fn new() -> Self {
         Self {
-            count: Default::default(),
+            rate: Default::default(),
             time: Instant::now(),
         }
     }
