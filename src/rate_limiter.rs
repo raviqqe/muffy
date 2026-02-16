@@ -29,14 +29,14 @@ impl RateLimiter {
     }
 
     fn add_supply(&self) -> Instant {
-        let time = self.time + self.window * self.window_count.load(Ordering::Relaxed);
-
-        if time < self.time + self.window {
-            foo
+        if Instant::now()
+            < self.time + self.window * (1 + self.window_count.load(Ordering::Relaxed))
+        {
+            todo!()
         } else {
             while let Err(foo) = self.window_count.compare_exchange() {}
 
-            panic!()
+            todo!()
         }
     }
 }
