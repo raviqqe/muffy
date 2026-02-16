@@ -54,7 +54,7 @@ impl Request {
         &self.retry
     }
 
-    pub const fn set_max_age(mut self, max_age: Option<Duration>) -> Self {
+    pub const fn set_max_age(mut self, max_age: Duration) -> Self {
         self.max_age = max_age;
         self
     }

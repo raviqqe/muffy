@@ -298,8 +298,8 @@ impl CacheConfig {
     }
 
     /// Returns a maximum age.
-    pub const fn max_age(&self) -> Option<Duration> {
-        self.max_age
+    pub const fn max_age(&self) -> Duration {
+        self.max_age.unwrap_or_default()
     }
 
     /// Sets a maximum age.

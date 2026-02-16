@@ -363,7 +363,7 @@ mod tests {
 
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
-        assert_eq!(default.cache().max_age(), Some(Default::default()));
+        assert_eq!(default.cache().max_age(), Default::default());
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));
