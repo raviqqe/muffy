@@ -2,7 +2,9 @@ use core::{
     sync::atomic::{AtomicU32, AtomicU64, Ordering},
     time::Duration,
 };
-use tokio::time::Instant;
+use tokio::time::{Instant, sleep};
+
+const SUPPLY_DELAY: Duration = Duration::from_millis(100);
 
 /// A token bucket rate limiter.
 pub struct RateLimiter {
@@ -25,14 +27,15 @@ impl RateLimiter {
     }
 
     pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
-        while self
-            .token_count
-            .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
-                if count == 0 { None } else { Some(count - 1) }
-            })
-            .is_err()
-        {
+        while {
             self.add_supply();
+            self.token_count
+                .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
+                    if count == 0 { None } else { Some(count - 1) }
+                })
+                .is_err()
+        } {
+            sleep(SUPPLY_DELAY).await;
         }
 
         future.await
