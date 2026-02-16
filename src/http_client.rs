@@ -33,6 +33,7 @@ const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 /// A full-featured HTTP client.
 pub struct HttpClient(Arc<HttpClientInner>);
 
+// TODO Delegate `Arc` wrapping to users?
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
