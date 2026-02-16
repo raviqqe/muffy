@@ -14,7 +14,7 @@ impl RateLimiter {
         }
     }
 
-    pub async fn run<T>(&self, run: impl Future<Output = T>) -> T {
-        run.await
+    pub async fn run<T>(&self, future: impl Future<Output = T>) -> T {
+        future.await
     }
 }
