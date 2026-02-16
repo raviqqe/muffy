@@ -9,8 +9,8 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RateLimiter, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig,
-    SledCache, StatusConfig, WebValidator,
+    RateLimitConfig, RateLimiter, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig,
+    SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -300,7 +300,11 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
         ConcurrencyConfig::default().set_global(Some(arguments.concurrency)),
     )
     .set_excluded_links(arguments.ignore.clone())
-    .set_persistent_cache(arguments.cache))
+    .set_persistent_cache(arguments.cache)
+    .set_rate_limit(Some(RateLimitConfig::new(
+        arguments.rate_limit_count,
+        *arguments.rate_limit_window,
+    ))))
 }
 
 #[cfg(test)]
