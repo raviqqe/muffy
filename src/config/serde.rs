@@ -226,13 +226,13 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .and_then(|cache| cache.persistent)
             .unwrap_or_default(),
     )
-    .set_rate_limit(config.rate_limit.map(|rate_limit| {
+    .set_rate_limit(
         super::RateLimitConfig::default()
-            .set_global(
-                super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into()).into(),
-            )
-            .set_sites(Default::default())
-    })))
+            .set_global(config.rate_limit.map(|rate_limit| {
+                super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into()).into()
+            }))
+            .set_sites(Default::default()),
+    ))
 }
 
 fn compile_site_config(
@@ -773,7 +773,7 @@ mod tests {
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
             Some(&crate::config::RateLimitConfig::default().set_global(
-                crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045).into(),)
+                crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
             ))
         );
     }
