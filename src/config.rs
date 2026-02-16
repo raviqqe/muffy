@@ -298,7 +298,7 @@ impl CacheConfig {
     }
 
     /// Returns a maximum age.
-    pub fn max_age(&self) -> Duration {
+    pub const fn max_age(&self) -> Duration {
         self.max_age
     }
 
