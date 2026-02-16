@@ -13,8 +13,8 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, request::Request,
-    response::Response, timer::Timer,
+    ConcurrencyConfig, MemoryCache, cache::Cache, default_concurrency, rate_limiter::RateLimiter,
+    request::Request, response::Response, timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
@@ -33,6 +33,7 @@ const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 /// A full-featured HTTP client.
 pub struct HttpClient(Arc<HttpClientInner>);
 
+// TODO Delegate `Arc` wrapping to users?
 struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
@@ -40,6 +41,7 @@ struct HttpClientInner {
     global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
+    rate_limiter: Option<RateLimiter>,
 }
 
 impl HttpClient {
@@ -49,6 +51,7 @@ impl HttpClient {
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
         concurrency: &ConcurrencyConfig,
+        rate_limiter: Option<RateLimiter>,
     ) -> Self {
         Self(
             HttpClientInner {
@@ -62,6 +65,7 @@ impl HttpClient {
                     .iter()
                     .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
                     .collect(),
+                rate_limiter,
             }
             .into(),
         )
@@ -198,7 +202,13 @@ impl HttpClient {
             None
         };
 
-        self.get_once(request).await
+        let future = self.get_once(request);
+
+        if let Some(limiter) = &self.0.rate_limiter {
+            limiter.run(future).await
+        } else {
+            future.await
+        }
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
@@ -252,6 +262,7 @@ mod tests {
             StubTimer::new(),
             Box::new(MemoryCache::new(0)),
             &Default::default(),
+            None,
         );
     }
 
@@ -282,6 +293,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await
@@ -317,6 +329,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(response.url.clone(), Default::default()))
             .await
@@ -369,6 +382,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
             .await
@@ -421,6 +435,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
@@ -479,6 +494,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(url, Default::default()).set_max_age(CACHE_MAX_AGE))
             .await
@@ -547,6 +563,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
                 &Default::default(),
+                None,
             )
             .get(&Request::new(url, Default::default()))
             .await
@@ -584,6 +601,7 @@ mod tests {
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
             &Default::default(),
+            None,
         )
         .get(&Request::new(url, Default::default()).set_timeout(Duration::from_millis(1).into()))
         .await;
@@ -652,6 +670,7 @@ mod tests {
                 &ConcurrencyConfig::default()
                     .set_global(Some(2))
                     .set_sites([("foo".to_string(), 1)].into()),
+                None,
             );
 
             let request1 =
@@ -696,6 +715,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &concurrency,
+                None,
             );
 
             let request1 =
@@ -759,6 +779,7 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     &Default::default(),
+                    None,
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -799,6 +820,7 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     &Default::default(),
+                    None,
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -843,6 +865,7 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     &Default::default(),
+                    None,
                 )
                 .get(
                     &Request::new(url, Default::default())
@@ -887,6 +910,7 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                     &Default::default(),
+                    None,
                 )
                 .get(
                     &Request::new(url, Default::default())

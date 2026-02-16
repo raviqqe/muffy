@@ -9,8 +9,8 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig, SledCache,
-    StatusConfig, WebValidator,
+    RateLimitConfig, RateLimiter, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig,
+    SiteConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -66,7 +66,7 @@ struct CheckArguments {
     cache: bool,
     /// Set a maximum cache age.
     #[arg(long, default_value = "0s")]
-    max_age: String,
+    max_age: DurationString,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -81,13 +81,19 @@ struct CheckArguments {
     max_redirects: usize,
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
-    timeout: String,
+    timeout: DurationString,
     /// Set concurrency.
     #[arg(long, default_value_t = muffy::default_concurrency())]
     concurrency: usize,
     /// Set URL patterns to ignore from validation.
     #[arg(long)]
     ignore: Vec<Regex>,
+    /// Set a rate limit count.
+    #[arg(long, default_value_t = u64::MAX)]
+    rate_limit_count: u64,
+    /// Set a rate limit window.
+    #[arg(long, default_value = "1s")]
+    rate_limit_window: DurationString,
 }
 
 #[derive(clap::Args, Default)]
@@ -161,6 +167,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
             config.concurrency(),
+            config
+                .rate_limit()
+                .map(|limit| RateLimiter::new(limit.supply(), limit.window())),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
@@ -238,10 +247,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
-        .set_cache(
-            CacheConfig::default()
-                .set_max_age(*DurationString::from_string(arguments.max_age.clone())?),
-        )
+        .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
         .set_status(StatusConfig::new(
             arguments
                 .accept_status
@@ -269,9 +275,7 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
-        .set_timeout(Some(*DurationString::from_string(
-            arguments.timeout.clone(),
-        )?));
+        .set_timeout(Some(*arguments.timeout));
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -294,9 +298,13 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             })
             .collect(),
         ConcurrencyConfig::default().set_global(Some(arguments.concurrency)),
-        arguments.cache,
     )
-    .set_excluded_links(arguments.ignore.clone()))
+    .set_excluded_links(arguments.ignore.clone())
+    .set_persistent_cache(arguments.cache)
+    .set_rate_limit(Some(RateLimitConfig::new(
+        arguments.rate_limit_count,
+        *arguments.rate_limit_window,
+    ))))
 }
 
 #[cfg(test)]
@@ -318,13 +326,7 @@ mod tests {
             arguments.accept_status,
             muffy::DEFAULT_ACCEPTED_STATUS_CODES
         );
-        assert_eq!(
-            DurationString::from_string(arguments.timeout).unwrap(),
-            muffy::DEFAULT_TIMEOUT
-        );
-        assert_eq!(
-            DurationString::from_string(arguments.max_age).unwrap(),
-            Duration::default()
-        );
+        assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
+        assert_eq!(arguments.max_age, Duration::default());
     }
 }

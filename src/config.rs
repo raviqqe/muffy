@@ -37,6 +37,7 @@ pub struct Config {
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: ConcurrencyConfig,
     persistent_cache: bool,
+    rate_limit: Option<RateLimitConfig>,
 }
 
 impl Config {
@@ -46,7 +47,6 @@ impl Config {
         default: Arc<SiteConfig>,
         sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
         concurrency: ConcurrencyConfig,
-        persistent_cache: bool,
     ) -> Self {
         Self {
             roots,
@@ -61,7 +61,8 @@ impl Config {
                 })
                 .collect(),
             concurrency,
-            persistent_cache,
+            persistent_cache: false,
+            rate_limit: None,
         }
     }
 
@@ -95,9 +96,26 @@ impl Config {
         self.persistent_cache
     }
 
-    /// Set excluded link patterns.
+    /// Returns a rate limit.
+    pub const fn rate_limit(&self) -> Option<&RateLimitConfig> {
+        self.rate_limit.as_ref()
+    }
+
+    /// Sets excluded link patterns.
     pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
         self.excluded_links = links;
+        self
+    }
+
+    /// Sets persistent cache.
+    pub const fn set_persistent_cache(mut self, persistent_cache: bool) -> Self {
+        self.persistent_cache = persistent_cache;
+        self
+    }
+
+    /// Sets a rate limit.
+    pub const fn set_rate_limit(mut self, rate_limit: Option<RateLimitConfig>) -> Self {
+        self.rate_limit = rate_limit;
         self
     }
 
@@ -433,6 +451,42 @@ impl ConcurrencyConfig {
     }
 }
 
+/// A rate limit configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct RateLimitConfig {
+    supply: u64,
+    window: Duration,
+}
+
+impl RateLimitConfig {
+    /// Creates a configuration.
+    pub const fn new(supply: u64, window: Duration) -> Self {
+        Self { supply, window }
+    }
+
+    /// Returns a supply.
+    pub const fn supply(&self) -> u64 {
+        self.supply
+    }
+
+    /// Returns a window.
+    pub const fn window(&self) -> Duration {
+        self.window
+    }
+
+    /// Sets a supply.
+    pub const fn set_supply(mut self, supply: u64) -> Self {
+        self.supply = supply;
+        self
+    }
+
+    /// Sets a window.
+    pub const fn set_window(mut self, window: Duration) -> Self {
+        self.window = window;
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -486,7 +540,6 @@ mod tests {
             )]
             .into(),
             Default::default(),
-            false,
         );
 
         assert!(

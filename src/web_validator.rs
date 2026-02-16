@@ -146,7 +146,7 @@ impl WebValidator {
             return Err(Error::HtmlElementNotFound(fragment.into()));
         }
 
-        if !url
+        if url
             .host_str()
             .map(|host| {
                 context
@@ -161,32 +161,28 @@ impl WebValidator {
                     .unwrap_or_default()
             })
             .unwrap_or_default()
-            || context
+            && context
                 .documents()
                 .insert_async(response.url().to_string())
                 .await
-                .is_err()
+                .is_ok()
         {
-            return Ok(ItemOutput::new().with_response(response));
+            let handle = spawn({
+                let context = context.clone();
+                let response = response.clone();
+
+                async move {
+                    self.validate_document(context, response, document_type)
+                        .await
+                }
+            });
+
+            context
+                .job_sender()
+                .send(Box::new(async move { handle.await? }))
+                .await
+                .unwrap();
         }
-
-        let handle = spawn({
-            let this = self.cloned();
-            let context = context.clone();
-            let response = response.clone();
-
-            async move {
-                this.validate_document(context.clone(), response, document_type)
-                    .await
-            }
-        });
-        context
-            .job_sender()
-            .send(Box::new(async move {
-                handle.await.unwrap_or_else(|error| Err(Error::Join(error)))
-            }))
-            .await
-            .unwrap();
 
         Ok(ItemOutput::new().with_response(response))
     }
@@ -229,13 +225,13 @@ impl WebValidator {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
-            return Ok(ItemOutput::new());
-        } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
-            return Err(Error::InvalidScheme(url.scheme().into()));
+            Ok(ItemOutput::new())
+        } else if context.config().site(&url).scheme().accepted(url.scheme()) {
+            self.validate_link(context, url.to_string(), document_type)
+                .await
+        } else {
+            Err(Error::InvalidScheme(url.scheme().into()))
         }
-
-        self.validate_link(context, url.to_string(), document_type)
-            .await
     }
 
     fn normalize_url(url: &str) -> String {
@@ -500,6 +496,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
+                None,
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -512,7 +509,6 @@ mod tests {
             )]
             .into(),
             Default::default(),
-            false,
         ))
         .await
     }
@@ -978,6 +974,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
+                None,
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -999,7 +996,6 @@ mod tests {
             .into_iter()
             .collect(),
             Default::default(),
-            false,
         ))
         .await
         .unwrap();
@@ -1050,6 +1046,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
+                None,
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -1066,7 +1063,6 @@ mod tests {
                 .into_iter()
                 .collect(),
                 Default::default(),
-                false,
             )
             .set_excluded_links(vec![Regex::new("bar").unwrap()]),
         )

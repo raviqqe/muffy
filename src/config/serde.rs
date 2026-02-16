@@ -39,9 +39,10 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
-    sites: BTreeMap<String, SiteConfig>,
     concurrency: Option<usize>,
     cache: Option<GlobalCacheConfig>,
+    rate_limit: Option<RateLimitConfig>,
+    sites: BTreeMap<String, SiteConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -59,6 +60,7 @@ struct SiteConfig {
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
+    // TODO Add rate limiting per site.
     recurse: Option<bool>,
     retry: Option<RetryConfig>,
     roots: Option<HashSet<Url>>,
@@ -71,6 +73,13 @@ struct SiteConfig {
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
     max_age: Option<DurationString>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RateLimitConfig {
+    supply: u64,
+    window: DurationString,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -209,12 +218,19 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 })
                 .collect(),
         },
+    )
+    .set_excluded_links(excluded_links)
+    .set_persistent_cache(
         config
             .cache
             .and_then(|cache| cache.persistent)
             .unwrap_or_default(),
     )
-    .set_excluded_links(excluded_links))
+    .set_rate_limit(
+        config.rate_limit.map(|rate_limit| {
+            super::RateLimitConfig::new(rate_limit.supply, rate_limit.window.into())
+        }),
+    ))
 }
 
 fn compile_site_config(
@@ -350,6 +366,7 @@ mod tests {
             sites: Default::default(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -417,6 +434,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -515,6 +533,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -584,6 +603,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -624,6 +644,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -654,6 +675,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         };
 
         assert!(matches!(
@@ -678,6 +700,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         };
 
         assert!(matches!(
@@ -699,6 +722,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         };
 
         assert!(matches!(
@@ -720,6 +744,7 @@ mod tests {
             .into(),
             concurrency: Some(2045),
             cache: None,
+            rate_limit: None,
         };
 
         assert_eq!(
@@ -732,6 +757,27 @@ mod tests {
     }
 
     #[test]
+    fn compile_rate_limit() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            concurrency: Some(2045),
+            cache: None,
+            rate_limit: Some(RateLimitConfig {
+                supply: 42,
+                window: Duration::from_millis(2045).into(),
+            }),
+        };
+
+        assert_eq!(
+            compile_config(config).unwrap().rate_limit(),
+            Some(&crate::config::RateLimitConfig {
+                supply: 42,
+                window: Duration::from_millis(2045).into(),
+            })
+        );
+    }
+
+    #[test]
     fn compile_global_cache_config() {
         let config = SerializableConfig {
             sites: Default::default(),
@@ -739,6 +785,7 @@ mod tests {
             cache: Some(GlobalCacheConfig {
                 persistent: Some(true),
             }),
+            rate_limit: None,
         };
 
         assert!(compile_config(config).unwrap().persistent_cache());
@@ -767,6 +814,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
@@ -815,6 +863,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         });
 
         assert!(matches!(
@@ -838,6 +887,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         });
 
         assert!(matches!(result, Err(ConfigError::MissingParentConfig(name)) if name == "missing"));
@@ -865,6 +915,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         });
 
         assert!(matches!(
@@ -887,6 +938,7 @@ mod tests {
             .into(),
             concurrency: None,
             cache: None,
+            rate_limit: None,
         })
         .unwrap();
 
