@@ -30,7 +30,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_rate_limiter() {
+    async fn limit_rate() {
         let limiter = RateLimiter::new(5, Duration::from_secs(1));
 
         for _ in 0..5 {
