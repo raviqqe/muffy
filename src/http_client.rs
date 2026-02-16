@@ -111,7 +111,7 @@ impl HttpClient {
         self.local_cache
             .get_with(
                 request.url().to_string(),
-                Box::new(async move { self.get_cached_globally(&request, robots).await }),
+                Box::new(self.get_cached_globally(&request, robots)),
             )
             .await?
     }
@@ -442,22 +442,21 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(url.as_str().into(), {
-                let response = response.clone();
-
-                Box::new(async move {
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
                     Ok(Arc::new(
                         Response::from_bare(
                             BareResponse {
                                 body: b"stale".to_vec(),
-                                ..response
+                                ..response.clone()
                             },
                             Duration::default(),
                         )
                         .into(),
                     ))
-                })
-            })
+                }),
+            )
             .await
             .unwrap()
             .unwrap();
@@ -511,22 +510,21 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(url.as_str().into(), {
-                let response = response.clone();
-
-                Box::new(async move {
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
                     Ok(Arc::new(
                         Response::from_bare(
                             BareResponse {
                                 body: b"stale".to_vec(),
-                                ..response
+                                ..response.clone()
                             },
                             Duration::default(),
                         )
                         .into(),
                     ))
-                })
-            })
+                }),
+            )
             .await
             .unwrap()
             .unwrap();
