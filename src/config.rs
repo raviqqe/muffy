@@ -96,6 +96,11 @@ impl Config {
         self.persistent_cache
     }
 
+    /// Returns a rate limit.
+    pub const fn rate_limit(&self) -> Option<&RateLimitConfig> {
+        self.rate_limit.as_ref()
+    }
+
     /// Sets excluded link patterns.
     pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
         self.excluded_links = links;

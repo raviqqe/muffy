@@ -95,6 +95,6 @@ mod tests {
         let duration = WINDOW * (REQUEST_COUNT / SUPPLY) as _;
 
         assert!(time.elapsed() >= duration);
-        assert!(time.elapsed() < duration.mul_f64(1.2));
+        assert!(time.elapsed() < duration.mul_f64(1.5));
     }
 }

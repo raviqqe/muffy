@@ -756,6 +756,27 @@ mod tests {
     }
 
     #[test]
+    fn compile_rate_limit() {
+        let config = SerializableConfig {
+            sites: Default::default(),
+            concurrency: Some(2045),
+            cache: None,
+            rate_limit: Some(RateLimitConfig {
+                supply: 42,
+                window: Duration::from_millis(2045).into(),
+            }),
+        };
+
+        assert_eq!(
+            compile_config(config).unwrap().rate_limit(),
+            Some(&crate::config::RateLimitConfig {
+                supply: 42,
+                window: Duration::from_millis(2045).into(),
+            })
+        );
+    }
+
+    #[test]
     fn compile_global_cache_config() {
         let config = SerializableConfig {
             sites: Default::default(),
