@@ -229,13 +229,13 @@ impl WebValidator {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
-            return Ok(ItemOutput::new());
+            Ok(ItemOutput::new())
         } else if !context.config().site(&url).scheme().accepted(url.scheme()) {
-            return Err(Error::InvalidScheme(url.scheme().into()));
+            Err(Error::InvalidScheme(url.scheme().into()))
+        } else {
+            self.validate_link(context, url.to_string(), document_type)
+                .await
         }
-
-        self.validate_link(context, url.to_string(), document_type)
-            .await
     }
 
     fn normalize_url(url: &str) -> String {
