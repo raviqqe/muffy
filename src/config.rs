@@ -454,11 +454,47 @@ impl ConcurrencyConfig {
 /// A rate limit configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct RateLimitConfig {
+    global: Option<SiteRateLimitConfig>,
+    sites: HashMap<String, SiteRateLimitConfig>,
+}
+
+impl RateLimitConfig {
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns a global rate limit.
+    pub const fn global(&self) -> Option<&SiteRateLimitConfig> {
+        self.global.as_ref()
+    }
+
+    /// Returns rate limits per site.
+    pub const fn sites(&self) -> &HashMap<String, SiteRateLimitConfig> {
+        &self.sites
+    }
+
+    /// Sets a global rate limit.
+    pub const fn set_global(mut self, rate_limit: Option<SiteRateLimitConfig>) -> Self {
+        self.global = rate_limit;
+        self
+    }
+
+    /// Sets rate limits per site.
+    pub fn set_sites(mut self, sites: HashMap<String, SiteRateLimitConfig>) -> Self {
+        self.sites = sites;
+        self
+    }
+}
+
+/// A site rate limit configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct SiteRateLimitConfig {
     supply: u64,
     window: Duration,
 }
 
-impl RateLimitConfig {
+impl SiteRateLimitConfig {
     /// Creates a configuration.
     pub const fn new(supply: u64, window: Duration) -> Self {
         Self { supply, window }
