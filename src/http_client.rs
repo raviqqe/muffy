@@ -63,7 +63,8 @@ impl HttpClient {
                     .iter()
                     .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
                     .collect(),
-                rate_limiter: RateLimiter::new(),
+                // TODO Fix.
+                rate_limiter: RateLimiter::new(100, Duration::from_secs(1)),
             }
             .into(),
         )

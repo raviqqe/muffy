@@ -1,16 +1,20 @@
 use core::sync::atomic::AtomicUsize;
+use core::time::Duration;
 use tokio::time::Instant;
 
+/// A token bucket rate limiter.
 pub struct RateLimiter {
     rate: AtomicUsize,
-    time: Instant,
+    count: usize,
+    window: Duration,
+    last_time: Instant,
 }
 
 impl RateLimiter {
-    pub fn new() -> Self {
+    pub fn new(count: usize, window: Duration) -> Self {
         Self {
-            rate: Default::default(),
-            time: Instant::now(),
+            rate: AtomicUsize::new(count),
+            last_time: Instant::now(),
         }
     }
 
