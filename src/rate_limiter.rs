@@ -75,7 +75,7 @@ mod tests {
         let limiter = Arc::new(RateLimiter::new(5, Duration::from_secs(1)));
         let mut futures = vec![];
 
-        for _ in 0..10000 {
+        for _ in 0..100_000 {
             let limiter = limiter.clone();
 
             futures.push(spawn(async move { limiter.run(async { 42 }).await }));
