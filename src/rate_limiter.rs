@@ -1,5 +1,4 @@
 use core::sync::atomic::AtomicUsize;
-use core::sync::atomic::Ordering;
 use tokio::time::Instant;
 
 pub struct RateLimiter {
