@@ -88,6 +88,12 @@ struct CheckArguments {
     /// Set URL patterns to ignore from validation.
     #[arg(long)]
     ignore: Vec<Regex>,
+    /// Set a rate limit count.
+    #[arg(long, default_value_t = u64::MAX)]
+    rate_limit_count: u64,
+    /// Set a rate limit window.
+    #[arg(long, default_value = "1s")]
+    rate_limit_window: usize,
 }
 
 #[derive(clap::Args, Default)]
