@@ -299,8 +299,8 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
             .collect(),
         ConcurrencyConfig::default().set_global(Some(arguments.concurrency)),
     )
-    .set_persistent_cache(arguments.cache)
-    .set_excluded_links(arguments.ignore.clone()))
+    .set_excluded_links(arguments.ignore.clone())
+    .set_persistent_cache(arguments.cache))
 }
 
 #[cfg(test)]
