@@ -5,9 +5,9 @@ use tokio::time::Instant;
 /// A token bucket rate limiter.
 pub struct RateLimiter {
     rate: AtomicUsize,
+    last_time: Instant,
     count: usize,
     window: Duration,
-    last_time: Instant,
 }
 
 impl RateLimiter {
@@ -15,6 +15,8 @@ impl RateLimiter {
         Self {
             rate: AtomicUsize::new(count),
             last_time: Instant::now(),
+            count,
+            window,
         }
     }
 
