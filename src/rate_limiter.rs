@@ -29,15 +29,15 @@ impl RateLimiter {
     }
 
     fn add_supply(&self) -> Instant {
-        if Instant::now()
+        while Instant::now()
             < self.time + self.window * (1 + self.window_count.load(Ordering::Relaxed))
-        {
-            todo!()
-        } else {
-            while let Err(foo) = self.window_count.compare_exchange() {}
+            && self
+                .window_count
+                .compare_exchange(self.window.supply, Ordering::SeqCst)
+                .is_err()
+        {}
 
-            todo!()
-        }
+        todo!()
     }
 }
 
