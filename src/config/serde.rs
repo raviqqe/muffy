@@ -226,11 +226,12 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .and_then(|cache| cache.persistent)
             .unwrap_or_default(),
     )
-    .set_rate_limit(
-        config.rate_limit.map(|rate_limit| {
-            super::RateLimitConfig::new(rate_limit.supply, rate_limit.window.into())
-        }),
-    ))
+    .set_rate_limit(config.rate_limit.map(|rate_limit| {
+        super::RateLimitConfig::new(
+            super::RateLimitConfig::new(rate_limit.supply, rate_limit.window.into()),
+            Default::default(),
+        )
+    })))
 }
 
 fn compile_site_config(
