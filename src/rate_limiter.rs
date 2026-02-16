@@ -59,6 +59,9 @@ impl RateLimiter {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::sync::Arc;
+    use futures::future::join_all;
+    use tokio::spawn;
 
     #[tokio::test]
     async fn run_once() {
@@ -69,8 +72,15 @@ mod tests {
 
     #[tokio::test]
     async fn run_many_times() {
-        let limiter = RateLimiter::new(1, Duration::from_secs(1));
+        let limiter = Arc::new(RateLimiter::new(1, Duration::from_secs(1)));
+        let mut futures = vec![];
 
-        assert_eq!(limiter.run(async { 42 }).await, 42);
+        for _ in 0..10000 {
+            let limiter = limiter.clone();
+
+            futures.push(spawn(async move { limiter.run(async { 42 }) }));
+        }
+
+        join_all(futures).await;
     }
 }
