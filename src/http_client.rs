@@ -243,6 +243,7 @@ mod tests {
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
+    const CACHE_MAX_AGE: Duration = Duration::from_hours(1);
 
     #[test]
     fn build_client() {
@@ -479,7 +480,7 @@ mod tests {
                 Box::new(cache),
                 &Default::default(),
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&Request::new(url, Default::default()).set_max_age(CACHE_MAX_AGE))
             .await
             .unwrap(),
             Some(
@@ -761,6 +762,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -800,6 +802,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -843,6 +846,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(1).into())
                 )
                 .await
@@ -886,6 +890,7 @@ mod tests {
                 )
                 .get(
                     &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
                         .set_retry(RetryConfig::default().set_count(2).into())
                 )
                 .await
