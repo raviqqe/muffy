@@ -203,7 +203,7 @@ impl HttpClient {
             None
         };
 
-        self.get_once(request).await
+        self.0.rate_limiter.run(self.get_once(request)).await
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
