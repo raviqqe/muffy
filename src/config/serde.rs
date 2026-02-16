@@ -59,6 +59,7 @@ struct SiteConfig {
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
+    rate_limit: Option<RateLimitConfig>,
     recurse: Option<bool>,
     retry: Option<RetryConfig>,
     roots: Option<HashSet<Url>>,
@@ -71,6 +72,13 @@ struct SiteConfig {
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
     max_age: Option<DurationString>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RateLimitConfig {
+    supply: u64,
+    window: DurationString,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
