@@ -71,10 +71,6 @@ impl HttpClient {
         )
     }
 
-    fn cloned(&self) -> Self {
-        Self(self.0.clone())
-    }
-
     pub(crate) async fn get(
         &self,
         request: &Request,
@@ -134,23 +130,21 @@ impl HttpClient {
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
-            self.0.global_cache.get_with(request.url().to_string(), {
-                let request = request.clone();
-                let client = self.cloned();
-
+            self.0.global_cache.get_with(
+                request.url().to_string(),
                 Box::new(async move {
                     if robots
-                        && let Some(robot) = client.get_robot(&request).await?
+                        && let Some(robot) = self.get_robot(&request).await?
                         && !robot.is_absolute_allowed(request.url())
                     {
                         return Err(HttpClientError::RobotsTxt);
                     }
 
-                    let response = client.get_retried(&request).await?;
+                    let response = self.get_retried(&request).await?;
 
                     Ok(Arc::new(response.into()))
-                })
-            })
+                }),
+            )
         };
 
         let response = get().await??;
@@ -248,6 +242,7 @@ mod tests {
         Arc,
         atomic::{AtomicUsize, Ordering},
     };
+    use tokio::spawn;
     use url::Url;
 
     const CACHE_CAPACITY: usize = 1 << 16;
@@ -622,12 +617,14 @@ mod tests {
             max_in_flight: Arc<AtomicUsize>,
         }
 
-        fn send_request(
-            client: HttpClient,
+        fn send_request<'a>(
+            client: &Arc<HttpClient>,
             request: Request,
-        ) -> impl Future<Output = Result<Result<Response, HttpClientError>, tokio::task::JoinError>>
+        ) -> impl Future<Output = Result<Result<Response, HttpClientError>, tokio::task::JoinError>> + 'a
         {
-            tokio::spawn(async move { client.get_throttled(&request).await })
+            let client = client.clone();
+
+            spawn(async move { client.get_throttled(&request).await })
         }
 
         #[async_trait]
@@ -669,7 +666,8 @@ mod tests {
                     .set_global(Some(2))
                     .set_sites([("foo".to_string(), 1)].into()),
                 None,
-            );
+            )
+            .into();
 
             let request1 =
                 Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
@@ -678,8 +676,8 @@ mod tests {
                 .clone()
                 .set_url(Url::parse("https://foo.com/bar").unwrap());
 
-            let handle1 = send_request(client.cloned(), request1);
-            let handle2 = send_request(client.cloned(), request2);
+            let handle1 = send_request(&client, request1);
+            let handle2 = send_request(&client, request2);
 
             sleep(CONCURRENT_REQUEST_DELAY).await;
             notify.notify_one();
@@ -714,7 +712,8 @@ mod tests {
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 &concurrency,
                 None,
-            );
+            )
+            .into();
 
             let request1 =
                 Request::new(Url::parse("https://foo.com/").unwrap(), Default::default())
@@ -723,8 +722,8 @@ mod tests {
                 Request::new(Url::parse("https://bar.com/").unwrap(), Default::default())
                     .set_site_id(Some("bar".into()));
 
-            let handle1 = send_request(client.cloned(), request1);
-            let handle2 = send_request(client.cloned(), request2);
+            let handle1 = send_request(&client, request1);
+            let handle2 = send_request(&client, request2);
 
             receiver.recv().await.unwrap();
             receiver.recv().await.unwrap();
