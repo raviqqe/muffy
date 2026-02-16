@@ -496,7 +496,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
-                None,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -974,7 +974,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
-                None,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
@@ -1046,7 +1046,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
                 &Default::default(),
-                None,
+                &Default::default(),
             ),
             HtmlParser::new(MokaCache::new(0)),
         )
