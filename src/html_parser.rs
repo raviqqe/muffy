@@ -40,8 +40,8 @@ impl HtmlParser {
                     parse_document(RcDom::default(), Default::default())
                         .from_utf8()
                         .read_from(&mut response.body())
-                        .map(|dom| Arc::new(Document::from_markup5ever(&dom.document)))
-                        .map_err(|error| HtmlError::Io(Arc::new(error)))
+                        .map(|dom| Document::from_markup5ever(&dom.document).into())
+                        .map_err(|error| HtmlError::Io(error.into()))
                 }),
             )
             .await?
