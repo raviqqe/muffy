@@ -114,7 +114,7 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        Ok(self
+        self
             .0
             .local_cache
             .get_with(request.url().to_string(), {
@@ -123,7 +123,7 @@ impl HttpClient {
 
                 Box::new(async move { client.get_cached_globally(&request, robots).await })
             })
-            .await??)
+            .await?
     }
 
     // TODO Configure rate limits.
