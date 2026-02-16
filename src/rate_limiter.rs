@@ -11,7 +11,7 @@ pub struct RateLimiter {
 }
 
 impl RateLimiter {
-    pub fn new(count: usize, window: Duration) -> Self {
+    pub fn new(supply: u64, window: Duration) -> Self {
         Self {
             tokens: AtomicU64::new(count),
             last_time: Instant::now(),
