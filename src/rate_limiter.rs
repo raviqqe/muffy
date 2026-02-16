@@ -12,11 +12,7 @@ impl RateLimiter {
         }
     }
 
-    pub async fn run(&self) {
+    pub async fn run<T>(&self, run: impl Future<Output = T>) -> T {
         self.count.fetch_add(1, Ordering::SeqCst);
-    }
-
-    pub fn get_count(&self) -> usize {
-        self.count.load(Ordering::SeqCst)
     }
 }
