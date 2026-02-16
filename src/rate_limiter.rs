@@ -62,21 +62,9 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn limit_rate() {
-        let limiter = RateLimiter::new(5, Duration::from_secs(1));
+    async fn run_task() {
+        let limiter = RateLimiter::new(1, Duration::from_secs(1));
 
-        for _ in 0..5 {
-            limiter
-                .run(async {
-                    println!("Running task");
-                })
-                .await;
-        }
-
-        limiter
-            .run(async {
-                println!("This should be rate limited");
-            })
-            .await;
+        assert_eq!(limiter.run(async { 42 }).await, 42);
     }
 }
