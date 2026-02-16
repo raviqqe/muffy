@@ -114,8 +114,7 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        self
-            .0
+        self.0
             .local_cache
             .get_with(request.url().to_string(), {
                 let request = request.clone();
