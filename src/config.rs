@@ -139,6 +139,7 @@ pub struct SiteConfig {
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
+    fragments_ignored: bool,
 }
 
 impl SiteConfig {
