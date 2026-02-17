@@ -86,7 +86,7 @@ impl Config {
         self.get_site(url).unwrap_or(&self.default)
     }
 
-    /// Returns a concurrency.
+    /// Returns concurrency.
     pub const fn concurrency(&self) -> &ConcurrencyConfig {
         &self.concurrency
     }
@@ -132,6 +132,7 @@ impl Config {
 pub struct SiteConfig {
     id: Option<Arc<str>>,
     cache: CacheConfig,
+    fragments_ignored: bool,
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
@@ -155,6 +156,11 @@ impl SiteConfig {
     /// Returns a cache configuration.
     pub const fn cache(&self) -> &CacheConfig {
         &self.cache
+    }
+
+    /// Returns whether URL fragments should be ignored.
+    pub const fn fragments_ignored(&self) -> bool {
+        self.fragments_ignored
     }
 
     /// Returns headers attached to HTTP requests.
@@ -201,6 +207,12 @@ impl SiteConfig {
     /// Sets a cache configuration.
     pub const fn set_cache(mut self, cache: CacheConfig) -> Self {
         self.cache = cache;
+        self
+    }
+
+    /// Sets whether URL fragments are ignored.
+    pub const fn set_fragments_ignored(mut self, ignored: bool) -> Self {
+        self.fragments_ignored = ignored;
         self
     }
 

@@ -57,6 +57,7 @@ struct SiteConfig {
     cache: Option<CacheConfig>,
     concurrency: Option<usize>,
     extend: Option<String>,
+    fragments_ignored: Option<bool>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
@@ -263,6 +264,7 @@ fn compile_site_config(
                     .unwrap_or(parent.cache().max_age()),
             ),
         )
+        .set_fragments_ignored(site.fragments_ignored.unwrap_or(parent.fragments_ignored()))
         .set_headers(
             site.headers
                 .as_ref()
@@ -417,6 +419,7 @@ mod tests {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),
                         concurrency: Some(42),
+                        fragments_ignored: true.into(),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
                         max_redirects: Some(42),
                         recurse: Some(true),
@@ -466,6 +469,7 @@ mod tests {
                         crate::config::CacheConfig::default()
                             .set_max_age(Duration::from_secs(2045).into()),
                     )
+                    .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
