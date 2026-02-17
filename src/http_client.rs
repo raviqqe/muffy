@@ -201,8 +201,17 @@ impl HttpClient {
         };
 
         let future = self.get_once(request);
+        let future = async {
+            if let Some(limiter) = &self.rate_limiter {
+                limiter.run(future).await
+            } else {
+                future.await
+            }
+        };
 
-        if let Some(limiter) = &self.rate_limiter {
+        if let Some(id) = request.site_id()
+            && let Some(limiter) = &self.site_rate_limiters.get(id)
+        {
             limiter.run(future).await
         } else {
             future.await
