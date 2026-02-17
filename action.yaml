@@ -32,7 +32,7 @@ runs:
       run: >
         docker run --network host
         raviqqe/muffy:${{ steps.version.outputs.version }}
-        check
+        check-site
         ${{ inputs.verbose && '--verbose' || '' }}
         ${{ steps.status.outputs.options }}
         ${{ inputs.url }}
