@@ -580,7 +580,6 @@ mod tests {
                 .collect(),
             )]
             .into(),
-            Default::default(),
         );
 
         assert!(
