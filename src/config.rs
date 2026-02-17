@@ -85,7 +85,7 @@ impl Config {
         self.get_site(url).unwrap_or(&self.default)
     }
 
-    /// Returns a concurrency.
+    /// Returns concurrency.
     pub const fn concurrency(&self) -> &ConcurrencyConfig {
         &self.concurrency
     }
@@ -100,7 +100,7 @@ impl Config {
         &self.rate_limit
     }
 
-    /// Sets a concurrency.
+    /// Sets concurrency.
     pub fn set_concurrency(mut self, concurrency: ConcurrencyConfig) -> Self {
         self.concurrency = concurrency;
         self
