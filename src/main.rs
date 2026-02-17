@@ -9,8 +9,8 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig,
-    SiteRateLimitConfig, SledCache, StatusConfig, WebValidator,
+    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, RetryConfig, SchemeConfig,
+    SiteConfig, SiteRateLimitConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -94,6 +94,18 @@ struct CheckSiteArguments {
     /// Set a rate limit window.
     #[arg(long, default_value = "1s")]
     rate_limit_window: DurationString,
+    /// Set a retry count.
+    #[arg(long, default_value_t = 0)]
+    retry_count: usize,
+    /// Set a retry factor.
+    #[arg(long, default_value_t = 2.0)]
+    retry_factor: f64,
+    /// Set the maximum retry interval.
+    #[arg(long, default_value_t = "1s")]
+    initial_retry_interval: DurationString,
+    /// Set the maximum retry interval.
+    #[arg(long, default_value_t = "1s")]
+    retry_interval_cap: DurationString,
 }
 
 #[derive(clap::Args, Default)]
@@ -273,6 +285,7 @@ fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dy
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
+        .set_retry(RetryConfig::new().set_count().set_factor(2.0).into())
         .set_timeout(Some(*arguments.timeout));
 
     Ok(Config::new(
