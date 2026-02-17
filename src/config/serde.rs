@@ -231,7 +231,21 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .set_global(config.rate_limit.map(|rate_limit| {
                 super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into()).into()
             }))
-            .set_sites(Default::default()),
+            .set_sites(
+                config
+                    .sites
+                    .iter()
+                    .filter_map(|(name, site)| {
+                        site.rate_limit.as_ref().map(|limit| {
+                            (
+                                name.clone(),
+                                super::SiteRateLimitConfig::new(limit.supply, limit.window.into())
+                                    .into(),
+                            )
+                        })
+                    })
+                    .collect(),
+            ),
     ))
 }
 
