@@ -50,14 +50,14 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Validates URLs.
-    Check(CheckArguments),
-    /// Runs validation with a configuration file. (experimental)
+    /// Validates a website.
+    CheckSite(CheckSiteArguments),
+    /// Runs validation with a configuration file.
     Run(RunArguments),
 }
 
 #[derive(clap::Args, Debug)]
-struct CheckArguments {
+struct CheckSiteArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
@@ -119,7 +119,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Check(arguments) => compile_check_config(&arguments)?,
+        Command::CheckSite(arguments) => compile_check_config(&arguments)?,
         Command::Run(arguments) => {
             let config_file = if let Some(file) = arguments.config {
                 file
@@ -243,7 +243,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
+fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
         .set_status(StatusConfig::new(
@@ -314,8 +314,8 @@ mod tests {
 
     #[test]
     fn default_check_arguments() {
-        let Command::Check(arguments) =
-            Arguments::parse_from(["command", "check", "https://foo.com"])
+        let Command::CheckSite(arguments) =
+            Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
                 .unwrap()
         else {
