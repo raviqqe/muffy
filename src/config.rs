@@ -86,7 +86,7 @@ impl Config {
         self.get_site(url).unwrap_or(&self.default)
     }
 
-    /// Returns a concurrency.
+    /// Returns concurrency.
     pub const fn concurrency(&self) -> &ConcurrencyConfig {
         &self.concurrency
     }
