@@ -10,9 +10,9 @@ set -e
 
 (
   echo '```text'
-  cargo run -- check --help
+  cargo run -- check-site --help
   echo '```'
-) >src/components/CheckHelp.md
+) >src/components/CheckSiteHelp.md
 
 (
   echo '```text'
