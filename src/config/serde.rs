@@ -761,7 +761,17 @@ mod tests {
     #[test]
     fn compile_rate_limit() {
         let config = SerializableConfig {
-            sites: Default::default(),
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    rate_limit: Some(RateLimitConfig {
+                        supply: 123,
+                        window: Duration::from_millis(456).into(),
+                    }),
+                    ..Default::default()
+                },
+            )]
+            .into(),
             concurrency: Some(2045),
             cache: None,
             rate_limit: Some(RateLimitConfig {
@@ -772,9 +782,18 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
-            &crate::config::RateLimitConfig::default().set_global(
-                crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
-            )
+            &crate::config::RateLimitConfig::default()
+                .set_global(
+                    crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
+                )
+                .set_sites(
+                    [(
+                        "foo".into(),
+                        crate::config::SiteRateLimitConfig::new(123, Duration::from_millis(456))
+                            .into()
+                    )]
+                    .into()
+                )
         );
     }
 
