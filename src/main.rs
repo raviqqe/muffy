@@ -167,8 +167,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
             config.concurrency(),
-            config.rate_limit(),
-        ),
+        )
+        .set_rate_limit(config.rate_limit()),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
