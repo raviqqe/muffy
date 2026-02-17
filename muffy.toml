@@ -14,10 +14,7 @@ max_age = "5m"
 [sites.default.retry]
 count = 3
 factor = 2
-
-[sites.default.retry.duration]
-initial = "500ms"
-cap = "10s"
+interval = { initial = "500ms", cap = "10s" }
 
 [sites.default.headers]
 user-agent = "Muffy/0.2.0"
