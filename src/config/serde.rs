@@ -219,7 +219,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 .collect(),
         },
     )
-    .set_ignored_links(excluded_links)
+    .set_ignored_links(ignored_links)
     .set_persistent_cache(
         config
             .cache
@@ -529,7 +529,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),
@@ -579,7 +579,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_excluded_sites() {
+    fn compile_ignored_sites() {
         let config = compile_config(SerializableConfig {
             sites: [
                 (
@@ -599,7 +599,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),

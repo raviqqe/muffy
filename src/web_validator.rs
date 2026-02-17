@@ -999,7 +999,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_excluded_link() {
+    async fn validate_ignored_link() {
         let url = Url::parse("https://foo.com").unwrap();
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),

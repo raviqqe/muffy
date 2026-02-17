@@ -71,7 +71,7 @@ impl Config {
         self.roots.iter().map(Deref::deref)
     }
 
-    /// Returns excluded link patterns.
+    /// Returns ignored link patterns.
     pub fn ignored_links(&self) -> impl Iterator<Item = &Regex> {
         self.ignored_links.iter()
     }
@@ -101,7 +101,7 @@ impl Config {
         &self.rate_limit
     }
 
-    /// Sets excluded link patterns.
+    /// Sets ignored link patterns.
     pub fn set_ignored_links(mut self, links: Vec<Regex>) -> Self {
         self.ignored_links = links;
         self
