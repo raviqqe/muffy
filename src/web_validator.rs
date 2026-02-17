@@ -939,7 +939,6 @@ mod tests {
                 .into(),
             )]
             .into(),
-            Default::default(),
         ))
         .await
         .unwrap();
