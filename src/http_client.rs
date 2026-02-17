@@ -65,7 +65,16 @@ impl HttpClient {
             rate_limiter: rate_limit
                 .global()
                 .map(|limit| RateLimiter::new(limit.supply(), limit.window())),
-            site_rate_limiters: Default::default(),
+            site_rate_limiters: rate_limit
+                .sites()
+                .iter()
+                .map(|(key, limit)| {
+                    (
+                        key.to_owned(),
+                        RateLimiter::new(limit.supply(), limit.window()),
+                    )
+                })
+                .collect(),
         }
     }
 
