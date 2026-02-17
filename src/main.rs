@@ -315,7 +315,7 @@ mod tests {
     #[test]
     fn default_check_arguments() {
         let Command::CheckSite(arguments) =
-            Arguments::parse_from(["command", "check", "https://foo.com"])
+            Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
                 .unwrap()
         else {
