@@ -52,7 +52,7 @@ struct Arguments {
 #[derive(clap::Subcommand)]
 enum Command {
     /// Validates a website.
-    CheckSite(CheckSiteArguments),
+    CheckSite(Box<CheckSiteArguments>),
     /// Runs validation with a configuration file.
     Run(RunArguments),
 }
