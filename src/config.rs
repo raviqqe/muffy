@@ -211,8 +211,8 @@ impl SiteConfig {
     }
 
     /// Sets whether URL fragments are ignored.
-    pub const fn set_fragments_ignored(mut self, fragments_ignored: bool) -> Self {
-        self.fragments_ignored = fragments_ignored;
+    pub const fn set_fragments_ignored(mut self, ignored: bool) -> Self {
+        self.fragments_ignored = ignored;
         self
     }
 
