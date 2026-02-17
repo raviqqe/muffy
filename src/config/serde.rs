@@ -88,7 +88,7 @@ struct RateLimitConfig {
 struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
-    duration: Option<RetryDurationConfig>,
+    interval: Option<RetryDurationConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -307,14 +307,14 @@ fn compile_site_config(
             super::RetryConfig::default()
                 .set_count(retry.count.unwrap_or(parent.retry().count()))
                 .set_factor(retry.factor.unwrap_or(parent.retry().factor()))
-                .set_duration(if let Some(duration) = &retry.duration {
-                    let parent = parent.retry().duration();
+                .set_interval(if let Some(duration) = &retry.interval {
+                    let parent = parent.retry().interval();
 
                     super::RetryDurationConfig::default()
                         .set_initial(duration.initial.map(Into::into).unwrap_or(parent.initial()))
                         .set_cap(duration.cap.map(Into::into).or(parent.cap()))
                 } else {
-                    parent.retry().duration().clone()
+                    parent.retry().interval().clone()
                 })
                 .into()
         } else {
@@ -426,7 +426,7 @@ mod tests {
                         retry: Some(RetryConfig {
                             count: 193.into(),
                             factor: 4.2.into(),
-                            duration: RetryDurationConfig {
+                            interval: RetryDurationConfig {
                                 initial: Some(Duration::from_millis(42).into()),
                                 cap: Some(Duration::from_secs(42).into()),
                             }
@@ -491,7 +491,7 @@ mod tests {
                         crate::config::RetryConfig::default()
                             .set_count(193)
                             .set_factor(4.2.into())
-                            .set_duration(
+                            .set_interval(
                                 crate::config::RetryDurationConfig::default()
                                     .set_initial(Duration::from_millis(42).into())
                                     .set_cap(Duration::from_secs(42).into()),

@@ -183,7 +183,7 @@ impl HttpClient {
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
         let retry = request.retry();
         let mut result = self.get_throttled(request).await;
-        let mut backoff = retry.duration().initial();
+        let mut backoff = retry.interval().initial();
 
         for _ in 0..retry.count() {
             if let Ok(response) = &result
@@ -196,7 +196,7 @@ impl HttpClient {
 
             backoff = backoff
                 .mul_f64(retry.factor())
-                .min(retry.duration().cap().unwrap_or(Duration::MAX));
+                .min(retry.interval().cap().unwrap_or(Duration::MAX));
 
             result = self.get_throttled(request).await;
         }
