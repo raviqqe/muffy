@@ -48,22 +48,29 @@ impl HttpClient {
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
-        concurrency: &ConcurrencyConfig,
     ) -> Self {
         Self {
             client: Box::new(client),
             timer: Box::new(timer),
             local_cache: MokaCache::new(INITIAL_CACHE_CAPACITY),
             global_cache: cache,
-            semaphore: Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency)),
-            site_semaphores: concurrency
-                .sites()
-                .iter()
-                .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
-                .collect(),
+            semaphore: Semaphore::new(default_concurrency()),
+            site_semaphores: Default::default(),
             rate_limiter: Default::default(),
             site_rate_limiters: Default::default(),
         }
+    }
+
+    /// Sets a concurrency.
+    pub fn set_concurrency(mut self, concurrency: &ConcurrencyConfig) -> Self {
+        self.semaphore = Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency));
+        self.site_semaphores = concurrency
+            .sites()
+            .iter()
+            .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
+            .collect();
+
+        self
     }
 
     /// Sets a rate limit.
