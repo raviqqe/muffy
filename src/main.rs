@@ -100,11 +100,11 @@ struct CheckSiteArguments {
     /// Set a retry factor.
     #[arg(long, default_value_t = 2.0)]
     retry_factor: f64,
-    /// Set the maximum retry interval.
-    #[arg(long, default_value_t = "1s")]
+    /// Set a initial retry interval.
+    #[arg(long, default_value = "1s")]
     initial_retry_interval: DurationString,
-    /// Set the maximum retry interval.
-    #[arg(long, default_value_t = "1s")]
+    /// Set a retry interval cap.
+    #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
 }
 
