@@ -97,7 +97,7 @@ impl WebValidator {
 
         if context
             .config()
-            .excluded_links()
+            .ignored_links()
             .any(|pattern| pattern.is_match(url.as_str()))
         {
             return Ok(ItemOutput::new());
@@ -1054,7 +1054,7 @@ mod tests {
                 .collect(),
                 Default::default(),
             )
-            .set_excluded_links(vec![Regex::new("bar").unwrap()]),
+            .set_ignored_links(vec![Regex::new("bar").unwrap()]),
         )
         .await
         .unwrap();
