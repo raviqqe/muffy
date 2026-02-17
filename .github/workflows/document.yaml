@@ -60,6 +60,7 @@ jobs:
           http://localhost:4321/muffy/
   document:
     needs:
+      - rust_build
       - web_build
       - web_lint
       - web_test
