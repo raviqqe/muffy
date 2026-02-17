@@ -32,7 +32,7 @@ pub fn default_concurrency() -> usize {
 #[derive(Clone, Debug)]
 pub struct Config {
     roots: Vec<String>,
-    excluded_links: Vec<Regex>,
+    ignored_links: Vec<Regex>,
     default: Arc<SiteConfig>,
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: ConcurrencyConfig,
@@ -50,7 +50,7 @@ impl Config {
     ) -> Self {
         Self {
             roots,
-            excluded_links: Default::default(),
+            ignored_links: Default::default(),
             default,
             sites: sites
                 .into_iter()
@@ -71,9 +71,9 @@ impl Config {
         self.roots.iter().map(Deref::deref)
     }
 
-    /// Returns excluded link patterns.
-    pub fn excluded_links(&self) -> impl Iterator<Item = &Regex> {
-        self.excluded_links.iter()
+    /// Returns ignored link patterns.
+    pub fn ignored_links(&self) -> impl Iterator<Item = &Regex> {
+        self.ignored_links.iter()
     }
 
     /// Returns websites.
@@ -101,9 +101,9 @@ impl Config {
         &self.rate_limit
     }
 
-    /// Sets excluded link patterns.
-    pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
-        self.excluded_links = links;
+    /// Sets ignored link patterns.
+    pub fn set_ignored_links(mut self, links: Vec<Regex>) -> Self {
+        self.ignored_links = links;
         self
     }
 
