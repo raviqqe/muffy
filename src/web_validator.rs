@@ -895,6 +895,63 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_ignored_fragment_for_html() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            url.as_str(),
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MokaCache::new(0)),
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec![url.as_str().into()],
+            Default::default(),
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_recursive(true)
+                        .set_fragments_ignored(true)
+                        .into(),
+                )]
+                .into(),
+            )]
+            .into(),
+            Default::default(),
+        ))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
     async fn validate_link_with_whitespaces() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
