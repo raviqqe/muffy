@@ -141,6 +141,7 @@ impl WebValidator {
 
         if let Some(fragment) = url.fragment()
             && document_type == DocumentType::Html
+            && !site.fragments_ignored()
             && !self.has_html_element(&response, fragment).await?
         {
             return Err(Error::HtmlElementNotFound(fragment.into()));
