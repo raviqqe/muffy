@@ -97,7 +97,7 @@ impl WebValidator {
 
         if context
             .config()
-            .excluded_links()
+            .ignored_links()
             .any(|pattern| pattern.is_match(url.as_str()))
         {
             return Ok(ItemOutput::new());
@@ -1000,7 +1000,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_excluded_link() {
+    async fn validate_ignored_link() {
         let url = Url::parse("https://foo.com").unwrap();
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
@@ -1055,7 +1055,7 @@ mod tests {
                 .collect(),
                 Default::default(),
             )
-            .set_excluded_links(vec![Regex::new("bar").unwrap()]),
+            .set_ignored_links(vec![Regex::new("bar").unwrap()]),
         )
         .await
         .unwrap();

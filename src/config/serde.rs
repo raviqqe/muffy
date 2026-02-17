@@ -102,7 +102,7 @@ struct RetryDurationConfig {
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
 
-    let excluded_links = config
+    let ignored_links = config
         .sites
         .iter()
         .flat_map(|(_, site)| {
@@ -220,7 +220,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 .collect(),
         },
     )
-    .set_excluded_links(excluded_links)
+    .set_ignored_links(ignored_links)
     .set_persistent_cache(
         config
             .cache
@@ -388,7 +388,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(config.roots().count(), 0);
-        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(config.ignored_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
         assert!(!config.persistent_cache());
         assert_eq!(config.concurrency(), &Default::default());
@@ -533,7 +533,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),
@@ -579,11 +579,11 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["/", "/foo"]
         );
-        assert_eq!(config.excluded_links().count(), 1);
+        assert_eq!(config.ignored_links().count(), 1);
     }
 
     #[test]
-    fn compile_excluded_sites() {
+    fn compile_ignored_sites() {
         let config = compile_config(SerializableConfig {
             sites: [
                 (
@@ -603,7 +603,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),
@@ -628,7 +628,7 @@ mod tests {
 
         assert_eq!(
             config
-                .excluded_links()
+                .ignored_links()
                 .map(Regex::as_str)
                 .sorted()
                 .collect::<Vec<_>>(),
@@ -671,7 +671,7 @@ mod tests {
             config.roots().sorted().collect::<Vec<_>>(),
             vec!["https://foo.com/",]
         );
-        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(config.ignored_links().count(), 0);
         assert_eq!(
             config.sites().keys().sorted().collect::<Vec<_>>(),
             vec!["bar.com", "foo.com"]
