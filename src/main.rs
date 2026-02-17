@@ -290,7 +290,7 @@ fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dy
             RetryConfig::new()
                 .set_count(arguments.retry_count)
                 .set_factor(arguments.retry_factor)
-                .set_duration(
+                .set_interval(
                     RetryDurationConfig::new()
                         .set_initial(*arguments.initial_retry_interval)
                         .set_cap((*arguments.retry_interval_cap).into()),

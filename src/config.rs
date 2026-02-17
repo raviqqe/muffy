@@ -349,7 +349,7 @@ impl CacheConfig {
 pub struct RetryConfig {
     count: usize,
     factor: f64,
-    duration: RetryDurationConfig,
+    interval: RetryDurationConfig,
 }
 
 impl RetryConfig {
@@ -358,7 +358,7 @@ impl RetryConfig {
         Self {
             count: 0,
             factor: 1.0,
-            duration: Default::default(),
+            interval: Default::default(),
         }
     }
 
@@ -373,8 +373,8 @@ impl RetryConfig {
     }
 
     /// Returns a duration configuration.
-    pub const fn duration(&self) -> &RetryDurationConfig {
-        &self.duration
+    pub const fn interval(&self) -> &RetryDurationConfig {
+        &self.interval
     }
 
     /// Sets a count.
@@ -390,8 +390,8 @@ impl RetryConfig {
     }
 
     /// Sets a duration configuration.
-    pub const fn set_duration(mut self, duration: RetryDurationConfig) -> Self {
-        self.duration = duration;
+    pub const fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
+        self.interval = duration;
         self
     }
 }
