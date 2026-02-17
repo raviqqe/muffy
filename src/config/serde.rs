@@ -229,7 +229,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     .set_rate_limit(
         super::RateLimitConfig::default()
             .set_global(config.rate_limit.map(|rate_limit| {
-                super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into()).into()
+                super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into())
             }))
             .set_sites(
                 config
@@ -239,8 +239,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                         site.rate_limit.as_ref().map(|limit| {
                             (
                                 name.clone(),
-                                super::SiteRateLimitConfig::new(limit.supply, limit.window.into())
-                                    .into(),
+                                super::SiteRateLimitConfig::new(limit.supply, limit.window.into()),
                             )
                         })
                     })
