@@ -57,6 +57,7 @@ struct SiteConfig {
     cache: Option<CacheConfig>,
     concurrency: Option<usize>,
     extend: Option<String>,
+    fragments_ignored: Option<bool>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
