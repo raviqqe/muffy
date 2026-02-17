@@ -88,7 +88,7 @@ struct RateLimitConfig {
 struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
-    duration: Option<RetryDurationConfig>,
+    interval: Option<RetryDurationConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -307,7 +307,7 @@ fn compile_site_config(
             super::RetryConfig::default()
                 .set_count(retry.count.unwrap_or(parent.retry().count()))
                 .set_factor(retry.factor.unwrap_or(parent.retry().factor()))
-                .set_interval(if let Some(duration) = &retry.duration {
+                .set_interval(if let Some(duration) = &retry.interval {
                     let parent = parent.retry().interval();
 
                     super::RetryDurationConfig::default()
@@ -426,7 +426,7 @@ mod tests {
                         retry: Some(RetryConfig {
                             count: 193.into(),
                             factor: 4.2.into(),
-                            duration: RetryDurationConfig {
+                            interval: RetryDurationConfig {
                                 initial: Some(Duration::from_millis(42).into()),
                                 cap: Some(Duration::from_secs(42).into()),
                             }
