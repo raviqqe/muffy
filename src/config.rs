@@ -46,7 +46,6 @@ impl Config {
         roots: Vec<String>,
         default: Arc<SiteConfig>,
         sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
-        concurrency: ConcurrencyConfig,
     ) -> Self {
         Self {
             roots,
@@ -60,7 +59,7 @@ impl Config {
                     (host, paths)
                 })
                 .collect(),
-            concurrency,
+            concurrency: Default::default(),
             persistent_cache: false,
             rate_limit: Default::default(),
         }
@@ -99,6 +98,12 @@ impl Config {
     /// Returns a rate limit.
     pub const fn rate_limit(&self) -> &RateLimitConfig {
         &self.rate_limit
+    }
+
+    /// Sets concurrency.
+    pub fn set_concurrency(mut self, concurrency: ConcurrencyConfig) -> Self {
+        self.concurrency = concurrency;
+        self
     }
 
     /// Sets ignored link patterns.
@@ -587,7 +592,6 @@ mod tests {
                 .collect(),
             )]
             .into(),
-            Default::default(),
         );
 
         assert!(

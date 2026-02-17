@@ -208,18 +208,18 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 ))
             })
             .collect::<Result<_, ConfigError>>()?,
-        super::ConcurrencyConfig {
-            global: config.concurrency,
-            sites: config
-                .sites
-                .iter()
-                .filter_map(|(name, site)| {
-                    site.concurrency
-                        .map(|concurrency| (name.clone(), concurrency))
-                })
-                .collect(),
-        },
     )
+    .set_concurrency(super::ConcurrencyConfig {
+        global: config.concurrency,
+        sites: config
+            .sites
+            .iter()
+            .filter_map(|(name, site)| {
+                site.concurrency
+                    .map(|concurrency| (name.clone(), concurrency))
+            })
+            .collect(),
+    })
     .set_ignored_links(ignored_links)
     .set_persistent_cache(
         config
