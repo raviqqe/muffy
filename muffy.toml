@@ -48,6 +48,10 @@ extend = "external"
 roots = ["https://github.com/"]
 concurrency = 64
 
+[sites.github.rate_limit]
+supply = 10
+window = "1s"
+
 [sites.flaky]
 extend = "external"
 roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]

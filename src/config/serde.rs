@@ -60,7 +60,6 @@ struct SiteConfig {
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
-    // TODO Compile rate limiting per site.
     rate_limit: Option<RateLimitConfig>,
     recurse: Option<bool>,
     retry: Option<RetryConfig>,
@@ -228,9 +227,24 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .unwrap_or_default(),
     )
     .set_rate_limit(
-        config.rate_limit.map(|rate_limit| {
-            super::RateLimitConfig::new(rate_limit.supply, rate_limit.window.into())
-        }),
+        super::RateLimitConfig::default()
+            .set_global(config.rate_limit.map(|rate_limit| {
+                super::SiteRateLimitConfig::new(rate_limit.supply, rate_limit.window.into())
+            }))
+            .set_sites(
+                config
+                    .sites
+                    .iter()
+                    .filter_map(|(name, site)| {
+                        site.rate_limit.as_ref().map(|limit| {
+                            (
+                                name.clone(),
+                                super::SiteRateLimitConfig::new(limit.supply, limit.window.into()),
+                            )
+                        })
+                    })
+                    .collect(),
+            ),
     ))
 }
 
@@ -760,7 +774,17 @@ mod tests {
     #[test]
     fn compile_rate_limit() {
         let config = SerializableConfig {
-            sites: Default::default(),
+            sites: [(
+                "foo".to_owned(),
+                SiteConfig {
+                    rate_limit: Some(RateLimitConfig {
+                        supply: 123,
+                        window: Duration::from_millis(456).into(),
+                    }),
+                    ..Default::default()
+                },
+            )]
+            .into(),
             concurrency: Some(2045),
             cache: None,
             rate_limit: Some(RateLimitConfig {
@@ -771,10 +795,18 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
-            Some(&crate::config::RateLimitConfig {
-                supply: 42,
-                window: Duration::from_millis(2045).into(),
-            })
+            &crate::config::RateLimitConfig::default()
+                .set_global(
+                    crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
+                )
+                .set_sites(
+                    [(
+                        "foo".into(),
+                        crate::config::SiteRateLimitConfig::new(123, Duration::from_millis(456))
+                            .into()
+                    )]
+                    .into()
+                )
         );
     }
 

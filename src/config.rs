@@ -37,7 +37,7 @@ pub struct Config {
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: ConcurrencyConfig,
     persistent_cache: bool,
-    rate_limit: Option<RateLimitConfig>,
+    rate_limit: RateLimitConfig,
 }
 
 impl Config {
@@ -62,7 +62,7 @@ impl Config {
                 .collect(),
             concurrency,
             persistent_cache: false,
-            rate_limit: None,
+            rate_limit: Default::default(),
         }
     }
 
@@ -97,8 +97,8 @@ impl Config {
     }
 
     /// Returns a rate limit.
-    pub const fn rate_limit(&self) -> Option<&RateLimitConfig> {
-        self.rate_limit.as_ref()
+    pub const fn rate_limit(&self) -> &RateLimitConfig {
+        &self.rate_limit
     }
 
     /// Sets excluded link patterns.
@@ -114,7 +114,7 @@ impl Config {
     }
 
     /// Sets a rate limit.
-    pub const fn set_rate_limit(mut self, rate_limit: Option<RateLimitConfig>) -> Self {
+    pub fn set_rate_limit(mut self, rate_limit: RateLimitConfig) -> Self {
         self.rate_limit = rate_limit;
         self
     }
@@ -454,11 +454,47 @@ impl ConcurrencyConfig {
 /// A rate limit configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct RateLimitConfig {
+    global: Option<SiteRateLimitConfig>,
+    sites: HashMap<String, SiteRateLimitConfig>,
+}
+
+impl RateLimitConfig {
+    /// Creates a configuration.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns a global rate limit.
+    pub const fn global(&self) -> Option<&SiteRateLimitConfig> {
+        self.global.as_ref()
+    }
+
+    /// Returns rate limits per site.
+    pub const fn sites(&self) -> &HashMap<String, SiteRateLimitConfig> {
+        &self.sites
+    }
+
+    /// Sets a global rate limit.
+    pub const fn set_global(mut self, rate_limit: Option<SiteRateLimitConfig>) -> Self {
+        self.global = rate_limit;
+        self
+    }
+
+    /// Sets rate limits per site.
+    pub fn set_sites(mut self, sites: HashMap<String, SiteRateLimitConfig>) -> Self {
+        self.sites = sites;
+        self
+    }
+}
+
+/// A site rate limit configuration.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct SiteRateLimitConfig {
     supply: u64,
     window: Duration,
 }
 
-impl RateLimitConfig {
+impl SiteRateLimitConfig {
     /// Creates a configuration.
     pub const fn new(supply: u64, window: Duration) -> Self {
         Self { supply, window }

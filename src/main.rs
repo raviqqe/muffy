@@ -9,8 +9,8 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RateLimitConfig, RateLimiter, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig,
-    SiteConfig, SledCache, StatusConfig, WebValidator,
+    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig,
+    SiteRateLimitConfig, SledCache, StatusConfig, WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -167,9 +167,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
             config.concurrency(),
-            config
-                .rate_limit()
-                .map(|limit| RateLimiter::new(limit.supply(), limit.window())),
+            config.rate_limit(),
         ),
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
@@ -301,10 +299,12 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
     )
     .set_excluded_links(arguments.ignore.clone())
     .set_persistent_cache(arguments.cache)
-    .set_rate_limit(Some(RateLimitConfig::new(
-        arguments.rate_limit_count,
-        *arguments.rate_limit_window,
-    ))))
+    .set_rate_limit(
+        RateLimitConfig::default().set_global(Some(SiteRateLimitConfig::new(
+            arguments.rate_limit_count,
+            *arguments.rate_limit_window,
+        ))),
+    ))
 }
 
 #[cfg(test)]
