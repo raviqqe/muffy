@@ -558,6 +558,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_link_not_found() {
+        let result = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::NOT_FOUND,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await;
+
+        assert!(matches!(
+            result,
+            Err(Error::HttpStatus(StatusCode::NOT_FOUND))
+        ));
+    }
+
+    #[tokio::test]
     async fn validate_two_documents() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
