@@ -275,6 +275,7 @@ impl WebValidator {
             let mut links = vec![];
 
             match element.name() {
+                "base" => {}
                 "link" => {
                     if !attributes
                         .get("rel")
@@ -631,12 +632,6 @@ mod tests {
                         .to_vec(),
                     ),
                     build_stub_response(
-                        "https://foo.com/foo/",
-                        StatusCode::OK,
-                        html_headers.clone(),
-                        Default::default(),
-                    ),
-                    build_stub_response(
                         "https://foo.com/foo/bar",
                         StatusCode::OK,
                         html_headers,
@@ -653,7 +648,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(3, 0), Metrics::new(2, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
