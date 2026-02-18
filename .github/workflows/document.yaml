@@ -53,13 +53,14 @@ jobs:
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &
       - run: >
-          cargo run check
+          cargo run check-site
           --accept-status 200
           --accept-status 403
           --accept-status 429
           http://localhost:4321/muffy/
   document:
     needs:
+      - rust_build
       - web_build
       - web_lint
       - web_test

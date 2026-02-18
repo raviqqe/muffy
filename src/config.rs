@@ -32,7 +32,7 @@ pub fn default_concurrency() -> usize {
 #[derive(Clone, Debug)]
 pub struct Config {
     roots: Vec<String>,
-    excluded_links: Vec<Regex>,
+    ignored_links: Vec<Regex>,
     default: Arc<SiteConfig>,
     sites: HashMap<String, Vec<(String, Arc<SiteConfig>)>>,
     concurrency: ConcurrencyConfig,
@@ -46,11 +46,10 @@ impl Config {
         roots: Vec<String>,
         default: Arc<SiteConfig>,
         sites: HashMap<String, HashMap<String, Arc<SiteConfig>>>,
-        concurrency: ConcurrencyConfig,
     ) -> Self {
         Self {
             roots,
-            excluded_links: Default::default(),
+            ignored_links: Default::default(),
             default,
             sites: sites
                 .into_iter()
@@ -60,7 +59,7 @@ impl Config {
                     (host, paths)
                 })
                 .collect(),
-            concurrency,
+            concurrency: Default::default(),
             persistent_cache: false,
             rate_limit: Default::default(),
         }
@@ -71,9 +70,9 @@ impl Config {
         self.roots.iter().map(Deref::deref)
     }
 
-    /// Returns excluded link patterns.
-    pub fn excluded_links(&self) -> impl Iterator<Item = &Regex> {
-        self.excluded_links.iter()
+    /// Returns ignored link patterns.
+    pub fn ignored_links(&self) -> impl Iterator<Item = &Regex> {
+        self.ignored_links.iter()
     }
 
     /// Returns websites.
@@ -86,7 +85,7 @@ impl Config {
         self.get_site(url).unwrap_or(&self.default)
     }
 
-    /// Returns a concurrency.
+    /// Returns concurrency.
     pub const fn concurrency(&self) -> &ConcurrencyConfig {
         &self.concurrency
     }
@@ -101,9 +100,15 @@ impl Config {
         &self.rate_limit
     }
 
-    /// Sets excluded link patterns.
-    pub fn set_excluded_links(mut self, links: Vec<Regex>) -> Self {
-        self.excluded_links = links;
+    /// Sets concurrency.
+    pub fn set_concurrency(mut self, concurrency: ConcurrencyConfig) -> Self {
+        self.concurrency = concurrency;
+        self
+    }
+
+    /// Sets ignored link patterns.
+    pub fn set_ignored_links(mut self, links: Vec<Regex>) -> Self {
+        self.ignored_links = links;
         self
     }
 
@@ -132,6 +137,7 @@ impl Config {
 pub struct SiteConfig {
     id: Option<Arc<str>>,
     cache: CacheConfig,
+    fragments_ignored: bool,
     headers: HeaderMap,
     max_redirects: usize,
     recursive: bool,
@@ -155,6 +161,11 @@ impl SiteConfig {
     /// Returns a cache configuration.
     pub const fn cache(&self) -> &CacheConfig {
         &self.cache
+    }
+
+    /// Returns whether URL fragments should be ignored.
+    pub const fn fragments_ignored(&self) -> bool {
+        self.fragments_ignored
     }
 
     /// Returns headers attached to HTTP requests.
@@ -201,6 +212,12 @@ impl SiteConfig {
     /// Sets a cache configuration.
     pub const fn set_cache(mut self, cache: CacheConfig) -> Self {
         self.cache = cache;
+        self
+    }
+
+    /// Sets whether URL fragments are ignored.
+    pub const fn set_fragments_ignored(mut self, ignored: bool) -> Self {
+        self.fragments_ignored = ignored;
         self
     }
 
@@ -332,7 +349,7 @@ impl CacheConfig {
 pub struct RetryConfig {
     count: usize,
     factor: f64,
-    duration: RetryDurationConfig,
+    interval: RetryDurationConfig,
 }
 
 impl RetryConfig {
@@ -341,7 +358,7 @@ impl RetryConfig {
         Self {
             count: 0,
             factor: 1.0,
-            duration: Default::default(),
+            interval: Default::default(),
         }
     }
 
@@ -356,8 +373,8 @@ impl RetryConfig {
     }
 
     /// Returns a duration configuration.
-    pub const fn duration(&self) -> &RetryDurationConfig {
-        &self.duration
+    pub const fn interval(&self) -> &RetryDurationConfig {
+        &self.interval
     }
 
     /// Sets a count.
@@ -373,8 +390,8 @@ impl RetryConfig {
     }
 
     /// Sets a duration configuration.
-    pub const fn set_duration(mut self, duration: RetryDurationConfig) -> Self {
-        self.duration = duration;
+    pub const fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
+        self.interval = duration;
         self
     }
 }
@@ -575,7 +592,6 @@ mod tests {
                 .collect(),
             )]
             .into(),
-            Default::default(),
         );
 
         assert!(

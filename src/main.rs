@@ -9,8 +9,9 @@ use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
     CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, SchemeConfig, SiteConfig,
-    SiteRateLimitConfig, SledCache, StatusConfig, WebValidator,
+    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, RetryConfig,
+    RetryDurationConfig, SchemeConfig, SiteConfig, SiteRateLimitConfig, SledCache, StatusConfig,
+    WebValidator,
 };
 use regex::Regex;
 use std::{
@@ -50,14 +51,14 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
-    /// Validates URLs.
-    Check(CheckArguments),
-    /// Runs validation with a configuration file. (experimental)
+    /// Validates a website.
+    CheckSite(Box<CheckSiteArguments>),
+    /// Runs validation with a configuration file.
     Run(RunArguments),
 }
 
 #[derive(clap::Args, Debug)]
-struct CheckArguments {
+struct CheckSiteArguments {
     /// Website URLs.
     #[arg(required(true))]
     url: Vec<String>,
@@ -94,6 +95,18 @@ struct CheckArguments {
     /// Set a rate limit window.
     #[arg(long, default_value = "1s")]
     rate_limit_window: DurationString,
+    /// Set a retry count.
+    #[arg(long, default_value_t = 0)]
+    retry_count: usize,
+    /// Set a retry factor.
+    #[arg(long, default_value_t = 2.0)]
+    retry_factor: f64,
+    /// Set an initial retry interval.
+    #[arg(long, default_value = "1s")]
+    initial_retry_interval: DurationString,
+    /// Set a retry interval cap.
+    #[arg(long, default_value = "10s")]
+    retry_interval_cap: DurationString,
 }
 
 #[derive(clap::Args, Default)]
@@ -119,7 +132,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Check(arguments) => compile_check_config(&arguments)?,
+        Command::CheckSite(arguments) => compile_check_config(&arguments)?,
         Command::Run(arguments) => {
             let config_file = if let Some(file) = arguments.config {
                 file
@@ -243,7 +256,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Error>> {
+fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
         .set_status(StatusConfig::new(
@@ -273,6 +286,17 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 .collect::<Result<_, Box<dyn Error>>>()?,
         )
         .set_max_redirects(arguments.max_redirects)
+        .set_retry(
+            RetryConfig::new()
+                .set_count(arguments.retry_count)
+                .set_factor(arguments.retry_factor)
+                .set_interval(
+                    RetryDurationConfig::new()
+                        .set_initial(*arguments.initial_retry_interval)
+                        .set_cap((*arguments.retry_interval_cap).into()),
+                )
+                .into(),
+        )
         .set_timeout(Some(*arguments.timeout));
 
     Ok(Config::new(
@@ -295,9 +319,9 @@ fn compile_check_config(arguments: &CheckArguments) -> Result<Config, Box<dyn Er
                 )
             })
             .collect(),
-        ConcurrencyConfig::default().set_global(Some(arguments.concurrency)),
     )
-    .set_excluded_links(arguments.ignore.clone())
+    .set_concurrency(ConcurrencyConfig::default().set_global(Some(arguments.concurrency)))
+    .set_ignored_links(arguments.ignore.clone())
     .set_persistent_cache(arguments.cache)
     .set_rate_limit(
         RateLimitConfig::default().set_global(Some(SiteRateLimitConfig::new(
@@ -314,8 +338,8 @@ mod tests {
 
     #[test]
     fn default_check_arguments() {
-        let Command::Check(arguments) =
-            Arguments::parse_from(["command", "check", "https://foo.com"])
+        let Command::CheckSite(arguments) =
+            Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
                 .unwrap()
         else {

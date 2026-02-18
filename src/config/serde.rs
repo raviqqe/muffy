@@ -57,6 +57,7 @@ struct SiteConfig {
     cache: Option<CacheConfig>,
     concurrency: Option<usize>,
     extend: Option<String>,
+    fragments_ignored: Option<bool>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
     max_redirects: Option<usize>,
@@ -87,7 +88,7 @@ struct RateLimitConfig {
 struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
-    duration: Option<RetryDurationConfig>,
+    interval: Option<RetryDurationConfig>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -101,7 +102,7 @@ struct RetryDurationConfig {
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
 
-    let excluded_links = config
+    let ignored_links = config
         .sites
         .iter()
         .flat_map(|(_, site)| {
@@ -207,19 +208,19 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
                 ))
             })
             .collect::<Result<_, ConfigError>>()?,
-        super::ConcurrencyConfig {
-            global: config.concurrency,
-            sites: config
-                .sites
-                .iter()
-                .filter_map(|(name, site)| {
-                    site.concurrency
-                        .map(|concurrency| (name.clone(), concurrency))
-                })
-                .collect(),
-        },
     )
-    .set_excluded_links(excluded_links)
+    .set_concurrency(super::ConcurrencyConfig {
+        global: config.concurrency,
+        sites: config
+            .sites
+            .iter()
+            .filter_map(|(name, site)| {
+                site.concurrency
+                    .map(|concurrency| (name.clone(), concurrency))
+            })
+            .collect(),
+    })
+    .set_ignored_links(ignored_links)
     .set_persistent_cache(
         config
             .cache
@@ -263,6 +264,7 @@ fn compile_site_config(
                     .unwrap_or(parent.cache().max_age()),
             ),
         )
+        .set_fragments_ignored(site.fragments_ignored.unwrap_or(parent.fragments_ignored()))
         .set_headers(
             site.headers
                 .as_ref()
@@ -305,14 +307,14 @@ fn compile_site_config(
             super::RetryConfig::default()
                 .set_count(retry.count.unwrap_or(parent.retry().count()))
                 .set_factor(retry.factor.unwrap_or(parent.retry().factor()))
-                .set_duration(if let Some(duration) = &retry.duration {
-                    let parent = parent.retry().duration();
+                .set_interval(if let Some(duration) = &retry.interval {
+                    let parent = parent.retry().interval();
 
                     super::RetryDurationConfig::default()
                         .set_initial(duration.initial.map(Into::into).unwrap_or(parent.initial()))
                         .set_cap(duration.cap.map(Into::into).or(parent.cap()))
                 } else {
-                    parent.retry().duration().clone()
+                    parent.retry().interval().clone()
                 })
                 .into()
         } else {
@@ -386,7 +388,7 @@ mod tests {
         .unwrap();
 
         assert_eq!(config.roots().count(), 0);
-        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(config.ignored_links().count(), 0);
         assert_eq!(config.sites().len(), 0);
         assert!(!config.persistent_cache());
         assert_eq!(config.concurrency(), &Default::default());
@@ -417,13 +419,14 @@ mod tests {
                             max_age: Some(Duration::from_secs(2045).into()),
                         }),
                         concurrency: Some(42),
+                        fragments_ignored: true.into(),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
                         max_redirects: Some(42),
                         recurse: Some(true),
                         retry: Some(RetryConfig {
                             count: 193.into(),
                             factor: 4.2.into(),
-                            duration: RetryDurationConfig {
+                            interval: RetryDurationConfig {
                                 initial: Some(Duration::from_millis(42).into()),
                                 cap: Some(Duration::from_secs(42).into()),
                             }
@@ -466,6 +469,7 @@ mod tests {
                         crate::config::CacheConfig::default()
                             .set_max_age(Duration::from_secs(2045).into()),
                     )
+                    .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
@@ -487,7 +491,7 @@ mod tests {
                         crate::config::RetryConfig::default()
                             .set_count(193)
                             .set_factor(4.2.into())
-                            .set_duration(
+                            .set_interval(
                                 crate::config::RetryDurationConfig::default()
                                     .set_initial(Duration::from_millis(42).into())
                                     .set_cap(Duration::from_secs(42).into()),
@@ -529,7 +533,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),
@@ -575,11 +579,11 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["/", "/foo"]
         );
-        assert_eq!(config.excluded_links().count(), 1);
+        assert_eq!(config.ignored_links().count(), 1);
     }
 
     #[test]
-    fn compile_excluded_sites() {
+    fn compile_ignored_sites() {
         let config = compile_config(SerializableConfig {
             sites: [
                 (
@@ -599,7 +603,7 @@ mod tests {
                     },
                 ),
                 (
-                    "foo_excluded".to_owned(),
+                    "foo_ignored".to_owned(),
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/bar").unwrap()].into()),
                         ignore: Some(true),
@@ -624,7 +628,7 @@ mod tests {
 
         assert_eq!(
             config
-                .excluded_links()
+                .ignored_links()
                 .map(Regex::as_str)
                 .sorted()
                 .collect::<Vec<_>>(),
@@ -667,7 +671,7 @@ mod tests {
             config.roots().sorted().collect::<Vec<_>>(),
             vec!["https://foo.com/",]
         );
-        assert_eq!(config.excluded_links().count(), 0);
+        assert_eq!(config.ignored_links().count(), 0);
         assert_eq!(
             config.sites().keys().sorted().collect::<Vec<_>>(),
             vec!["bar.com", "foo.com"]
