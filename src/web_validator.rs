@@ -558,6 +558,37 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_document_not_found() {
+        let result = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::NOT_FOUND,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await;
+
+        assert!(matches!(
+            result,
+            Err(Error::HttpStatus(StatusCode::NOT_FOUND))
+        ));
+    }
+
+    #[tokio::test]
     async fn validate_two_documents() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
@@ -1071,6 +1102,100 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(1, 0), Metrics::new(4, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_meta_element_with_link_property() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let image_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("image/png"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc!(
+                            r#"
+                            <meta property="og:image" content="https://foo.com/og.png" />
+                            "#
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/og.png",
+                        StatusCode::OK,
+                        image_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_meta_element_with_non_link_property() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers,
+                        indoc!(
+                            r#"
+                            <meta property="og:title" content="https://foo.com/ignored" />
+                            "#
+                        )
+                        .as_bytes()
+                        .into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 0), Metrics::new(0, 0))
         );
     }
 
