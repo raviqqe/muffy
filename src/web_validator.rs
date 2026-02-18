@@ -103,12 +103,12 @@ impl WebValidator {
         {
             return Ok(ItemOutput::new());
         } else if document_type != Some(DocumentType::Robots) {
-            Box::into_pin(Box::new(self.cloned().validate_link(
+            let _ = Box::into_pin(Box::new(self.cloned().validate_link(
                 context.clone(),
                 url.join("/robots.txt")?.into(),
                 Some(DocumentType::Robots),
             )))
-            .await?;
+            .await;
         }
 
         let mut document_url = url.clone();
@@ -1758,6 +1758,48 @@ mod tests {
                             )
                             .as_bytes()
                             .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn handle_missing_robots_txt() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::NOT_FOUND,
+                            Default::default(),
+                            Default::default(),
                         ),
                         build_stub_response(
                             "https://foo.com",
