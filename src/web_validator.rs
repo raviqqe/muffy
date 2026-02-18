@@ -102,6 +102,13 @@ impl WebValidator {
             .any(|pattern| pattern.is_match(url.as_str()))
         {
             return Ok(ItemOutput::new());
+        } else if document_type != Some(DocumentType::Robots) {
+            Box::into_pin(Box::new(self.cloned().validate_link(
+                context.clone(),
+                url.join("/robots.txt")?.into(),
+                Some(DocumentType::Robots),
+            )))
+            .await?;
         }
 
         let mut document_url = url.clone();
