@@ -249,15 +249,12 @@ impl WebValidator {
         let base = document
             .base()
             .map(|href| response.url().join(&href))
-            .transpose()?;
+            .transpose()?
+            .unwrap_or_else(|| response.url().clone())
+            .into();
 
         for node in document.children() {
-            self.validate_html_element(
-                context,
-                &base.as_ref().unwrap_or(response.url()).clone().into(),
-                node,
-                &mut futures,
-            )?;
+            self.validate_html_element(context, &base, node, &mut futures)?;
         }
 
         Ok(futures)
