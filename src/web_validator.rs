@@ -558,7 +558,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_link_not_found() {
+    async fn validate_document_not_found() {
         let result = validate(
             StubHttpClient::new(
                 [
