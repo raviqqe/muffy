@@ -430,11 +430,7 @@ impl WebValidator {
                     })
                 }
             }
-            None => Ok(if value == "text/html" {
-                Some(DocumentType::Html)
-            } else {
-                None
-            }),
+            None => Ok((value == "text/html").then_some(DocumentType::Html)),
         }
     }
 
