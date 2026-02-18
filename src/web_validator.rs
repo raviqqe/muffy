@@ -103,6 +103,7 @@ impl WebValidator {
         {
             return Ok(ItemOutput::new());
         } else if document_type != Some(DocumentType::Robots) {
+            // TODO Fetch a link and send a job directly.
             let _ = Box::into_pin(Box::new(self.cloned().validate_link(
                 context.clone(),
                 url.join("/robots.txt")?.into(),
