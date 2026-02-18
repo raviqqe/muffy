@@ -594,7 +594,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 0))
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 
@@ -667,7 +667,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -720,7 +720,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -773,7 +773,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -826,7 +826,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -879,7 +879,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -933,7 +933,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -986,7 +986,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(3, 0), Metrics::new(2, 0))
+            (Metrics::new(4, 0), Metrics::new(2, 0))
         );
     }
 
@@ -1028,7 +1028,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(2, 0))
+            (Metrics::new(3, 0), Metrics::new(2, 0))
         );
     }
 
@@ -1071,7 +1071,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1142,7 +1142,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(4, 0))
+            (Metrics::new(2, 0), Metrics::new(4, 0))
         );
     }
 
@@ -1194,7 +1194,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1236,7 +1236,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 0))
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 
@@ -1284,7 +1284,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1320,7 +1320,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(0, 1), Metrics::new(0, 1))
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -1376,7 +1376,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1418,7 +1418,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1480,7 +1480,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(0, 1), Metrics::new(0, 1))
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -1546,7 +1546,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1620,7 +1620,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(3, 0), Metrics::new(3, 0))
+                (Metrics::new(4, 0), Metrics::new(3, 0))
             );
         }
 
@@ -1718,7 +1718,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(4, 0), Metrics::new(4, 0))
+                (Metrics::new(5, 0), Metrics::new(4, 0))
             );
         }
 
@@ -1782,7 +1782,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(1, 0), Metrics::new(1, 0))
+                (Metrics::new(2, 0), Metrics::new(1, 0))
             );
         }
     }
