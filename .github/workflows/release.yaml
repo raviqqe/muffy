@@ -67,12 +67,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - id: version
+        run: echo version=$(cargo run -- --version | grep -o '[0-9.]*') > ${{ github.output }}
       - id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: |
             ${{ github.repository }}
             ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=${{ steps.version.outputs.version }}
       - uses: docker/build-push-action@v6
         with:
           platforms: |
