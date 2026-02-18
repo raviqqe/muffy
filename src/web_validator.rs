@@ -245,11 +245,13 @@ impl WebValidator {
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
+        let document = self.0.html_parser.parse(response).await?;
+        let base = document.base().map(Url::parse).transpose()?;
 
-        for node in self.0.html_parser.parse(response).await?.children() {
+        for node in document.children() {
             self.validate_html_element(
                 context,
-                &response.url().clone().into(),
+                &base.as_ref().unwrap_or(response.url()).clone().into(),
                 node,
                 &mut futures,
             )?;
