@@ -33,17 +33,24 @@ impl Document {
 
     pub fn base(&self) -> Option<&str> {
         self.children()
-            .filter_map(|node| match node {
-                Node::Element(element) if element.name() == "base" => Some(element),
-                _ => None,
-            })
-            .filter_map(|element| {
+            .find_map(|node| Self::find_base(&node))
+            .and_then(|element| {
                 element
                     .attributes()
                     .find(|(key, _)| *key == "href")
                     .map(|(_, value)| value)
             })
-            .next()
+    }
+
+    fn find_base(node: &Node) -> Option<&Element> {
+        match node {
+            Node::Element(element) if element.name() == "base" => Some(element),
+            Node::Element(element) => element
+                .children
+                .iter()
+                .find_map(|node| Self::find_base(&node)),
+            _ => None,
+        }
     }
 }
 
