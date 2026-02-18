@@ -122,4 +122,26 @@ mod tests {
             .into()
         );
     }
+
+    #[tokio::test]
+    async fn parse_base() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    r#"<html><head><base href="https://foo.com/foo/"/></head></html>"#
+                        .as_bytes()
+                        .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/foo/")
+        );
+    }
 }
