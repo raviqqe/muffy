@@ -248,7 +248,7 @@ impl WebValidator {
         let document = self.0.html_parser.parse(response).await?;
         let base = document
             .base()
-            .map(|href| response.url().join(&href))
+            .map(|href| response.url().join(href))
             .transpose()?
             .unwrap_or_else(|| response.url().clone())
             .into();
