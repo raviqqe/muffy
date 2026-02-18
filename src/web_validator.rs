@@ -245,14 +245,16 @@ impl WebValidator {
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
+        let document = self.0.html_parser.parse(response).await?;
+        let base = document
+            .base()
+            .map(|href| response.url().join(href))
+            .transpose()?
+            .unwrap_or_else(|| response.url().clone())
+            .into();
 
-        for node in self.0.html_parser.parse(response).await?.children() {
-            self.validate_html_element(
-                context,
-                &response.url().clone().into(),
-                node,
-                &mut futures,
-            )?;
+        for node in document.children() {
+            self.validate_html_element(context, &base, node, &mut futures)?;
         }
 
         Ok(futures)
@@ -273,6 +275,7 @@ impl WebValidator {
             let mut links = vec![];
 
             match element.name() {
+                "base" => {}
                 "link" => {
                     if !attributes
                         .get("rel")
@@ -431,11 +434,7 @@ impl WebValidator {
                     })
                 }
             }
-            None => Ok(if value == "text/html" {
-                Some(DocumentType::Html)
-            } else {
-                None
-            }),
+            None => Ok((value == "text/html").then_some(DocumentType::Html)),
         }
     }
 
@@ -524,7 +523,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_page() {
+    async fn validate_site() {
         let mut documents = validate(
             StubHttpClient::new(
                 [
@@ -559,7 +558,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_two_pages() {
+    async fn validate_two_documents() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -601,7 +600,273 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_two_links_in_page() {
+    async fn validate_base_element() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base href="https://foo.com/foo/" />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_base_element_with_relative_href() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base href="/foo/" />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_base_element_without_href() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_base_element_with_invalid_href() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base href="::::" />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_multiple_base_elements() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base href="https://foo.com/foo/" />
+                                    <base href="https://foo.com/ignored/" />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_two_links_in_document() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -810,7 +1075,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_page_not_belonging_to_roots() {
+    async fn validate_document_not_belonging_to_roots() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),

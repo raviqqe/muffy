@@ -76,6 +76,7 @@ mod tests {
     use super::*;
     use crate::{MemoryCache, html_parser::node::Element};
     use http::StatusCode;
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
     use url::Url;
 
@@ -89,7 +90,7 @@ mod tests {
                     Url::parse("https://foo.com").unwrap(),
                     StatusCode::OK,
                     Default::default(),
-                    r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                    r#"<a href="https://foo.com/bar"></a>"#.trim().as_bytes().to_vec(),
                     Default::default(),
                 )))
                 .await
@@ -120,6 +121,124 @@ mod tests {
                 .into()
             )])
             .into()
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_base() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    indoc! {r#"
+                        <html>
+                            <head>
+                                <base href="https://foo.com/foo/" />
+                            </head>
+                        </html>
+                    "#}
+                    .trim()
+                    .as_bytes()
+                    .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/foo/")
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_base_without_href() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    indoc! {r#"
+                        <html>
+                            <head>
+                                <base target="_blank" />
+                            </head>
+                        </html>
+                    "#}
+                    .trim()
+                    .as_bytes()
+                    .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            None
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_multiple_base_elements() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    indoc! {r#"
+                        <html>
+                            <head>
+                                <base href="https://foo.com/first/" />
+                                <base href="https://foo.com/second/" />
+                            </head>
+                        </html>
+                    "#}
+                    .trim()
+                    .as_bytes()
+                    .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/first/")
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_base_in_body() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    indoc! {r#"
+                        <html>
+                            <head></head>
+                            <body>
+                                <base href="https://foo.com/foo/" />
+                            </body>
+                        </html>
+                    "#}
+                    .trim()
+                    .as_bytes()
+                    .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/foo/")
         );
     }
 }

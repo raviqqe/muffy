@@ -30,6 +30,28 @@ impl Document {
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
     }
+
+    pub fn base(&self) -> Option<&str> {
+        self.children()
+            .find_map(|node| Self::find_base(node))
+            .and_then(|element| {
+                element
+                    .attributes()
+                    .find(|(key, _)| *key == "href")
+                    .map(|(_, value)| value)
+            })
+    }
+
+    fn find_base(node: &Node) -> Option<&Element> {
+        match node {
+            Node::Element(element) if element.name() == "base" => Some(element),
+            Node::Element(element) => element
+                .children
+                .iter()
+                .find_map(|node| Self::find_base(node)),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
