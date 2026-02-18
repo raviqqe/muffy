@@ -154,7 +154,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn parse_base_without_href_returns_none() {
+    async fn parse_base_without_href() {
         let parser = HtmlParser::new(MemoryCache::new(0));
 
         assert_eq!(
@@ -183,7 +183,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn parse_multiple_base_elements_uses_first_href() {
+    async fn parse_multiple_base_elements() {
         let parser = HtmlParser::new(MemoryCache::new(0));
 
         assert_eq!(
@@ -226,7 +226,7 @@ mod tests {
                         <html>
                             <head></head>
                             <body>
-                                <base href="https://foo.com/body/" />
+                                <base href="https://foo.com/foo/" />
                             </body>
                         </html>
                     "#}
@@ -238,7 +238,7 @@ mod tests {
                 .await
                 .unwrap()
                 .base(),
-            Some("https://foo.com/body/")
+            Some("https://foo.com/foo/")
         );
     }
 }
