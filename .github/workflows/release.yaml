@@ -78,7 +78,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
+            type=raw,value=${{ steps.version.outputs.version }}
       - uses: docker/build-push-action@v6
         with:
           platforms: |
