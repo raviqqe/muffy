@@ -197,7 +197,7 @@ impl WebValidator {
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
-            DocumentType::Robots => self.validate_robots(&context, &response).await?,
+            DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
 
@@ -425,7 +425,6 @@ impl WebValidator {
         })
     }
 
-    // TODO Configure content type matchings.
     fn validate_document_type(
         response: &Response,
         document_type: Option<DocumentType>,
@@ -439,16 +438,6 @@ impl WebValidator {
         let value = str::from_utf8(value)?;
 
         match document_type {
-            Some(DocumentType::Sitemap) => {
-                if value.ends_with("/xml") {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
-                        actual: value.into(),
-                        expected: "*/xml",
-                    })
-                }
-            }
             Some(DocumentType::Html) => {
                 if value == "text/html" {
                     Ok(document_type)
@@ -456,6 +445,26 @@ impl WebValidator {
                     Err(Error::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
+                    })
+                }
+            }
+            Some(DocumentType::Robots) => {
+                if value == "text/plain" {
+                    Ok(document_type)
+                } else {
+                    Err(Error::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "text/plain",
+                    })
+                }
+            }
+            Some(DocumentType::Sitemap) => {
+                if value.ends_with("/xml") {
+                    Ok(document_type)
+                } else {
+                    Err(Error::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "*/xml",
                     })
                 }
             }
