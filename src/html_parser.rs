@@ -144,4 +144,70 @@ mod tests {
             Some("https://foo.com/foo/")
         );
     }
+
+    #[tokio::test]
+    async fn parse_base_without_href_returns_none() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    r#"<html><head><base target="_blank"></head></html>"#
+                        .as_bytes()
+                        .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            None
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_multiple_base_elements_uses_first_href() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    r#"<html><head><base href="https://foo.com/first/"><base href="https://foo.com/second/"></head></html>"#
+                        .as_bytes()
+                        .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/first/")
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_base_in_body() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com").unwrap(),
+                    StatusCode::OK,
+                    Default::default(),
+                    r#"<html><head></head><body><base href="https://foo.com/body/"></body></html>"#
+                        .as_bytes()
+                        .to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap()
+                .base(),
+            Some("https://foo.com/body/")
+        );
+    }
 }
