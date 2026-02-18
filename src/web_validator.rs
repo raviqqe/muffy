@@ -523,7 +523,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_page() {
+    async fn validate_site() {
         let mut documents = validate(
             StubHttpClient::new(
                 [
@@ -558,7 +558,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_two_pages() {
+    async fn validate_two_documents() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -812,7 +812,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_multiple_base_elements_only_first_used() {
+    async fn validate_multiple_base_elements() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -1075,7 +1075,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_page_not_belonging_to_roots() {
+    async fn validate_document_not_belonging_to_roots() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
