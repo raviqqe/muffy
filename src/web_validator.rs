@@ -18,6 +18,7 @@ use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use regex::Regex;
+use robotxt::Robots;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -196,6 +197,7 @@ impl WebValidator {
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
+            DocumentType::Robots => self.validate_robots(&context, &response).await?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
 
@@ -357,6 +359,29 @@ impl WebValidator {
         }
 
         Ok(())
+    }
+
+    fn validate_robots(
+        &self,
+        context: &Arc<Context>,
+        response: &Arc<Response>,
+    ) -> Result<Vec<ElementFuture>, Error> {
+        let robots = Robots::from_bytes(response.body(), "");
+
+        Ok(robots
+            .sitemaps()
+            .iter()
+            .map(|url| {
+                (
+                    Element::new("sitemap".into(), vec![]),
+                    vec![spawn(self.cloned().validate_link(
+                        context.clone(),
+                        url.as_str().into(),
+                        Some(DocumentType::Sitemap),
+                    ))],
+                )
+            })
+            .collect::<Vec<_>>())
     }
 
     fn validate_sitemap(
