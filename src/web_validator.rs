@@ -1828,5 +1828,7 @@ mod tests {
                 (Metrics::new(2, 0), Metrics::new(1, 0))
             );
         }
+
+        // TODO Test recursion from robots.txt into other URLs via sitemap.xml.
     }
 }
