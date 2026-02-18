@@ -599,6 +599,65 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn validate_base_element() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <base href="https://foo.com/foo/" />
+                                </head>
+                                <body>
+                                    <a href="bar" />
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo/",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo/bar",
+                        StatusCode::OK,
+                        html_headers,
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(2, 0))
+        );
+    }
+
+    #[tokio::test]
     async fn validate_two_links_in_page() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
