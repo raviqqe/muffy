@@ -243,14 +243,16 @@ impl HttpClient {
 
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
-        Ok(self
-            .get_inner(
-                &request.clone().set_url(request.url().join("/robots.txt")?),
-                false,
-            )
-            .await
-            .ok()
-            .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
+        let url = request.url().join("/robots.txt")?;
+
+        Ok(if &url == request.url() {
+            None
+        } else {
+            self.get_inner(&request.clone().set_url(url), false)
+                .await
+                .ok()
+                .map(|response| Robots::from_bytes(response.body(), USER_AGENT))
+        })
     }
 }
 
