@@ -33,7 +33,7 @@ impl Document {
 
     pub fn base(&self) -> Option<&str> {
         self.children()
-            .find_map(|node| Self::find_base(&node))
+            .find_map(|node| Self::find_base(node))
             .and_then(|element| {
                 element
                     .attributes()
@@ -48,7 +48,7 @@ impl Document {
             Node::Element(element) => element
                 .children
                 .iter()
-                .find_map(|node| Self::find_base(&node)),
+                .find_map(|node| Self::find_base(node)),
             _ => None,
         }
     }
