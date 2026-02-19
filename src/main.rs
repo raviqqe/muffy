@@ -384,7 +384,6 @@ fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dy
 mod tests {
     use super::*;
     use core::time::Duration;
-    use std::path::PathBuf;
 
     #[test]
     fn default_check_arguments() {
