@@ -152,10 +152,10 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let command = arguments
+    let config = match arguments
         .command
-        .unwrap_or(Command::Run(Default::default()));
-    let config = match command {
+        .unwrap_or(Command::Run(Default::default()))
+    {
         Command::Cache(arguments) => {
             handle_cache_command(arguments).await?;
             return Ok(());
