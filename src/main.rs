@@ -18,14 +18,14 @@ use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
     process::exit,
+    sync::LazyLock,
 };
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{
-    fs,
-    fs::{create_dir_all, read_to_string},
+    fs::{create_dir_all, read_to_string, remove_dir_all, try_exists},
     io::stdout,
 };
 use url::Url;
@@ -36,13 +36,13 @@ const SLED_DIRECTORY: &str = "sled";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
-fn cache_directory() -> PathBuf {
+static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     cache_dir()
         .unwrap_or_else(temp_dir)
         .join(DATABASE_DIRECTORY)
         .join(crate_version!())
         .join(SLED_DIRECTORY)
-}
+});
 
 #[derive(clap::Parser)]
 #[command(about, version)]
@@ -171,7 +171,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 loop {
                     let file = directory.join(CONFIG_FILE);
 
-                    if fs::try_exists(&file).await? {
+                    if try_exists(&file).await? {
                         break file;
                     }
 
@@ -188,9 +188,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
     let mut output = stdout();
     let db = if config.persistent_cache() {
-        let directory = cache_directory();
-        create_dir_all(&directory).await?;
-        Some(sled::open(directory)?)
+        create_dir_all(&*CACHE_DIRECTORY).await?;
+        Some(sled::open(&*CACHE_DIRECTORY)?)
     } else {
         None
     };
@@ -281,16 +280,12 @@ async fn run() -> Result<(), Box<dyn Error>> {
 }
 
 async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn Error>> {
-    let directory = cache_directory();
-
     match arguments.command {
         CacheCommand::Clean => {
-            if fs::try_exists(&directory).await? {
-                fs::remove_dir_all(&directory).await?;
-            }
+            remove_dir_all(&*CACHE_DIRECTORY).await?;
         }
         CacheCommand::Path => {
-            println!("{}", directory.display());
+            println!("{}", CACHE_DIRECTORY.display());
         }
     }
 
