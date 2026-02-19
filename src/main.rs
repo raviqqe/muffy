@@ -152,17 +152,19 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let config = match arguments
+    let format = arguments.format;
+    let verbose = arguments.verbose;
+
+    match arguments
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::Cache(arguments) => {
-            handle_cache_command(arguments).await?;
-            return Ok(());
+        Command::Cache(arguments) => handle_cache_command(arguments).await,
+        Command::CheckSite(check_arguments) => {
+            run_config(&compile_check_config(&check_arguments)?, format, verbose).await
         }
-        Command::CheckSite(arguments) => compile_check_config(&arguments)?,
-        Command::Run(arguments) => {
-            let config_file = if let Some(file) = arguments.config {
+        Command::Run(run_arguments) => {
+            let config_file = if let Some(file) = run_arguments.config {
                 file
             } else {
                 let directory = current_dir()?;
@@ -182,10 +184,21 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 }
             };
 
-            muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
+            run_config(
+                &muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?,
+                format,
+                verbose,
+            )
+            .await
         }
-    };
+    }
+}
 
+async fn run_config(
+    config: &Config,
+    format: RenderFormat,
+    verbose: bool,
+) -> Result<(), Box<dyn Error>> {
     let mut output = stdout();
     let db = if config.persistent_cache() {
         create_dir_all(&*CACHE_DIRECTORY).await?;
@@ -208,7 +221,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&config).await?;
+    let mut documents = validator.validate(config).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -221,8 +234,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         muffy::render_document(
             &document,
             &RenderOptions::default()
-                .set_format(arguments.format)
-                .set_verbose(arguments.verbose),
+                .set_format(format)
+                .set_verbose(verbose),
             &mut output,
         )
         .await?;
@@ -417,11 +430,10 @@ mod tests {
 
     #[test]
     fn cache_directory_suffix() {
-        let directory = cache_directory();
         let expected = PathBuf::from(DATABASE_DIRECTORY)
             .join(crate_version!())
             .join(SLED_DIRECTORY);
 
-        assert!(directory.ends_with(&expected));
+        assert!(CACHE_DIRECTORY.ends_with(&expected));
     }
 }
