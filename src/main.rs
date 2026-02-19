@@ -294,7 +294,11 @@ async fn run_config(
 
 async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn Error>> {
     match arguments.command {
-        CacheCommand::Clean => remove_dir_all(&*CACHE_DIRECTORY).await?,
+        CacheCommand::Clean => {
+            if try_exists(&*CACHE_DIRECTORY).await? {
+                remove_dir_all(&*CACHE_DIRECTORY).await?
+            }
+        }
         CacheCommand::Path => println!("{}", CACHE_DIRECTORY.display()),
     }
 
