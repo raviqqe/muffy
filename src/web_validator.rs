@@ -1830,7 +1830,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn handle_sitemap() {
+        async fn handle_sitemap_link() {
             let html_headers = HeaderMap::from_iter([(
                 HeaderName::from_static("content-type"),
                 HeaderValue::from_static("text/html"),
