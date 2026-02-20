@@ -27,7 +27,7 @@ use tokio::{
     time::{sleep, timeout},
 };
 
-const USER_AGENT: &str = "Muffy";
+pub(crate) const USER_AGENT: &str = "Muffy";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.

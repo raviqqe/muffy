@@ -9,7 +9,7 @@ use crate::{
     element_output::ElementOutput,
     error::Error,
     html_parser::{HtmlParser, Node},
-    http_client::HttpClient,
+    http_client::{HttpClient, USER_AGENT},
     item_output::ItemOutput,
     request::Request,
     response::Response,
@@ -373,7 +373,7 @@ impl WebValidator {
         context: &Arc<Context>,
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
-        let robots = Robots::from_bytes(response.body(), "");
+        let robots = Robots::from_bytes(response.body(), USER_AGENT);
 
         Ok(robots
             .sitemaps()
