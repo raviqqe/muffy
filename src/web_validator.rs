@@ -9,7 +9,7 @@ use crate::{
     element_output::ElementOutput,
     error::Error,
     html_parser::{HtmlParser, Node},
-    http_client::{HttpClient, ROBOTS_PATH, USER_AGENT},
+    http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
     request::Request,
     response::Response,
@@ -19,7 +19,6 @@ use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use regex::Regex;
-use robotxt::Robots;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};

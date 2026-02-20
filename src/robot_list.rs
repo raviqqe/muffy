@@ -1,4 +1,5 @@
 use robotxt::Robots;
+use url::Url;
 
 const USER_AGENT: &str = "Muffy";
 
@@ -13,8 +14,8 @@ impl RobotList {
         }
     }
 
-    pub fn is_allowed(&self, user_agent: &str, url: &str) -> bool {
-        self.db.is_absolute_allowed(user_agent, url)
+    pub fn is_allowed(&self, url: &Url) -> bool {
+        self.db.is_absolute_allowed(url)
     }
 
     pub fn sitemaps(&self) -> impl Iterator<Item = &url::Url> {
