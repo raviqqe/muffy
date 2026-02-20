@@ -1,7 +1,7 @@
 use robotxt::Robots;
 use url::Url;
 
-const USER_AGENT: &str = "Muffy";
+const USER_AGENT: &str = "MuffyBot";
 
 pub struct RobotList {
     db: Robots,
