@@ -14,20 +14,20 @@ pub use self::{
 };
 use crate::{
     ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
-    rate_limiter::RateLimiter, request::Request, response::Response, timer::Timer,
+    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
+    timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
 use core::{str, time::Duration};
-use robotxt::Robots;
+use http::StatusCode;
 use std::collections::HashMap;
 use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
 };
 
-pub(crate) const USER_AGENT: &str = "Muffy";
 pub(crate) const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
@@ -156,7 +156,7 @@ impl HttpClient {
                 Box::new(async move {
                     if robots
                         && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_absolute_allowed(request.url())
+                        && !robot.is_allowed(request.url())
                     {
                         return Err(HttpClientError::RobotsTxt);
                     }
@@ -243,15 +243,19 @@ impl HttpClient {
     }
 
     #[async_recursion]
-    async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
-        Ok(self
+    async fn get_robot(&self, request: &Request) -> Result<Option<RobotList>, HttpClientError> {
+        let response = self
             .get_inner(
                 &request.clone().set_url(request.url().join(ROBOTS_PATH)?),
                 false,
             )
-            .await
-            .ok()
-            .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
+            .await?;
+
+        Ok(if response.status() == StatusCode::NOT_FOUND {
+            None
+        } else {
+            Some(RobotList::parse(str::from_utf8(response.body())?))
+        })
     }
 }
 
