@@ -27,7 +27,8 @@ use tokio::{
     time::{sleep, timeout},
 };
 
-const USER_AGENT: &str = "muffy";
+pub(crate) const USER_AGENT: &str = "Muffy";
+pub(crate) const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.
@@ -108,6 +109,7 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
+        let robots = robots && request.url().path() != ROBOTS_PATH;
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
@@ -143,7 +145,6 @@ impl HttpClient {
             .await?
     }
 
-    // TODO Configure rate limits.
     async fn get_cached_globally(
         &self,
         request: &Request,
@@ -245,7 +246,7 @@ impl HttpClient {
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
         Ok(self
             .get_inner(
-                &request.clone().set_url(request.url().join("/robots.txt")?),
+                &request.clone().set_url(request.url().join(ROBOTS_PATH)?),
                 false,
             )
             .await

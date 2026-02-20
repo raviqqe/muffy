@@ -9,7 +9,7 @@ use crate::{
     element_output::ElementOutput,
     error::Error,
     html_parser::{HtmlParser, Node},
-    http_client::HttpClient,
+    http_client::{HttpClient, ROBOTS_PATH, USER_AGENT},
     item_output::ItemOutput,
     request::Request,
     response::Response,
@@ -18,6 +18,7 @@ use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use regex::Regex;
+use robotxt::Robots;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -101,14 +102,21 @@ impl WebValidator {
             .any(|pattern| pattern.is_match(url.as_str()))
         {
             return Ok(ItemOutput::new());
+        } else if document_type != Some(DocumentType::Robots) {
+            let _ = Box::into_pin(Box::new(self.cloned().validate_link(
+                context.clone(),
+                url.join(ROBOTS_PATH)?.into(),
+                Some(DocumentType::Robots),
+            )))
+            .await;
         }
 
         let mut document_url = url.clone();
-        document_url.set_fragment(None);
-
         // We keep this fragment removal not configurable as otherwise we might have a
         // lot more requests for the same HTML pages, which makes crawling
         // unacceptably inefficient.
+        document_url.set_fragment(None);
+
         let site = context.config().site(&url);
         let Some(response) = self
             .0
@@ -196,6 +204,7 @@ impl WebValidator {
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
+            DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
 
@@ -359,6 +368,27 @@ impl WebValidator {
         Ok(())
     }
 
+    fn validate_robots(
+        &self,
+        context: &Arc<Context>,
+        response: &Arc<Response>,
+    ) -> Result<Vec<ElementFuture>, Error> {
+        Ok(Robots::from_bytes(response.body(), USER_AGENT)
+            .sitemaps()
+            .iter()
+            .map(|url| {
+                (
+                    Element::new("sitemap".into(), vec![]),
+                    vec![spawn(self.cloned().validate_link(
+                        context.clone(),
+                        url.as_str().into(),
+                        Some(DocumentType::Sitemap),
+                    ))],
+                )
+            })
+            .collect::<Vec<_>>())
+    }
+
     fn validate_sitemap(
         &self,
         context: &Arc<Context>,
@@ -400,7 +430,6 @@ impl WebValidator {
         })
     }
 
-    // TODO Configure content type matchings.
     fn validate_document_type(
         response: &Response,
         document_type: Option<DocumentType>,
@@ -413,29 +442,39 @@ impl WebValidator {
         };
         let value = str::from_utf8(value)?;
 
-        match document_type {
-            Some(DocumentType::Sitemap) => {
-                if value.ends_with("/xml") {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
-                        actual: value.into(),
-                        expected: "*/xml",
-                    })
-                }
-            }
+        Ok(match document_type {
             Some(DocumentType::Html) => {
-                if value == "text/html" {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
+                if value != "text/html" {
+                    return Err(Error::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
-                    })
+                    });
                 }
+
+                document_type
             }
-            None => Ok((value == "text/html").then_some(DocumentType::Html)),
-        }
+            Some(DocumentType::Robots) => {
+                if value != "text/plain" {
+                    return Err(Error::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "text/plain",
+                    });
+                }
+
+                document_type
+            }
+            Some(DocumentType::Sitemap) => {
+                if !value.ends_with("/xml") {
+                    return Err(Error::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "*/xml",
+                    });
+                }
+
+                document_type
+            }
+            None => (value == "text/html").then_some(DocumentType::Html),
+        })
     }
 
     async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
@@ -499,7 +538,14 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
+                [(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_recursive(true)
+                        .set_max_redirects(1 << 32)
+                        .into(),
+                )]
+                .into(),
             )]
             .into(),
         ))
@@ -553,7 +599,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 0))
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 
@@ -626,7 +672,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -679,7 +725,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -732,7 +778,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -785,7 +831,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -838,7 +884,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -892,7 +938,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -945,7 +991,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(3, 0), Metrics::new(2, 0))
+            (Metrics::new(4, 0), Metrics::new(2, 0))
         );
     }
 
@@ -987,7 +1033,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(2, 0))
+            (Metrics::new(3, 0), Metrics::new(2, 0))
         );
     }
 
@@ -1030,7 +1076,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1101,7 +1147,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(4, 0))
+            (Metrics::new(2, 0), Metrics::new(4, 0))
         );
     }
 
@@ -1153,7 +1199,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1195,7 +1241,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(0, 0))
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 
@@ -1243,7 +1289,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1279,7 +1325,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(0, 1), Metrics::new(0, 1))
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -1335,7 +1381,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1377,7 +1423,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(2, 0), Metrics::new(1, 0))
+            (Metrics::new(3, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1439,7 +1485,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(0, 1), Metrics::new(0, 1))
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -1505,7 +1551,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 0), Metrics::new(1, 0))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1579,7 +1625,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(3, 0), Metrics::new(3, 0))
+                (Metrics::new(4, 0), Metrics::new(3, 0))
             );
         }
 
@@ -1677,7 +1723,7 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(4, 0), Metrics::new(4, 0))
+                (Metrics::new(5, 0), Metrics::new(4, 0))
             );
         }
 
@@ -1741,7 +1787,164 @@ mod tests {
 
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(1, 0), Metrics::new(1, 0))
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn handle_missing_robots_txt() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::NOT_FOUND,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<a href="https://foo.com/bar"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn handle_redirected_robots_txt() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::PERMANENT_REDIRECT,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("location"),
+                                HeaderValue::from_static("/foo/robots.txt"),
+                            )]),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/foo/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(0, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn handle_sitemap_link() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            indoc!(
+                                "
+                                User-agent: *
+                                Allow: /
+
+                                Sitemap: https://foo.com/sitemap.xml
+                                "
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sitemap.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("application/xml"),
+                            )]),
+                            r#"
+                            <?xml version="1.0" encoding="UTF-8"?>
+                            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                                <url>
+                                    <loc>https://foo.com/bar</loc>
+                                </url>
+                            </urlset>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers,
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(4, 0), Metrics::new(2, 0))
             );
         }
     }
