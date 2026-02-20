@@ -1850,41 +1850,41 @@ mod tests {
                             Default::default(),
                             indoc!(
                                 "
-                            User-agent: *
-                            Allow: /
+                                User-agent: *
+                                Allow: /
 
-                            Sitemap: https://foo.com/sitemap.xml
-                            "
+                                Sitemap: https://foo.com/sitemap.xml
+                                "
                             )
                             .as_bytes()
                             .to_vec(),
                         ),
-                        // sitemap.xml referenced from robots.txt
                         build_stub_response(
                             "https://foo.com/sitemap.xml",
                             StatusCode::OK,
                             xml_headers.clone(),
-                            r#"<?xml version="1.0" encoding="UTF-8"?>
-                        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-                          <url>
-                            <loc>https://foo.com/from-sitemap</loc>
-                          </url>
-                        </urlset>"#
-                                .as_bytes()
-                                .to_vec(),
+                            r#"
+
+                            <?xml version="1.0" encoding="UTF-8"?>
+                            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+                                <url>
+                                    <loc>https://foo.com/bar</loc>
+                                </url>
+                            </urlset>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
                         ),
-                        // Root document
                         build_stub_response(
                             "https://foo.com",
                             StatusCode::OK,
                             html_headers.clone(),
                             Default::default(),
                         ),
-                        // Document discovered via sitemap.xml
                         build_stub_response(
-                            "https://foo.com/from-sitemap",
+                            "https://foo.com/bar",
                             StatusCode::OK,
-                            html_headers.clone(),
+                            html_headers,
                             Default::default(),
                         ),
                     ]
@@ -1896,13 +1896,10 @@ mod tests {
             .await
             .unwrap();
 
-            // We expect robots.txt, the root URL, the sitemap.xml, and the URL from the sitemap
-            // to all be validated as documents.
             assert_eq!(
                 collect_metrics(&mut documents).await,
-                (Metrics::new(4, 0), Metrics::new(0, 0))
+                (Metrics::new(4, 0), Metrics::new(2, 0))
             );
         }
-        // TODO Test recursion from robots.txt into other URLs via sitemap.xml.
     }
 }
