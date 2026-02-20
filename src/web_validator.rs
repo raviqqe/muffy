@@ -1835,15 +1835,10 @@ mod tests {
                 HeaderName::from_static("content-type"),
                 HeaderValue::from_static("text/html"),
             )]);
-            let xml_headers = HeaderMap::from_iter([(
-                HeaderName::from_static("content-type"),
-                HeaderValue::from_static("application/xml"),
-            )]);
 
             let mut documents = validate(
                 StubHttpClient::new(
                     [
-                        // robots.txt that points to a sitemap.xml
                         build_stub_response(
                             "https://foo.com/robots.txt",
                             StatusCode::OK,
@@ -1862,7 +1857,10 @@ mod tests {
                         build_stub_response(
                             "https://foo.com/sitemap.xml",
                             StatusCode::OK,
-                            xml_headers.clone(),
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("application/xml"),
+                            )]),
                             r#"
                             <?xml version="1.0" encoding="UTF-8"?>
                             <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
