@@ -143,7 +143,6 @@ impl HttpClient {
             .await?
     }
 
-    // TODO Configure rate limits.
     async fn get_cached_globally(
         &self,
         request: &Request,
