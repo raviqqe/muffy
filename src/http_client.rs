@@ -28,7 +28,7 @@ use tokio::{
 };
 
 pub(crate) const USER_AGENT: &str = "Muffy";
-const ROBOTS_PATH: &str = "/robots.txt";
+pub(crate) const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.

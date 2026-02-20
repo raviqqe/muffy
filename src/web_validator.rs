@@ -9,7 +9,7 @@ use crate::{
     element_output::ElementOutput,
     error::Error,
     html_parser::{HtmlParser, Node},
-    http_client::{HttpClient, USER_AGENT},
+    http_client::{HttpClient, ROBOTS_PATH, USER_AGENT},
     item_output::ItemOutput,
     request::Request,
     response::Response,
@@ -105,7 +105,7 @@ impl WebValidator {
         } else if document_type != Some(DocumentType::Robots) {
             let _ = Box::into_pin(Box::new(self.cloned().validate_link(
                 context.clone(),
-                url.join("/robots.txt")?.into(),
+                url.join(ROBOTS_PATH)?.into(),
                 Some(DocumentType::Robots),
             )))
             .await;
