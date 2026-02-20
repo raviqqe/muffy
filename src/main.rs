@@ -18,14 +18,14 @@ use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
     process::exit,
+    sync::LazyLock,
 };
 use tabled::{
     Table,
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{
-    fs,
-    fs::{create_dir_all, read_to_string},
+    fs::{create_dir_all, read_to_string, remove_dir_all, try_exists},
     io::stdout,
 };
 use url::Url;
@@ -35,6 +35,14 @@ const DATABASE_DIRECTORY: &str = "muffy";
 const SLED_DIRECTORY: &str = "sled";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
+
+static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
+    cache_dir()
+        .unwrap_or_else(temp_dir)
+        .join(DATABASE_DIRECTORY)
+        .join(crate_version!())
+        .join(SLED_DIRECTORY)
+});
 
 #[derive(clap::Parser)]
 #[command(about, version)]
@@ -55,6 +63,8 @@ enum Command {
     CheckSite(Box<CheckSiteArguments>),
     /// Runs validation with a configuration file.
     Run(RunArguments),
+    /// Manages the persistent cache.
+    Cache(CacheArguments),
 }
 
 #[derive(clap::Args, Debug)]
@@ -116,6 +126,20 @@ struct RunArguments {
     config: Option<PathBuf>,
 }
 
+#[derive(clap::Args, Debug)]
+struct CacheArguments {
+    #[command(subcommand)]
+    command: CacheCommand,
+}
+
+#[derive(clap::Subcommand, Debug)]
+enum CacheCommand {
+    /// Deletes the cache directory.
+    Clean,
+    /// Shows the cache directory path.
+    Path,
+}
+
 #[tokio::main]
 async fn main() {
     env_logger::init();
@@ -128,13 +152,19 @@ async fn main() {
 
 async fn run() -> Result<(), Box<dyn Error>> {
     let arguments = Arguments::parse();
-    let config = match arguments
+    let format = arguments.format;
+    let verbose = arguments.verbose;
+
+    match arguments
         .command
         .unwrap_or(Command::Run(Default::default()))
     {
-        Command::CheckSite(arguments) => compile_check_config(&arguments)?,
-        Command::Run(arguments) => {
-            let config_file = if let Some(file) = arguments.config {
+        Command::Cache(arguments) => handle_cache_command(arguments).await,
+        Command::CheckSite(check_arguments) => {
+            run_config(&compile_check_config(&check_arguments)?, format, verbose).await
+        }
+        Command::Run(run_arguments) => {
+            let config_file = if let Some(file) = run_arguments.config {
                 file
             } else {
                 let directory = current_dir()?;
@@ -143,7 +173,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 loop {
                     let file = directory.join(CONFIG_FILE);
 
-                    if fs::try_exists(&file).await? {
+                    if try_exists(&file).await? {
                         break file;
                     }
 
@@ -154,19 +184,25 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 }
             };
 
-            muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?
+            run_config(
+                &muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?,
+                format,
+                verbose,
+            )
+            .await
         }
-    };
+    }
+}
 
+async fn run_config(
+    config: &Config,
+    format: RenderFormat,
+    verbose: bool,
+) -> Result<(), Box<dyn Error>> {
     let mut output = stdout();
     let db = if config.persistent_cache() {
-        let directory = cache_dir()
-            .unwrap_or_else(temp_dir)
-            .join(DATABASE_DIRECTORY)
-            .join(crate_version!())
-            .join(SLED_DIRECTORY);
-        create_dir_all(&directory).await?;
-        Some(sled::open(directory)?)
+        create_dir_all(&*CACHE_DIRECTORY).await?;
+        Some(sled::open(&*CACHE_DIRECTORY)?)
     } else {
         None
     };
@@ -185,7 +221,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
-    let mut documents = validator.validate(&config).await?;
+    let mut documents = validator.validate(config).await?;
     let mut document_metrics = muffy::Metrics::default();
     let mut element_metrics = muffy::Metrics::default();
 
@@ -198,8 +234,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         muffy::render_document(
             &document,
             &RenderOptions::default()
-                .set_format(arguments.format)
-                .set_verbose(arguments.verbose),
+                .set_format(format)
+                .set_verbose(verbose),
             &mut output,
         )
         .await?;
@@ -254,6 +290,19 @@ async fn run() -> Result<(), Box<dyn Error>> {
     } else {
         Ok(())
     }
+}
+
+async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn Error>> {
+    match arguments.command {
+        CacheCommand::Clean => {
+            if try_exists(&*CACHE_DIRECTORY).await? {
+                remove_dir_all(&*CACHE_DIRECTORY).await?
+            }
+        }
+        CacheCommand::Path => println!("{}", CACHE_DIRECTORY.display()),
+    }
+
+    Ok(())
 }
 
 fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
@@ -352,5 +401,38 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
+    }
+
+    #[test]
+    fn cache_path_arguments() {
+        let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "path"])
+            .command
+            .unwrap()
+        else {
+            panic!("expected cache command")
+        };
+
+        assert!(matches!(arguments.command, CacheCommand::Path));
+    }
+
+    #[test]
+    fn cache_clean_arguments() {
+        let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "clean"])
+            .command
+            .unwrap()
+        else {
+            panic!("expected cache command")
+        };
+
+        assert!(matches!(arguments.command, CacheCommand::Clean));
+    }
+
+    #[test]
+    fn cache_directory_suffix() {
+        let expected = PathBuf::from(DATABASE_DIRECTORY)
+            .join(crate_version!())
+            .join(SLED_DIRECTORY);
+
+        assert!(CACHE_DIRECTORY.ends_with(&expected));
     }
 }
