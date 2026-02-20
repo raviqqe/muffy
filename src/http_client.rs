@@ -28,6 +28,7 @@ use tokio::{
 };
 
 pub(crate) const USER_AGENT: &str = "Muffy";
+const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.
@@ -108,6 +109,7 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
+        let robots = robots && request.url().path() != ROBOTS_PATH;
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
@@ -242,16 +244,14 @@ impl HttpClient {
 
     #[async_recursion]
     async fn get_robot(&self, request: &Request) -> Result<Option<Robots>, HttpClientError> {
-        let url = request.url().join("/robots.txt")?;
-
-        Ok(if &url == request.url() {
-            None
-        } else {
-            self.get_inner(&request.clone().set_url(url), false)
-                .await
-                .ok()
-                .map(|response| Robots::from_bytes(response.body(), USER_AGENT))
-        })
+        Ok(self
+            .get_inner(
+                &request.clone().set_url(request.url().join(ROBOTS_PATH)?),
+                false,
+            )
+            .await
+            .ok()
+            .map(|response| Robots::from_bytes(response.body(), USER_AGENT)))
     }
 }
 
