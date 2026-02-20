@@ -13,6 +13,7 @@ use crate::{
     item_output::ItemOutput,
     request::Request,
     response::Response,
+    robot_list::RobotList,
 };
 use alloc::sync::Arc;
 use core::str;
@@ -373,9 +374,8 @@ impl WebValidator {
         context: &Arc<Context>,
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
-        Ok(Robots::from_bytes(response.body(), USER_AGENT)
+        Ok(RobotList::parse(str::from_utf8(response.body())?)
             .sitemaps()
-            .iter()
             .map(|url| {
                 (
                     Element::new("sitemap".into(), vec![]),

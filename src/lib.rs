@@ -17,6 +17,7 @@ mod rate_limiter;
 mod render;
 mod request;
 mod response;
+mod robot_list;
 mod timer;
 mod web_validator;
 
