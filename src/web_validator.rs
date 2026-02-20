@@ -444,39 +444,39 @@ impl WebValidator {
         };
         let value = str::from_utf8(value)?;
 
-        match document_type {
+        Ok(match document_type {
             Some(DocumentType::Html) => {
-                if value == "text/html" {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
+                if value != "text/html" {
+                    return Err(Error::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
-                    })
+                    });
                 }
+
+                document_type
             }
             Some(DocumentType::Robots) => {
-                if value == "text/plain" {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
+                if value != "text/plain" {
+                    return Err(Error::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/plain",
-                    })
+                    });
                 }
+
+                document_type
             }
             Some(DocumentType::Sitemap) => {
-                if value.ends_with("/xml") {
-                    Ok(document_type)
-                } else {
-                    Err(Error::ContentTypeInvalid {
+                if !value.ends_with("/xml") {
+                    return Err(Error::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "*/xml",
-                    })
+                    });
                 }
+
+                document_type
             }
-            None => Ok((value == "text/html").then_some(DocumentType::Html)),
-        }
+            None => (value == "text/html").then_some(DocumentType::Html),
+        })
     }
 
     async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
