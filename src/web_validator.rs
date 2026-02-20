@@ -373,9 +373,7 @@ impl WebValidator {
         context: &Arc<Context>,
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
-        let robots = Robots::from_bytes(response.body(), USER_AGENT);
-
-        Ok(robots
+        Ok(Robots::from_bytes(response.body(), USER_AGENT)
             .sitemaps()
             .iter()
             .map(|url| {
