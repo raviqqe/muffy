@@ -540,7 +540,14 @@ mod tests {
             Default::default(),
             [(
                 url.host_str().unwrap_or_default().into(),
-                [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
+                [(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_recursive(true)
+                        .set_max_redirects(1 << 32)
+                        .into(),
+                )]
+                .into(),
             )]
             .into(),
         ))
@@ -1825,6 +1832,51 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn handle_redirected_robots_txt() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::PERMANENT_REDIRECT,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("location"),
+                                HeaderValue::from_static("/foo/robots.txt"),
+                            )]),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/foo/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(0, 0))
             );
         }
 
