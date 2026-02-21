@@ -228,12 +228,11 @@ impl RetryConfig {
             self.factor = other.factor;
         }
 
-        if let Some(interval) = other.interval {
-            if let Some(mut base_interval) = self.interval.take() {
-                base_interval.merge(interval);
-                self.interval = Some(base_interval);
+        if let Some(other) = other.interval {
+            if let Some(interval) = &mut self.interval {
+                interval.merge(other);
             } else {
-                self.interval = Some(interval);
+                self.interval = Some(other);
             }
         }
     }
