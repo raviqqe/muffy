@@ -126,9 +126,7 @@ impl SerializableConfig {
     }
 
     fn merge_cache_config(base_cache: Option<CacheConfig>, new_cache: CacheConfig) -> CacheConfig {
-        let CacheConfig {
-            max_age: new_max_age,
-        } = new_cache;
+        let new_max_age = new_cache.max_age;
         let base_max_age = base_cache.and_then(|cache| cache.max_age);
 
         CacheConfig {
@@ -137,16 +135,13 @@ impl SerializableConfig {
     }
 
     fn merge_retry_config(base_retry: Option<RetryConfig>, new_retry: RetryConfig) -> RetryConfig {
-        let RetryConfig {
-            count: new_count,
-            factor: new_factor,
-            interval: new_interval,
-        } = new_retry;
-        let RetryConfig {
-            count: base_count,
-            factor: base_factor,
-            interval: base_interval,
-        } = base_retry.unwrap_or_default();
+        let new_count = new_retry.count;
+        let new_factor = new_retry.factor;
+        let new_interval = new_retry.interval;
+        let base_retry = base_retry.unwrap_or_default();
+        let base_count = base_retry.count;
+        let base_factor = base_retry.factor;
+        let base_interval = base_retry.interval;
 
         let interval = match new_interval {
             Some(new_interval) => Some(Self::merge_retry_duration_config(
@@ -167,14 +162,11 @@ impl SerializableConfig {
         base_duration: Option<RetryDurationConfig>,
         new_duration: RetryDurationConfig,
     ) -> RetryDurationConfig {
-        let RetryDurationConfig {
-            initial: new_initial,
-            cap: new_cap,
-        } = new_duration;
-        let RetryDurationConfig {
-            initial: base_initial,
-            cap: base_cap,
-        } = base_duration.unwrap_or_default();
+        let new_initial = new_duration.initial;
+        let new_cap = new_duration.cap;
+        let base_duration = base_duration.unwrap_or_default();
+        let base_initial = base_duration.initial;
+        let base_cap = base_duration.cap;
 
         RetryDurationConfig {
             initial: new_initial.or(base_initial),
