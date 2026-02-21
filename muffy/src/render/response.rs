@@ -8,7 +8,7 @@ pub struct RenderedResponse<'a> {
     url: &'a Url,
     #[serde(with = "http_serde::status_code")]
     status: StatusCode,
-    duration: u128,
+    latency: u128,
 }
 
 impl<'a> RenderedResponse<'a> {
@@ -21,7 +21,7 @@ impl<'a> RenderedResponse<'a> {
     }
 
     pub const fn duration(&self) -> u128 {
-        self.duration
+        self.latency
     }
 }
 
@@ -30,7 +30,7 @@ impl<'a> From<&'a Response> for RenderedResponse<'a> {
         Self {
             url: response.url(),
             status: response.status(),
-            duration: response.duration().as_millis(),
+            latency: response.duration().as_millis(),
         }
     }
 }
