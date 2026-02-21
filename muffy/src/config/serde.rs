@@ -18,6 +18,7 @@ use std::{
     path::PathBuf,
     sync::LazyLock,
 };
+use tokio::fs::read_to_string;
 use url::Url;
 
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
@@ -98,6 +99,16 @@ struct RetryConfig {
 struct RetryDurationConfig {
     initial: Option<DurationString>,
     cap: Option<DurationString>,
+}
+
+/// Reads a configuration.
+pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
+    let content = read_to_string(&path).await?;
+
+    serde_yaml::from_str(&content).map_err(|error| ConfigError::ParseConfig {
+        source: error,
+        path,
+    })
 }
 
 /// Compiles a configuration.
