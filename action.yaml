@@ -17,5 +17,6 @@ runs:
     - shell: bash
       run: >
         docker run --network host
+        --mount type=bind,src=./muffy.toml,dst=/muffy.toml
         raviqqe/muffy:${{ steps.version.outputs.version }}
         ${{ inputs.verbose == 'true' && '--verbose' || '' }}
