@@ -18,7 +18,6 @@ use std::{
     path::{Path, PathBuf},
     sync::LazyLock,
 };
-use tokio::fs::read_to_string;
 use url::Url;
 
 static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
