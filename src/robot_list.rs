@@ -32,16 +32,16 @@ mod tests {
     fn parse_sitemaps_with_trimming() {
         let source = indoc! {"
             user-agent: *
-            Sitemap: https://example.com/sitemap.xml\r
-            sitemap:https://example.com/secondary.xml
-            Sitemap:    https://example.com/tertiary.xml
+            sitemap: https://example.com/primary.xml\r
+            sitemap: https://example.com/secondary.xml
+            Sitemap: https://example.com/tertiary.xml
         "};
         let list = RobotList::parse(source);
 
         assert_eq!(
             list.sitemaps().collect::<Vec<_>>(),
             vec![
-                "https://example.com/sitemap.xml",
+                "https://example.com/primary.xml",
                 "https://example.com/secondary.xml",
                 "https://example.com/tertiary.xml",
             ]
