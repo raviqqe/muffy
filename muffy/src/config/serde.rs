@@ -15,7 +15,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::LazyLock,
 };
 use tokio::fs::read_to_string;
@@ -46,6 +46,12 @@ pub struct SerializableConfig {
     cache: Option<GlobalCacheConfig>,
     rate_limit: Option<RateLimitConfig>,
     sites: BTreeMap<String, SiteConfig>,
+}
+
+impl SerializableConfig {
+    pub fn extend(&self) -> Option<&Path> {
+        self.extend.as_deref()
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -99,16 +105,6 @@ struct RetryConfig {
 struct RetryDurationConfig {
     initial: Option<DurationString>,
     cap: Option<DurationString>,
-}
-
-/// Reads a configuration.
-pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
-    let content = read_to_string(&path).await?;
-
-    serde_yaml::from_str(&content).map_err(|error| ConfigError::ParseConfig {
-        source: error,
-        path,
-    })
 }
 
 /// Compiles a configuration.
