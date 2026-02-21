@@ -20,7 +20,7 @@ impl<'a> RenderedElementOutput<'a> {
     }
 
     pub(crate) fn retain_error(&mut self) {
-        self.results.retain(|result| result.is_err());
+        self.results.retain(Result::is_err);
     }
 }
 
