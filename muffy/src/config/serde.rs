@@ -851,6 +851,7 @@ mod tests {
     #[test]
     fn compile_parent_site_config_with_no_root() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -899,6 +900,7 @@ mod tests {
     #[test]
     fn compile_circular_site_configs() {
         let result = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -933,6 +935,7 @@ mod tests {
     #[test]
     fn compile_missing_parent_site_config() {
         let result = compile_config(SerializableConfig {
+            extend: None,
             sites: [(
                 "foo".to_owned(),
                 SiteConfig {
@@ -953,6 +956,7 @@ mod tests {
     #[test]
     fn compile_multiple_default_site_configs() {
         let result = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -984,6 +988,7 @@ mod tests {
     #[test]
     fn compile_non_recursive_root_not_included() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [(
                 "foo".to_owned(),
                 SiteConfig {
