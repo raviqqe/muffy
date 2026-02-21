@@ -55,7 +55,35 @@ impl SerializableConfig {
 
     /// Merges another configuration.
     pub fn merge(&mut self, other: Self) {
-        merge_serializable_config(self, other);
+        let SerializableConfig {
+            extend,
+            concurrency,
+            cache,
+            rate_limit,
+            sites,
+        } = other;
+
+        if extend.is_some() {
+            self.extend = extend;
+        }
+
+        if concurrency.is_some() {
+            self.concurrency = concurrency;
+        }
+
+        if let Some(new_cache) = cache {
+            self.cache = Some(merge_global_cache_config(self.cache.take(), new_cache));
+        }
+
+        if let Some(new_rate_limit) = rate_limit {
+            self.rate_limit = Some(new_rate_limit);
+        }
+
+        for (site_name, new_site) in sites {
+            let base_site = self.sites.remove(&site_name);
+            let merged_site = merge_site_config(base_site, new_site);
+            self.sites.insert(site_name, merged_site);
+        }
     }
 }
 
@@ -110,38 +138,6 @@ struct RetryConfig {
 struct RetryDurationConfig {
     initial: Option<DurationString>,
     cap: Option<DurationString>,
-}
-
-fn merge_serializable_config(merged_config: &mut SerializableConfig, new_config: SerializableConfig) {
-    let SerializableConfig {
-        extend,
-        concurrency,
-        cache,
-        rate_limit,
-        sites,
-    } = new_config;
-
-    if extend.is_some() {
-        merged_config.extend = extend;
-    }
-
-    if concurrency.is_some() {
-        merged_config.concurrency = concurrency;
-    }
-
-    if let Some(new_cache) = cache {
-        merged_config.cache = Some(merge_global_cache_config(merged_config.cache.take(), new_cache));
-    }
-
-    if let Some(new_rate_limit) = rate_limit {
-        merged_config.rate_limit = Some(new_rate_limit);
-    }
-
-    for (site_name, new_site) in sites {
-        let base_site = merged_config.sites.remove(&site_name);
-        let merged_site = merge_site_config(base_site, new_site);
-        merged_config.sites.insert(site_name, merged_site);
-    }
 }
 
 fn merge_site_config(base_site: Option<SiteConfig>, new_site: SiteConfig) -> SiteConfig {
