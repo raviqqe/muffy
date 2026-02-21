@@ -1334,7 +1334,7 @@ mod tests {
         }
 
         #[test]
-        fn keep_base_for_unset_fields() {
+        fn merge_unset_fields() {
             let base_config = SerializableConfig {
                 extend: Some(PathBuf::from("base.toml")),
                 concurrency: Some(1),
