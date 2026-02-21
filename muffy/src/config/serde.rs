@@ -62,12 +62,11 @@ impl SerializableConfig {
             self.concurrency = other.concurrency;
         }
 
-        if let Some(cache) = other.cache {
-            if let Some(mut base_cache) = self.cache.take() {
-                base_cache.merge(cache);
-                self.cache = Some(base_cache);
+        if let Some(other) = other.cache {
+            if let Some(cache) = &mut self.cache {
+                cache.merge(other);
             } else {
-                self.cache = Some(cache);
+                self.cache = Some(other);
             }
         }
 
@@ -120,13 +119,10 @@ struct SiteConfig {
 
 impl SiteConfig {
     fn merge(&mut self, other: Self) {
-        if let Some(cache) = other.cache {
-            if let Some(mut base_cache) = self.cache.take() {
-                base_cache.merge(cache);
-                self.cache = Some(base_cache);
-            } else {
-                self.cache = Some(cache);
-            }
+        if let Some(other) = other.cache {
+            let mut cache = self.cache.take().unwrap_or_default();
+            cache.merge(other);
+            self.cache = Some(cache);
         }
 
         if other.concurrency.is_some() {
