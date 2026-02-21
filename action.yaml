@@ -1,15 +1,9 @@
 name: raviqqe/muffy
 description: The static website validator
 branding:
-  icon: link
-  color: yellow
+  icon: pen-tool
+  color: orange
 inputs:
-  url:
-    description: A website URL
-    required: true
-  accept-status:
-    description: Comma-separated accepted status codes
-    required: false
   verbose:
     description: Be verbose
     required: false
@@ -20,19 +14,8 @@ runs:
     - id: version
       shell: bash
       run: echo version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+') >> ${{ github.output }}
-    - id: status
-      shell: bash
-      run: |
-        for status in $(echo ${{ inputs.accept-status }} | tr , ' '); do
-          options="$options --accept-status $status"
-        done
-
-        echo options=$options >> ${{ github.output }}
     - shell: bash
       run: >
         docker run --network host
         raviqqe/muffy:${{ steps.version.outputs.version }}
-        check-site
         ${{ inputs.verbose && '--verbose' || '' }}
-        ${{ steps.status.outputs.options }}
-        ${{ inputs.url }}
