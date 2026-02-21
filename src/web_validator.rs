@@ -380,7 +380,7 @@ impl WebValidator {
                     Element::new("sitemap".into(), vec![]),
                     vec![spawn(self.cloned().validate_link(
                         context.clone(),
-                        url.as_str().into(),
+                        url.to_owned(),
                         Some(DocumentType::Sitemap),
                     ))],
                 )
