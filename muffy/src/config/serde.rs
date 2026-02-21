@@ -219,7 +219,7 @@ struct RetryConfig {
 }
 
 impl RetryConfig {
-    fn merge(&mut self, other: Self) {
+    const fn merge(&mut self, other: Self) {
         if other.count.is_some() {
             self.count = other.count;
         }
