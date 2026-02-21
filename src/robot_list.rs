@@ -1,3 +1,4 @@
+use core::ops::Deref;
 use robotxt::Robots;
 use url::Url;
 
@@ -5,12 +6,14 @@ const USER_AGENT: &str = "MuffyBot";
 
 pub struct RobotList {
     db: Robots,
+    sitemaps: Vec<String>,
 }
 
 impl RobotList {
     pub fn parse(source: &str) -> Self {
         Self {
             db: Robots::from_bytes(source.as_bytes(), USER_AGENT),
+            sitemaps: source.split("\n").collect(),
         }
     }
 
@@ -18,7 +21,7 @@ impl RobotList {
         self.db.is_absolute_allowed(url)
     }
 
-    pub fn sitemaps(&self) -> impl Iterator<Item = &url::Url> {
-        self.db.sitemaps().iter()
+    pub fn sitemaps(&self) -> impl Iterator<Item = &str> {
+        self.sitemaps.iter().map(Deref::deref)
     }
 }
