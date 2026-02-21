@@ -1236,12 +1236,11 @@ mod tests {
                 DurationString::from(Duration::from_secs(2))
             );
 
-            let merged_site = config.sites.get("example").unwrap();
+            let site = config.sites.get("example").unwrap();
 
-            assert_eq!(merged_site.concurrency, Some(8));
+            assert_eq!(site.concurrency, Some(8));
             assert_eq!(
-                merged_site
-                    .cache
+                site.cache
                     .as_ref()
                     .unwrap()
                     .max_age
@@ -1251,7 +1250,7 @@ mod tests {
                 Duration::from_secs(5)
             );
 
-            let headers = merged_site.headers.as_ref().unwrap();
+            let headers = site.headers.as_ref().unwrap();
 
             assert_eq!(headers.get("user-agent").unwrap(), "updated");
             assert_eq!(headers.get("accept").unwrap(), "text/plain");
@@ -1293,20 +1292,17 @@ mod tests {
                 )]
                 .into(),
             });
-            let merged_site = config.sites.get("example").unwrap();
+            let site = config.sites.get("example").unwrap();
 
             assert_eq!(
-                merged_site.roots.as_ref().unwrap(),
+                site.roots.as_ref().unwrap(),
                 &HashSet::from([Url::parse("https://update.example/").unwrap()])
             );
             assert_eq!(
-                merged_site.schemes.as_ref().unwrap(),
+                site.schemes.as_ref().unwrap(),
                 &HashSet::from(["https".to_owned()])
             );
-            assert_eq!(
-                merged_site.statuses.as_ref().unwrap(),
-                &HashSet::from([500])
-            );
+            assert_eq!(site.statuses.as_ref().unwrap(), &HashSet::from([500]));
         }
 
         #[test]
