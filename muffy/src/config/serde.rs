@@ -53,9 +53,31 @@ impl SerializableConfig {
         self.extend.as_deref()
     }
 
-    /// Merges another configuration into this one.
-    pub fn merge_config(&mut self, other: &Self) {
-        merge_serializable_config(self, other);
+    /// Merges another configuration.
+    pub fn merge(&mut self, other: &Self) {
+        if new_config.extend.is_some() {
+            merged_config.extend = new_config.extend.clone();
+        }
+
+        if new_config.concurrency.is_some() {
+            merged_config.concurrency = new_config.concurrency;
+        }
+
+        if let Some(new_cache) = &new_config.cache {
+            merged_config.cache = Some(merge_global_cache_config(
+                merged_config.cache.as_ref(),
+                new_cache,
+            ));
+        }
+
+        if let Some(new_rate_limit) = &new_config.rate_limit {
+            merged_config.rate_limit = Some(clone_rate_limit_config(new_rate_limit));
+        }
+
+        for (site_name, new_site) in &new_config.sites {
+            let merged_site = merge_site_config(merged_config.sites.get(site_name), new_site);
+            merged_config.sites.insert(site_name.clone(), merged_site);
+        }
     }
 }
 
@@ -110,35 +132,6 @@ struct RetryConfig {
 struct RetryDurationConfig {
     initial: Option<DurationString>,
     cap: Option<DurationString>,
-}
-
-fn merge_serializable_config(
-    merged_config: &mut SerializableConfig,
-    new_config: &SerializableConfig,
-) {
-    if new_config.extend.is_some() {
-        merged_config.extend = new_config.extend.clone();
-    }
-
-    if new_config.concurrency.is_some() {
-        merged_config.concurrency = new_config.concurrency;
-    }
-
-    if let Some(new_cache) = &new_config.cache {
-        merged_config.cache = Some(merge_global_cache_config(
-            merged_config.cache.as_ref(),
-            new_cache,
-        ));
-    }
-
-    if let Some(new_rate_limit) = &new_config.rate_limit {
-        merged_config.rate_limit = Some(clone_rate_limit_config(new_rate_limit));
-    }
-
-    for (site_name, new_site) in &new_config.sites {
-        let merged_site = merge_site_config(merged_config.sites.get(site_name), new_site);
-        merged_config.sites.insert(site_name.clone(), merged_site);
-    }
 }
 
 fn merge_site_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> SiteConfig {
@@ -288,13 +281,13 @@ fn merge_retry_duration_config(
     }
 }
 
-fn clone_cache_config(cache: &CacheConfig) -> CacheConfig {
+const fn clone_cache_config(cache: &CacheConfig) -> CacheConfig {
     CacheConfig {
         max_age: cache.max_age,
     }
 }
 
-fn clone_rate_limit_config(rate_limit: &RateLimitConfig) -> RateLimitConfig {
+const fn clone_rate_limit_config(rate_limit: &RateLimitConfig) -> RateLimitConfig {
     RateLimitConfig {
         supply: rate_limit.supply,
         window: rate_limit.window,
@@ -309,7 +302,7 @@ fn clone_retry_config(retry: &RetryConfig) -> RetryConfig {
     }
 }
 
-fn clone_retry_duration_config(duration: &RetryDurationConfig) -> RetryDurationConfig {
+const fn clone_retry_duration_config(duration: &RetryDurationConfig) -> RetryDurationConfig {
     RetryDurationConfig {
         initial: duration.initial,
         cap: duration.cap,
@@ -695,7 +688,7 @@ mod tests {
 
         let mut merged_config = base_config;
 
-        merged_config.merge_config(&update_config);
+        merged_config.merge(&update_config);
 
         assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
         assert_eq!(merged_config.concurrency, Some(2));
@@ -783,7 +776,7 @@ mod tests {
 
         let mut merged_config = base_config;
 
-        merged_config.merge_config(&update_config);
+        merged_config.merge(&update_config);
         let merged_site = merged_config.sites.get("example").unwrap();
 
         let expected_roots = [Url::parse("https://update.example/").unwrap()]
