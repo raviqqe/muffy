@@ -120,9 +120,11 @@ struct SiteConfig {
 impl SiteConfig {
     fn merge(&mut self, other: Self) {
         if let Some(other) = other.cache {
-            let mut cache = self.cache.take().unwrap_or_default();
-            cache.merge(other);
-            self.cache = Some(cache);
+            if let Some(cache) = &mut self.cache {
+                cache.merge(other);
+            } else {
+                self.cache = Some(other);
+            }
         }
 
         if other.concurrency.is_some() {
@@ -137,10 +139,12 @@ impl SiteConfig {
             self.fragments_ignored = other.fragments_ignored;
         }
 
-        if let Some(headers) = other.headers {
-            let mut merged_headers = self.headers.take().unwrap_or_default();
-            merged_headers.extend(headers);
-            self.headers = Some(merged_headers);
+        if let Some(other) = other.headers {
+            if let Some(headers) = &mut self.headers {
+                headers.extend(other);
+            } else {
+                self.headers = Some(other);
+            }
         }
 
         if other.ignore.is_some() {
@@ -159,12 +163,11 @@ impl SiteConfig {
             self.recurse = other.recurse;
         }
 
-        if let Some(retry) = other.retry {
-            if let Some(mut base_retry) = self.retry.take() {
-                base_retry.merge(retry);
-                self.retry = Some(base_retry);
+        if let Some(other) = other.retry {
+            if let Some(retry) = &mut self.retry {
+                retry.merge(other);
             } else {
-                self.retry = Some(retry);
+                self.retry = Some(other);
             }
         }
 
