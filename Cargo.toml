@@ -1,61 +1,8 @@
-[package]
-name = "muffy"
-version = "0.2.3"
-edition = "2024"
-description = "The static website validator"
-repository = "https://github.com/raviqqe/muffy"
-license = "MIT"
-keywords = ["web"]
-categories = ["command-line-utilities", "development-tools"]
+[workspace]
+resolver = "3"
+members = ["muffy"]
 
-[dependencies]
-async-recursion = "1.1.1"
-async-trait = "0.1.89"
-bitcode = { version = "0.6.9", features = ["serde"] }
-clap = { version = "4.5.60", features = ["cargo", "derive"] }
-colored = "3.1.1"
-dirs = "6.0.0"
-duration-string = { version = "0.5.3", features = ["serde"] }
-env_logger = "0.11.9"
-fjall = "3.0.2"
-futures = "0.3.32"
-html5ever = "0.38.0"
-http = "1.4.0"
-http-serde = "2.1.1"
-itertools = "0.14.0"
-log = "0.4.29"
-markup5ever_rcdom = "0.38.0"
-moka = { version = "0.12.13", features = ["future"] }
-petgraph = "0.8.3"
-regex = "1.12.3"
-reqwest = { version = "0.12.28", default-features = false, features = ["rustls-tls-webpki-roots"] }
-rlimit = "0.11.0"
-robotxt = "0.6.1"
-scc = "3.6.4"
-serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = "1.0.149"
-sitemaps = "0.2.0"
-sled = "0.34.7"
-tabled = "0.20.0"
-tokio = { version = "1.49.0", features = [
-  "fs",
-  "io-std",
-  "io-util",
-  "macros",
-  "rt-multi-thread",
-  "sync",
-] }
-tokio-stream = "0.1.18"
-toml = "1.0.3"
-url = { version = "2.5.8", features = ["serde"] }
-
-[dev-dependencies]
-indoc = "2.0.7"
-insta = "1.46.3"
-pretty_assertions = "1.4.1"
-tempfile = "3.25.0"
-
-[lints.clippy]
+[workspace.lints.clippy]
 alloc_instead_of_core = "deny"
 cargo = "deny"
 complexity = "deny"
@@ -82,7 +29,7 @@ unnecessary_safety_comment = "deny"
 unused_self = "deny"
 use_self = "deny"
 
-[lints.rust]
+[workspace.lints.rust]
 missing_docs = "deny"
 warnings = "deny"
 
