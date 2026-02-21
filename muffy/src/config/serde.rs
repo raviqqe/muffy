@@ -1435,7 +1435,7 @@ mod tests {
         }
 
         #[test]
-        fn merge_overwrites_with_empty_sets() {
+        fn merge_empty_sets() {
             let mut merged_config = SerializableConfig {
                 sites: [(
                     "example".to_owned(),
