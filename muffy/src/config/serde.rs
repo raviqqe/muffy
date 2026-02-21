@@ -64,7 +64,10 @@ impl SerializableConfig {
         }
 
         if let Some(cache) = other.cache {
-            self.cache = Some(Self::merge_global_cache_config(self.cache.take(), cache));
+            self.cache = Some(Self::merge_global_cache_config(
+                self.cache.take().unwrap_or_default(),
+                cache,
+            ));
         }
 
         if let Some(limit) = other.rate_limit {
@@ -82,7 +85,10 @@ impl SerializableConfig {
 
     fn merge_site_config(one: SiteConfig, other: SiteConfig) -> SiteConfig {
         let cache = match other.cache {
-            Some(other) => Some(Self::merge_cache_config(one.cache, other)),
+            Some(other) => Some(Self::merge_cache_config(
+                one.cache.unwrap_or_default(),
+                other,
+            )),
             None => one.cache,
         };
         let headers = match other.headers {
@@ -94,7 +100,10 @@ impl SerializableConfig {
             None => one.headers,
         };
         let retry = match other.retry {
-            Some(other) => Some(Self::merge_retry_config(one.retry, other)),
+            Some(other) => Some(Self::merge_retry_config(
+                one.retry.unwrap_or_default(),
+                other,
+            )),
             None => one.retry,
         };
 
@@ -117,60 +126,47 @@ impl SerializableConfig {
     }
 
     fn merge_global_cache_config(
-        one: Option<GlobalCacheConfig>,
+        one: GlobalCacheConfig,
         other: GlobalCacheConfig,
     ) -> GlobalCacheConfig {
         GlobalCacheConfig {
-            persistent: other.persistent.or(one.and_then(|cache| cache.persistent)),
+            persistent: other.persistent.or(one.persistent),
         }
     }
 
-    fn merge_cache_config(base_cache: Option<CacheConfig>, new_cache: CacheConfig) -> CacheConfig {
-        let new_max_age = new_cache.max_age;
-        let base_max_age = base_cache.and_then(|cache| cache.max_age);
-
+    fn merge_cache_config(base_cache: CacheConfig, new_cache: CacheConfig) -> CacheConfig {
         CacheConfig {
-            max_age: new_max_age.or(base_max_age),
+            max_age: new_cache.max_age.or(base_cache.max_age),
         }
     }
 
-    fn merge_retry_config(base_retry: Option<RetryConfig>, new_retry: RetryConfig) -> RetryConfig {
-        let new_count = new_retry.count;
-        let new_factor = new_retry.factor;
-        let new_interval = new_retry.interval;
-        let base_retry = base_retry.unwrap_or_default();
-        let base_count = base_retry.count;
-        let base_factor = base_retry.factor;
+    fn merge_retry_config(base_retry: RetryConfig, new_retry: RetryConfig) -> RetryConfig {
+        let count = new_retry.count.or(base_retry.count);
+        let factor = new_retry.factor.or(base_retry.factor);
         let base_interval = base_retry.interval;
 
-        let interval = match new_interval {
+        let interval = match new_retry.interval {
             Some(new_interval) => Some(Self::merge_retry_duration_config(
-                base_interval,
+                base_interval.unwrap_or_default(),
                 new_interval,
             )),
             None => base_interval,
         };
 
         RetryConfig {
-            count: new_count.or(base_count),
-            factor: new_factor.or(base_factor),
+            count,
+            factor,
             interval,
         }
     }
 
     fn merge_retry_duration_config(
-        base_duration: Option<RetryDurationConfig>,
+        base_duration: RetryDurationConfig,
         new_duration: RetryDurationConfig,
     ) -> RetryDurationConfig {
-        let new_initial = new_duration.initial;
-        let new_cap = new_duration.cap;
-        let base_duration = base_duration.unwrap_or_default();
-        let base_initial = base_duration.initial;
-        let base_cap = base_duration.cap;
-
         RetryDurationConfig {
-            initial: new_initial.or(base_initial),
-            cap: new_cap.or(base_cap),
+            initial: new_duration.initial.or(base_duration.initial),
+            cap: new_duration.cap.or(base_duration.cap),
         }
     }
 }
