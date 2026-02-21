@@ -54,15 +54,16 @@ impl SerializableConfig {
     }
 
     /// Merges another configuration.
-    pub fn merge(&mut self, other: Self) {
-        let SerializableConfig {
+    pub fn merge(
+        &mut self,
+        Self {
             extend,
             concurrency,
             cache,
             rate_limit,
             sites,
-        } = other;
-
+        }: Self,
+    ) {
         if extend.is_some() {
             self.extend = extend;
         }
@@ -72,7 +73,10 @@ impl SerializableConfig {
         }
 
         if let Some(new_cache) = cache {
-            self.cache = Some(Self::merge_global_cache_config(self.cache.take(), new_cache));
+            self.cache = Some(Self::merge_global_cache_config(
+                self.cache.take(),
+                new_cache,
+            ));
         }
 
         if let Some(new_rate_limit) = rate_limit {
@@ -194,7 +198,10 @@ impl SerializableConfig {
         } = base_retry.unwrap_or_default();
 
         let interval = match new_interval {
-            Some(new_interval) => Some(Self::merge_retry_duration_config(base_interval, new_interval)),
+            Some(new_interval) => Some(Self::merge_retry_duration_config(
+                base_interval,
+                new_interval,
+            )),
             None => base_interval,
         };
 
