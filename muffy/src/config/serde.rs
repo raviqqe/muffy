@@ -91,7 +91,7 @@ struct GlobalCacheConfig {
 }
 
 impl GlobalCacheConfig {
-    fn merge(&mut self, other: Self) {
+    const fn merge(&mut self, other: Self) {
         if other.persistent.is_some() {
             self.persistent = other.persistent;
         }
@@ -196,7 +196,7 @@ struct CacheConfig {
 }
 
 impl CacheConfig {
-    fn merge(&mut self, other: Self) {
+    const fn merge(&mut self, other: Self) {
         if other.max_age.is_some() {
             self.max_age = other.max_age;
         }
@@ -247,7 +247,7 @@ struct RetryDurationConfig {
 }
 
 impl RetryDurationConfig {
-    fn merge(&mut self, other: Self) {
+    const fn merge(&mut self, other: Self) {
         if other.initial.is_some() {
             self.initial = other.initial;
         }
