@@ -30,7 +30,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn parse_sitemaps_with_trimming() {
+    fn parse_sitemaps() {
         let source = indoc! {"
             user-agent: *
             sitemap: https://example.com/primary.xml\r
@@ -50,7 +50,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_ignores_non_matching_sitemap_lines() {
+    fn parse_sitemaps_not_normalized() {
         let source = indoc! {"
             sitemap:https://example.com/no-space.xml
              sitemap: https://example.com/leading-space.xml
@@ -71,7 +71,7 @@ mod tests {
     }
 
     #[test]
-    fn is_allowed_respects_disallow() {
+    fn disallow_path() {
         let source = indoc! {"
             user-agent: MuffyBot
             disallow: /private
@@ -83,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn allow_paths() {
+    fn allow_path() {
         let source = indoc! {"
             user-agent: MuffyBot
             disallow: /private
