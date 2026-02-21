@@ -54,39 +54,27 @@ impl SerializableConfig {
     }
 
     /// Merges another configuration.
-    pub fn merge(
-        &mut self,
-        Self {
-            extend,
-            concurrency,
-            cache,
-            rate_limit,
-            sites,
-        }: Self,
-    ) {
-        if extend.is_some() {
-            self.extend = extend;
+    pub fn merge(&mut self, other: Self) {
+        if other.extend.is_some() {
+            self.extend = other.extend;
         }
 
-        if concurrency.is_some() {
-            self.concurrency = concurrency;
+        if other.concurrency.is_some() {
+            self.concurrency = other.concurrency;
         }
 
-        if let Some(new_cache) = cache {
-            self.cache = Some(Self::merge_global_cache_config(
-                self.cache.take(),
-                new_cache,
-            ));
+        if let Some(cache) = other.cache {
+            self.cache = Some(Self::merge_global_cache_config(self.cache.take(), cache));
         }
 
-        if let Some(new_rate_limit) = rate_limit {
-            self.rate_limit = Some(new_rate_limit);
+        if let Some(limit) = other.rate_limit {
+            self.rate_limit = Some(limit);
         }
 
-        for (site_name, new_site) in sites {
-            let base_site = self.sites.remove(&site_name);
-            let merged_site = Self::merge_site_config(base_site, new_site);
-            self.sites.insert(site_name, merged_site);
+        for (name, other) in other.sites {
+            let site = self.sites.remove(&name);
+            self.sites
+                .insert(name, Self::merge_site_config(site, other));
         }
     }
 
