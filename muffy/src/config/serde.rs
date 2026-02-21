@@ -55,9 +55,8 @@ impl SerializableConfig {
 
     /// Merges another configuration.
     pub fn merge(&mut self, other: Self) {
-        if other.extend.is_some() {
-            self.extend = other.extend;
-        }
+        // We clear the `extend` field because its value is meaningless after merge.
+        self.extend = None;
 
         if other.concurrency.is_some() {
             self.concurrency = other.concurrency;
@@ -572,310 +571,318 @@ mod tests {
         }
     }
 
-    #[test]
-    fn merge_merges_maps_and_scalars() {
-        let base_config = SerializableConfig {
-            extend: Some(PathBuf::from("base.toml")),
-            concurrency: Some(1),
-            cache: Some(GlobalCacheConfig {
-                persistent: Some(false),
-            }),
-            rate_limit: Some(RateLimitConfig {
-                supply: 1,
-                window: Duration::from_secs(1).into(),
-            }),
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    cache: Some(CacheConfig {
-                        max_age: Some(Duration::from_secs(5).into()),
-                    }),
-                    concurrency: Some(4),
-                    headers: Some([("user-agent".to_owned(), "base".to_owned())].into()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
+    mod merge {
+        use super::{
+            CacheConfig, Duration, GlobalCacheConfig, PathBuf, RateLimitConfig, RetryConfig,
+            RetryDurationConfig, SerializableConfig, SiteConfig, Url,
         };
+        use pretty_assertions::assert_eq;
 
-        let update_config = SerializableConfig {
-            extend: Some(PathBuf::from("update.toml")),
-            concurrency: Some(2),
-            cache: Some(GlobalCacheConfig {
-                persistent: Some(true),
-            }),
-            rate_limit: Some(RateLimitConfig {
-                supply: 2,
-                window: Duration::from_secs(2).into(),
-            }),
-            sites: [
-                (
+        #[test]
+        fn merge_merges_maps_and_scalars() {
+            let base_config = SerializableConfig {
+                extend: Some(PathBuf::from("base.toml")),
+                concurrency: Some(1),
+                cache: Some(GlobalCacheConfig {
+                    persistent: Some(false),
+                }),
+                rate_limit: Some(RateLimitConfig {
+                    supply: 1,
+                    window: Duration::from_secs(1).into(),
+                }),
+                sites: [(
                     "example".to_owned(),
                     SiteConfig {
-                        cache: Some(CacheConfig { max_age: None }),
-                        concurrency: Some(8),
-                        headers: Some(
-                            [
-                                ("user-agent".to_owned(), "updated".to_owned()),
-                                ("accept".to_owned(), "text/plain".to_owned()),
-                            ]
-                            .into(),
-                        ),
+                        cache: Some(CacheConfig {
+                            max_age: Some(Duration::from_secs(5).into()),
+                        }),
+                        concurrency: Some(4),
+                        headers: Some([("user-agent".to_owned(), "base".to_owned())].into()),
                         ..Default::default()
                     },
-                ),
-                (
-                    "other".to_owned(),
+                )]
+                .into(),
+            };
+
+            let update_config = SerializableConfig {
+                extend: Some(PathBuf::from("update.toml")),
+                concurrency: Some(2),
+                cache: Some(GlobalCacheConfig {
+                    persistent: Some(true),
+                }),
+                rate_limit: Some(RateLimitConfig {
+                    supply: 2,
+                    window: Duration::from_secs(2).into(),
+                }),
+                sites: [
+                    (
+                        "example".to_owned(),
+                        SiteConfig {
+                            cache: Some(CacheConfig { max_age: None }),
+                            concurrency: Some(8),
+                            headers: Some(
+                                [
+                                    ("user-agent".to_owned(), "updated".to_owned()),
+                                    ("accept".to_owned(), "text/plain".to_owned()),
+                                ]
+                                .into(),
+                            ),
+                            ..Default::default()
+                        },
+                    ),
+                    (
+                        "other".to_owned(),
+                        SiteConfig {
+                            ignore: Some(true),
+                            ..Default::default()
+                        },
+                    ),
+                ]
+                .into(),
+            };
+
+            let mut merged_config = base_config;
+
+            merged_config.merge(update_config);
+
+            assert_eq!(merged_config.extend, None);
+            assert_eq!(merged_config.concurrency, Some(2));
+            assert_eq!(
+                merged_config
+                    .cache
+                    .as_ref()
+                    .and_then(|cache| cache.persistent),
+                Some(true)
+            );
+            assert_eq!(
+                merged_config
+                    .rate_limit
+                    .as_ref()
+                    .map(|rate_limit| rate_limit.supply),
+                Some(2)
+            );
+            assert_eq!(
+                merged_config
+                    .rate_limit
+                    .as_ref()
+                    .map(|rate_limit| rate_limit.window.clone()),
+                Some(Duration::from_secs(2).into())
+            );
+
+            let merged_site = merged_config.sites.get("example").unwrap();
+
+            assert_eq!(merged_site.concurrency, Some(8));
+            assert_eq!(
+                merged_site
+                    .cache
+                    .as_ref()
+                    .and_then(|cache| cache.max_age.as_deref().copied()),
+                Some(Duration::from_secs(5))
+            );
+
+            let headers = merged_site.headers.as_ref().unwrap();
+
+            assert_eq!(
+                headers.get("user-agent").map(String::as_str),
+                Some("updated")
+            );
+            assert_eq!(
+                headers.get("accept").map(String::as_str),
+                Some("text/plain")
+            );
+            assert!(merged_config.sites.contains_key("other"));
+        }
+
+        #[test]
+        fn merge_overwrites_arrays() {
+            let base_config = SerializableConfig {
+                extend: None,
+                concurrency: None,
+                cache: None,
+                rate_limit: None,
+                sites: [(
+                    "example".to_owned(),
                     SiteConfig {
-                        ignore: Some(true),
+                        roots: Some([Url::parse("https://base.example/").unwrap()].into()),
+                        schemes: Some(["http".to_owned(), "https".to_owned()].into()),
+                        statuses: Some([200, 404].into()),
                         ..Default::default()
                     },
-                ),
-            ]
-            .into(),
-        };
+                )]
+                .into(),
+            };
 
-        let mut merged_config = base_config;
+            let update_config = SerializableConfig {
+                extend: None,
+                concurrency: None,
+                cache: None,
+                rate_limit: None,
+                sites: [(
+                    "example".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://update.example/").unwrap()].into()),
+                        schemes: Some(["https".to_owned()].into()),
+                        statuses: Some([500].into()),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            };
 
-        merged_config.merge(update_config);
+            let mut merged_config = base_config;
 
-        assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
-        assert_eq!(merged_config.concurrency, Some(2));
-        assert_eq!(
-            merged_config
-                .cache
-                .as_ref()
-                .and_then(|cache| cache.persistent),
-            Some(true)
-        );
-        assert_eq!(
-            merged_config
-                .rate_limit
-                .as_ref()
-                .map(|rate_limit| rate_limit.supply),
-            Some(2)
-        );
-        assert_eq!(
-            merged_config
-                .rate_limit
-                .as_ref()
-                .map(|rate_limit| rate_limit.window.clone()),
-            Some(Duration::from_secs(2).into())
-        );
+            merged_config.merge(update_config);
+            let merged_site = merged_config.sites.get("example").unwrap();
 
-        let merged_site = merged_config.sites.get("example").unwrap();
+            let expected_roots = [Url::parse("https://update.example/").unwrap()]
+                .into_iter()
+                .collect();
 
-        assert_eq!(merged_site.concurrency, Some(8));
-        assert_eq!(
-            merged_site
-                .cache
-                .as_ref()
-                .and_then(|cache| cache.max_age.as_deref().copied()),
-            Some(Duration::from_secs(5))
-        );
+            let expected_schemes = ["https".to_owned()].into_iter().collect();
+            let expected_statuses = [500].into_iter().collect();
 
-        let headers = merged_site.headers.as_ref().unwrap();
+            assert_eq!(merged_site.roots.as_ref().unwrap(), &expected_roots);
+            assert_eq!(merged_site.schemes.as_ref().unwrap(), &expected_schemes);
+            assert_eq!(merged_site.statuses.as_ref().unwrap(), &expected_statuses);
+        }
 
-        assert_eq!(
-            headers.get("user-agent").map(String::as_str),
-            Some("updated")
-        );
-        assert_eq!(
-            headers.get("accept").map(String::as_str),
-            Some("text/plain")
-        );
-        assert!(merged_config.sites.contains_key("other"));
-    }
-
-    #[test]
-    fn merge_overwrites_arrays() {
-        let base_config = SerializableConfig {
-            extend: None,
-            concurrency: None,
-            cache: None,
-            rate_limit: None,
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    roots: Some([Url::parse("https://base.example/").unwrap()].into()),
-                    schemes: Some(["http".to_owned(), "https".to_owned()].into()),
-                    statuses: Some([200, 404].into()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-        };
-
-        let update_config = SerializableConfig {
-            extend: None,
-            concurrency: None,
-            cache: None,
-            rate_limit: None,
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    roots: Some([Url::parse("https://update.example/").unwrap()].into()),
-                    schemes: Some(["https".to_owned()].into()),
-                    statuses: Some([500].into()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-        };
-
-        let mut merged_config = base_config;
-
-        merged_config.merge(update_config);
-        let merged_site = merged_config.sites.get("example").unwrap();
-
-        let expected_roots = [Url::parse("https://update.example/").unwrap()]
-            .into_iter()
-            .collect();
-
-        let expected_schemes = ["https".to_owned()].into_iter().collect();
-        let expected_statuses = [500].into_iter().collect();
-
-        assert_eq!(merged_site.roots.as_ref().unwrap(), &expected_roots);
-        assert_eq!(merged_site.schemes.as_ref().unwrap(), &expected_schemes);
-        assert_eq!(merged_site.statuses.as_ref().unwrap(), &expected_statuses);
-    }
-
-    #[test]
-    fn merge_preserves_base_when_none() {
-        let base_config = SerializableConfig {
-            extend: Some(PathBuf::from("base.toml")),
-            concurrency: Some(1),
-            cache: Some(GlobalCacheConfig {
-                persistent: Some(true),
-            }),
-            rate_limit: Some(RateLimitConfig {
-                supply: 1,
-                window: Duration::from_secs(1).into(),
-            }),
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    max_redirects: Some(5),
-                    retry: Some(RetryConfig {
-                        count: Some(1),
-                        factor: Some(1.0),
-                        interval: Some(RetryDurationConfig {
-                            initial: Some(Duration::from_secs(1).into()),
-                            cap: Some(Duration::from_secs(5).into()),
+        #[test]
+        fn merge_preserves_base_when_none() {
+            let base_config = SerializableConfig {
+                extend: Some(PathBuf::from("base.toml")),
+                concurrency: Some(1),
+                cache: Some(GlobalCacheConfig {
+                    persistent: Some(true),
+                }),
+                rate_limit: Some(RateLimitConfig {
+                    supply: 1,
+                    window: Duration::from_secs(1).into(),
+                }),
+                sites: [(
+                    "example".to_owned(),
+                    SiteConfig {
+                        max_redirects: Some(5),
+                        retry: Some(RetryConfig {
+                            count: Some(1),
+                            factor: Some(1.0),
+                            interval: Some(RetryDurationConfig {
+                                initial: Some(Duration::from_secs(1).into()),
+                                cap: Some(Duration::from_secs(5).into()),
+                            }),
                         }),
-                    }),
-                    timeout: Some(Duration::from_secs(4).into()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-        };
+                        timeout: Some(Duration::from_secs(4).into()),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            };
 
-        let update_config = SerializableConfig {
-            extend: None,
-            concurrency: None,
-            cache: Some(GlobalCacheConfig { persistent: None }),
-            rate_limit: None,
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    max_redirects: None,
-                    retry: Some(RetryConfig {
-                        count: None,
-                        factor: Some(2.0),
-                        interval: Some(RetryDurationConfig {
-                            initial: None,
-                            cap: Some(Duration::from_secs(9).into()),
+            let update_config = SerializableConfig {
+                extend: None,
+                concurrency: None,
+                cache: Some(GlobalCacheConfig { persistent: None }),
+                rate_limit: None,
+                sites: [(
+                    "example".to_owned(),
+                    SiteConfig {
+                        max_redirects: None,
+                        retry: Some(RetryConfig {
+                            count: None,
+                            factor: Some(2.0),
+                            interval: Some(RetryDurationConfig {
+                                initial: None,
+                                cap: Some(Duration::from_secs(9).into()),
+                            }),
                         }),
-                    }),
-                    timeout: None,
-                    ..Default::default()
-                },
-            )]
-            .into(),
-        };
+                        timeout: None,
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+            };
 
-        let mut merged_config = base_config;
+            let mut merged_config = base_config;
 
-        merged_config.merge(update_config);
+            merged_config.merge(update_config);
 
-        assert_eq!(merged_config.extend, Some(PathBuf::from("base.toml")));
-        assert_eq!(merged_config.concurrency, Some(1));
-        assert_eq!(
-            merged_config
-                .cache
-                .as_ref()
-                .and_then(|cache| cache.persistent),
-            Some(true)
-        );
-        assert_eq!(
-            merged_config
-                .rate_limit
-                .as_ref()
-                .map(|rate_limit| rate_limit.supply),
-            Some(1)
-        );
+            assert_eq!(merged_config.extend, None);
+            assert_eq!(merged_config.concurrency, Some(1));
+            assert_eq!(
+                merged_config
+                    .cache
+                    .as_ref()
+                    .and_then(|cache| cache.persistent),
+                Some(true)
+            );
+            assert_eq!(
+                merged_config
+                    .rate_limit
+                    .as_ref()
+                    .map(|rate_limit| rate_limit.supply),
+                Some(1)
+            );
 
-        let merged_site = merged_config.sites.get("example").unwrap();
+            let merged_site = merged_config.sites.get("example").unwrap();
 
-        assert_eq!(merged_site.max_redirects, Some(5));
-        assert_eq!(
-            merged_site.timeout.as_deref().copied(),
-            Some(Duration::from_secs(4))
-        );
+            assert_eq!(merged_site.max_redirects, Some(5));
+            assert_eq!(
+                merged_site.timeout.as_deref().copied(),
+                Some(Duration::from_secs(4))
+            );
 
-        let retry = merged_site.retry.as_ref().unwrap();
+            let retry = merged_site.retry.as_ref().unwrap();
 
-        assert_eq!(retry.count, Some(1));
-        assert_eq!(retry.factor, Some(2.0));
+            assert_eq!(retry.count, Some(1));
+            assert_eq!(retry.factor, Some(2.0));
 
-        let interval = retry.interval.as_ref().unwrap();
+            let interval = retry.interval.as_ref().unwrap();
 
-        assert_eq!(
-            interval.initial.as_deref().copied(),
-            Some(Duration::from_secs(1))
-        );
-        assert_eq!(
-            interval.cap.as_deref().copied(),
-            Some(Duration::from_secs(9))
-        );
-    }
+            assert_eq!(
+                interval.initial.as_deref().copied(),
+                Some(Duration::from_secs(1))
+            );
+            assert_eq!(
+                interval.cap.as_deref().copied(),
+                Some(Duration::from_secs(9))
+            );
+        }
 
-    #[test]
-    fn merge_overwrites_with_empty_sets() {
-        let mut merged_config = SerializableConfig {
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    roots: Some([Url::parse("https://base.example/").unwrap()].into()),
-                    schemes: Some(["https".to_owned()].into()),
-                    statuses: Some([200].into()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-            ..Default::default()
-        };
+        #[test]
+        fn merge_overwrites_with_empty_sets() {
+            let mut merged_config = SerializableConfig {
+                sites: [(
+                    "example".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://base.example/").unwrap()].into()),
+                        schemes: Some(["https".to_owned()].into()),
+                        statuses: Some([200].into()),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            };
 
-        merged_config.merge(SerializableConfig {
-            sites: [(
-                "example".to_owned(),
-                SiteConfig {
-                    roots: Some(Default::default()),
-                    schemes: Some(Default::default()),
-                    statuses: Some(Default::default()),
-                    ..Default::default()
-                },
-            )]
-            .into(),
-            ..Default::default()
-        });
+            merged_config.merge(SerializableConfig {
+                sites: [(
+                    "example".to_owned(),
+                    SiteConfig {
+                        roots: Some(Default::default()),
+                        schemes: Some(Default::default()),
+                        statuses: Some(Default::default()),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            });
 
-        let merged_site = merged_config.sites.get("example").unwrap();
+            let merged_site = merged_config.sites.get("example").unwrap();
 
-        assert!(merged_site.roots.as_ref().unwrap().is_empty());
-        assert!(merged_site.schemes.as_ref().unwrap().is_empty());
-        assert!(merged_site.statuses.as_ref().unwrap().is_empty());
+            assert!(merged_site.roots.as_ref().unwrap().is_empty());
+            assert!(merged_site.schemes.as_ref().unwrap().is_empty());
+            assert!(merged_site.statuses.as_ref().unwrap().is_empty());
+        }
     }
 
     #[test]
