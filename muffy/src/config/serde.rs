@@ -1166,7 +1166,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn merge_merges_maps_and_scalars() {
+        fn merge_maps_and_scalars() {
             let base_config = SerializableConfig {
                 extend: Some(PathBuf::from("base.toml")),
                 concurrency: Some(1),
@@ -1281,7 +1281,7 @@ mod tests {
         }
 
         #[test]
-        fn merge_overwrites_arrays() {
+        fn merge_arrays() {
             let base_config = SerializableConfig {
                 extend: None,
                 concurrency: None,
@@ -1334,7 +1334,7 @@ mod tests {
         }
 
         #[test]
-        fn merge_preserves_base_when_none() {
+        fn keep_base_for_unset_fields() {
             let base_config = SerializableConfig {
                 extend: Some(PathBuf::from("base.toml")),
                 concurrency: Some(1),
