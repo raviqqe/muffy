@@ -18,4 +18,4 @@ runs:
       run: >
         docker run --network host
         raviqqe/muffy:${{ steps.version.outputs.version }}
-        ${{ inputs.verbose && '--verbose' || '' }}
+        ${{ inputs.verbose == 'true' && '--verbose' || '' }}
