@@ -1304,16 +1304,18 @@ mod tests {
             merged_config.merge(update_config);
             let merged_site = merged_config.sites.get("example").unwrap();
 
-            let expected_roots = [Url::parse("https://update.example/").unwrap()]
-                .into_iter()
-                .collect();
-
-            let expected_schemes = ["https".to_owned()].into_iter().collect();
-            let expected_statuses = [500].into_iter().collect();
-
-            assert_eq!(merged_site.roots.as_ref().unwrap(), &expected_roots);
-            assert_eq!(merged_site.schemes.as_ref().unwrap(), &expected_schemes);
-            assert_eq!(merged_site.statuses.as_ref().unwrap(), &expected_statuses);
+            assert_eq!(
+                merged_site.roots.as_ref().unwrap(),
+                &HashSet::from([Url::parse("https://update.example/").unwrap()])
+            );
+            assert_eq!(
+                merged_site.schemes.as_ref().unwrap(),
+                &HashSet::from(["https".to_owned()])
+            );
+            assert_eq!(
+                merged_site.statuses.as_ref().unwrap(),
+                &HashSet::from([500])
+            );
         }
 
         #[test]
