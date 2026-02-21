@@ -1,6 +1,5 @@
 use core::ops::Deref;
 use robotxt::Robots;
-use url::Url;
 
 const USER_AGENT: &str = "MuffyBot";
 
@@ -26,8 +25,8 @@ impl RobotList {
         }
     }
 
-    pub fn is_allowed(&self, url: &Url) -> bool {
-        self.db.is_absolute_allowed(url)
+    pub fn is_allowed(&self, path: &str) -> bool {
+        self.db.is_relative_allowed(path)
     }
 
     pub fn sitemaps(&self) -> impl Iterator<Item = &str> {
@@ -40,7 +39,6 @@ mod tests {
     use super::*;
     use indoc::indoc;
     use pretty_assertions::assert_eq;
-    use url::Url;
 
     #[test]
     fn parse_sitemaps_with_trimming() {
@@ -86,8 +84,8 @@ mod tests {
         "};
         let list = RobotList::parse(source);
 
-        assert!(list.is_allowed(&Url::parse("https://example.com/public").unwrap()));
-        assert!(!list.is_allowed(&Url::parse("https://example.com/private").unwrap()));
+        assert!(list.is_allowed("/public"));
+        assert!(!list.is_allowed("/private"));
     }
 
     #[test]
@@ -99,7 +97,7 @@ mod tests {
         "};
         let list = RobotList::parse(source);
 
-        assert!(list.is_allowed(&Url::parse("https://example.com/private/public").unwrap()));
-        assert!(!list.is_allowed(&Url::parse("https://example.com/private/secret").unwrap()));
+        assert!(list.is_allowed("/private/public"));
+        assert!(!list.is_allowed("/private/secret"));
     }
 }
