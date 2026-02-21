@@ -50,12 +50,10 @@ mod tests {
             sitemap:https://example.com/secondary.xml
             Sitemap:    https://example.com/tertiary.xml
         "};
-
-        let robot_list = RobotList::parse(source);
-        let sitemaps: Vec<_> = robot_list.sitemaps().collect();
+        let list = RobotList::parse(source);
 
         assert_eq!(
-            sitemaps,
+            list.sitemaps().collect::<Vec<_>>(),
             vec![
                 "https://example.com/sitemap.xml",
                 "https://example.com/secondary.xml",
@@ -72,11 +70,12 @@ mod tests {
             SITEMAP: https://example.com/uppercase.xml
             Sitemap: https://example.com/valid.xml
         "};
+        let list = RobotList::parse(source);
 
-        let robot_list = RobotList::parse(source);
-        let sitemaps: Vec<_> = robot_list.sitemaps().collect();
-
-        assert_eq!(sitemaps, vec!["https://example.com/valid.xml"]);
+        assert_eq!(
+            list.sitemaps().collect::<Vec<_>>(),
+            vec!["https://example.com/valid.xml"]
+        );
     }
 
     #[test]
@@ -85,28 +84,22 @@ mod tests {
             User-agent: MuffyBot
             Disallow: /private
         "};
+        let list = RobotList::parse(source);
 
-        let robot_list = RobotList::parse(source);
-        let allowed_url = Url::parse("https://example.com/public").unwrap();
-        let blocked_url = Url::parse("https://example.com/private").unwrap();
-
-        assert!(robot_list.is_allowed(&allowed_url));
-        assert!(!robot_list.is_allowed(&blocked_url));
+        assert!(list.is_allowed(&Url::parse("https://example.com/public").unwrap()));
+        assert!(!list.is_allowed(&Url::parse("https://example.com/private").unwrap()));
     }
 
     #[test]
-    fn is_allowed_allows_specific_paths() {
+    fn allow_paths() {
         let source = indoc! {"
             User-agent: MuffyBot
             Disallow: /private
             Allow: /private/public
         "};
+        let list = RobotList::parse(source);
 
-        let robot_list = RobotList::parse(source);
-        let allowed_url = Url::parse("https://example.com/private/public").unwrap();
-        let blocked_url = Url::parse("https://example.com/private/secret").unwrap();
-
-        assert!(robot_list.is_allowed(&allowed_url));
-        assert!(!robot_list.is_allowed(&blocked_url));
+        assert!(list.is_allowed(&Url::parse("https://example.com/private/public").unwrap()));
+        assert!(!list.is_allowed(&Url::parse("https://example.com/private/secret").unwrap()));
     }
 }
