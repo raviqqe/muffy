@@ -13,7 +13,16 @@ impl RobotList {
     pub fn parse(source: &str) -> Self {
         Self {
             db: Robots::from_bytes(source.as_bytes(), USER_AGENT),
-            sitemaps: source.split("\n").collect(),
+            sitemaps: source
+                .split("\n")
+                .filter(|line| line.starts_with("sitemap:") || line.starts_with("Sitemap: "))
+                .map(|line| {
+                    line.trim_start_matches("sitemap:")
+                        .trim_start_matches("Sitemap:")
+                        .trim()
+                        .to_owned()
+                })
+                .collect(),
         }
     }
 
