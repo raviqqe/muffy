@@ -117,16 +117,11 @@ impl SerializableConfig {
     }
 
     fn merge_global_cache_config(
-        base_cache: Option<GlobalCacheConfig>,
-        new_cache: GlobalCacheConfig,
+        one: Option<GlobalCacheConfig>,
+        other: GlobalCacheConfig,
     ) -> GlobalCacheConfig {
-        let GlobalCacheConfig {
-            persistent: new_persistent,
-        } = new_cache;
-        let base_persistent = base_cache.and_then(|cache| cache.persistent);
-
         GlobalCacheConfig {
-            persistent: new_persistent.or(base_persistent),
+            persistent: other.persistent.or(one.and_then(|cache| cache.persistent)),
         }
     }
 
