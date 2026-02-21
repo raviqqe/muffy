@@ -54,30 +54,8 @@ impl SerializableConfig {
     }
 
     /// Merges another configuration.
-    pub fn merge(&mut self, other: &Self) {
-        if new_config.extend.is_some() {
-            merged_config.extend = new_config.extend.clone();
-        }
-
-        if new_config.concurrency.is_some() {
-            merged_config.concurrency = new_config.concurrency;
-        }
-
-        if let Some(new_cache) = &new_config.cache {
-            merged_config.cache = Some(merge_global_cache_config(
-                merged_config.cache.as_ref(),
-                new_cache,
-            ));
-        }
-
-        if let Some(new_rate_limit) = &new_config.rate_limit {
-            merged_config.rate_limit = Some(clone_rate_limit_config(new_rate_limit));
-        }
-
-        for (site_name, new_site) in &new_config.sites {
-            let merged_site = merge_site_config(merged_config.sites.get(site_name), new_site);
-            merged_config.sites.insert(site_name.clone(), merged_site);
-        }
+    pub fn merge(&mut self, other: Self) {
+        merge_serializable_config(self, other);
     }
 }
 
@@ -134,178 +112,173 @@ struct RetryDurationConfig {
     cap: Option<DurationString>,
 }
 
-fn merge_site_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> SiteConfig {
+fn merge_serializable_config(merged_config: &mut SerializableConfig, new_config: SerializableConfig) {
+    let SerializableConfig {
+        extend,
+        concurrency,
+        cache,
+        rate_limit,
+        sites,
+    } = new_config;
+
+    if extend.is_some() {
+        merged_config.extend = extend;
+    }
+
+    if concurrency.is_some() {
+        merged_config.concurrency = concurrency;
+    }
+
+    if let Some(new_cache) = cache {
+        merged_config.cache = Some(merge_global_cache_config(merged_config.cache.take(), new_cache));
+    }
+
+    if let Some(new_rate_limit) = rate_limit {
+        merged_config.rate_limit = Some(new_rate_limit);
+    }
+
+    for (site_name, new_site) in sites {
+        let base_site = merged_config.sites.remove(&site_name);
+        let merged_site = merge_site_config(base_site, new_site);
+        merged_config.sites.insert(site_name, merged_site);
+    }
+}
+
+fn merge_site_config(base_site: Option<SiteConfig>, new_site: SiteConfig) -> SiteConfig {
+    let SiteConfig {
+        cache: new_cache,
+        concurrency: new_concurrency,
+        extend: new_extend,
+        fragments_ignored: new_fragments_ignored,
+        headers: new_headers,
+        ignore: new_ignore,
+        max_redirects: new_max_redirects,
+        rate_limit: new_rate_limit,
+        recurse: new_recurse,
+        retry: new_retry,
+        roots: new_roots,
+        schemes: new_schemes,
+        statuses: new_statuses,
+        timeout: new_timeout,
+    } = new_site;
+
+    let SiteConfig {
+        cache: base_cache,
+        concurrency: base_concurrency,
+        extend: base_extend,
+        fragments_ignored: base_fragments_ignored,
+        headers: base_headers,
+        ignore: base_ignore,
+        max_redirects: base_max_redirects,
+        rate_limit: base_rate_limit,
+        recurse: base_recurse,
+        retry: base_retry,
+        roots: base_roots,
+        schemes: base_schemes,
+        statuses: base_statuses,
+        timeout: base_timeout,
+    } = base_site.unwrap_or_default();
+
+    let cache = match new_cache {
+        Some(new_cache) => Some(merge_cache_config(base_cache, new_cache)),
+        None => base_cache,
+    };
+    let headers = match new_headers {
+        Some(new_headers) => {
+            let mut merged_headers = base_headers.unwrap_or_default();
+            merged_headers.extend(new_headers);
+            Some(merged_headers)
+        }
+        None => base_headers,
+    };
+    let retry = match new_retry {
+        Some(new_retry) => Some(merge_retry_config(base_retry, new_retry)),
+        None => base_retry,
+    };
+
     SiteConfig {
-        cache: merge_optional_cache_config(base_site, new_site),
-        concurrency: new_site
-            .concurrency
-            .or_else(|| base_site.and_then(|site| site.concurrency)),
-        extend: new_site
-            .extend
-            .clone()
-            .or_else(|| base_site.and_then(|site| site.extend.clone())),
-        fragments_ignored: new_site
-            .fragments_ignored
-            .or_else(|| base_site.and_then(|site| site.fragments_ignored)),
-        headers: merge_optional_headers(base_site, new_site),
-        ignore: new_site
-            .ignore
-            .or_else(|| base_site.and_then(|site| site.ignore)),
-        max_redirects: new_site
-            .max_redirects
-            .or_else(|| base_site.and_then(|site| site.max_redirects)),
-        rate_limit: new_site
-            .rate_limit
-            .as_ref()
-            .map(clone_rate_limit_config)
-            .or_else(|| {
-                base_site.and_then(|site| site.rate_limit.as_ref().map(clone_rate_limit_config))
-            }),
-        recurse: new_site
-            .recurse
-            .or_else(|| base_site.and_then(|site| site.recurse)),
-        retry: merge_optional_retry_config(base_site, new_site),
-        roots: new_site
-            .roots
-            .clone()
-            .or_else(|| base_site.and_then(|site| site.roots.clone())),
-        schemes: new_site
-            .schemes
-            .clone()
-            .or_else(|| base_site.and_then(|site| site.schemes.clone())),
-        statuses: new_site
-            .statuses
-            .clone()
-            .or_else(|| base_site.and_then(|site| site.statuses.clone())),
-        timeout: new_site
-            .timeout
-            .or_else(|| base_site.and_then(|site| site.timeout)),
+        cache,
+        concurrency: new_concurrency.or(base_concurrency),
+        extend: new_extend.or(base_extend),
+        fragments_ignored: new_fragments_ignored.or(base_fragments_ignored),
+        headers,
+        ignore: new_ignore.or(base_ignore),
+        max_redirects: new_max_redirects.or(base_max_redirects),
+        rate_limit: new_rate_limit.or(base_rate_limit),
+        recurse: new_recurse.or(base_recurse),
+        retry,
+        roots: new_roots.or(base_roots),
+        schemes: new_schemes.or(base_schemes),
+        statuses: new_statuses.or(base_statuses),
+        timeout: new_timeout.or(base_timeout),
     }
 }
 
 fn merge_global_cache_config(
-    base_cache: Option<&GlobalCacheConfig>,
-    new_cache: &GlobalCacheConfig,
+    base_cache: Option<GlobalCacheConfig>,
+    new_cache: GlobalCacheConfig,
 ) -> GlobalCacheConfig {
+    let GlobalCacheConfig {
+        persistent: new_persistent,
+    } = new_cache;
+    let base_persistent = base_cache.and_then(|cache| cache.persistent);
+
     GlobalCacheConfig {
-        persistent: new_cache
-            .persistent
-            .or_else(|| base_cache.and_then(|cache| cache.persistent)),
+        persistent: new_persistent.or(base_persistent),
     }
 }
 
-fn merge_optional_cache_config(
-    base_site: Option<&SiteConfig>,
-    new_site: &SiteConfig,
-) -> Option<CacheConfig> {
-    match new_site.cache.as_ref() {
-        Some(new_cache) => Some(merge_cache_config(
-            base_site.and_then(|site| site.cache.as_ref()),
-            new_cache,
-        )),
-        None => base_site.and_then(|site| site.cache.as_ref().map(clone_cache_config)),
-    }
-}
+fn merge_cache_config(base_cache: Option<CacheConfig>, new_cache: CacheConfig) -> CacheConfig {
+    let CacheConfig {
+        max_age: new_max_age,
+    } = new_cache;
+    let base_max_age = base_cache.and_then(|cache| cache.max_age);
 
-fn merge_cache_config(base_cache: Option<&CacheConfig>, new_cache: &CacheConfig) -> CacheConfig {
     CacheConfig {
-        max_age: new_cache
-            .max_age
-            .or_else(|| base_cache.and_then(|cache| cache.max_age)),
+        max_age: new_max_age.or(base_max_age),
     }
 }
 
-fn merge_optional_headers(
-    base_site: Option<&SiteConfig>,
-    new_site: &SiteConfig,
-) -> Option<HashMap<String, String>> {
-    match new_site.headers.as_ref() {
-        Some(new_headers) => {
-            let mut merged_headers = base_site
-                .and_then(|site| site.headers.clone())
-                .unwrap_or_default();
+fn merge_retry_config(base_retry: Option<RetryConfig>, new_retry: RetryConfig) -> RetryConfig {
+    let RetryConfig {
+        count: new_count,
+        factor: new_factor,
+        interval: new_interval,
+    } = new_retry;
+    let RetryConfig {
+        count: base_count,
+        factor: base_factor,
+        interval: base_interval,
+    } = base_retry.unwrap_or_default();
 
-            merged_headers.extend(
-                new_headers
-                    .iter()
-                    .map(|(key, value)| (key.clone(), value.clone())),
-            );
-
-            Some(merged_headers)
-        }
-        None => base_site.and_then(|site| site.headers.clone()),
-    }
-}
-
-fn merge_optional_retry_config(
-    base_site: Option<&SiteConfig>,
-    new_site: &SiteConfig,
-) -> Option<RetryConfig> {
-    match new_site.retry.as_ref() {
-        Some(new_retry) => Some(merge_retry_config(
-            base_site.and_then(|site| site.retry.as_ref()),
-            new_retry,
-        )),
-        None => base_site.and_then(|site| site.retry.as_ref().map(clone_retry_config)),
-    }
-}
-
-fn merge_retry_config(base_retry: Option<&RetryConfig>, new_retry: &RetryConfig) -> RetryConfig {
-    let base_interval = base_retry.and_then(|retry| retry.interval.as_ref());
+    let interval = match new_interval {
+        Some(new_interval) => Some(merge_retry_duration_config(base_interval, new_interval)),
+        None => base_interval,
+    };
 
     RetryConfig {
-        count: new_retry
-            .count
-            .or_else(|| base_retry.and_then(|retry| retry.count)),
-        factor: new_retry
-            .factor
-            .or_else(|| base_retry.and_then(|retry| retry.factor)),
-        interval: match new_retry.interval.as_ref() {
-            Some(new_interval) => Some(merge_retry_duration_config(base_interval, new_interval)),
-            None => base_interval.map(clone_retry_duration_config),
-        },
+        count: new_count.or(base_count),
+        factor: new_factor.or(base_factor),
+        interval,
     }
 }
 
 fn merge_retry_duration_config(
-    base_duration: Option<&RetryDurationConfig>,
-    new_duration: &RetryDurationConfig,
+    base_duration: Option<RetryDurationConfig>,
+    new_duration: RetryDurationConfig,
 ) -> RetryDurationConfig {
+    let RetryDurationConfig {
+        initial: new_initial,
+        cap: new_cap,
+    } = new_duration;
+    let RetryDurationConfig {
+        initial: base_initial,
+        cap: base_cap,
+    } = base_duration.unwrap_or_default();
+
     RetryDurationConfig {
-        initial: new_duration
-            .initial
-            .or_else(|| base_duration.and_then(|duration| duration.initial)),
-        cap: new_duration
-            .cap
-            .or_else(|| base_duration.and_then(|duration| duration.cap)),
-    }
-}
-
-const fn clone_cache_config(cache: &CacheConfig) -> CacheConfig {
-    CacheConfig {
-        max_age: cache.max_age,
-    }
-}
-
-const fn clone_rate_limit_config(rate_limit: &RateLimitConfig) -> RateLimitConfig {
-    RateLimitConfig {
-        supply: rate_limit.supply,
-        window: rate_limit.window,
-    }
-}
-
-fn clone_retry_config(retry: &RetryConfig) -> RetryConfig {
-    RetryConfig {
-        count: retry.count,
-        factor: retry.factor,
-        interval: retry.interval.as_ref().map(clone_retry_duration_config),
-    }
-}
-
-const fn clone_retry_duration_config(duration: &RetryDurationConfig) -> RetryDurationConfig {
-    RetryDurationConfig {
-        initial: duration.initial,
-        cap: duration.cap,
+        initial: new_initial.or(base_initial),
+        cap: new_cap.or(base_cap),
     }
 }
 
@@ -624,7 +597,7 @@ mod tests {
     }
 
     #[test]
-    fn merge_config_merges_maps_and_scalars() {
+    fn merge_merges_maps_and_scalars() {
         let base_config = SerializableConfig {
             extend: Some(PathBuf::from("base.toml")),
             concurrency: Some(1),
@@ -688,7 +661,7 @@ mod tests {
 
         let mut merged_config = base_config;
 
-        merged_config.merge(&update_config);
+        merged_config.merge(update_config);
 
         assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
         assert_eq!(merged_config.concurrency, Some(2));
@@ -739,7 +712,7 @@ mod tests {
     }
 
     #[test]
-    fn merge_config_overwrites_arrays() {
+    fn merge_overwrites_arrays() {
         let base_config = SerializableConfig {
             extend: None,
             concurrency: None,
@@ -776,7 +749,7 @@ mod tests {
 
         let mut merged_config = base_config;
 
-        merged_config.merge(&update_config);
+        merged_config.merge(update_config);
         let merged_site = merged_config.sites.get("example").unwrap();
 
         let expected_roots = [Url::parse("https://update.example/").unwrap()]
