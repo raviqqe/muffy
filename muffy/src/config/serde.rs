@@ -73,78 +73,46 @@ impl SerializableConfig {
 
         for (name, other) in other.sites {
             let site = self.sites.remove(&name);
-            self.sites
-                .insert(name, Self::merge_site_config(site, other));
+            self.sites.insert(
+                name,
+                Self::merge_site_config(site.unwrap_or_default(), other),
+            );
         }
     }
 
-    fn merge_site_config(base_site: Option<SiteConfig>, new_site: SiteConfig) -> SiteConfig {
-        let SiteConfig {
-            cache: new_cache,
-            concurrency: new_concurrency,
-            extend: new_extend,
-            fragments_ignored: new_fragments_ignored,
-            headers: new_headers,
-            ignore: new_ignore,
-            max_redirects: new_max_redirects,
-            rate_limit: new_rate_limit,
-            recurse: new_recurse,
-            retry: new_retry,
-            roots: new_roots,
-            schemes: new_schemes,
-            statuses: new_statuses,
-            timeout: new_timeout,
-        } = new_site;
-
-        let SiteConfig {
-            cache: base_cache,
-            concurrency: base_concurrency,
-            extend: base_extend,
-            fragments_ignored: base_fragments_ignored,
-            headers: base_headers,
-            ignore: base_ignore,
-            max_redirects: base_max_redirects,
-            rate_limit: base_rate_limit,
-            recurse: base_recurse,
-            retry: base_retry,
-            roots: base_roots,
-            schemes: base_schemes,
-            statuses: base_statuses,
-            timeout: base_timeout,
-        } = base_site.unwrap_or_default();
-
-        let cache = match new_cache {
-            Some(new_cache) => Some(Self::merge_cache_config(base_cache, new_cache)),
-            None => base_cache,
+    fn merge_site_config(one: SiteConfig, other: SiteConfig) -> SiteConfig {
+        let cache = match other.cache {
+            Some(other) => Some(Self::merge_cache_config(one.cache, other)),
+            None => one.cache,
         };
-        let headers = match new_headers {
-            Some(new_headers) => {
-                let mut merged_headers = base_headers.unwrap_or_default();
-                merged_headers.extend(new_headers);
-                Some(merged_headers)
+        let headers = match other.headers {
+            Some(other) => {
+                let mut headers = one.headers.unwrap_or_default();
+                headers.extend(other);
+                Some(headers)
             }
-            None => base_headers,
+            None => one.headers,
         };
-        let retry = match new_retry {
-            Some(new_retry) => Some(Self::merge_retry_config(base_retry, new_retry)),
-            None => base_retry,
+        let retry = match other.retry {
+            Some(other) => Some(Self::merge_retry_config(one.retry, other)),
+            None => one.retry,
         };
 
         SiteConfig {
             cache,
-            concurrency: new_concurrency.or(base_concurrency),
-            extend: new_extend.or(base_extend),
-            fragments_ignored: new_fragments_ignored.or(base_fragments_ignored),
+            concurrency: other.concurrency.or(one.concurrency),
+            extend: other.extend.or(one.extend),
+            fragments_ignored: other.fragments_ignored.or(one.fragments_ignored),
             headers,
-            ignore: new_ignore.or(base_ignore),
-            max_redirects: new_max_redirects.or(base_max_redirects),
-            rate_limit: new_rate_limit.or(base_rate_limit),
-            recurse: new_recurse.or(base_recurse),
+            ignore: other.ignore.or(one.ignore),
+            max_redirects: other.max_redirects.or(one.max_redirects),
+            rate_limit: other.rate_limit.or(one.rate_limit),
+            recurse: other.recurse.or(one.recurse),
             retry,
-            roots: new_roots.or(base_roots),
-            schemes: new_schemes.or(base_schemes),
-            statuses: new_statuses.or(base_statuses),
-            timeout: new_timeout.or(base_timeout),
+            roots: other.roots.or(one.roots),
+            schemes: other.schemes.or(one.schemes),
+            statuses: other.statuses.or(one.statuses),
+            timeout: other.timeout.or(one.timeout),
         }
     }
 
