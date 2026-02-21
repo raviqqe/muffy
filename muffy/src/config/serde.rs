@@ -15,6 +15,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
+    path::PathBuf,
     sync::LazyLock,
 };
 use url::Url;
@@ -39,6 +40,7 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SerializableConfig {
+    extend: Option<PathBuf>,
     concurrency: Option<usize>,
     cache: Option<GlobalCacheConfig>,
     rate_limit: Option<RateLimitConfig>,
