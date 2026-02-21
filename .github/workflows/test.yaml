@@ -84,8 +84,7 @@ jobs:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
         with:
-          url: https://raviqqe.com/muffy
-          accept-status: 200,403,429
+          verbose: true
   test:
     needs:
       - build
