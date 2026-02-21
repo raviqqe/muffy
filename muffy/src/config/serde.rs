@@ -55,9 +55,8 @@ impl SerializableConfig {
 
     /// Merges another configuration.
     pub fn merge(&mut self, other: Self) {
-        if other.extend.is_some() {
-            self.extend = other.extend;
-        }
+        // We clear the `extend` field because its value is meaningless after merge.
+        self.extend = None;
 
         if other.concurrency.is_some() {
             self.concurrency = other.concurrency;
@@ -641,7 +640,7 @@ mod tests {
 
         merged_config.merge(update_config);
 
-        assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
+        assert_eq!(merged_config.extend, None);
         assert_eq!(merged_config.concurrency, Some(2));
         assert_eq!(
             merged_config
