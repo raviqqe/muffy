@@ -107,6 +107,214 @@ struct RetryDurationConfig {
     cap: Option<DurationString>,
 }
 
+/// Merges multiple serializable configurations from old to new.
+pub fn merge_configs(configs: &[SerializableConfig]) -> SerializableConfig {
+    let mut merged_config = SerializableConfig::default();
+
+    for config in configs {
+        merge_serializable_config(&mut merged_config, config);
+    }
+
+    merged_config
+}
+
+fn merge_serializable_config(
+    merged_config: &mut SerializableConfig,
+    new_config: &SerializableConfig,
+) {
+    if new_config.extend.is_some() {
+        merged_config.extend = new_config.extend.clone();
+    }
+
+    if new_config.concurrency.is_some() {
+        merged_config.concurrency = new_config.concurrency;
+    }
+
+    if let Some(new_cache) = &new_config.cache {
+        merged_config.cache =
+            Some(merge_global_cache_config(merged_config.cache.as_ref(), new_cache));
+    }
+
+    if let Some(new_rate_limit) = &new_config.rate_limit {
+        merged_config.rate_limit = Some(clone_rate_limit_config(new_rate_limit));
+    }
+
+    for (site_name, new_site) in &new_config.sites {
+        let merged_site = merge_site_config(merged_config.sites.get(site_name), new_site);
+        merged_config.sites.insert(site_name.clone(), merged_site);
+    }
+}
+
+fn merge_site_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> SiteConfig {
+    SiteConfig {
+        cache: merge_optional_cache_config(base_site, new_site),
+        concurrency: new_site
+            .concurrency
+            .or_else(|| base_site.and_then(|site| site.concurrency)),
+        extend: new_site
+            .extend
+            .clone()
+            .or_else(|| base_site.and_then(|site| site.extend.clone())),
+        fragments_ignored: new_site
+            .fragments_ignored
+            .or_else(|| base_site.and_then(|site| site.fragments_ignored)),
+        headers: merge_optional_headers(base_site, new_site),
+        ignore: new_site
+            .ignore
+            .or_else(|| base_site.and_then(|site| site.ignore)),
+        max_redirects: new_site
+            .max_redirects
+            .or_else(|| base_site.and_then(|site| site.max_redirects)),
+        rate_limit: new_site
+            .rate_limit
+            .as_ref()
+            .map(clone_rate_limit_config)
+            .or_else(|| {
+                base_site.and_then(|site| site.rate_limit.as_ref().map(clone_rate_limit_config))
+            }),
+        recurse: new_site
+            .recurse
+            .or_else(|| base_site.and_then(|site| site.recurse)),
+        retry: merge_optional_retry_config(base_site, new_site),
+        roots: new_site
+            .roots
+            .clone()
+            .or_else(|| base_site.and_then(|site| site.roots.clone())),
+        schemes: new_site
+            .schemes
+            .clone()
+            .or_else(|| base_site.and_then(|site| site.schemes.clone())),
+        statuses: new_site
+            .statuses
+            .clone()
+            .or_else(|| base_site.and_then(|site| site.statuses.clone())),
+        timeout: new_site
+            .timeout
+            .clone()
+            .or_else(|| base_site.and_then(|site| site.timeout.clone())),
+    }
+}
+
+fn merge_global_cache_config(
+    base_cache: Option<&GlobalCacheConfig>,
+    new_cache: &GlobalCacheConfig,
+) -> GlobalCacheConfig {
+    GlobalCacheConfig {
+        persistent: new_cache
+            .persistent
+            .or_else(|| base_cache.and_then(|cache| cache.persistent)),
+    }
+}
+
+fn merge_optional_cache_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<CacheConfig> {
+    match new_site.cache.as_ref() {
+        Some(new_cache) => Some(merge_cache_config(
+            base_site.and_then(|site| site.cache.as_ref()),
+            new_cache,
+        )),
+        None => base_site.and_then(|site| site.cache.as_ref().map(clone_cache_config)),
+    }
+}
+
+fn merge_cache_config(base_cache: Option<&CacheConfig>, new_cache: &CacheConfig) -> CacheConfig {
+    CacheConfig {
+        max_age: new_cache
+            .max_age
+            .clone()
+            .or_else(|| base_cache.and_then(|cache| cache.max_age.clone())),
+    }
+}
+
+fn merge_optional_headers(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<HashMap<String, String>> {
+    match new_site.headers.as_ref() {
+        Some(new_headers) => {
+            let mut merged_headers = base_site
+                .and_then(|site| site.headers.clone())
+                .unwrap_or_default();
+
+            merged_headers.extend(
+                new_headers
+                    .iter()
+                    .map(|(key, value)| (key.clone(), value.clone())),
+            );
+
+            Some(merged_headers)
+        }
+        None => base_site.and_then(|site| site.headers.clone()),
+    }
+}
+
+fn merge_optional_retry_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<RetryConfig> {
+    match new_site.retry.as_ref() {
+        Some(new_retry) => Some(merge_retry_config(
+            base_site.and_then(|site| site.retry.as_ref()),
+            new_retry,
+        )),
+        None => base_site.and_then(|site| site.retry.as_ref().map(clone_retry_config)),
+    }
+}
+
+fn merge_retry_config(base_retry: Option<&RetryConfig>, new_retry: &RetryConfig) -> RetryConfig {
+    let base_interval = base_retry.and_then(|retry| retry.interval.as_ref());
+
+    RetryConfig {
+        count: new_retry
+            .count
+            .or_else(|| base_retry.and_then(|retry| retry.count)),
+        factor: new_retry
+            .factor
+            .or_else(|| base_retry.and_then(|retry| retry.factor)),
+        interval: match new_retry.interval.as_ref() {
+            Some(new_interval) => Some(merge_retry_duration_config(base_interval, new_interval)),
+            None => base_interval.map(clone_retry_duration_config),
+        },
+    }
+}
+
+fn merge_retry_duration_config(
+    base_duration: Option<&RetryDurationConfig>,
+    new_duration: &RetryDurationConfig,
+) -> RetryDurationConfig {
+    RetryDurationConfig {
+        initial: new_duration
+            .initial
+            .clone()
+            .or_else(|| base_duration.and_then(|duration| duration.initial.clone())),
+        cap: new_duration
+            .cap
+            .clone()
+            .or_else(|| base_duration.and_then(|duration| duration.cap.clone())),
+    }
+}
+
+fn clone_cache_config(cache: &CacheConfig) -> CacheConfig {
+    CacheConfig {
+        max_age: cache.max_age.clone(),
+    }
+}
+
+fn clone_rate_limit_config(rate_limit: &RateLimitConfig) -> RateLimitConfig {
+    RateLimitConfig {
+        supply: rate_limit.supply,
+        window: rate_limit.window.clone(),
+    }
+}
+
+fn clone_retry_config(retry: &RetryConfig) -> RetryConfig {
+    RetryConfig {
+        count: retry.count,
+        factor: retry.factor,
+        interval: retry.interval.as_ref().map(clone_retry_duration_config),
+    }
+}
+
+fn clone_retry_duration_config(duration: &RetryDurationConfig) -> RetryDurationConfig {
+    RetryDurationConfig {
+        initial: duration.initial.clone(),
+        cap: duration.cap.clone(),
+    }
+}
+
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
@@ -384,7 +592,10 @@ mod tests {
     use core::time::Duration;
     use http::HeaderMap;
     use pretty_assertions::assert_eq;
-    use std::collections::{HashMap, HashSet};
+    use std::{
+        collections::{HashMap, HashSet},
+        path::PathBuf,
+    };
 
     #[test]
     fn compile_empty() {
@@ -416,6 +627,163 @@ mod tests {
         for scheme in DEFAULT_ACCEPTED_SCHEMES {
             assert!(default.scheme().accepted(scheme));
         }
+    }
+
+    #[test]
+    fn merge_configs_merges_maps_and_scalars() {
+        let base_config = SerializableConfig {
+            extend: Some(PathBuf::from("base.toml")),
+            concurrency: Some(1),
+            cache: Some(GlobalCacheConfig {
+                persistent: Some(false),
+            }),
+            rate_limit: Some(RateLimitConfig {
+                supply: 1,
+                window: Duration::from_secs(1).into(),
+            }),
+            sites: [(
+                "example".to_owned(),
+                SiteConfig {
+                    cache: Some(CacheConfig {
+                        max_age: Some(Duration::from_secs(5).into()),
+                    }),
+                    concurrency: Some(4),
+                    headers: Some([("user-agent".to_owned(), "base".to_owned())].into()),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+        };
+
+        let update_config = SerializableConfig {
+            extend: Some(PathBuf::from("update.toml")),
+            concurrency: Some(2),
+            cache: Some(GlobalCacheConfig {
+                persistent: Some(true),
+            }),
+            rate_limit: Some(RateLimitConfig {
+                supply: 2,
+                window: Duration::from_secs(2).into(),
+            }),
+            sites: [
+                (
+                    "example".to_owned(),
+                    SiteConfig {
+                        cache: Some(CacheConfig { max_age: None }),
+                        concurrency: Some(8),
+                        headers: Some(
+                            [
+                                ("user-agent".to_owned(), "updated".to_owned()),
+                                ("accept".to_owned(), "text/plain".to_owned()),
+                            ]
+                            .into(),
+                        ),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "other".to_owned(),
+                    SiteConfig {
+                        ignore: Some(true),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
+        };
+
+        let merged_config = merge_configs(&[base_config, update_config]);
+
+        assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
+        assert_eq!(merged_config.concurrency, Some(2));
+        assert_eq!(
+            merged_config
+                .cache
+                .as_ref()
+                .and_then(|cache| cache.persistent),
+            Some(true)
+        );
+        assert_eq!(
+            merged_config
+                .rate_limit
+                .as_ref()
+                .map(|rate_limit| rate_limit.supply),
+            Some(2)
+        );
+        assert_eq!(
+            merged_config
+                .rate_limit
+                .as_ref()
+                .map(|rate_limit| rate_limit.window.clone()),
+            Some(Duration::from_secs(2).into())
+        );
+
+        let merged_site = merged_config.sites.get("example").unwrap();
+
+        assert_eq!(merged_site.concurrency, Some(8));
+        assert_eq!(
+            merged_site
+                .cache
+                .as_ref()
+                .and_then(|cache| cache.max_age.as_deref().copied()),
+            Some(Duration::from_secs(5))
+        );
+
+        let headers = merged_site.headers.as_ref().unwrap();
+
+        assert_eq!(headers.get("user-agent").map(String::as_str), Some("updated"));
+        assert_eq!(headers.get("accept").map(String::as_str), Some("text/plain"));
+        assert!(merged_config.sites.contains_key("other"));
+    }
+
+    #[test]
+    fn merge_configs_overwrites_arrays() {
+        let base_config = SerializableConfig {
+            extend: None,
+            concurrency: None,
+            cache: None,
+            rate_limit: None,
+            sites: [(
+                "example".to_owned(),
+                SiteConfig {
+                    roots: Some([Url::parse("https://base.example/").unwrap()].into()),
+                    schemes: Some(["http".to_owned(), "https".to_owned()].into()),
+                    statuses: Some([200, 404].into()),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+        };
+
+        let update_config = SerializableConfig {
+            extend: None,
+            concurrency: None,
+            cache: None,
+            rate_limit: None,
+            sites: [(
+                "example".to_owned(),
+                SiteConfig {
+                    roots: Some([Url::parse("https://update.example/").unwrap()].into()),
+                    schemes: Some(["https".to_owned()].into()),
+                    statuses: Some([500].into()),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+        };
+
+        let merged_config = merge_configs(&[base_config, update_config]);
+        let merged_site = merged_config.sites.get("example").unwrap();
+
+        let expected_roots =
+            [Url::parse("https://update.example/").unwrap()].into_iter().collect();
+
+        let expected_schemes = ["https".to_owned()].into_iter().collect();
+        let expected_statuses = [500].into_iter().collect();
+
+        assert_eq!(merged_site.roots.as_ref().unwrap(), &expected_roots);
+        assert_eq!(merged_site.schemes.as_ref().unwrap(), &expected_schemes);
+        assert_eq!(merged_site.statuses.as_ref().unwrap(), &expected_statuses);
     }
 
     #[test]
