@@ -52,6 +52,11 @@ impl SerializableConfig {
     pub fn extend(&self) -> Option<&Path> {
         self.extend.as_deref()
     }
+
+    /// Merges another configuration into this one.
+    pub fn merge_config(&mut self, other: &Self) {
+        merge_serializable_config(self, other);
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -107,17 +112,6 @@ struct RetryDurationConfig {
     cap: Option<DurationString>,
 }
 
-/// Merges multiple serializable configurations from old to new.
-pub fn merge_configs(configs: &[SerializableConfig]) -> SerializableConfig {
-    let mut merged_config = SerializableConfig::default();
-
-    for config in configs {
-        merge_serializable_config(&mut merged_config, config);
-    }
-
-    merged_config
-}
-
 fn merge_serializable_config(
     merged_config: &mut SerializableConfig,
     new_config: &SerializableConfig,
@@ -131,8 +125,10 @@ fn merge_serializable_config(
     }
 
     if let Some(new_cache) = &new_config.cache {
-        merged_config.cache =
-            Some(merge_global_cache_config(merged_config.cache.as_ref(), new_cache));
+        merged_config.cache = Some(merge_global_cache_config(
+            merged_config.cache.as_ref(),
+            new_cache,
+        ));
     }
 
     if let Some(new_rate_limit) = &new_config.rate_limit {
@@ -190,8 +186,7 @@ fn merge_site_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> S
             .or_else(|| base_site.and_then(|site| site.statuses.clone())),
         timeout: new_site
             .timeout
-            .clone()
-            .or_else(|| base_site.and_then(|site| site.timeout.clone())),
+            .or_else(|| base_site.and_then(|site| site.timeout)),
     }
 }
 
@@ -206,7 +201,10 @@ fn merge_global_cache_config(
     }
 }
 
-fn merge_optional_cache_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<CacheConfig> {
+fn merge_optional_cache_config(
+    base_site: Option<&SiteConfig>,
+    new_site: &SiteConfig,
+) -> Option<CacheConfig> {
     match new_site.cache.as_ref() {
         Some(new_cache) => Some(merge_cache_config(
             base_site.and_then(|site| site.cache.as_ref()),
@@ -220,12 +218,14 @@ fn merge_cache_config(base_cache: Option<&CacheConfig>, new_cache: &CacheConfig)
     CacheConfig {
         max_age: new_cache
             .max_age
-            .clone()
-            .or_else(|| base_cache.and_then(|cache| cache.max_age.clone())),
+            .or_else(|| base_cache.and_then(|cache| cache.max_age)),
     }
 }
 
-fn merge_optional_headers(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<HashMap<String, String>> {
+fn merge_optional_headers(
+    base_site: Option<&SiteConfig>,
+    new_site: &SiteConfig,
+) -> Option<HashMap<String, String>> {
     match new_site.headers.as_ref() {
         Some(new_headers) => {
             let mut merged_headers = base_site
@@ -244,7 +244,10 @@ fn merge_optional_headers(base_site: Option<&SiteConfig>, new_site: &SiteConfig)
     }
 }
 
-fn merge_optional_retry_config(base_site: Option<&SiteConfig>, new_site: &SiteConfig) -> Option<RetryConfig> {
+fn merge_optional_retry_config(
+    base_site: Option<&SiteConfig>,
+    new_site: &SiteConfig,
+) -> Option<RetryConfig> {
     match new_site.retry.as_ref() {
         Some(new_retry) => Some(merge_retry_config(
             base_site.and_then(|site| site.retry.as_ref()),
@@ -278,25 +281,23 @@ fn merge_retry_duration_config(
     RetryDurationConfig {
         initial: new_duration
             .initial
-            .clone()
-            .or_else(|| base_duration.and_then(|duration| duration.initial.clone())),
+            .or_else(|| base_duration.and_then(|duration| duration.initial)),
         cap: new_duration
             .cap
-            .clone()
-            .or_else(|| base_duration.and_then(|duration| duration.cap.clone())),
+            .or_else(|| base_duration.and_then(|duration| duration.cap)),
     }
 }
 
 fn clone_cache_config(cache: &CacheConfig) -> CacheConfig {
     CacheConfig {
-        max_age: cache.max_age.clone(),
+        max_age: cache.max_age,
     }
 }
 
 fn clone_rate_limit_config(rate_limit: &RateLimitConfig) -> RateLimitConfig {
     RateLimitConfig {
         supply: rate_limit.supply,
-        window: rate_limit.window.clone(),
+        window: rate_limit.window,
     }
 }
 
@@ -310,8 +311,8 @@ fn clone_retry_config(retry: &RetryConfig) -> RetryConfig {
 
 fn clone_retry_duration_config(duration: &RetryDurationConfig) -> RetryDurationConfig {
     RetryDurationConfig {
-        initial: duration.initial.clone(),
-        cap: duration.cap.clone(),
+        initial: duration.initial,
+        cap: duration.cap,
     }
 }
 
@@ -630,7 +631,7 @@ mod tests {
     }
 
     #[test]
-    fn merge_configs_merges_maps_and_scalars() {
+    fn merge_config_merges_maps_and_scalars() {
         let base_config = SerializableConfig {
             extend: Some(PathBuf::from("base.toml")),
             concurrency: Some(1),
@@ -692,7 +693,9 @@ mod tests {
             .into(),
         };
 
-        let merged_config = merge_configs(&[base_config, update_config]);
+        let mut merged_config = base_config;
+
+        merged_config.merge_config(&update_config);
 
         assert_eq!(merged_config.extend, Some(PathBuf::from("update.toml")));
         assert_eq!(merged_config.concurrency, Some(2));
@@ -731,13 +734,19 @@ mod tests {
 
         let headers = merged_site.headers.as_ref().unwrap();
 
-        assert_eq!(headers.get("user-agent").map(String::as_str), Some("updated"));
-        assert_eq!(headers.get("accept").map(String::as_str), Some("text/plain"));
+        assert_eq!(
+            headers.get("user-agent").map(String::as_str),
+            Some("updated")
+        );
+        assert_eq!(
+            headers.get("accept").map(String::as_str),
+            Some("text/plain")
+        );
         assert!(merged_config.sites.contains_key("other"));
     }
 
     #[test]
-    fn merge_configs_overwrites_arrays() {
+    fn merge_config_overwrites_arrays() {
         let base_config = SerializableConfig {
             extend: None,
             concurrency: None,
@@ -772,11 +781,14 @@ mod tests {
             .into(),
         };
 
-        let merged_config = merge_configs(&[base_config, update_config]);
+        let mut merged_config = base_config;
+
+        merged_config.merge_config(&update_config);
         let merged_site = merged_config.sites.get("example").unwrap();
 
-        let expected_roots =
-            [Url::parse("https://update.example/").unwrap()].into_iter().collect();
+        let expected_roots = [Url::parse("https://update.example/").unwrap()]
+            .into_iter()
+            .collect();
 
         let expected_schemes = ["https".to_owned()].into_iter().collect();
         let expected_statuses = [500].into_iter().collect();

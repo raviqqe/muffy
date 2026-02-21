@@ -1,7 +1,10 @@
 mod error;
 mod serde;
 
-pub use self::{error::ConfigError, serde::SerializableConfig, serde::compile_config, serde::merge_configs};
+pub use self::{
+    error::ConfigError,
+    serde::{SerializableConfig, compile_config},
+};
 use alloc::sync::Arc;
 use core::{cmp::Reverse, ops::Deref, time::Duration};
 use http::{HeaderMap, StatusCode};
