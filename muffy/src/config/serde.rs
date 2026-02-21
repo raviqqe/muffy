@@ -76,9 +76,8 @@ impl SerializableConfig {
         }
 
         for (name, other) in other.sites {
-            if let Some(mut site) = self.sites.remove(&name) {
+            if let Some(site) = self.sites.get_mut(&name) {
                 site.merge(other);
-                self.sites.insert(name, site);
             } else {
                 self.sites.insert(name, other);
             }
