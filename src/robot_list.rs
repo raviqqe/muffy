@@ -51,10 +51,10 @@ mod tests {
     #[test]
     fn parse_ignores_non_matching_sitemap_lines() {
         let source = indoc! {"
-            Sitemap:https://example.com/no-space.xml
+            sitemap:https://example.com/no-space.xml
              sitemap: https://example.com/leading-space.xml
-            SITEMAP: https://example.com/uppercase.xml
-            Sitemap: https://example.com/valid.xml
+            SITEMAP: https://example.com/upper.xml
+            Sitemap: https://example.com/title.xml
         "};
         let list = RobotList::parse(source);
 
@@ -63,8 +63,8 @@ mod tests {
             vec![
                 "https://example.com/no-space.xml",
                 "https://example.com/leading-space.xml",
-                "https://example.com/uppercase.xml",
-                "https://example.com/valid.xml"
+                "https://example.com/upper.xml",
+                "https://example.com/title.xml"
             ]
         );
     }
