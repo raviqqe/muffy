@@ -1,4 +1,5 @@
 use robotxt::Robots;
+use url::Url;
 
 const USER_AGENT: &str = "MuffyBot";
 
@@ -18,7 +19,7 @@ impl RobotList {
     }
 
     pub fn sitemaps(&self) -> impl Iterator<Item = &str> {
-        self.db.sitemaps().iter().map(|url| url.as_str())
+        self.db.sitemaps().iter().map(Url::as_str)
     }
 }
 
