@@ -156,7 +156,7 @@ impl HttpClient {
                 Box::new(async move {
                     if robots
                         && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_allowed(request.url())
+                        && !robot.is_allowed(request.url().path())
                     {
                         return Err(HttpClientError::RobotsTxt);
                     }
