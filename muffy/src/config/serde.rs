@@ -64,10 +64,12 @@ impl SerializableConfig {
         }
 
         if let Some(cache) = other.cache {
-            self.cache = Some(Self::merge_global_cache_config(
-                self.cache.take().unwrap_or_default(),
-                cache,
-            ));
+            if let Some(mut base_cache) = self.cache.take() {
+                base_cache.merge(cache);
+                self.cache = Some(base_cache);
+            } else {
+                self.cache = Some(cache);
+            }
         }
 
         if let Some(limit) = other.rate_limit {
@@ -75,98 +77,12 @@ impl SerializableConfig {
         }
 
         for (name, other) in other.sites {
-            let site = self.sites.remove(&name);
-            self.sites.insert(
-                name,
-                Self::merge_site_config(site.unwrap_or_default(), other),
-            );
-        }
-    }
-
-    fn merge_site_config(one: SiteConfig, other: SiteConfig) -> SiteConfig {
-        let cache = match other.cache {
-            Some(other) => Some(Self::merge_cache_config(
-                one.cache.unwrap_or_default(),
-                other,
-            )),
-            None => one.cache,
-        };
-        let headers = match other.headers {
-            Some(other) => {
-                let mut headers = one.headers.unwrap_or_default();
-                headers.extend(other);
-                Some(headers)
+            if let Some(mut site) = self.sites.remove(&name) {
+                site.merge(other);
+                self.sites.insert(name, site);
+            } else {
+                self.sites.insert(name, other);
             }
-            None => one.headers,
-        };
-        let retry = match other.retry {
-            Some(other) => Some(Self::merge_retry_config(
-                one.retry.unwrap_or_default(),
-                other,
-            )),
-            None => one.retry,
-        };
-
-        SiteConfig {
-            cache,
-            concurrency: other.concurrency.or(one.concurrency),
-            extend: other.extend.or(one.extend),
-            fragments_ignored: other.fragments_ignored.or(one.fragments_ignored),
-            headers,
-            ignore: other.ignore.or(one.ignore),
-            max_redirects: other.max_redirects.or(one.max_redirects),
-            rate_limit: other.rate_limit.or(one.rate_limit),
-            recurse: other.recurse.or(one.recurse),
-            retry,
-            roots: other.roots.or(one.roots),
-            schemes: other.schemes.or(one.schemes),
-            statuses: other.statuses.or(one.statuses),
-            timeout: other.timeout.or(one.timeout),
-        }
-    }
-
-    fn merge_global_cache_config(
-        one: GlobalCacheConfig,
-        other: GlobalCacheConfig,
-    ) -> GlobalCacheConfig {
-        GlobalCacheConfig {
-            persistent: other.persistent.or(one.persistent),
-        }
-    }
-
-    fn merge_cache_config(base_cache: CacheConfig, new_cache: CacheConfig) -> CacheConfig {
-        CacheConfig {
-            max_age: new_cache.max_age.or(base_cache.max_age),
-        }
-    }
-
-    fn merge_retry_config(base_retry: RetryConfig, new_retry: RetryConfig) -> RetryConfig {
-        let count = new_retry.count.or(base_retry.count);
-        let factor = new_retry.factor.or(base_retry.factor);
-        let base_interval = base_retry.interval;
-
-        let interval = match new_retry.interval {
-            Some(new_interval) => Some(Self::merge_retry_duration_config(
-                base_interval.unwrap_or_default(),
-                new_interval,
-            )),
-            None => base_interval,
-        };
-
-        RetryConfig {
-            count,
-            factor,
-            interval,
-        }
-    }
-
-    fn merge_retry_duration_config(
-        base_duration: RetryDurationConfig,
-        new_duration: RetryDurationConfig,
-    ) -> RetryDurationConfig {
-        RetryDurationConfig {
-            initial: new_duration.initial.or(base_duration.initial),
-            cap: new_duration.cap.or(base_duration.cap),
         }
     }
 }
@@ -175,6 +91,14 @@ impl SerializableConfig {
 #[serde(deny_unknown_fields)]
 struct GlobalCacheConfig {
     persistent: Option<bool>,
+}
+
+impl GlobalCacheConfig {
+    fn merge(&mut self, other: Self) {
+        if other.persistent.is_some() {
+            self.persistent = other.persistent;
+        }
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -196,10 +120,90 @@ struct SiteConfig {
     timeout: Option<DurationString>,
 }
 
+impl SiteConfig {
+    fn merge(&mut self, other: Self) {
+        if let Some(cache) = other.cache {
+            if let Some(mut base_cache) = self.cache.take() {
+                base_cache.merge(cache);
+                self.cache = Some(base_cache);
+            } else {
+                self.cache = Some(cache);
+            }
+        }
+
+        if other.concurrency.is_some() {
+            self.concurrency = other.concurrency;
+        }
+
+        if other.extend.is_some() {
+            self.extend = other.extend;
+        }
+
+        if other.fragments_ignored.is_some() {
+            self.fragments_ignored = other.fragments_ignored;
+        }
+
+        if let Some(headers) = other.headers {
+            let mut merged_headers = self.headers.take().unwrap_or_default();
+            merged_headers.extend(headers);
+            self.headers = Some(merged_headers);
+        }
+
+        if other.ignore.is_some() {
+            self.ignore = other.ignore;
+        }
+
+        if other.max_redirects.is_some() {
+            self.max_redirects = other.max_redirects;
+        }
+
+        if other.rate_limit.is_some() {
+            self.rate_limit = other.rate_limit;
+        }
+
+        if other.recurse.is_some() {
+            self.recurse = other.recurse;
+        }
+
+        if let Some(retry) = other.retry {
+            if let Some(mut base_retry) = self.retry.take() {
+                base_retry.merge(retry);
+                self.retry = Some(base_retry);
+            } else {
+                self.retry = Some(retry);
+            }
+        }
+
+        if other.roots.is_some() {
+            self.roots = other.roots;
+        }
+
+        if other.schemes.is_some() {
+            self.schemes = other.schemes;
+        }
+
+        if other.statuses.is_some() {
+            self.statuses = other.statuses;
+        }
+
+        if other.timeout.is_some() {
+            self.timeout = other.timeout;
+        }
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
     max_age: Option<DurationString>,
+}
+
+impl CacheConfig {
+    fn merge(&mut self, other: Self) {
+        if other.max_age.is_some() {
+            self.max_age = other.max_age;
+        }
+    }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -217,6 +221,27 @@ struct RetryConfig {
     interval: Option<RetryDurationConfig>,
 }
 
+impl RetryConfig {
+    fn merge(&mut self, other: Self) {
+        if other.count.is_some() {
+            self.count = other.count;
+        }
+
+        if other.factor.is_some() {
+            self.factor = other.factor;
+        }
+
+        if let Some(interval) = other.interval {
+            if let Some(mut base_interval) = self.interval.take() {
+                base_interval.merge(interval);
+                self.interval = Some(base_interval);
+            } else {
+                self.interval = Some(interval);
+            }
+        }
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct RetryDurationConfig {
@@ -224,6 +249,17 @@ struct RetryDurationConfig {
     cap: Option<DurationString>,
 }
 
+impl RetryDurationConfig {
+    fn merge(&mut self, other: Self) {
+        if other.initial.is_some() {
+            self.initial = other.initial;
+        }
+
+        if other.cap.is_some() {
+            self.cap = other.cap;
+        }
+    }
+}
 /// Compiles a configuration.
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
