@@ -72,7 +72,7 @@ impl SerializableConfig {
         }
 
         if let Some(new_cache) = cache {
-            self.cache = Some(merge_global_cache_config(self.cache.take(), new_cache));
+            self.cache = Some(Self::merge_global_cache_config(self.cache.take(), new_cache));
         }
 
         if let Some(new_rate_limit) = rate_limit {
@@ -81,8 +81,146 @@ impl SerializableConfig {
 
         for (site_name, new_site) in sites {
             let base_site = self.sites.remove(&site_name);
-            let merged_site = merge_site_config(base_site, new_site);
+            let merged_site = Self::merge_site_config(base_site, new_site);
             self.sites.insert(site_name, merged_site);
+        }
+    }
+
+    fn merge_site_config(base_site: Option<SiteConfig>, new_site: SiteConfig) -> SiteConfig {
+        let SiteConfig {
+            cache: new_cache,
+            concurrency: new_concurrency,
+            extend: new_extend,
+            fragments_ignored: new_fragments_ignored,
+            headers: new_headers,
+            ignore: new_ignore,
+            max_redirects: new_max_redirects,
+            rate_limit: new_rate_limit,
+            recurse: new_recurse,
+            retry: new_retry,
+            roots: new_roots,
+            schemes: new_schemes,
+            statuses: new_statuses,
+            timeout: new_timeout,
+        } = new_site;
+
+        let SiteConfig {
+            cache: base_cache,
+            concurrency: base_concurrency,
+            extend: base_extend,
+            fragments_ignored: base_fragments_ignored,
+            headers: base_headers,
+            ignore: base_ignore,
+            max_redirects: base_max_redirects,
+            rate_limit: base_rate_limit,
+            recurse: base_recurse,
+            retry: base_retry,
+            roots: base_roots,
+            schemes: base_schemes,
+            statuses: base_statuses,
+            timeout: base_timeout,
+        } = base_site.unwrap_or_default();
+
+        let cache = match new_cache {
+            Some(new_cache) => Some(Self::merge_cache_config(base_cache, new_cache)),
+            None => base_cache,
+        };
+        let headers = match new_headers {
+            Some(new_headers) => {
+                let mut merged_headers = base_headers.unwrap_or_default();
+                merged_headers.extend(new_headers);
+                Some(merged_headers)
+            }
+            None => base_headers,
+        };
+        let retry = match new_retry {
+            Some(new_retry) => Some(Self::merge_retry_config(base_retry, new_retry)),
+            None => base_retry,
+        };
+
+        SiteConfig {
+            cache,
+            concurrency: new_concurrency.or(base_concurrency),
+            extend: new_extend.or(base_extend),
+            fragments_ignored: new_fragments_ignored.or(base_fragments_ignored),
+            headers,
+            ignore: new_ignore.or(base_ignore),
+            max_redirects: new_max_redirects.or(base_max_redirects),
+            rate_limit: new_rate_limit.or(base_rate_limit),
+            recurse: new_recurse.or(base_recurse),
+            retry,
+            roots: new_roots.or(base_roots),
+            schemes: new_schemes.or(base_schemes),
+            statuses: new_statuses.or(base_statuses),
+            timeout: new_timeout.or(base_timeout),
+        }
+    }
+
+    fn merge_global_cache_config(
+        base_cache: Option<GlobalCacheConfig>,
+        new_cache: GlobalCacheConfig,
+    ) -> GlobalCacheConfig {
+        let GlobalCacheConfig {
+            persistent: new_persistent,
+        } = new_cache;
+        let base_persistent = base_cache.and_then(|cache| cache.persistent);
+
+        GlobalCacheConfig {
+            persistent: new_persistent.or(base_persistent),
+        }
+    }
+
+    fn merge_cache_config(base_cache: Option<CacheConfig>, new_cache: CacheConfig) -> CacheConfig {
+        let CacheConfig {
+            max_age: new_max_age,
+        } = new_cache;
+        let base_max_age = base_cache.and_then(|cache| cache.max_age);
+
+        CacheConfig {
+            max_age: new_max_age.or(base_max_age),
+        }
+    }
+
+    fn merge_retry_config(base_retry: Option<RetryConfig>, new_retry: RetryConfig) -> RetryConfig {
+        let RetryConfig {
+            count: new_count,
+            factor: new_factor,
+            interval: new_interval,
+        } = new_retry;
+        let RetryConfig {
+            count: base_count,
+            factor: base_factor,
+            interval: base_interval,
+        } = base_retry.unwrap_or_default();
+
+        let interval = match new_interval {
+            Some(new_interval) => Some(Self::merge_retry_duration_config(base_interval, new_interval)),
+            None => base_interval,
+        };
+
+        RetryConfig {
+            count: new_count.or(base_count),
+            factor: new_factor.or(base_factor),
+            interval,
+        }
+    }
+
+    fn merge_retry_duration_config(
+        base_duration: Option<RetryDurationConfig>,
+        new_duration: RetryDurationConfig,
+    ) -> RetryDurationConfig {
+        let RetryDurationConfig {
+            initial: new_initial,
+            cap: new_cap,
+        } = new_duration;
+        let RetryDurationConfig {
+            initial: base_initial,
+            cap: base_cap,
+        } = base_duration.unwrap_or_default();
+
+        RetryDurationConfig {
+            initial: new_initial.or(base_initial),
+            cap: new_cap.or(base_cap),
         }
     }
 }
@@ -138,144 +276,6 @@ struct RetryConfig {
 struct RetryDurationConfig {
     initial: Option<DurationString>,
     cap: Option<DurationString>,
-}
-
-fn merge_site_config(base_site: Option<SiteConfig>, new_site: SiteConfig) -> SiteConfig {
-    let SiteConfig {
-        cache: new_cache,
-        concurrency: new_concurrency,
-        extend: new_extend,
-        fragments_ignored: new_fragments_ignored,
-        headers: new_headers,
-        ignore: new_ignore,
-        max_redirects: new_max_redirects,
-        rate_limit: new_rate_limit,
-        recurse: new_recurse,
-        retry: new_retry,
-        roots: new_roots,
-        schemes: new_schemes,
-        statuses: new_statuses,
-        timeout: new_timeout,
-    } = new_site;
-
-    let SiteConfig {
-        cache: base_cache,
-        concurrency: base_concurrency,
-        extend: base_extend,
-        fragments_ignored: base_fragments_ignored,
-        headers: base_headers,
-        ignore: base_ignore,
-        max_redirects: base_max_redirects,
-        rate_limit: base_rate_limit,
-        recurse: base_recurse,
-        retry: base_retry,
-        roots: base_roots,
-        schemes: base_schemes,
-        statuses: base_statuses,
-        timeout: base_timeout,
-    } = base_site.unwrap_or_default();
-
-    let cache = match new_cache {
-        Some(new_cache) => Some(merge_cache_config(base_cache, new_cache)),
-        None => base_cache,
-    };
-    let headers = match new_headers {
-        Some(new_headers) => {
-            let mut merged_headers = base_headers.unwrap_or_default();
-            merged_headers.extend(new_headers);
-            Some(merged_headers)
-        }
-        None => base_headers,
-    };
-    let retry = match new_retry {
-        Some(new_retry) => Some(merge_retry_config(base_retry, new_retry)),
-        None => base_retry,
-    };
-
-    SiteConfig {
-        cache,
-        concurrency: new_concurrency.or(base_concurrency),
-        extend: new_extend.or(base_extend),
-        fragments_ignored: new_fragments_ignored.or(base_fragments_ignored),
-        headers,
-        ignore: new_ignore.or(base_ignore),
-        max_redirects: new_max_redirects.or(base_max_redirects),
-        rate_limit: new_rate_limit.or(base_rate_limit),
-        recurse: new_recurse.or(base_recurse),
-        retry,
-        roots: new_roots.or(base_roots),
-        schemes: new_schemes.or(base_schemes),
-        statuses: new_statuses.or(base_statuses),
-        timeout: new_timeout.or(base_timeout),
-    }
-}
-
-fn merge_global_cache_config(
-    base_cache: Option<GlobalCacheConfig>,
-    new_cache: GlobalCacheConfig,
-) -> GlobalCacheConfig {
-    let GlobalCacheConfig {
-        persistent: new_persistent,
-    } = new_cache;
-    let base_persistent = base_cache.and_then(|cache| cache.persistent);
-
-    GlobalCacheConfig {
-        persistent: new_persistent.or(base_persistent),
-    }
-}
-
-fn merge_cache_config(base_cache: Option<CacheConfig>, new_cache: CacheConfig) -> CacheConfig {
-    let CacheConfig {
-        max_age: new_max_age,
-    } = new_cache;
-    let base_max_age = base_cache.and_then(|cache| cache.max_age);
-
-    CacheConfig {
-        max_age: new_max_age.or(base_max_age),
-    }
-}
-
-fn merge_retry_config(base_retry: Option<RetryConfig>, new_retry: RetryConfig) -> RetryConfig {
-    let RetryConfig {
-        count: new_count,
-        factor: new_factor,
-        interval: new_interval,
-    } = new_retry;
-    let RetryConfig {
-        count: base_count,
-        factor: base_factor,
-        interval: base_interval,
-    } = base_retry.unwrap_or_default();
-
-    let interval = match new_interval {
-        Some(new_interval) => Some(merge_retry_duration_config(base_interval, new_interval)),
-        None => base_interval,
-    };
-
-    RetryConfig {
-        count: new_count.or(base_count),
-        factor: new_factor.or(base_factor),
-        interval,
-    }
-}
-
-fn merge_retry_duration_config(
-    base_duration: Option<RetryDurationConfig>,
-    new_duration: RetryDurationConfig,
-) -> RetryDurationConfig {
-    let RetryDurationConfig {
-        initial: new_initial,
-        cap: new_cap,
-    } = new_duration;
-    let RetryDurationConfig {
-        initial: base_initial,
-        cap: base_cap,
-    } = base_duration.unwrap_or_default();
-
-    RetryDurationConfig {
-        initial: new_initial.or(base_initial),
-        cap: new_cap.or(base_cap),
-    }
 }
 
 /// Compiles a configuration.
