@@ -48,6 +48,7 @@ pub struct SerializableConfig {
 }
 
 impl SerializableConfig {
+    /// Returns a configuration file path to extend from.
     pub fn extend(&self) -> Option<&Path> {
         self.extend.as_deref()
     }
@@ -388,6 +389,7 @@ mod tests {
     #[test]
     fn compile_empty() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: Default::default(),
             concurrency: None,
             cache: None,
@@ -419,6 +421,7 @@ mod tests {
     #[test]
     fn compile_default() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "default".to_owned(),
@@ -523,6 +526,7 @@ mod tests {
     #[test]
     fn compile_root_sites() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -593,6 +597,7 @@ mod tests {
     #[test]
     fn compile_ignored_sites() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -650,6 +655,7 @@ mod tests {
     #[test]
     fn compile_non_root_site_config() {
         let config = compile_config(SerializableConfig {
+            extend: None,
             sites: [
                 (
                     "foo".to_owned(),
@@ -689,6 +695,7 @@ mod tests {
     #[test]
     fn compile_invalid_header_name() {
         let config = SerializableConfig {
+            extend: None,
             sites: [(
                 "default".to_owned(),
                 SiteConfig {
@@ -714,6 +721,7 @@ mod tests {
     #[test]
     fn compile_invalid_header_value() {
         let config = SerializableConfig {
+            extend: None,
             sites: [(
                 "default".to_owned(),
                 SiteConfig {
@@ -739,6 +747,7 @@ mod tests {
     #[test]
     fn compile_invalid_status_code() {
         let config = SerializableConfig {
+            extend: None,
             sites: [(
                 "default".to_owned(),
                 SiteConfig {
@@ -761,6 +770,7 @@ mod tests {
     #[test]
     fn compile_concurrency() {
         let config = SerializableConfig {
+            extend: None,
             sites: [(
                 "foo".to_owned(),
                 SiteConfig {
@@ -786,6 +796,7 @@ mod tests {
     #[test]
     fn compile_rate_limit() {
         let config = SerializableConfig {
+            extend: None,
             sites: [(
                 "foo".to_owned(),
                 SiteConfig {
@@ -825,6 +836,7 @@ mod tests {
     #[test]
     fn compile_global_cache_config() {
         let config = SerializableConfig {
+            extend: None,
             sites: Default::default(),
             concurrency: None,
             cache: Some(GlobalCacheConfig {
