@@ -1234,26 +1234,11 @@ mod tests {
 
             assert_eq!(merged_config.extend, None);
             assert_eq!(merged_config.concurrency, Some(2));
+            assert!(merged_config.cache.as_ref().unwrap().persistent.unwrap());
+            assert_eq!(merged_config.rate_limit.as_ref().unwrap().supply, 2);
             assert_eq!(
-                merged_config
-                    .cache
-                    .as_ref()
-                    .and_then(|cache| cache.persistent),
-                Some(true)
-            );
-            assert_eq!(
-                merged_config
-                    .rate_limit
-                    .as_ref()
-                    .map(|rate_limit| rate_limit.supply),
-                Some(2)
-            );
-            assert_eq!(
-                merged_config
-                    .rate_limit
-                    .as_ref()
-                    .map(|rate_limit| rate_limit.window.clone()),
-                Some(Duration::from_secs(2).into())
+                merged_config.rate_limit.as_ref().unwrap().window.clone(),
+                DurationString::from(Duration::from_secs(2))
             );
 
             let merged_site = merged_config.sites.get("example").unwrap();
@@ -1263,20 +1248,18 @@ mod tests {
                 merged_site
                     .cache
                     .as_ref()
-                    .and_then(|cache| cache.max_age.as_deref().copied()),
-                Some(Duration::from_secs(5))
+                    .unwrap()
+                    .max_age
+                    .as_deref()
+                    .copied()
+                    .unwrap(),
+                Duration::from_secs(5)
             );
 
             let headers = merged_site.headers.as_ref().unwrap();
 
-            assert_eq!(
-                headers.get("user-agent").map(String::as_str),
-                Some("updated")
-            );
-            assert_eq!(
-                headers.get("accept").map(String::as_str),
-                Some("text/plain")
-            );
+            assert_eq!(headers.get("user-agent").unwrap(), "updated");
+            assert_eq!(headers.get("accept").unwrap(), "text/plain");
             assert!(merged_config.sites.contains_key("other"));
         }
 
@@ -1394,43 +1377,31 @@ mod tests {
 
             assert_eq!(merged_config.extend, None);
             assert_eq!(merged_config.concurrency, Some(1));
-            assert_eq!(
-                merged_config
-                    .cache
-                    .as_ref()
-                    .and_then(|cache| cache.persistent),
-                Some(true)
-            );
-            assert_eq!(
-                merged_config
-                    .rate_limit
-                    .as_ref()
-                    .map(|rate_limit| rate_limit.supply),
-                Some(1)
-            );
+            assert!(merged_config.cache.as_ref().unwrap().persistent.unwrap());
+            assert_eq!(merged_config.rate_limit.as_ref().unwrap().supply, 1);
 
             let merged_site = merged_config.sites.get("example").unwrap();
 
             assert_eq!(merged_site.max_redirects, Some(5));
             assert_eq!(
-                merged_site.timeout.as_deref().copied(),
-                Some(Duration::from_secs(4))
+                merged_site.timeout.as_deref().copied().unwrap(),
+                Duration::from_secs(4)
             );
 
             let retry = merged_site.retry.as_ref().unwrap();
 
-            assert_eq!(retry.count, Some(1));
-            assert_eq!(retry.factor, Some(2.0));
+            assert_eq!(retry.count.unwrap(), 1);
+            assert_eq!(retry.factor.unwrap(), 2.0);
 
             let interval = retry.interval.as_ref().unwrap();
 
             assert_eq!(
-                interval.initial.as_deref().copied(),
-                Some(Duration::from_secs(1))
+                interval.initial.as_deref().copied().unwrap(),
+                Duration::from_secs(1)
             );
             assert_eq!(
-                interval.cap.as_deref().copied(),
-                Some(Duration::from_secs(9))
+                interval.cap.as_deref().copied().unwrap(),
+                Duration::from_secs(9)
             );
         }
 
