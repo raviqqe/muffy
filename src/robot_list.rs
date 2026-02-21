@@ -1,5 +1,4 @@
-use core::ops::Deref;
-use robotstxt_rs::RobotsTxt;
+use robotparser::{model::RobotsTxt, parser::parse_robots_txt, service::RobotsTxtService};
 
 const USER_AGENT: &str = "MuffyBot";
 
@@ -10,7 +9,7 @@ pub struct RobotList {
 impl RobotList {
     pub fn parse(source: &str) -> Self {
         Self {
-            db: RobotsTxt::parse(source),
+            db: parse_robots_txt("localhost", source),
         }
     }
 
@@ -19,6 +18,6 @@ impl RobotList {
     }
 
     pub fn sitemaps(&self) -> impl Iterator<Item = &str> {
-        self.db.get_sitemaps().iter().map(Deref::deref)
+        self.db.get_sitemaps().iter().map(|url| url.as_str())
     }
 }
