@@ -1,0 +1,672 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemref",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemprop",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemscope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemtype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemid",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata.itemref",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "itemref",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idrefs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata.itemprop",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "itemprop",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.microdata-properties",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata.itemscope",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "itemscope",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "itemscope",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata.itemtype",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "itemtype",
+                                },
+                            ),
+                            pattern: List(
+                                Many1(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.uri.absolute",
+                                        },
+                                    ),
+                                ),
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs.microdata.itemid",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "itemid",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.microdata",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "a.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.microdata",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "area.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.microdata",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.microdata",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "link",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.phrasing.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.phrasing.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.microdata.itemprop",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemref",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemscope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemtype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemid",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-hyperlink.attrs.href",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.hreflang",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.media",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.sizes",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embedded.content.attrs.crossorigin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.link",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.menuitem",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "link.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.rel",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.microdata.itemprop",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.attrs.microdata.itemref",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.attrs.microdata.itemscope",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.attrs.microdata.itemtype",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.attrs.microdata.itemid",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.itemprop.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.itemprop.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.itemprop.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.microdata.itemprop",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemref",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemscope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemtype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemid",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.itemprop.attrs.content",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.itemprop.attrs.content",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.itemprop.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.itemprop.elem",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

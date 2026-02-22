@@ -1,0 +1,29 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [],
+    body: Grammar(
+        Grammar {
+            items: [
+                Include(
+                    Include {
+                        uri: "mathml3-inc.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Start {
+                    combine: None,
+                    pattern: Name(
+                        Name {
+                            prefix: None,
+                            local: "math",
+                        },
+                    ),
+                },
+            ],
+        },
+    ),
+}

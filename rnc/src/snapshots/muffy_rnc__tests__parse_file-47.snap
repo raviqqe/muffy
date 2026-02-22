@@ -1,0 +1,89 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Define(
+                        Definition {
+                            name: "EnableBackgroundValue.datatype",
+                            combine: None,
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.enable-background.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "enable-background",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "EnableBackgroundValue.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.Container.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.Container.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.enable-background.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Container.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

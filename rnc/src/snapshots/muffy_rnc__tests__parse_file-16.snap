@@ -1,0 +1,359 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "local",
+                uri: "",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Define(
+                    Definition {
+                        name: "ruby.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ruby",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ruby.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ruby.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ruby.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ruby.inner",
+                        combine: None,
+                        pattern: Many1(
+                            Group(
+                                [
+                                    Many1(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "common.inner.phrasing",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "rb.elem",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                    Choice(
+                                        [
+                                            Many1(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "rt.elem",
+                                                    },
+                                                ),
+                                            ),
+                                            Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "rp.elem",
+                                                        },
+                                                    ),
+                                                    Many1(
+                                                        Group(
+                                                            [
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "rt.elem",
+                                                                    },
+                                                                ),
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "rp.elem",
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ruby.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rt.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rt",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rt.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rt.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rt.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rt.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rp.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rp",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rp.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rp.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rp.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rp.inner",
+                        combine: None,
+                        pattern: Text,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rb.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rb",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rb.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "rb.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rb.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "rb.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

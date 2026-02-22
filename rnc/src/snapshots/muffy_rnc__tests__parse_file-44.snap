@@ -1,0 +1,63 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "svg",
+                uri: "http://www.w3.org/2000/svg",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Include(
+                        Include {
+                            uri: "svg-basic-clip.rnc",
+                            inherit: Some(
+                                Prefix(
+                                    "svg",
+                                ),
+                            ),
+                            grammar: None,
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.clipPath.class",
+                            combine: Some(
+                                Choice,
+                            ),
+                            pattern: Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Shape.class",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Text.class",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

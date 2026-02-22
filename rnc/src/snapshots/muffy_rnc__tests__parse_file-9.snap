@@ -1,0 +1,170 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/1999/xhtml",
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Include(
+                    Include {
+                        uri: "common.rnc",
+                        inherit: None,
+                        grammar: Some(
+                            Grammar {
+                                items: [],
+                            },
+                        ),
+                    },
+                ),
+                Start {
+                    combine: None,
+                    pattern: Name(
+                        Name {
+                            prefix: None,
+                            local: "html.elem",
+                        },
+                    ),
+                },
+                Include(
+                    Include {
+                        uri: "meta.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "phrase.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "block.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "sectional.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "structural.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "revision.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "embed.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "ruby.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "media.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "core-scripting.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "tables.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "form-datatypes.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "web-forms.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "web-forms2.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "applications.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "data.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "aria.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "microdata.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "web-components.rnc",
+                        inherit: None,
+                        grammar: None,
+                    },
+                ),
+            ],
+        },
+    ),
+}

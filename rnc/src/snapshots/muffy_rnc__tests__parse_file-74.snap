@@ -1,0 +1,160 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Define(
+                        Definition {
+                            name: "ClipValue.datatype",
+                            combine: None,
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.clip.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "clip",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ClipValue.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.overflow.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "overflow",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visible",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "hidden",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "scroll",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "auto",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.Viewport.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Define(
+                        Definition {
+                            name: "SVG.Viewport.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.clip.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.overflow.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Viewport.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

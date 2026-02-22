@@ -1,0 +1,4453 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Define(
+                    Definition {
+                        name: "common-form.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common-form.attrs.form",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common-form.attrs.form",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idref",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formaction",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "formaction",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formenctype",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "formenctype",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shared-form.attrs.formenctype.data",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formenctype.data",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "application/x-www-form-urlencoded",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "multipart/form-data",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "text/plain",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formmethod",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "formmethod",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shared-form.attrs.formmethod.data",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formmethod.data",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "get",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "post",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "dialog",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formtarget",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "formtarget",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.browsing-context-or-keyword",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.formnovalidate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "formnovalidate",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "formnovalidate",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.pattern",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "pattern",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.pattern",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.template",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "template",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idref",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.required",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "required",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "required",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.placeholder",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "placeholder",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.stringwithoutlinebreaks",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.dirname",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "dirname",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.nonemptystring",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-form.attrs.minlength",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "minlength",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-input-no-size.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.list",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.maxlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.minlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.pattern",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.readonly",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-input-no-list.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.maxlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.minlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.pattern",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.readonly",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.size",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "shared-input.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-size.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.size",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.list",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "list",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idref",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.step.float",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "step",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "any",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.float.positive",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.step.integer",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "step",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "any",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.integer.positive",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.multiple",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "multiple",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "multiple",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.autocomplete.any",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "autocomplete",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "on",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "off",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.autocomplete.any",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.attrs.autocomplete",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "autocomplete",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.hidden.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.text.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.list",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.pattern",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.minlength",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.password.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.list",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.pattern",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.minlength",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.checkbox.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "shared-input.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.radio.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "shared-input.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.button.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "shared-input.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.submit.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formaction",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formenctype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formmethod",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formtarget",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formnovalidate",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.reset.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "shared-input.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.file.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.multiple",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.input.attrs.capture",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.input.attrs.capture",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "capture",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "user",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "environment",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.image.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formaction",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formenctype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formmethod",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formtarget",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formnovalidate",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.image.attrs.height",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.image.attrs.width",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.image.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.image.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.datetime-local.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.datetime-local.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.datetime-local.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.datetime-local.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemax",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.float",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.datetime-local.attrs.value",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "datetime-local",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.datetime-local",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.datetime-local",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.datetime-local.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.datetime-local",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.datetime-local.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.date.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.date.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.date.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.date.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemax",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.integer",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.date.attrs.value",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "date",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.date",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.date",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.date.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.date",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.date.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.month.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.month.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.month.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.month.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemax",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.integer",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.month.attrs.value",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "month",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.month",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.month",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.month.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.month",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.month.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.time.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.time.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.time.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.time.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemax",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.float",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.time.attrs.value",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "time",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.time",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.time",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.time.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.time",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.time.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.week.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.week.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.week.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.week.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.valuemax",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.prop.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.integer",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.week.attrs.value",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "week",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.week",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.week",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.week.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.week",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.week.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.number.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-size.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.number.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.number.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.number.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.float",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.number.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.spinbutton",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.spinbutton",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "number",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.float",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.float",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.number.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.float",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.number.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.range.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-size.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.range.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.range.attrs.min",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.range.attrs.max",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.step.float",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.range.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.slider",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.slider",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "range",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.attrs.min",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "min",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.float",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.attrs.max",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "max",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.float",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.range.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.float",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.range.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.email.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.email.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.email.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-list.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.email.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Interleave(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "input.attrs.multiple",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "input.email.attrs.value.multiple",
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "input.email.attrs.value.single",
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Optional(
+                                            Choice(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.implicit.textbox",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.textbox",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        Optional(
+                                            Interleave(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "input.attrs.list",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Choice(
+                                                            [
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.implicit.combobox",
+                                                                    },
+                                                                ),
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.role.combobox",
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.email.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "email",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.email.attrs.value.single",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.emailaddress",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.email.attrs.value.multiple",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.emailaddresslist",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.email.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.url.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.url.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.url.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-list.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.url.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.url.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Optional(
+                                            Choice(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.implicit.textbox",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.textbox",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        Optional(
+                                            Interleave(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "input.attrs.list",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Choice(
+                                                            [
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.implicit.combobox",
+                                                                    },
+                                                                ),
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.role.combobox",
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.url.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "url",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.url.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.uri.absolute",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.url.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.search.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.search.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.search.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.search.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.search.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.searchbox",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.searchbox",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.search.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "search",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.search.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.stringwithoutlinebreaks",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.search.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.tel.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.tel.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.tel.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input-no-list.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.tel.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.tel.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Optional(
+                                            Choice(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.implicit.textbox",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.textbox",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        Optional(
+                                            Interleave(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "input.attrs.list",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Choice(
+                                                            [
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.implicit.combobox",
+                                                                    },
+                                                                ),
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "common.attrs.aria.role.combobox",
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.tel.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "tel",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.tel.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "form.data.stringwithoutlinebreaks",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.tel.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "input.color.attrs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common-form.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "input.color.attrs.type",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.color.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.color.attrs.alpha",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.color.attrs.colorspace",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-input.attrs",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "color",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.data.color",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.attrs.alpha",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "alpha",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "alpha",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.color.attrs.colorspace",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "colorspace",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "limited-srgb",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "display-p3",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "input.elem",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "input.color.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "output.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "output",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "output.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "output.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "output.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common-form.attrs.name",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common-form.attrs.form",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "output.attrs.for",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.status",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "output.attrs.for",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "for",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idrefs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "output.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "output.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs.rows-and-cols-wf1.inner",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs.rows-and-cols-wf1",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Empty,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.maxlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.minlength",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "textarea.attrs.placeholder",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.dirname",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "textarea.attrs.rows",
+                                        },
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Interleave(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "textarea.attrs.wrap.hard",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "textarea.attrs.cols",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                        Interleave(
+                                            [
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "textarea.attrs.wrap.soft",
+                                                        },
+                                                    ),
+                                                ),
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "textarea.attrs.cols",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete.any",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs.wrap.hard",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "wrap",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "hard",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs.wrap.soft",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "wrap",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "soft",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "textarea.attrs.placeholder",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "placeholder",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "datalist.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "datalist",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "datalist.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "datalist.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "datalist.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "option.elem",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.inner.phrasing",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "datalist.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "datalist.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "button.submit.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formaction",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formenctype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formmethod",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formtarget",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.formnovalidate",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "form.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.attrs.novalidate",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.attrs.target",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "form.attrs.autocomplete",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "form.attrs.novalidate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "novalidate",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "novalidate",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "form.attrs.target",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "target",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.browsing-context-or-keyword",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "form.attrs.autocomplete",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "autocomplete",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "on",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "off",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "form.attrs.enctype.data",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Value {
+                            name: Some(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "string",
+                                },
+                            ),
+                            value: "text/plain",
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "fieldset.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common-form.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "select.attrs",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-form.attrs.required",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "input.attrs.autocomplete.any",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

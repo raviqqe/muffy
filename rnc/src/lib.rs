@@ -8,11 +8,12 @@ pub use self::{ast::*, parse::*};
 #[cfg(test)]
 mod tests {
     use super::*;
+    use insta::assert_debug_snapshot;
     use rstest::rstest;
     use std::{fs::read_to_string, path::PathBuf};
 
     #[rstest]
     fn parse_file(#[files("../vendor/validator/**/schema/**/*.rnc")] path: PathBuf) {
-        parse_schema(&read_to_string(&path).unwrap()).unwrap();
+        assert_debug_snapshot!(parse_schema(&read_to_string(&path).unwrap()).unwrap());
     }
 }

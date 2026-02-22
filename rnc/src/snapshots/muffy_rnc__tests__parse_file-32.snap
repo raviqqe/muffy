@@ -1,0 +1,805 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/1998/Math/MathML",
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Define(
+                    Definition {
+                        name: "ContExp",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "semantics-contexp",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "cn",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "ci",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "csymbol",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "apply",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "bind",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "share",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "cerror",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "cbytes",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "cs",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cn",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cn",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cn.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cn.content",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cn.content",
+                        combine: None,
+                        pattern: Text,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cn.attributes",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: None,
+                                        value: "integer",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "real",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "double",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "hexdouble",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "semantics-ci",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "semantics",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "semantics.attributes",
+                                        },
+                                    ),
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "ci",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "semantics-ci",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation-xml",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "semantics-contexp",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "semantics",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "semantics.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ContExp",
+                                        },
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation-xml",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ci",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ci",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ci.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ci.content",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ci.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ci.type",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ci.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: None,
+                                        value: "integer",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "rational",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "real",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "complex",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "complex-polar",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "complex-cartesian",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "constant",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "function",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "vector",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "list",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "set",
+                                    },
+                                    Value {
+                                        name: None,
+                                        value: "matrix",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "ci.content",
+                        combine: None,
+                        pattern: Text,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "csymbol",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "csymbol",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "csymbol.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "csymbol.content",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "SymbolName",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "NCName",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "csymbol.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "cd",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "csymbol.content",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "SymbolName",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "BvarQ",
+                        combine: None,
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "bvar",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "bvar",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "bvar",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ci",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "semantics-ci",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "apply",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "apply",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "CommonAtt",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "apply.content",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "apply.content",
+                        combine: None,
+                        pattern: Many1(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ContExp",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "bind",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "bind",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "CommonAtt",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "bind.content",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "bind.content",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "ContExp",
+                                    },
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "bvar",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "ContExp",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "share",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "share",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "CommonAtt",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "src",
+                                        },
+                                    ),
+                                    Empty,
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cerror",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cerror",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cerror.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "csymbol",
+                                        },
+                                    ),
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ContExp",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cerror.attributes",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "CommonAtt",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cbytes",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cbytes",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cbytes.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "base64",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cbytes.attributes",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "CommonAtt",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base64",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "base64Binary",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cs",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cs",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cs.attributes",
+                                        },
+                                    ),
+                                    Text,
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "cs.attributes",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "CommonAtt",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "MathExpression",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ContExp",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

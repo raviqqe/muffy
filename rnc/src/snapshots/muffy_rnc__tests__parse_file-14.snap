@@ -1,0 +1,2767 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Define(
+                    Definition {
+                        name: "html.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "html",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "html.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "html.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "html.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "html.inner",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "head.elem",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "body.elem",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "head.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "head",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "head.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "head.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "head.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "head.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "title.elem",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "base.elem",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.inner.metadata",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "body",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.application",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.landmark.document",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.document",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onafterprint",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onbeforeprint",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onbeforeunload",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onhashchange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onlanguagechange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onmessage",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onmessageerror",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onoffline",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.ononline",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onpagehide",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onpagereveal",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onpageshow",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onpageswap",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onpopstate",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onrejectionhandled",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onstorage",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onunhandledrejection",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "body.attrs.onunload",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onafterprint",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onafterprint",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onbeforeprint",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onbeforeprint",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onbeforeunload",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onbeforeunload",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onhashchange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onhashchange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onlanguagechange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onlanguagechange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onmessage",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmessage",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onmessageerror",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmessageerror",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onoffline",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onoffline",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.ononline",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ononline",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onpagehide",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpagehide",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onpagereveal",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpagereveal",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onpageswap",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpageswap",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onpageshow",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpageshow",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onpopstate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpopstate",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onrejectionhandled",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onrejectionhandled",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onstorage",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onstorage",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onunhandledrejection",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onunhandledrejection",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "body.attrs.onunload",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onunload",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "title.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "title",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "title.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "title.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "title.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "title.inner",
+                        combine: None,
+                        pattern: Text,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "base",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "base.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "base.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Choice(
+                                    [
+                                        Interleave(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "base.attrs.href",
+                                                    },
+                                                ),
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "base.attrs.target",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "base.attrs.target",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.attrs.href",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "href",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.attrs.target",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "target",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.browsing-context-or-keyword",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "base.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "link",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "link.attrs.rel",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.href",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.as",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.integrity",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.hreflang",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.media",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "referrerpolicy",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.sizes",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.color",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.disabled",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.scope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.updateviacache",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.workertype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.imagesrcset",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.attrs.imagesizes",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.fetchpriority",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embedded.content.attrs.crossorigin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.blocking",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria.role.link",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.href",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "href",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.rel",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rel",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "rel-value",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.as",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "as",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "audioworklet",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "fetch",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "font",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "image",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "json",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "paintworklet",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "script",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "serviceworker",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "sharedworker",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "style",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "track",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "worker",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.integrity",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "integrity",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integrity",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.sizes",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "sizes",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "any",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.sizes",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.color",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "color",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.color",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.disabled",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "disabled",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "disabled",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.scope",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "scope",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.updateviacache",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "updateviacache",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "imports",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "all",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "none",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.workertype",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "workertype",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "classic",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "module",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.imagesrcset",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "imagesrcset",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "string",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.attrs.imagesizes",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "imagesizes",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.source.size.list",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "link.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "link.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "link.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "link.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "style.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "style",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "style.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "style.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "style.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "style.attrs.media",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.blocking",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "style.attrs.media",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "media",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.mediaquery",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "style.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.anything",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "style.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.name.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.name.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.name.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.name.attrs.name",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.name.attrs.content",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemref",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemscope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemtype",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.microdata.itemid",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.media",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.name.attrs.name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "non-empty-string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.name.attrs.content",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.name.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.refresh.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.refresh.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.refresh.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.http-equiv.refresh",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.content.refresh",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.http-equiv.refresh",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "http-equiv",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "refresh",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.content.refresh",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.refresh",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.http-equiv.refresh.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.default-style.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.default-style.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.default-style.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.http-equiv.default-style",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.content.default-style",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.http-equiv.default-style",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "http-equiv",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "default-style",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.content.default-style",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.default-style",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.http-equiv.default-style.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.content-security-policy.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.content-security-policy.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.content-security-policy.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.http-equiv.content-security-policy",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.content.content-security-policy",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.http-equiv.content-security-policy",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "http-equiv",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "content-security-policy",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.content.content-security-policy",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.content-security-policy",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.http-equiv.content-security-policy.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.x-ua-compatible.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.x-ua-compatible.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.x-ua-compatible.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.http-equiv.x-ua-compatible",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.content.x-ua-compatible",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.http-equiv.x-ua-compatible",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "http-equiv",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "x-ua-compatible",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.content.x-ua-compatible",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.x-ua-compatible",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "meta.http-equiv.x-ua-compatible.elem",
+                            },
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.charset.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "meta",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.charset.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.charset.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.charset.attrs.charset",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.charset.attrs.charset",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "charset",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "string",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "HTMLonly",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Interleave(
+                                        [
+                                            Data {
+                                                name: Name {
+                                                    prefix: Some(
+                                                        "xsd",
+                                                    ),
+                                                    local: "string",
+                                                },
+                                                parameters: [
+                                                    Parameter {
+                                                        name: Name {
+                                                            prefix: None,
+                                                            local: "pattern",
+                                                        },
+                                                        value: "[uU][tT][fF]-8",
+                                                    },
+                                                ],
+                                                except: None,
+                                            },
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "XMLonly",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.content-type.elem",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Element {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta",
+                                        },
+                                    ),
+                                    pattern: Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "meta.inner",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "meta.http-equiv.content-type.attrs",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "HTMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.content-type.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.http-equiv.content-type",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.attrs.content.content-type",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.http-equiv.content-type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "http-equiv",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "content-type",
+                            },
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "meta.http-equiv.attrs.content.content-type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "content",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.meta-charset",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Define(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.charset.elem",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "meta.http-equiv.content-type.elem",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}
