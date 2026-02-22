@@ -314,7 +314,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     let pattern = match quantifier {
         Some("?") => Pattern::Optional(Box::new(base_pattern)),
         Some("*") => Pattern::Many0(Box::new(base_pattern)),
-        Some("+") => Pattern::OneOrMore(Box::new(base_pattern)),
+        Some("+") => Pattern::Many1(Box::new(base_pattern)),
         None => base_pattern,
         Some(_) => base_pattern,
     };
@@ -766,6 +766,7 @@ mod tests {
         },
         parse_schema,
     };
+    use indoc::indoc;
 
     fn local_name(value: &str) -> Name {
         Name {
@@ -792,7 +793,7 @@ mod tests {
             body: SchemaBody::Pattern(Pattern::Element {
                 name_class: NameClass::Name(local_name("foo")),
                 pattern: Box::new(Pattern::Group(vec![
-                    Pattern::OneOrMore(Box::new(Pattern::Choice(vec![
+                    Pattern::Many1(Box::new(Pattern::Choice(vec![
                         Pattern::Text,
                         Pattern::Empty,
                     ]))),
@@ -809,13 +810,13 @@ mod tests {
 
     #[test]
     fn parse_grammar_schema_with_definitions() {
-        let input = r#"
-namespace sch = "http://example.com/sch"
+        let input = indoc! {r#"
+            namespace sch = "http://example.com/sch"
 
-sch:ns [ prefix = "html" uri = "http://example.com/ns" ]
-start = element html { empty }
-common &= element div { text }
-"#;
+            sch:ns [ prefix = "html" uri = "http://example.com/ns" ]
+            start = element html { empty }
+            common &= element div { text }
+        "#};
 
         let schema = parse_schema(input).expect("schema should parse");
 
@@ -951,7 +952,10 @@ common &= element div { text }
 
     #[test]
     fn parse_definition_with_inline_comment() {
-        let input = "xml.space.attrib = # added -- hsivonen\n    attribute xml:space { string \"preserve\" }?";
+        let input = indoc! {r#"
+            xml.space.attrib = # added -- hsivonen
+                attribute xml:space { string "preserve" }?
+        "#};
 
         let result = super::grammar_item(input);
 
@@ -960,7 +964,11 @@ common &= element div { text }
 
     #[test]
     fn parse_definition_followed_by_next_item() {
-        let input = "xml.space.attrib = # added -- hsivonen\n    attribute xml:space { string \"preserve\" }?\nclass.attrib = attribute class { text }?";
+        let input = indoc! {r#"
+            xml.space.attrib = # added -- hsivonen
+                attribute xml:space { string "preserve" }?
+            class.attrib = attribute class { text }?
+        "#};
 
         let (remaining_input, _) = super::grammar_item(input).expect("definition should parse");
 
@@ -981,7 +989,10 @@ common &= element div { text }
 
     #[test]
     fn parse_attribute_pattern_followed_by_next_item() {
-        let input = "attribute xml:space { string \"preserve\" }?\nclass.attrib = attribute class { text }?";
+        let input = indoc! {r#"
+            attribute xml:space { string "preserve" }?
+            class.attrib = attribute class { text }?
+        "#};
 
         let (remaining_input, _) = super::pattern(input).expect("attribute pattern should parse");
 
@@ -993,7 +1004,10 @@ common &= element div { text }
 
     #[test]
     fn parse_attribute_pattern_parser() {
-        let input = "attribute xml:space { string \"preserve\" }?\nclass.attrib = attribute class { text }?";
+        let input = indoc! {r#"
+            attribute xml:space { string "preserve" }?
+            class.attrib = attribute class { text }?
+        "#};
 
         let (remaining_input, _) = super::attribute_pattern(input).expect("attribute should parse");
 
@@ -1005,7 +1019,11 @@ common &= element div { text }
 
     #[test]
     fn parse_default_namespace_with_prefix() {
-        let input = "default namespace svg = \"http://example.com\"\n\nelement svg { empty }";
+        let input = indoc! {r#"
+            default namespace svg = "http://example.com"
+
+            element svg { empty }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1035,8 +1053,12 @@ common &= element div { text }
 
     #[test]
     fn parse_include_with_annotation_block() {
-        let input =
-            "include \"base.rnc\" {\n    [ sch:pattern [ name = \"x\" ] ]\n    start = empty\n}";
+        let input = indoc! {r#"
+            include "base.rnc" {
+                [ sch:pattern [ name = "x" ] ]
+                start = empty
+            }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1060,7 +1082,17 @@ common &= element div { text }
 
     #[test]
     fn parse_include_with_nested_annotation_block() {
-        let input = "include \"basic-form.rnc\" {\n    [\n        sch:pattern [\n            name = \"select.multiple\"\n            \"\\x{a}\"\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}";
+        let input = indoc! {r#"
+            include "basic-form.rnc" {
+                [
+                    sch:pattern [
+                        name = "select.multiple"
+                        "\x{a}"
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1072,7 +1104,14 @@ common &= element div { text }
 
     #[test]
     fn parse_annotation_attachment_with_comment() {
-        let input = "element button {\n    button.attlist,\n    Flow.model\n    # comment\n    >> sch:pattern [ name = \"button.content\" ]\n}";
+        let input = indoc! {r#"
+            element button {
+                button.attlist,
+                Flow.model
+                # comment
+                >> sch:pattern [ name = "button.content" ]
+            }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1096,7 +1135,19 @@ common &= element div { text }
 
     #[test]
     fn parse_include_with_nested_annotation_and_brackets() {
-        let input = "include \"basic-form.rnc\" {\n    [\n        sch:pattern [\n            name = \"select.multiple\"\n            sch:report [\n                test = \"html:option[@selected]\"\n            ]\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}";
+        let input = indoc! {r#"
+            include "basic-form.rnc" {
+                [
+                    sch:pattern [
+                        name = "select.multiple"
+                        sch:report [
+                            test = "html:option[@selected]"
+                        ]
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1108,7 +1159,19 @@ common &= element div { text }
 
     #[test]
     fn parse_include_with_schematron_block() {
-        let input = "include \"basic-form.rnc\" {\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            sch:report [\n                test = \"not(@multiple) and count(html:option[@selected]) > 1\"\n            ]\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}";
+        let input = indoc! {r#"
+            include "basic-form.rnc" {
+                [
+                    sch:pattern [
+                        name = "select.multiple.selected.options"
+                        sch:report [
+                            test = "not(@multiple) and count(html:option[@selected]) > 1"
+                        ]
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+        "#};
 
         let result = parse_schema(input);
 
@@ -1120,7 +1183,20 @@ common &= element div { text }
 
     #[test]
     fn parse_include_block_as_grammar_item() {
-        let input = "include \"basic-form.rnc\" {\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            sch:report [\n                test = \"not(@multiple) and count(html:option[@selected]) > 1\"\n            ]\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}\nform.attlist &= attribute accept-charset { charsets.datatype }?";
+        let input = indoc! {r#"
+            include "basic-form.rnc" {
+                [
+                    sch:pattern [
+                        name = "select.multiple.selected.options"
+                        sch:report [
+                            test = "not(@multiple) and count(html:option[@selected]) > 1"
+                        ]
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+            form.attlist &= attribute accept-charset { charsets.datatype }?
+        "#};
 
         let (remaining_input, _) = super::grammar_item(input).expect("include item should parse");
 
@@ -1132,7 +1208,20 @@ common &= element div { text }
 
     #[test]
     fn parse_raw_include_block() {
-        let input = "{\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            sch:report [\n                test = \"not(@multiple) and count(html:option[@selected]) > 1\"\n            ]\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}\nform.attlist &= attribute accept-charset { charsets.datatype }?";
+        let input = indoc! {r#"
+            {
+                [
+                    sch:pattern [
+                        name = "select.multiple.selected.options"
+                        sch:report [
+                            test = "not(@multiple) and count(html:option[@selected]) > 1"
+                        ]
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+            form.attlist &= attribute accept-charset { charsets.datatype }?
+        "#};
 
         let (remaining_input, _) = super::raw_grammar_block(input).expect("raw block should parse");
 
@@ -1144,7 +1233,21 @@ common &= element div { text }
 
     #[test]
     fn parse_annotation_before_include_block() {
-        let input = "sch:ns [ prefix = \"html\" uri = \"http://www.w3.org/1999/xhtml\" ]\ninclude \"basic-form.rnc\" {\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            sch:report [\n                test = \"not(@multiple) and count(html:option[@selected]) > 1\"\n            ]\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}\nform.attlist &= attribute accept-charset { charsets.datatype }?";
+        let input = indoc! {r#"
+            sch:ns [ prefix = "html" uri = "http://www.w3.org/1999/xhtml" ]
+            include "basic-form.rnc" {
+                [
+                    sch:pattern [
+                        name = "select.multiple.selected.options"
+                        sch:report [
+                            test = "not(@multiple) and count(html:option[@selected]) > 1"
+                        ]
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+            form.attlist &= attribute accept-charset { charsets.datatype }?
+        "#};
 
         let result = parse_schema(input);
 
@@ -1156,7 +1259,35 @@ common &= element div { text }
 
     #[test]
     fn parse_raw_include_block_with_escape_sequences() {
-        let input = "{\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            \"\\x{a}\" ~\n            \"          \"\n            sch:rule [\n                context = \"html:select\"\n                \"\\x{a}\" ~\n                \"              \"\n                sch:report [\n                    test =\n                        \"not(@multiple) and count(html:option[@selected]) > 1\"\n                    \"\\x{a}\" ~\n                    \"                   Select elements which aren't marked as multiple may not have more then one selected option.\\x{a}\" ~\n                    \"              \"\n                ]\n                \"\\x{a}\" ~\n                \"          \"\n            ]\n            \"\\x{a}\" ~\n            \"      \"\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}\nform.attlist &= attribute accept-charset { charsets.datatype }?";
+        let input = indoc! {r#"
+            {
+                [
+                    sch:pattern [
+                        name = "select.multiple.selected.options"
+                        "\x{a}" ~
+                        "          "
+                        sch:rule [
+                            context = "html:select"
+                            "\x{a}" ~
+                            "              "
+                            sch:report [
+                                test =
+                                    "not(@multiple) and count(html:option[@selected]) > 1"
+                                "\x{a}" ~
+                                "                   Select elements which aren't marked as multiple may not have more then one selected option.\x{a}" ~
+                                "              "
+                            ]
+                            "\x{a}" ~
+                            "          "
+                        ]
+                        "\x{a}" ~
+                        "      "
+                    ]
+                ]
+                select = element select { select.attlist, (option | optgroup)+ }
+            }
+            form.attlist &= attribute accept-charset { charsets.datatype }?
+        "#};
 
         let (remaining_input, _) =
             super::raw_grammar_block(input).expect("raw include should parse");
@@ -1169,7 +1300,13 @@ common &= element div { text }
 
     #[test]
     fn parse_choice_with_inline_comment() {
-        let input = "InputType.class |=\n    string \"image\"\n    | string \"button\"\n    | # bugfix\n      string \"file\"";
+        let input = indoc! {r#"
+            InputType.class |=
+                string "image"
+                | string "button"
+                | # bugfix
+                  string "file"
+        "#};
 
         let result = super::grammar_item(input);
 
