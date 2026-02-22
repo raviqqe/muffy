@@ -78,17 +78,12 @@ mod tests {
         }
 
         let path_string = path.to_string_lossy();
-        let is_schema = path_string.contains("/schema/") || path_string.contains("\\schema\\");
+        let is_schema = path_string.contains("/schema/");
         let is_html_or_svg = path_string.contains("/schema/html5/")
-            || path_string.contains("\\schema\\html5\\")
             || path_string.contains("/schema/svg11/")
-            || path_string.contains("\\schema\\svg11\\")
             || path_string.contains("/schema/its2/its20-html5")
-            || path_string.contains("\\schema\\its2\\its20-html5")
             || path_string.contains("/schema/.drivers/html5")
-            || path_string.contains("\\schema\\.drivers\\html5")
-            || path_string.contains("/schema/.drivers/svg")
-            || path_string.contains("\\schema\\.drivers\\svg");
+            || path_string.contains("/schema/.drivers/svg");
 
         is_schema && is_html_or_svg
     }
