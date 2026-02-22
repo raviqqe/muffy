@@ -7,6 +7,7 @@ use crate::ast::{
 };
 use core::fmt::{self, Display, Formatter};
 use nom::{
+    IResult, Parser,
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{char, multispace1, satisfy},
@@ -14,7 +15,6 @@ use nom::{
     error::{Error, ErrorKind},
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
-    IResult, Parser,
 };
 use std::error::Error as StdError;
 
@@ -71,13 +71,7 @@ fn schema(input: &str) -> ParserResult<'_, Schema> {
 
     let (input, body) = schema_body(input)?;
 
-    Ok((
-        input,
-        Schema {
-            declarations,
-            body,
-        },
-    ))
+    Ok((input, Schema { declarations, body }))
 }
 
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
@@ -110,13 +104,7 @@ fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> 
     let (input, _) = symbol("=").parse(input)?;
     let (input, uri) = string_literal_token(input)?;
 
-    Ok((
-        input,
-        NamespaceDeclaration {
-            prefix,
-            uri,
-        },
-    ))
+    Ok((input, NamespaceDeclaration { prefix, uri }))
 }
 
 fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
@@ -135,13 +123,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
     let (input, _) = symbol("=").parse(input)?;
     let (input, uri) = string_literal_token(input)?;
 
-    Ok((
-        input,
-        DatatypesDeclaration {
-            prefix,
-            uri,
-        },
-    ))
+    Ok((input, DatatypesDeclaration { prefix, uri }))
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
@@ -506,10 +488,9 @@ fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
         whitespace0,
         alt((
             value(NameClass::AnyName, tag("*")),
-            map(
-                (identifier, char(':'), char('*')),
-                |(prefix, _, _)| NameClass::NsName(Some(prefix)),
-            ),
+            map((identifier, char(':'), char('*')), |(prefix, _, _)| {
+                NameClass::NsName(Some(prefix))
+            }),
             map(name, NameClass::Name),
             delimited(tag("("), name_class, tag(")")),
         )),
@@ -543,13 +524,7 @@ fn annotation_element(input: &str) -> ParserResult<'_, Annotation> {
     let (input, name) = name_token(input)?;
     let (input, attributes) = annotation_block(input)?;
 
-    Ok((
-        input,
-        Annotation {
-            name,
-            attributes,
-        },
-    ))
+    Ok((input, Annotation { name, attributes }))
 }
 
 fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
@@ -781,11 +756,14 @@ fn fold_name_classes(classes: Vec<NameClass>) -> NameClass {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast::{
-        Annotation, AnnotationAttribute, Combine, Declaration, Definition, Grammar, GrammarItem,
-        Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+    use crate::{
+        ast::{
+            Annotation, AnnotationAttribute, Combine, Declaration, Definition, Grammar,
+            GrammarItem, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema,
+            SchemaBody,
+        },
+        parse_schema,
     };
-    use crate::parse_schema;
 
     fn local_name(value: &str) -> Name {
         Name {
@@ -883,8 +861,7 @@ common &= element div { text }
 
     #[test]
     fn parse_data_and_value_patterns() {
-        let input =
-            "attribute size { xsd:integer { minInclusive = \"1\" } - \"5\" }";
+        let input = "attribute size { xsd:integer { minInclusive = \"1\" } - \"5\" }";
 
         let schema = parse_schema(input).expect("schema should parse");
 
@@ -943,7 +920,10 @@ common &= element div { text }
         );
         let result = super::grammar_item(input);
 
-        assert!(result.is_ok(), "annotation element parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "annotation element parse failed: {result:?}"
+        );
     }
 
     #[test]
@@ -961,7 +941,10 @@ common &= element div { text }
 
         let result = super::pattern(input);
 
-        assert!(result.is_ok(), "prefixed attribute parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "prefixed attribute parse failed: {result:?}"
+        );
     }
 
     #[test]
@@ -972,7 +955,6 @@ common &= element div { text }
 
         assert!(result.is_ok(), "inline comment parse failed: {result:?}");
     }
-
 
     #[test]
     fn parse_definition_followed_by_next_item() {
@@ -1039,21 +1021,27 @@ common &= element div { text }
 
     #[test]
     fn parse_annotation_attachment() {
-        let input =
-            "element pre { pre.attlist >> sch:pattern [ name = \"pre\" ] , Inline.model }";
+        let input = "element pre { pre.attlist >> sch:pattern [ name = \"pre\" ] , Inline.model }";
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "annotation attachment parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "annotation attachment parse failed: {result:?}"
+        );
     }
 
     #[test]
     fn parse_include_with_annotation_block() {
-        let input = "include \"base.rnc\" {\n    [ sch:pattern [ name = \"x\" ] ]\n    start = empty\n}";
+        let input =
+            "include \"base.rnc\" {\n    [ sch:pattern [ name = \"x\" ] ]\n    start = empty\n}";
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "include annotation parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "include annotation parse failed: {result:?}"
+        );
     }
 
     #[test]
@@ -1062,7 +1050,10 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "parenthesized choice parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "parenthesized choice parse failed: {result:?}"
+        );
     }
 
     #[test]
@@ -1071,7 +1062,10 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "nested annotation include failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "nested annotation include failed: {result:?}"
+        );
     }
 
     #[test]
@@ -1080,13 +1074,15 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "annotation attachment comment failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "annotation attachment comment failed: {result:?}"
+        );
     }
 
     #[test]
     fn parse_grammar_with_leading_annotation_block() {
-        let input =
-            "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
+        let input = "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
 
         let (remaining_input, _) = super::grammar(input).expect("grammar should parse");
 
@@ -1102,7 +1098,10 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "bracketed annotation include failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "bracketed annotation include failed: {result:?}"
+        );
     }
 
     #[test]
@@ -1111,7 +1110,10 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "schematron include parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "schematron include parse failed: {result:?}"
+        );
     }
 
     #[test]
@@ -1144,14 +1146,18 @@ common &= element div { text }
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "annotation include parse failed: {result:?}");
+        assert!(
+            result.is_ok(),
+            "annotation include parse failed: {result:?}"
+        );
     }
 
     #[test]
     fn parse_raw_include_block_with_escape_sequences() {
         let input = "{\n    [\n        sch:pattern [\n            name = \"select.multiple.selected.options\"\n            \"\\x{a}\" ~\n            \"          \"\n            sch:rule [\n                context = \"html:select\"\n                \"\\x{a}\" ~\n                \"              \"\n                sch:report [\n                    test =\n                        \"not(@multiple) and count(html:option[@selected]) > 1\"\n                    \"\\x{a}\" ~\n                    \"                   Select elements which aren't marked as multiple may not have more then one selected option.\\x{a}\" ~\n                    \"              \"\n                ]\n                \"\\x{a}\" ~\n                \"          \"\n            ]\n            \"\\x{a}\" ~\n            \"      \"\n        ]\n    ]\n    select = element select { select.attlist, (option | optgroup)+ }\n}\nform.attlist &= attribute accept-charset { charsets.datatype }?";
 
-        let (remaining_input, _) = super::raw_grammar_block(input).expect("raw include should parse");
+        let (remaining_input, _) =
+            super::raw_grammar_block(input).expect("raw include should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),
@@ -1167,6 +1173,4 @@ common &= element div { text }
 
         assert!(result.is_ok(), "choice with comment failed: {result:?}");
     }
-
-
 }

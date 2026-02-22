@@ -3,12 +3,14 @@
 pub mod ast;
 pub mod parse;
 
-pub use self::ast::{
-    Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
-    Grammar, GrammarItem, Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern,
-    Schema, SchemaBody,
+pub use self::{
+    ast::{
+        Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
+        Grammar, GrammarItem, Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern,
+        Schema, SchemaBody,
+    },
+    parse::{ParseError, parse_schema},
 };
-pub use self::parse::{ParseError, parse_schema};
 
 #[cfg(test)]
 mod integration_tests {
