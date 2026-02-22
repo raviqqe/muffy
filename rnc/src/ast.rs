@@ -121,29 +121,29 @@ pub enum Combine {
 /// A schema pattern.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Pattern {
-    /// An attribute pattern.
+    /// An attribute.
     Attribute {
-        /// The attribute name class.
+        /// A name class.
         name_class: NameClass,
-        /// The attribute value pattern.
+        /// A pattern.
         pattern: Box<Self>,
     },
-    /// A choice pattern (`|`).
+    /// A choice pattern.
     Choice(Vec<Self>),
-    /// A data pattern.
+    /// Data.
     Data {
-        /// The datatype name.
+        /// A name.
         name: Name,
-        /// The datatype parameters.
+        /// Parameters.
         parameters: Vec<Parameter>,
-        /// An optional except pattern.
+        /// An except pattern.
         except: Option<Box<Self>>,
     },
-    /// An element pattern.
+    /// An element.
     Element {
-        /// The element name class.
+        /// A name class.
         name_class: NameClass,
-        /// The element content pattern.
+        /// A pattern.
         pattern: Box<Self>,
     },
     /// An empty pattern.
