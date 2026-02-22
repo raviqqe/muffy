@@ -185,7 +185,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             };
 
             run_config(
-                &muffy::compile_config(muffy::read_config(&config_file)?)?,
+                &muffy::compile_config(muffy::read_config(&config_file).await?)?,
                 format,
                 verbose,
             )

@@ -1,20 +1,20 @@
 use super::{ConfigError, SerializableConfig};
-use std::{
-    fs::read_to_string,
-    path::{Path, PathBuf},
-};
+use async_recursion::async_recursion;
+use std::path::{Path, PathBuf};
+use tokio::fs::{canonicalize, read_to_string};
 
 /// Reads a configuration file recursively.
-pub fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
+pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
     let mut stack = Vec::new();
-    read_config_inner(path, &mut stack)
+    read_config_inner(path, &mut stack).await
 }
 
-fn read_config_inner(
+#[async_recursion]
+async fn read_config_inner(
     path: &Path,
     stack: &mut Vec<PathBuf>,
 ) -> Result<SerializableConfig, ConfigError> {
-    let canonical_path = path.canonicalize()?;
+    let canonical_path = canonicalize(path).await?;
 
     if let Some(position) = stack.iter().position(|item| item == &canonical_path) {
         let mut cycle = stack[position..].to_vec();
@@ -24,8 +24,8 @@ fn read_config_inner(
 
     stack.push(canonical_path.clone());
 
-    let result = (|| {
-        let contents = read_to_string(&canonical_path)?;
+    let result = async {
+        let contents = read_to_string(&canonical_path).await?;
         let mut config: SerializableConfig = ::toml::from_str(&contents)?;
 
         if let Some(extend_path) = config.extend().map(ToOwned::to_owned) {
@@ -37,13 +37,14 @@ fn read_config_inner(
                     .unwrap_or_else(|| Path::new("."))
                     .join(extend_path)
             };
-            let mut parent = read_config_inner(&parent_path, stack)?;
+            let mut parent = read_config_inner(&parent_path, stack).await?;
             parent.merge(config);
             config = parent;
         }
 
         Ok(config)
-    })();
+    }
+    .await;
 
     stack.pop();
 
@@ -55,15 +56,29 @@ mod tests {
     use super::{ConfigError, read_config};
     use crate::config::compile_config;
     use pretty_assertions::assert_eq;
-    use std::fs::{create_dir_all, write};
-    use tempfile::tempdir;
+    use std::{
+        env::temp_dir,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+    use tokio::fs::{create_dir_all, remove_dir_all, write};
 
-    #[test]
-    fn read_config_merge_extends() {
-        let directory = tempdir().unwrap();
-        let base_path = directory.path().join("base.toml");
-        let middle_path = directory.path().join("middle.toml");
-        let child_path = directory.path().join("child.toml");
+    async fn create_temp_directory() -> PathBuf {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let directory = temp_dir().join(format!("muffy-test-{}-{unique}", std::process::id()));
+        create_dir_all(&directory).await.unwrap();
+        directory
+    }
+
+    #[tokio::test]
+    async fn read_config_merge_extends() {
+        let directory = create_temp_directory().await;
+        let base_path = directory.join("base.toml");
+        let middle_path = directory.join("middle.toml");
+        let child_path = directory.join("child.toml");
 
         write(
             &base_path,
@@ -74,6 +89,7 @@ roots = ["https://example.com/"]
 max_redirects = 5
 "#,
         )
+        .await
         .unwrap();
         write(
             &middle_path,
@@ -84,6 +100,7 @@ concurrency = 2
 max_redirects = 10
 "#,
         )
+        .await
         .unwrap();
         write(
             &child_path,
@@ -93,9 +110,10 @@ extend = "middle.toml"
 recurse = true
 "#,
         )
+        .await
         .unwrap();
 
-        let config = compile_config(read_config(&child_path).unwrap()).unwrap();
+        let config = compile_config(read_config(&child_path).await.unwrap()).unwrap();
 
         assert_eq!(config.concurrency().global(), Some(2));
 
@@ -107,16 +125,17 @@ recurse = true
             config.roots().collect::<Vec<_>>(),
             vec!["https://example.com/"]
         );
+        remove_dir_all(&directory).await.unwrap();
     }
 
-    #[test]
-    fn read_config_resolve_relative_paths() {
-        let directory = tempdir().unwrap();
-        let base_path = directory.path().join("base.toml");
-        let nested_path = directory.path().join("nested");
+    #[tokio::test]
+    async fn read_config_resolve_relative_paths() {
+        let directory = create_temp_directory().await;
+        let base_path = directory.join("base.toml");
+        let nested_path = directory.join("nested");
         let child_path = nested_path.join("child.toml");
 
-        create_dir_all(&nested_path).unwrap();
+        create_dir_all(&nested_path).await.unwrap();
         write(
             &base_path,
             r#"
@@ -124,6 +143,7 @@ concurrency = 5
 sites = {}
 "#,
         )
+        .await
         .unwrap();
         write(
             &child_path,
@@ -132,18 +152,20 @@ extend = "../base.toml"
 sites = {}
 "#,
         )
+        .await
         .unwrap();
 
-        let config = compile_config(read_config(&child_path).unwrap()).unwrap();
+        let config = compile_config(read_config(&child_path).await.unwrap()).unwrap();
 
         assert_eq!(config.concurrency().global(), Some(5));
+        remove_dir_all(&directory).await.unwrap();
     }
 
-    #[test]
-    fn read_config_detect_circular_extends() {
-        let directory = tempdir().unwrap();
-        let first_path = directory.path().join("first.toml");
-        let second_path = directory.path().join("second.toml");
+    #[tokio::test]
+    async fn read_config_detect_circular_extends() {
+        let directory = create_temp_directory().await;
+        let first_path = directory.join("first.toml");
+        let second_path = directory.join("second.toml");
 
         write(
             &first_path,
@@ -152,6 +174,7 @@ extend = "second.toml"
 sites = {}
 "#,
         )
+        .await
         .unwrap();
         write(
             &second_path,
@@ -160,10 +183,12 @@ extend = "first.toml"
 sites = {}
 "#,
         )
+        .await
         .unwrap();
 
-        let result = read_config(&first_path);
+        let result = read_config(&first_path).await;
 
         assert!(matches!(result, Err(ConfigError::CircularConfigFiles(_))));
+        remove_dir_all(&directory).await.unwrap();
     }
 }
