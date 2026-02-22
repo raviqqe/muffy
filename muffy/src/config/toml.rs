@@ -55,17 +55,15 @@ mod tests {
     use super::{ConfigError, read_config};
     use crate::config::compile_config;
     use pretty_assertions::assert_eq;
-    use std::{
-        fs::{create_dir_all, write},
-    };
+    use std::fs::{create_dir_all, write};
     use tempfile::tempdir;
 
     #[test]
     fn read_config_merge_extends() {
-        let temp_directory = tempdir().unwrap();
-        let base_path = temp_directory.path().join("base.toml");
-        let middle_path = temp_directory.path().join("middle.toml");
-        let child_path = temp_directory.path().join("child.toml");
+        let directory = tempdir().unwrap();
+        let base_path = directory.path().join("base.toml");
+        let middle_path = directory.path().join("middle.toml");
+        let child_path = directory.path().join("child.toml");
 
         write(
             &base_path,
@@ -113,9 +111,9 @@ recurse = true
 
     #[test]
     fn read_config_resolve_relative_paths() {
-        let temp_directory = tempdir().unwrap();
-        let base_path = temp_directory.path().join("base.toml");
-        let nested_path = temp_directory.path().join("nested");
+        let directory = tempdir().unwrap();
+        let base_path = directory.path().join("base.toml");
+        let nested_path = directory.path().join("nested");
         let child_path = nested_path.join("child.toml");
 
         create_dir_all(&nested_path).unwrap();
@@ -143,9 +141,9 @@ sites = {}
 
     #[test]
     fn read_config_detect_circular_extends() {
-        let temp_directory = tempdir().unwrap();
-        let first_path = temp_directory.path().join("first.toml");
-        let second_path = temp_directory.path().join("second.toml");
+        let directory = tempdir().unwrap();
+        let first_path = directory.path().join("first.toml");
+        let second_path = directory.path().join("second.toml");
 
         write(
             &first_path,
@@ -166,9 +164,6 @@ sites = {}
 
         let result = read_config(&first_path);
 
-        assert!(matches!(
-            result,
-            Err(ConfigError::CircularConfigExtends(_))
-        ));
+        assert!(matches!(result, Err(ConfigError::CircularConfigExtends(_))));
     }
 }
