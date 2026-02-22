@@ -192,7 +192,7 @@ pub struct Name {
     pub local: String,
 }
 
-/// A name class for element and attribute patterns.
+/// A name class.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameClass {
     /// Any name.
