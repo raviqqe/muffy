@@ -1,56 +1,54 @@
-//! Relax NG Compact Syntax abstract syntax tree types.
-
-/// A Relax NG compact syntax schema.
+/// A schema.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Schema {
-    /// Declarations appearing before the schema body.
+    /// Declarations.
     pub declarations: Vec<Declaration>,
-    /// The schema body, either a pattern or an implicit grammar.
+    /// A body.
     pub body: SchemaBody,
 }
 
 /// A schema body.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SchemaBody {
-    /// A top-level pattern.
+    /// A pattern.
     Pattern(Pattern),
-    /// An implicit grammar with grammar items.
+    /// A grammar.
     Grammar(Grammar),
 }
 
 /// A grammar block.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grammar {
-    /// Grammar items contained in the block.
+    /// Items.
     pub items: Vec<GrammarItem>,
 }
 
-/// A top-level declaration.
+/// A declaration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Declaration {
-    /// A namespace declaration.
-    Namespace(NamespaceDeclaration),
-    /// A default namespace declaration.
-    DefaultNamespace(String),
     /// A datatype library declaration.
     Datatypes(DatatypesDeclaration),
+    /// A default namespace declaration.
+    DefaultNamespace(String),
+    /// A namespace declaration.
+    Namespace(NamespaceDeclaration),
 }
 
 /// A namespace declaration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NamespaceDeclaration {
-    /// The namespace prefix.
+    /// A prefix.
     pub prefix: String,
-    /// The namespace URI.
+    /// A URI.
     pub uri: String,
 }
 
 /// A datatype library declaration.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DatatypesDeclaration {
-    /// The datatype prefix, if any.
+    /// A prefix.
     pub prefix: Option<String>,
-    /// The datatype library URI.
+    /// A URI.
     pub uri: String,
 }
 
