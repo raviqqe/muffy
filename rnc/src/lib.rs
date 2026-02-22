@@ -13,7 +13,7 @@ pub use self::{
 };
 
 #[cfg(test)]
-mod integration_tests {
+mod tests {
     use super::parse_schema;
     use std::{
         fs,
