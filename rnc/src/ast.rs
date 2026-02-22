@@ -164,7 +164,7 @@ pub enum Pattern {
     Many1(Box<Self>),
     /// A mixed pattern.
     Mixed(Box<Self>),
-    /// A named pattern that requires later semantic resolution.
+    /// A name.
     Name(Name),
     /// A not-allowed pattern.
     NotAllowed,
