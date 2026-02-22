@@ -224,9 +224,9 @@ pub struct Parameter {
 /// An annotation element.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Annotation {
-    /// The annotation element name.
+    /// A name.
     pub name: Name,
-    /// The annotation attributes.
+    /// Attributes.
     pub attributes: Vec<AnnotationAttribute>,
 }
 
