@@ -15,10 +15,9 @@ async fn read_config_recursively(
 ) -> Result<SerializableConfig, ConfigError> {
     let path = canonicalize(path).await?;
 
-    if let Some(position) = stack.iter().position(|item| item == &path) {
-        let mut cycle = stack[position..].to_vec();
-        cycle.push(path);
-        return Err(ConfigError::CircularConfigFiles(cycle));
+    if let Some(index) = stack.iter().position(|item| item == &path) {
+        stack.push(path);
+        return Err(ConfigError::CircularConfigFiles(stack[index..].to_vec()));
     }
 
     stack.push(path.clone());
