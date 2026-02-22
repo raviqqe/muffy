@@ -57,8 +57,9 @@ jobs:
           --accept-status 200
           --accept-status 403
           --accept-status 429
+          --verbose
           http://localhost:4321/muffy/
-      - run: cargo run run --config muffy.local.toml
+      - run: cargo run run --verbose --config muffy.local.toml
   document:
     needs:
       - rust_build
