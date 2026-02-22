@@ -28,7 +28,7 @@ pub enum ConfigError {
     /// A regular expression error.
     Regex(regex::Error),
     /// A TOML deserialization error.
-    TomlDeserialize(toml::de::Error),
+    TomlDeserialize(::toml::de::Error),
     /// A URL parse error.
     UrlParse(ParseError),
 }
@@ -118,8 +118,8 @@ impl From<io::Error> for ConfigError {
     }
 }
 
-impl From<toml::de::Error> for ConfigError {
-    fn from(error: toml::de::Error) -> Self {
+impl From<::toml::de::Error> for ConfigError {
+    fn from(error: ::toml::de::Error) -> Self {
         Self::TomlDeserialize(error)
     }
 }
