@@ -5,12 +5,11 @@ use tokio::fs::{canonicalize, read_to_string};
 
 /// Reads a configuration file recursively.
 pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
-    let mut stack = Vec::new();
-    read_config_inner(path, &mut stack).await
+    read_config_recursively(path, &mut vec![]).await
 }
 
 #[async_recursion]
-async fn read_config_inner(
+async fn read_config_recursively(
     path: &Path,
     stack: &mut Vec<PathBuf>,
 ) -> Result<SerializableConfig, ConfigError> {
@@ -36,7 +35,7 @@ async fn read_config_inner(
                     .unwrap_or_else(|| Path::new("."))
                     .join(extend_path)
             };
-            let mut parent = read_config_inner(&parent_path, stack).await?;
+            let mut parent = read_config_recursively(&parent_path, stack).await?;
             parent.merge(config);
             config = parent;
         }
