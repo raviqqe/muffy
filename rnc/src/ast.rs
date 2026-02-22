@@ -81,11 +81,11 @@ pub enum GrammarItem {
 /// A definition item.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Definition {
-    /// The definition name.
+    /// A name.
     pub name: String,
-    /// The combine operator, if any.
+    /// A combine operator, if any.
     pub combine: Option<Combine>,
-    /// The pattern for this definition.
+    /// A pattern.
     pub pattern: Pattern,
 }
 
