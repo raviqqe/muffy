@@ -25,7 +25,7 @@ use tabled::{
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{
-    fs::{create_dir_all, read_to_string, remove_dir_all, try_exists},
+    fs::{create_dir_all, remove_dir_all, try_exists},
     io::stdout,
 };
 use url::Url;
@@ -185,7 +185,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
             };
 
             run_config(
-                &muffy::compile_config(toml::from_str(&read_to_string(&config_file).await?)?)?,
+                &muffy::compile_config(muffy::read_config(&config_file)?)?,
                 format,
                 verbose,
             )

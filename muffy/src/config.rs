@@ -3,7 +3,7 @@ mod serde;
 
 pub use self::{
     error::ConfigError,
-    serde::{SerializableConfig, compile_config},
+    serde::{SerializableConfig, compile_config, read_config},
 };
 use alloc::sync::Arc;
 use core::{cmp::Reverse, ops::Deref, time::Duration};

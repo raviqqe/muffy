@@ -3,11 +3,14 @@ use core::{
     fmt,
     fmt::{Display, Formatter},
 };
+use std::{io, path::PathBuf};
 use url::ParseError;
 
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
+    /// Circular configuration extensions.
+    CircularConfigExtends(Vec<PathBuf>),
     /// Circular site configurations.
     CircularSiteConfigs(Vec<String>),
     /// An invalid status code.
@@ -16,12 +19,16 @@ pub enum ConfigError {
     HttpInvalidHeaderName(http::header::InvalidHeaderName),
     /// An invalid header value.
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
+    /// An I/O error while reading configuration.
+    Io(io::Error),
     /// Missing parent configuration.
     MissingParentConfig(String),
     /// Multiple default site configurations.
     MultipleDefaultSiteConfigs(Vec<String>),
     /// A regular expression error.
     Regex(regex::Error),
+    /// A TOML deserialization error.
+    TomlDeserialize(toml::de::Error),
     /// A URL parse error.
     UrlParse(ParseError),
 }
@@ -29,6 +36,14 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::CircularConfigExtends(paths) => {
+                let path_chain = paths
+                    .iter()
+                    .map(|path| path.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join(" -> ");
+                write!(formatter, "circular configuration extends: {path_chain}")
+            }
             Self::CircularSiteConfigs(names) => {
                 write!(
                     formatter,
@@ -45,6 +60,9 @@ impl Display for ConfigError {
             Self::HttpInvalidHeaderValue(error) => {
                 write!(formatter, "{error}")
             }
+            Self::Io(error) => {
+                write!(formatter, "{error}")
+            }
             Self::MissingParentConfig(name) => {
                 write!(formatter, "missing parent configuration: {name}")
             }
@@ -56,6 +74,9 @@ impl Display for ConfigError {
                 )
             }
             Self::Regex(error) => {
+                write!(formatter, "{error}")
+            }
+            Self::TomlDeserialize(error) => {
                 write!(formatter, "{error}")
             }
             Self::UrlParse(error) => {
@@ -88,6 +109,18 @@ impl From<http::header::InvalidHeaderValue> for ConfigError {
 impl From<regex::Error> for ConfigError {
     fn from(error: regex::Error) -> Self {
         Self::Regex(error)
+    }
+}
+
+impl From<io::Error> for ConfigError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
+    }
+}
+
+impl From<toml::de::Error> for ConfigError {
+    fn from(error: toml::de::Error) -> Self {
+        Self::TomlDeserialize(error)
     }
 }
 

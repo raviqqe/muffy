@@ -15,6 +15,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{HashMap, HashSet},
+    fs::read_to_string,
     path::{Path, PathBuf},
     sync::LazyLock,
 };
@@ -82,6 +83,52 @@ impl SerializableConfig {
             }
         }
     }
+}
+
+/// Reads a configuration file recursively.
+pub fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
+    let mut stack = Vec::new();
+    read_config_inner(path, &mut stack)
+}
+
+fn read_config_inner(
+    path: &Path,
+    stack: &mut Vec<PathBuf>,
+) -> Result<SerializableConfig, ConfigError> {
+    let canonical_path = path.canonicalize()?;
+
+    if let Some(position) = stack.iter().position(|item| item == &canonical_path) {
+        let mut cycle = stack[position..].to_vec();
+        cycle.push(canonical_path);
+        return Err(ConfigError::CircularConfigExtends(cycle));
+    }
+
+    stack.push(canonical_path.clone());
+
+    let result = (|| {
+        let contents = read_to_string(&canonical_path)?;
+        let mut config: SerializableConfig = toml::from_str(&contents)?;
+
+        if let Some(extend_path) = config.extend.clone() {
+            let parent_path = if extend_path.is_absolute() {
+                extend_path
+            } else {
+                canonical_path
+                    .parent()
+                    .unwrap_or_else(|| Path::new("."))
+                    .join(extend_path)
+            };
+            let mut parent = read_config_inner(&parent_path, stack)?;
+            parent.merge(config);
+            config = parent;
+        }
+
+        Ok(config)
+    })();
+
+    stack.pop();
+
+    result
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -535,8 +582,10 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::{
         collections::{HashMap, HashSet},
+        fs::{create_dir_all, write},
         path::PathBuf,
     };
+    use tempfile::tempdir;
 
     #[test]
     fn compile_empty() {
@@ -1158,6 +1207,118 @@ mod tests {
 
         assert_eq!(config.roots().count(), 0);
         assert!(config.sites().contains_key("foo.com"));
+    }
+
+    #[test]
+    fn read_config_merge_extends() {
+        let temp_directory = tempdir().unwrap();
+        let base_path = temp_directory.path().join("base.toml");
+        let middle_path = temp_directory.path().join("middle.toml");
+        let child_path = temp_directory.path().join("child.toml");
+
+        write(
+            &base_path,
+            r#"
+concurrency = 1
+[sites.default]
+roots = ["https://example.com/"]
+max_redirects = 5
+"#,
+        )
+        .unwrap();
+        write(
+            &middle_path,
+            r#"
+extend = "base.toml"
+concurrency = 2
+[sites.default]
+max_redirects = 10
+"#,
+        )
+        .unwrap();
+        write(
+            &child_path,
+            r#"
+extend = "middle.toml"
+[sites.default]
+recurse = true
+"#,
+        )
+        .unwrap();
+
+        let config = read_config(&child_path).unwrap();
+
+        assert_eq!(config.extend, None);
+        assert_eq!(config.concurrency, Some(2));
+
+        let site = config.sites.get("default").unwrap();
+
+        assert_eq!(site.max_redirects, Some(10));
+        assert_eq!(
+            site.roots.as_ref().unwrap(),
+            &HashSet::from([Url::parse("https://example.com/").unwrap()])
+        );
+        assert_eq!(site.recurse, Some(true));
+    }
+
+    #[test]
+    fn read_config_resolve_relative_paths() {
+        let temp_directory = tempdir().unwrap();
+        let base_path = temp_directory.path().join("base.toml");
+        let nested_path = temp_directory.path().join("nested");
+        let child_path = nested_path.join("child.toml");
+
+        create_dir_all(&nested_path).unwrap();
+        write(
+            &base_path,
+            r#"
+concurrency = 5
+[sites.default]
+roots = []
+"#,
+        )
+        .unwrap();
+        write(
+            &child_path,
+            r#"
+extend = "../base.toml"
+"#,
+        )
+        .unwrap();
+
+        let config = read_config(&child_path).unwrap();
+
+        assert_eq!(config.concurrency, Some(5));
+        assert_eq!(config.extend, None);
+    }
+
+    #[test]
+    fn read_config_detect_circular_extends() {
+        let temp_directory = tempdir().unwrap();
+        let first_path = temp_directory.path().join("first.toml");
+        let second_path = temp_directory.path().join("second.toml");
+
+        write(
+            &first_path,
+            r#"
+extend = "second.toml"
+"#,
+        )
+        .unwrap();
+        write(
+            &second_path,
+            r#"
+extend = "first.toml"
+"#,
+        )
+        .unwrap();
+
+        let result = read_config(&first_path);
+
+        assert!(matches!(
+            result,
+            Err(ConfigError::CircularConfigExtends(_))
+        ));
     }
 
     mod merge {
