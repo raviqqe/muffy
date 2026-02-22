@@ -10,14 +10,6 @@ Schema {
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
-        Datatypes(
-            DatatypesDeclaration {
-                prefix: Some(
-                    "w",
-                ),
-                uri: "http://whattf.org/datatype-draft",
-            },
-        ),
     ],
     body: Pattern(
         Grammar(
@@ -25,344 +17,194 @@ Schema {
                 items: [
                     Definition(
                         Definition {
-                            name: "Boolean.datatype",
+                            name: "SVG.onunload.attrib",
                             combine: None,
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: None,
-                                        value: "false",
-                                    },
-                                    Value {
-                                        name: None,
-                                        value: "true",
-                                    },
-                                ],
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "ClipFillRule.datatype",
-                            combine: None,
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: None,
-                                        value: "nonzero",
-                                    },
-                                    Value {
-                                        name: None,
-                                        value: "evenodd",
-                                    },
-                                    Value {
-                                        name: None,
-                                        value: "inherit",
-                                    },
-                                ],
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "ContentType.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onunload",
+                                        },
                                     ),
-                                    local: "string",
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "Coordinate.datatype",
+                            name: "SVG.onabort.attrib",
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onabort",
+                                        },
                                     ),
-                                    local: "string",
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "Coordinates.datatype",
+                            name: "SVG.onerror.attrib",
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onerror",
+                                        },
                                     ),
-                                    local: "string",
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "Color.datatype",
+                            name: "SVG.onresize.attrib",
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onresize",
+                                        },
                                     ),
-                                    local: "string",
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "Integer.datatype",
+                            name: "SVG.onscroll.attrib",
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onscroll",
+                                        },
                                     ),
-                                    local: "string",
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "LanguageCode.datatype",
+                            name: "SVG.onzoom.attrib",
                             combine: None,
-                            pattern: Choice(
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onzoom",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.DocumentEvents.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.DocumentEvents.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
                                 [
                                     Name(
                                         Name {
-                                            prefix: Some(
-                                                "xsd",
-                                            ),
-                                            local: "language",
-                                        },
-                                    ),
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: None,
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "LanguageCodes.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Length.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Lengths.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Number.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Numbers.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "OpacityValue.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "PathData.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "w",
-                                    ),
-                                    local: "svg-pathdata",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "PreserveAspectRatioSpec.datatype",
-                            combine: None,
-                            pattern: Data {
-                                name: Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                                parameters: [
-                                    Parameter {
-                                        name: Name {
                                             prefix: None,
-                                            local: "pattern",
+                                            local: "SVG.onunload.attrib",
                                         },
-                                        value: "([ \t\r\n])*(defer([ \t\r\n])+)?(none|xMinYMin|xMidYMin|xMaxYMin|xMinYMid|xMidYMid|xMaxYMid|xMinYMax|xMidYMax|xMaxYMax)(([ \t\r\n])+(meet|slice))?([ \t\r\n])*",
-                                    },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onabort.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onerror.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onresize.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onscroll.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onzoom.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.DocumentEvents.extra.attrib",
+                                        },
+                                    ),
                                 ],
-                                except: None,
-                            },
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Script.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "SVGColor.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "Text.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "TransformList.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "URI.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "anyURI",
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "ViewBoxSpec.datatype",
-                            combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
-                                    ),
-                                    local: "string",
-                                },
                             ),
                         },
                     ),

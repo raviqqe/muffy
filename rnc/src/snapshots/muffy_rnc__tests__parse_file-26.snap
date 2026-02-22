@@ -4,164 +4,1163 @@ expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
     declarations: [
-        DefaultNamespace(
-            "http://www.w3.org/1999/xhtml",
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
         ),
     ],
     body: Grammar(
         Grammar {
             items: [
-                Include(
-                    Include {
-                        uri: "common.rnc",
-                        inherit: None,
-                        grammar: Some(
-                            Grammar {
-                                items: [],
+                Definition(
+                    Definition {
+                        name: "its-confidence.type",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "double",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "minInclusive",
+                                    },
+                                    value: "0",
+                                },
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "maxInclusive",
+                                    },
+                                    value: "1",
+                                },
+                            ],
+                            except: None,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locNote.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
                             },
                         ),
                     },
                 ),
-                Start {
-                    combine: None,
-                    pattern: Name(
-                        Name {
-                            prefix: None,
-                            local: "html.elem",
+                Definition(
+                    Definition {
+                        name: "its-locNoteType.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "alert",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "description",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locNoteRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-termInfoRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-term.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "yes",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "no",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-termConfidence.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "its-confidence.type",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-withinText.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "yes",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "no",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "nested",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-domainMapping.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-taConfidence.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "its-confidence.type",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-taClassRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-taIdentRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-taIdent.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-taSource.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-localeFilterList.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-localeFilterType.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "include",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "exclude",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-person.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-personRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-org.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-orgRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-tool.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-toolRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revPerson.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revPersonRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revOrg.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revOrgRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revTool.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-revToolRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-provRef.type",
+                        combine: None,
+                        pattern: List(
+                            Many1(
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "iri-ref",
+                                    },
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-provenanceRecordsRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-idValue.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-space.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: None,
+                                    value: "default",
+                                },
+                                Value {
+                                    name: None,
+                                    value: "preserve",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssuesRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssueType.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "terminology",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "mistranslation",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "omission",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "untranslated",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "addition",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "duplication",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "inconsistency",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "grammar",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "legal",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "register",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "locale-specific-content",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "locale-violation",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "style",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "characters",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "misspelling",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "typographical",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "formatting",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "inconsistent-entities",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "numbers",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "markup",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "pattern-problem",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "whitespace",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "internationalization",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "length",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "non-conformance",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "uncategorized",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "other",
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssueComment.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssueSeverity.type",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "double",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "minInclusive",
+                                    },
+                                    value: "0",
+                                },
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "maxInclusive",
+                                    },
+                                    value: "100",
+                                },
+                            ],
+                            except: None,
                         },
-                    ),
-                },
-                Include(
-                    Include {
-                        uri: "meta.rnc",
-                        inherit: None,
-                        grammar: None,
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "phrase.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssueProfileRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "block.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityIssueEnabled.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "yes",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "no",
+                                },
+                            ],
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "sectional.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityRatingScore.type",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "double",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "minInclusive",
+                                    },
+                                    value: "0",
+                                },
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "maxInclusive",
+                                    },
+                                    value: "100",
+                                },
+                            ],
+                            except: None,
+                        },
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "structural.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityRatingVote.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "integer",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "revision.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityRatingScoreThreshold.type",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "double",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "minInclusive",
+                                    },
+                                    value: "0",
+                                },
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "maxInclusive",
+                                    },
+                                    value: "100",
+                                },
+                            ],
+                            except: None,
+                        },
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "embed.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityRatingVoteThreshold.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "integer",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "ruby.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-locQualityRatingProfileRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "media.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-mtConfidence.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "its-confidence.type",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "core-scripting.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-allowedCharacters.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "tables.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-storageSize.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "nonNegativeInteger",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "form-datatypes.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-storageEncoding.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "web-forms.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-lineBreakType.type",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "cr",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "lf",
+                                },
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "crlf",
+                                },
+                            ],
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "web-forms2.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "applications.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "data.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "aria.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "microdata.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "web-components.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "its-annotatorsRef.type",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
                     },
                 ),
             ],

@@ -3,48 +3,53 @@ source: rnc/src/lib.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
-    declarations: [
-        Datatypes(
-            DatatypesDeclaration {
-                prefix: Some(
-                    "w",
-                ),
-                uri: "http://whattf.org/datatype-draft",
-            },
-        ),
-        Namespace(
-            NamespaceDeclaration {
-                prefix: "local",
-                uri: "",
-            },
-        ),
-    ],
+    declarations: [],
     body: Grammar(
         Grammar {
             items: [
                 Definition(
                     Definition {
-                        name: "ruby.elem",
+                        name: "edit.attrs.cite",
                         combine: None,
-                        pattern: Element {
+                        pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "ruby",
+                                    local: "cite",
                                 },
                             ),
-                            pattern: Interleave(
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "edit.attrs.datetime",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "datetime",
+                                },
+                            ),
+                            pattern: Choice(
                                 [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ruby.inner",
+                                            local: "common.data.datetime",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ruby.attrs",
+                                            local: "common.data.date",
                                         },
                                     ),
                                 ],
@@ -54,7 +59,67 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ruby.attrs",
+                        name: "ins.elem.flow",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ins",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.inner.flow",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ins",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -63,6 +128,22 @@ Schema {
                                         prefix: None,
                                         local: "common.attrs",
                                     },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.cite",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.datetime",
+                                        },
+                                    ),
                                 ),
                                 Optional(
                                     Name(
@@ -78,71 +159,39 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ruby.inner",
+                        name: "ins.inner.flow",
                         combine: None,
-                        pattern: Many1(
-                            Group(
-                                [
-                                    Many1(
-                                        Choice(
-                                            [
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "common.inner.phrasing",
-                                                    },
-                                                ),
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "rb.elem",
-                                                    },
-                                                ),
-                                            ],
-                                        ),
-                                    ),
-                                    Choice(
-                                        [
-                                            Many1(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "rt.elem",
-                                                    },
-                                                ),
-                                            ),
-                                            Group(
-                                                [
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: "rp.elem",
-                                                        },
-                                                    ),
-                                                    Many1(
-                                                        Group(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "rt.elem",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "rp.elem",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                    ),
-                                ],
-                            ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ins.elem.flow",
+                            },
                         ),
                     },
                 ),
@@ -155,20 +204,20 @@ Schema {
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "ruby.elem",
+                                local: "ins.elem.phrasing",
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "rt.elem",
+                        name: "del.elem.flow",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "rt",
+                                    local: "del",
                                 },
                             ),
                             pattern: Interleave(
@@ -176,13 +225,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rt.inner",
+                                            local: "del.inner.flow",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rt.attrs",
+                                            local: "del.attrs",
                                         },
                                     ),
                                 ],
@@ -192,7 +241,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rt.attrs",
+                        name: "del.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "del",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -201,6 +280,22 @@ Schema {
                                         prefix: None,
                                         local: "common.attrs",
                                     },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.cite",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.datetime",
+                                        },
+                                    ),
                                 ),
                                 Optional(
                                     Name(
@@ -216,7 +311,19 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rt.inner",
+                        name: "del.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.inner.phrasing",
                         combine: None,
                         pattern: Name(
                             Name {
@@ -228,127 +335,28 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rp.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "rp",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "rp.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "rp.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "rp.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.aria",
-                                        },
-                                    ),
-                                ),
-                            ],
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
                         ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "rp.inner",
-                        combine: None,
-                        pattern: Text,
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "rb.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "rb",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "rb.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "rb.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "rb.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.aria",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "rb.inner",
-                        combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: "del.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "del.elem.phrasing",
                             },
                         ),
                     },

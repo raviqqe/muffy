@@ -18,798 +18,13 @@ Schema {
             items: [
                 Definition(
                     Definition {
-                        name: "common.attrs.interact",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Interleave(
-                            [
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.contenteditable",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.draggable",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.hidden",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.popover",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.other",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.attrs.interact",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.contenteditable",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "contenteditable",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "true",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "plaintext-only",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "false",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.draggable",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "draggable",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "true",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "false",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.hidden",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "hidden",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "hidden",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "until-found",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.popover",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "popover",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "auto",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "manual",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "hint",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.editing",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Interleave(
-                            [
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.inputmode",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.spellcheck",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.autocorrect",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.writingsuggestions",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.autocapitalize",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.enterkeyhint",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.other",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.attrs.editing",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.inputmode",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "inputmode",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "none",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "text",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "tel",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "url",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "email",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "numeric",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "decimal",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "search",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.spellcheck",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "spellcheck",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "true",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "false",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.autocorrect",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "autocorrect",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "on",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "off",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.writingsuggestions",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "writingsuggestions",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "true",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "false",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.autocapitalize",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "autocapitalize",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "off",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "none",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "on",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "sentences",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "words",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "characters",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.attrs.enterkeyhint",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "enterkeyhint",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "enter",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "done",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "go",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "next",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "previous",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "search",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "send",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "progress.elem",
+                        name: "p.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "progress",
+                                    local: "p",
                                 },
                             ),
                             pattern: Interleave(
@@ -817,13 +32,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "progress.inner",
+                                            local: "p.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "progress.attrs",
+                                            local: "p.attrs",
                                         },
                                     ),
                                 ],
@@ -833,7 +48,7 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "progress.attrs",
+                        name: "p.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -847,34 +62,8 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "progress.attrs.value",
+                                            local: "common.attrs.aria",
                                         },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "progress.attrs.max",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.implicit.progressbar",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.progressbar",
-                                                },
-                                            ),
-                                        ],
                                     ),
                                 ),
                             ],
@@ -883,255 +72,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "progress.attrs.value",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "value",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float.non-negative",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "progress.attrs.max",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "max",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float.positive",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "progress.inner",
+                        name: "p.inner",
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
                                 local: "common.inner.phrasing",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "progress.elem",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "dialog.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "dialog",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "dialog.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "dialog.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "dialog.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "dialog.attrs.open",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "dialog.attrs.closedby",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.implicit.dialog",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.alertdialog",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.dialog",
-                                                },
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "dialog.attrs.open",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "open",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "open",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "dialog.attrs.closedby",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "closedby",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "any",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "closerequest",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "none",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "dialog.inner",
-                        combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
                             },
                         ),
                     },
@@ -1145,20 +91,20 @@ Schema {
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "dialog.elem",
+                                local: "p.elem",
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "menu.elem",
+                        name: "hr.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "menu",
+                                    local: "hr",
                                 },
                             ),
                             pattern: Interleave(
@@ -1166,13 +112,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "menu.inner",
+                                            local: "hr.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "menu.attrs",
+                                            local: "hr.attrs",
                                         },
                                     ),
                                 ],
@@ -1182,7 +128,7 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "menu.attrs",
+                        name: "hr.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1198,67 +144,25 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.list",
+                                                    local: "common.attrs.aria.implicit.separator",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.list",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.listbox",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.menu",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.menubar",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.radiogroup",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.tablist",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.toolbar",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.tree",
+                                                    local: "common.attrs.aria.role.separator",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
                                                     local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.doc-pagebreak",
                                                 },
                                             ),
                                         ],
@@ -1270,7 +174,230 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "menu.inner",
+                        name: "hr.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "hr.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "pre.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "pre",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "pre.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "pre.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "pre.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "pre.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "pre.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ul.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ul",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ul.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ul.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ul.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Choice(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.group",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.list",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.listbox",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.menu",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.menubar",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.radiogroup",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.tablist",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.toolbar",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.tree",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.presentation",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.list",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ul.inner",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1278,7 +405,7 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "mli.elem",
+                                            local: "li.elem",
                                         },
                                     ),
                                 ),
@@ -1303,14 +430,14 @@ Schema {
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "menu.elem",
+                                local: "ul.elem",
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "mli.elem",
+                        name: "li.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
@@ -1324,13 +451,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "mli.inner",
+                                            local: "li.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "mli.attrs",
+                                            local: "li.attrs",
                                         },
                                     ),
                                 ],
@@ -1340,7 +467,7 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "mli.attrs",
+                        name: "li.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1353,6 +480,417 @@ Schema {
                                 Optional(
                                     Choice(
                                         [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.listitem",
+                                                },
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "common.attrs.aria",
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "li.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ol",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ol.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ol.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ol.attrs.start",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ol.attrs.reversed",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ol.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Choice(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.group",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.list",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.listbox",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.menu",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.menubar",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.radiogroup",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.tablist",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.toolbar",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.tree",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "common.attrs.aria.role.presentation",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.list",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.attrs.start",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "start",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.attrs.reversed",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "reversed",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "reversed",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "1",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "a",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "A",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "i",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "I",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ol.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "oli.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ol.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "oli.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "li",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "oli.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "oli.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "oli.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "oli.attrs.value",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.listitem",
+                                                },
+                                            ),
                                             Name(
                                                 Name {
                                                     prefix: None,
@@ -1386,6 +924,12 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
+                                                    local: "common.attrs.aria.role.radio",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
                                                     local: "common.attrs.aria.role.tab",
                                                 },
                                             ),
@@ -1393,6 +937,126 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: "common.attrs.aria.role.treeitem",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.separator",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.doc-biblioentry",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.doc-endnote",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "oli.attrs.value",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "value",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "oli.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dl.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "dl",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "dl.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "dl.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dl.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.list",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.group",
                                                 },
                                             ),
                                             Name(
@@ -1410,7 +1074,173 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "mli.inner",
+                        name: "dl.inner",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Many0(
+                                    Group(
+                                        [
+                                            Many1(
+                                                Interleave(
+                                                    [
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "dt.elem",
+                                                            },
+                                                        ),
+                                                        Many0(
+                                                            Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "common.elem.script-supporting",
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                            Many1(
+                                                Interleave(
+                                                    [
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "dd.elem",
+                                                            },
+                                                        ),
+                                                        Many0(
+                                                            Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "common.elem.script-supporting",
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Many1(
+                                    Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "dldiv.elem",
+                                                },
+                                            ),
+                                            Many0(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "common.elem.script-supporting",
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "dl.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dt.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "dt",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "dt.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "dt.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dt.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Choice(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.implicit.term",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.role.term",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.role.listitem",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dt.inner",
                         combine: None,
                         pattern: Name(
                             Name {
@@ -1422,13 +1252,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "canvas.elem.flow",
+                        name: "dd.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "canvas",
+                                    local: "dd",
                                 },
                             ),
                             pattern: Interleave(
@@ -1436,13 +1266,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "canvas.inner.flow",
+                                            local: "dd.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "canvas.attrs",
+                                            local: "dd.attrs",
                                         },
                                     ),
                                 ],
@@ -1452,13 +1282,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "canvas.elem.phrasing",
+                        name: "dd.elem.phrasing",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "canvas",
+                                    local: "dd",
                                 },
                             ),
                             pattern: Interleave(
@@ -1466,13 +1296,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "canvas.inner.phrasing",
+                                            local: "dd.inner.phrasing",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "canvas.attrs",
+                                            local: "dd.attrs",
                                         },
                                     ),
                                 ],
@@ -1482,7 +1312,7 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "canvas.attrs",
+                        name: "dd.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1492,29 +1322,21 @@ Schema {
                                         local: "common.attrs",
                                     },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "canvas.attrs.height",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "canvas.attrs.width",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.aria",
-                                        },
-                                    ),
+                                Choice(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.implicit.definition",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.role.definition",
+                                            },
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
@@ -1522,59 +1344,19 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "canvas.attrs.height",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "height",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.integer.non-negative",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "canvas.attrs.width",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "width",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.integer.non-negative",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "canvas.inner.flow",
+                        name: "dd.inner",
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.transparent.flow",
+                                local: "common.inner.flow",
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "canvas.inner.phrasing",
+                        name: "dd.inner.phrasing",
                         combine: None,
                         pattern: Name(
                             Name {
@@ -1586,41 +1368,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "canvas.elem.flow",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "canvas.elem.phrasing",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "details.elem",
+                        name: "div.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "details",
+                                    local: "div",
                                 },
                             ),
                             pattern: Interleave(
@@ -1628,13 +1382,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "details.inner",
+                                            local: "div.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "details.attrs",
+                                            local: "div.attrs",
                                         },
                                     ),
                                 ],
@@ -1644,185 +1398,7 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "details.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "details.attrs.open",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "details.attrs.name",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.implicit.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "details.attrs.name",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "name",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "w",
-                                    ),
-                                    local: "non-empty-string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "details.attrs.open",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "open",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "open",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "details.inner",
-                        combine: None,
-                        pattern: Group(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "summary.elem",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.inner.flow",
-                                    },
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "details.elem",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "summary.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "summary",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "summary.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "summary.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "summary.attrs",
+                        name: "div.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1846,7 +1422,155 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "summary.inner",
+                        name: "div.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "div.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dldiv.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "div",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "dldiv.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "div.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "dldiv.inner",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Many1(
+                                    Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "dt.elem",
+                                                },
+                                            ),
+                                            Many0(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "common.elem.script-supporting",
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Many1(
+                                    Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "dd.elem",
+                                                },
+                                            ),
+                                            Many0(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "common.elem.script-supporting",
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "legend.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "legend",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "legend.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "legend.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "legend.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "legend.inner",
                         combine: None,
                         pattern: Interleave(
                             [

@@ -11,157 +11,130 @@ Schema {
     body: Grammar(
         Grammar {
             items: [
-                Include(
-                    Include {
-                        uri: "common.rnc",
-                        inherit: None,
-                        grammar: Some(
-                            Grammar {
-                                items: [],
-                            },
-                        ),
-                    },
-                ),
                 Start {
                     combine: None,
                     pattern: Name(
                         Name {
                             prefix: None,
-                            local: "html.elem",
+                            local: "normal.elem.all-inclusive",
                         },
                     ),
                 },
-                Include(
-                    Include {
-                        uri: "meta.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "normal.attr.anything",
+                        combine: None,
+                        pattern: Many0(
+                            Attribute {
+                                name_class: AnyName,
+                                pattern: Text,
+                            },
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "phrase.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "normal.elem.all",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Except {
+                                base: AnyName,
+                                except: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "dfn",
+                                    },
+                                ),
+                            },
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "normal.elem.all-inclusive",
+                                },
+                            ),
+                        },
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "block.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "normal.elem.all-inclusive",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "wildcard.elem.exclude-all",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "dfn.elem.exclude-self",
+                                    },
+                                ),
+                            ],
+                        ),
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "sectional.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "normal.elem.exclude-dfn",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Except {
+                                base: AnyName,
+                                except: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "dfn",
+                                    },
+                                ),
+                            },
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "normal.elem.exclude-dfn",
+                                },
+                            ),
+                        },
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "structural.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "dfn.elem.exclude-self",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "dfn",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "normal.attr.anything",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "normal.elem.exclude-dfn",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
                     },
                 ),
-                Include(
-                    Include {
-                        uri: "revision.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "embed.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "ruby.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "media.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "core-scripting.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "tables.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "form-datatypes.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "web-forms.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "web-forms2.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "applications.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "data.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "aria.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "microdata.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Include(
-                    Include {
-                        uri: "web-components.rnc",
-                        inherit: None,
-                        grammar: None,
+                Definition(
+                    Definition {
+                        name: "wildcard.elem.exclude-all",
+                        combine: None,
+                        pattern: NotAllowed,
                     },
                 ),
             ],
