@@ -1282,6 +1282,7 @@ roots = []
             &child_path,
             r#"
 extend = "../base.toml"
+sites = {}
 "#,
         )
         .unwrap();
@@ -1302,6 +1303,7 @@ extend = "../base.toml"
             &first_path,
             r#"
 extend = "second.toml"
+sites = {}
 "#,
         )
         .unwrap();
@@ -1309,6 +1311,7 @@ extend = "second.toml"
             &second_path,
             r#"
 extend = "first.toml"
+sites = {}
 "#,
         )
         .unwrap();
