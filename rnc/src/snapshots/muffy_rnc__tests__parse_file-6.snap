@@ -18,102 +18,69 @@ Schema {
             items: [
                 Definition(
                     Definition {
-                        name: "time.elem",
+                        name: "XMLonly",
                         combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "time",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "time.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "time.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
+                        pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "time.attrs",
+                        name: "HTMLonly",
                         combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.aria",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
+                        pattern: NotAllowed,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "time.inner",
+                        name: "v5only",
                         combine: None,
-                        pattern: Text,
+                        pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "time.elem",
+                        name: "nonRoundtrippable",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "nonHTMLizable",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attr.anything",
+                        combine: None,
+                        pattern: Many0(
+                            Attribute {
+                                name_class: AnyName,
+                                pattern: Text,
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "time.datetime.elem",
+                        name: "common.elem.anything",
                         combine: None,
                         pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "time",
-                                },
-                            ),
+                            name_class: AnyName,
                             pattern: Interleave(
                                 [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "time.datetime.inner",
+                                            local: "common.inner.anything",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "time.datetime.attrs",
+                                            local: "common.attr.anything",
                                         },
                                     ),
                                 ],
@@ -123,27 +90,16 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "time.datetime.attrs",
+                        name: "common.inner.anything",
                         combine: None,
                         pattern: Interleave(
                             [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "time.attrs.datetime",
-                                    },
-                                ),
-                                Optional(
+                                Text,
+                                Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: "common.elem.anything",
                                         },
                                     ),
                                 ),
@@ -153,19 +109,208 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "time.attrs.datetime",
+                        name: "common.elem.metadata",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.inner.metadata",
+                        combine: None,
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.elem.metadata",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.inner.phrasing",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Text,
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.phrasing",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.inner.transparent.flow",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Text,
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.flow",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.inner.flow",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Text,
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.flow",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.global",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.basic",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.id",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.class",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.title",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.base",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.space",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.id",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "datetime",
+                                    local: "id",
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.time-datetime",
+                                    local: "common.data.id",
                                 },
                             ),
                         },
@@ -173,83 +318,180 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "time.datetime.inner",
+                        name: "common.attrs.class",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.phrasing",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "time.datetime.elem",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "data.elem",
-                        combine: None,
-                        pattern: Element {
+                        pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "data",
+                                    local: "class",
                                 },
                             ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "data.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "data.attrs",
-                                        },
-                                    ),
-                                ],
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.tokens",
+                                },
                             ),
                         },
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "data.attrs",
+                        name: "common.attrs.title",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "title",
+                                },
+                            ),
+                            pattern: Text,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.base",
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: "common.attrs.xmlbase",
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "data.attrs.value",
+                                        local: "nonRoundtrippable",
                                     },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.xmlbase",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: Some(
+                                                "xml",
+                                            ),
+                                            local: "base",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.uri",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "XMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.space",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.xmlspace",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.xmlspace",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: Some(
+                                                "xml",
+                                            ),
+                                            local: "space",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "preserve",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "default",
+                                            },
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "XMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.i18n",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.dir",
+                                        },
+                                    ),
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: "common.attrs.language",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.translate",
                                         },
                                     ),
                                 ),
@@ -259,13 +501,227 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "data.attrs.value",
+                        name: "common.attrs.dir",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "value",
+                                    local: "dir",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "ltr",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "rtl",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "auto",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.language",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.xmllang",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.lang",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.lang",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "lang",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.langcode",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "XMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.xmllang",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xml",
+                                    ),
+                                    local: "lang",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.langcode",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.translate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "translate",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "yes",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "no",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.present",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.style",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.tabindex",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.accesskey",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.style",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "style",
                                 },
                             ),
                             pattern: Name(
@@ -279,83 +735,55 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "data.inner",
+                        name: "common.attrs.tabindex",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.phrasing",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "data.elem",
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "meter.elem",
-                        combine: None,
-                        pattern: Element {
+                        pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "meter",
+                                    local: "tabindex",
                                 },
                             ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "meter.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "meter.attrs",
-                                        },
-                                    ),
-                                ],
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer",
+                                },
                             ),
                         },
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs",
+                        name: "common.attrs.accesskey",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "accesskey",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.keylabellist",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.other",
                         combine: None,
                         pattern: Interleave(
                             [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "meter.attrs.value",
-                                    },
-                                ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "meter.attrs.min",
+                                            local: "common.attrs.autofocus",
                                         },
                                     ),
                                 ),
@@ -363,7 +791,7 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "aria.prop.valuemin",
+                                            local: "common.attrs.nonce",
                                         },
                                     ),
                                 ),
@@ -371,39 +799,7 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "meter.attrs.low",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "meter.attrs.high",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "meter.attrs.max",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "aria.prop.valuemax",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "meter.attrs.optimum",
+                                            local: "common.attrs.inert",
                                         },
                                     ),
                                 ),
@@ -413,19 +809,66 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs.value",
+                        name: "common.attrs.autofocus",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "value",
+                                    local: "autofocus",
                                 },
                             ),
-                            pattern: Name(
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "autofocus",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.blocking",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.float",
+                                    local: "blocking",
+                                },
+                            ),
+                            pattern: List(
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "render",
                                 },
                             ),
                         },
@@ -433,19 +876,70 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs.min",
+                        name: "common.attrs.fetchpriority",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "min",
+                                    local: "fetchpriority",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "high",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "low",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "auto",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.nonce",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "nonce",
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.float",
+                                    local: "string",
                                 },
                             ),
                         },
@@ -453,108 +947,1780 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs.low",
+                        name: "common.attrs.inert",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "low",
+                                    local: "inert",
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float",
-                                },
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "inert",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
                             ),
                         },
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs.high",
+                        name: "common.data.tokens",
                         combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "high",
-                                },
+                        pattern: List(
+                            Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "token",
+                                    },
+                                ),
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float",
-                                },
-                            ),
-                        },
+                        ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "meter.attrs.max",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "max",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "meter.attrs.optimum",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "optimum",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "common.data.float",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: "meter.inner",
+                        name: "common.data.browsing-context",
                         combine: None,
                         pattern: Name(
                             Name {
-                                prefix: None,
-                                local: "common.inner.phrasing",
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "browsing-context",
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: "common.data.browsing-context-or-keyword",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "browsing-context-or-keyword",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.id",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "ID",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.idref",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "IDREF",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.idrefs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "IDREFS",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.name",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "ID",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.hash-name",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "hash-name",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.integer",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "integer",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.integer.positive",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "integer-positive",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.integer.non-negative",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "integer-non-negative",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.float",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "float",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.float.positive",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "float-positive",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.float.non-negative",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "float-non-negative",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.datetime",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "datetime-tz",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.date",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "date",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.time-datetime",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "time-datetime",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.uri",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "iri-ref",
+                                    },
+                                ),
+                                Data {
+                                    name: Name {
+                                        prefix: Some(
+                                            "xsd",
+                                        ),
+                                        local: "string",
+                                    },
+                                    parameters: [
+                                        Parameter {
+                                            name: Name {
+                                                prefix: None,
+                                                local: "pattern",
+                                            },
+                                            value: "[ x{0A}-x{0D}]*",
+                                        },
+                                    ],
+                                    except: None,
+                                },
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.uri.non-empty",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri-ref",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.uris",
+                        combine: None,
+                        pattern: List(
+                            Many0(
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "iri-ref",
+                                    },
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.uris.http.or.https",
+                        combine: None,
+                        pattern: List(
+                            Many0(
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "iri-ref-http-or-https",
+                                    },
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.uri.absolute",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "iri",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.sizes",
+                        combine: None,
+                        pattern: List(
+                            Many1(
+                                Data {
+                                    name: Name {
+                                        prefix: Some(
+                                            "xsd",
+                                        ),
+                                        local: "string",
+                                    },
+                                    parameters: [
+                                        Parameter {
+                                            name: Name {
+                                                prefix: None,
+                                                local: "pattern",
+                                            },
+                                            value: "[1-9][0-9]*x[1-9][0-9]*",
+                                        },
+                                    ],
+                                    except: None,
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.color",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "color",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.mimetype",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "mime-type",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.scripttype",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "script-type",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.charset",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "charset",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.meta-charset",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "meta-charset",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.refresh",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "refresh",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.default-style",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.x-ua-compatible",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.mediaquery",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "media-query",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.langcode",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "",
+                                },
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "language",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.keylabellist",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "keylabellist",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.source.size.list",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "source-size-list",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.integrity",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "integrity-metadata",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.content-security-policy",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "content-security-policy",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.feature-policy",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.sandbox-allow-list",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Value {
+                                    name: Some(
+                                        Name {
+                                            prefix: Some(
+                                                "w",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                    value: "",
+                                },
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "sandbox-allow-list",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.custom.element.name",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "custom-element-name",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.microdata-properties",
+                        combine: None,
+                        pattern: List(
+                            Many1(
+                                Name(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "microdata-property",
+                                    },
+                                ),
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.zero",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "zero",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.functionbody",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.data.autocomplete.any",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "autocomplete-any",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common-form.attrs.form",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.script-supporting",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.alert",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.alertdialog",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.application",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.article",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.banner",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.button",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.cell",
                         combine: Some(
                             Choice,
                         ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "meter.elem",
-                            },
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.checkbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.combobox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.complementary",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.dialog",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.document",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.feed",
+                        combine: Some(
+                            Choice,
                         ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.figure",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.group",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.heading",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.img",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.link",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.list",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.listitem",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.log",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.listbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.main",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.marquee",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.menu",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.menubar",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.menuitem",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.menuitemcheckbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.menuitemradio",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.option",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.presentation",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.progressbar",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.radio",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.radiogroup",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.region",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.rowgroup",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.search",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.searchbox",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.separator",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.slider",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.spinbutton",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.status",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.switch",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.tab",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.table",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.tablist",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.tabpanel",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.textbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.toolbar",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.tree",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.treeitem",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.article",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.banner",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.button",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.cell",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.checkbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.column-or-row-header",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.combobox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.complementary",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.contentinfo",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.dialog",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.figure",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.document",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.form",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.group",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.heading",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.img",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.landmark",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.link",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.list",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.listbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.listitem",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.main",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.math",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.navigation",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.option",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.progressbar",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.radio",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.region",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.row",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.rowgroup",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.search",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.searchbox",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.section",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.select",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.separator",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.slider",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.spinbutton",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.status",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.structure",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.table",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.textbox",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.implicit.toolbar",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.prop.readonly",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.banner",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.complementary",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.contentinfo",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.form",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.main",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.navigation",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.search",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.article",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.document",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.landmark.note",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-abstract",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-acknowledgments",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-afterword",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-appendix",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-backlink",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-biblioentry",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-bibliography",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-biblioref",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-chapter",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-colophon",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-conclusion",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-cover",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-credit",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-credits",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-dedication",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-endnote",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-endnotes",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-epigraph",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-epilogue",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-errata",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-example",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-footnote",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-foreword",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-glossary",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-glossref",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-index",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-introduction",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-noteref",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-notice",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-pagebreak",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-pagelist",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-part",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-preface",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-prologue",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-pullquote",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-qna",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-subtitle",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-tip",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.aria.role.doc-toc",
+                        combine: None,
+                        pattern: NotAllowed,
                     },
                 ),
             ],

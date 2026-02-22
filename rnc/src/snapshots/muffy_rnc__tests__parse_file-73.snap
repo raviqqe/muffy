@@ -4,6 +4,9 @@ expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
     declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/2000/svg",
+        ),
         Namespace(
             NamespaceDeclaration {
                 prefix: "a",
@@ -17,115 +20,93 @@ Schema {
                 items: [
                     Definition(
                         Definition {
-                            name: "ClipValue.datatype",
+                            name: "SVG.View.extra.class",
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        "xsd",
+                            pattern: NotAllowed,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.View.class",
+                            combine: Some(
+                                Choice,
+                            ),
+                            pattern: Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "view",
+                                        },
                                     ),
-                                    local: "string",
-                                },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.View.extra.class",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.view.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
+                                ),
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.clip.attrib",
+                            name: "view",
                             combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "clip",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "ClipValue.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "view",
+                                    },
+                                ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.view",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.view.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.overflow.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "overflow",
-                                        },
-                                    ),
-                                    pattern: Choice(
-                                        [
-                                            Value {
-                                                name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "string",
-                                                    },
-                                                ),
-                                                value: "visible",
-                                            },
-                                            Value {
-                                                name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "string",
-                                                    },
-                                                ),
-                                                value: "hidden",
-                                            },
-                                            Value {
-                                                name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "string",
-                                                    },
-                                                ),
-                                                value: "scroll",
-                                            },
-                                            Value {
-                                                name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "string",
-                                                    },
-                                                ),
-                                                value: "auto",
-                                            },
-                                            Value {
-                                                name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "string",
-                                                    },
-                                                ),
-                                                value: "inherit",
-                                            },
-                                        ],
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "SVG.Viewport.extra.attrib",
-                            combine: None,
-                            pattern: Empty,
-                        },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "SVG.Viewport.attrib",
+                            name: "attlist.view",
                             combine: Some(
                                 Interleave,
                             ),
@@ -134,19 +115,78 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.clip.attrib",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.overflow.attrib",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "SVG.Viewport.extra.attrib",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "viewBox",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "ViewBoxSpec.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "preserveAspectRatio",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "PreserveAspectRatioSpec.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "zoomAndPan",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: None,
+                                                        value: "disable",
+                                                    },
+                                                    Value {
+                                                        name: None,
+                                                        value: "magnify",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "viewTarget",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
                                 ],

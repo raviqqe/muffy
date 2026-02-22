@@ -10,66 +10,488 @@ Schema {
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
+        DefaultNamespace(
+            "http://www.w3.org/2000/svg",
+        ),
     ],
-    body: Pattern(
-        Grammar(
-            Grammar {
-                items: [
-                    Definition(
-                        Definition {
-                            name: "SVG.externalResourcesRequired.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "externalResourcesRequired",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Boolean.datatype",
-                                        },
-                                    ),
-                                },
+    body: Grammar(
+        Grammar {
+            items: [
+                Annotation(
+                    Annotation {
+                        name: Name {
+                            prefix: Some(
+                                "a",
                             ),
+                            local: "documentation",
                         },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "SVG.External.extra.attrib",
-                            combine: None,
-                            pattern: Empty,
+                        attributes: [],
+                    },
+                ),
+                Annotation(
+                    Annotation {
+                        name: Name {
+                            prefix: Some(
+                                "a",
+                            ),
+                            local: "documentation",
                         },
-                    ),
-                    Definition(
-                        Definition {
-                            name: "SVG.External.attrib",
-                            combine: Some(
-                                Interleave,
+                        attributes: [],
+                    },
+                ),
+                Annotation(
+                    Annotation {
+                        name: Name {
+                            prefix: Some(
+                                "a",
+                            ),
+                            local: "documentation",
+                        },
+                        attributes: [],
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.Extensibility.extra.class",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.Extensibility.class",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "foreignObject",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Extensibility.extra.class",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Annotation(
+                    Annotation {
+                        name: Name {
+                            prefix: Some(
+                                "a",
+                            ),
+                            local: "documentation",
+                        },
+                        attributes: [],
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.foreignObject.content",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "foreignObject",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "foreignObject",
+                                },
                             ),
                             pattern: Group(
                                 [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.externalResourcesRequired.attrib",
+                                            local: "attlist.foreignObject",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.extra.attrib",
+                                            local: "SVG.foreignObject.content",
                                         },
                                     ),
                                 ],
                             ),
                         },
-                    ),
-                ],
-            },
-        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "attlist.foreignObject",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Core.attrib",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Conditional.attrib",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Style.attrib",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Presentation.attrib",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.GraphicalEvents.attrib",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.External.attrib",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.group",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "x",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "Coordinate.datatype",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "y",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "Coordinate.datatype",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "width",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "Length.datatype",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "height",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "Length.datatype",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "transform",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "TransformList.datatype",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "foreignElement",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Except {
+                                base: AnyName,
+                                except: NsName(
+                                    Some(
+                                        "svg",
+                                    ),
+                                ),
+                            },
+                            pattern: Many0(
+                                Choice(
+                                    [
+                                        Attribute {
+                                            name_class: Except {
+                                                base: AnyName,
+                                                except: NsName(
+                                                    Some(
+                                                        "svg",
+                                                    ),
+                                                ),
+                                            },
+                                            pattern: Text,
+                                        },
+                                        Text,
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "foreignElement",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.a.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.defs.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.glyph.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.g.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.marker.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.mask.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.missing-glyph.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.pattern.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.svg.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.switch.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "SVG.symbol.content",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Many0(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "SVG.Extensibility.class",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+            ],
+        },
     ),
 }
