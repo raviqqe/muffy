@@ -124,34 +124,34 @@ pub enum Combine {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Pattern {
     /// A choice pattern (`|`).
-    Choice(Vec<Pattern>),
+    Choice(Vec<Self>),
     /// An interleave pattern (`&`).
-    Interleave(Vec<Pattern>),
+    Interleave(Vec<Self>),
     /// A group pattern (`,`) representing sequence.
-    Group(Vec<Pattern>),
+    Group(Vec<Self>),
     /// An optional pattern (`?`).
-    Optional(Box<Pattern>),
+    Optional(Box<Self>),
     /// A zero-or-more pattern (`*`).
-    ZeroOrMore(Box<Pattern>),
+    ZeroOrMore(Box<Self>),
     /// A one-or-more pattern (`+`).
-    OneOrMore(Box<Pattern>),
+    OneOrMore(Box<Self>),
     /// A list pattern.
-    List(Box<Pattern>),
+    List(Box<Self>),
     /// A mixed pattern.
-    Mixed(Box<Pattern>),
+    Mixed(Box<Self>),
     /// An element pattern.
     Element {
         /// The element name class.
         name_class: NameClass,
         /// The element content pattern.
-        pattern: Box<Pattern>,
+        pattern: Box<Self>,
     },
     /// An attribute pattern.
     Attribute {
         /// The attribute name class.
         name_class: NameClass,
         /// The attribute value pattern.
-        pattern: Box<Pattern>,
+        pattern: Box<Self>,
     },
     /// A data pattern.
     Data {
@@ -160,7 +160,7 @@ pub enum Pattern {
         /// The datatype parameters.
         parameters: Vec<Parameter>,
         /// An optional except pattern.
-        except: Option<Box<Pattern>>,
+        except: Option<Box<Self>>,
     },
     /// A value pattern.
     Value {
@@ -204,13 +204,13 @@ pub enum NameClass {
     /// Any name.
     AnyName,
     /// A choice of name classes.
-    Choice(Vec<NameClass>),
+    Choice(Vec<Self>),
     /// A name class with exclusions.
     Except {
         /// The base name class.
-        base: Box<NameClass>,
+        base: Box<Self>,
         /// The excluded name class.
-        except: Box<NameClass>,
+        except: Box<Self>,
     },
 }
 

@@ -5,7 +5,10 @@ use crate::ast::{
     Grammar, GrammarItem, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
 };
-use core::fmt::{self, Display, Formatter};
+use core::{
+    error::Error as StdError,
+    fmt::{self, Display, Formatter},
+};
 use nom::{
     IResult, Parser,
     branch::alt,
@@ -16,7 +19,6 @@ use nom::{
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
-use std::error::Error as StdError;
 
 /// A parse error.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -695,11 +697,11 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
     Ok((input, value.to_string()))
 }
 
-fn is_identifier_start(character: char) -> bool {
+const fn is_identifier_start(character: char) -> bool {
     character.is_ascii_alphabetic() || character == '_'
 }
 
-fn is_identifier_char(character: char) -> bool {
+const fn is_identifier_char(character: char) -> bool {
     character.is_ascii_alphanumeric() || character == '_' || character == '-' || character == '.'
 }
 
