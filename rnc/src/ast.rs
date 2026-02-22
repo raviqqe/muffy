@@ -158,14 +158,16 @@ pub enum Pattern {
     Interleave(Vec<Self>),
     /// A list pattern.
     List(Box<Self>),
+    /// A repetition more than or equal to 0.
+    Many0(Box<Self>),
+    /// A repetition more than 0.
+    Many1(Box<Self>),
     /// A mixed pattern.
     Mixed(Box<Self>),
     /// A named pattern that requires later semantic resolution.
     Name(Name),
     /// A not-allowed pattern.
     NotAllowed,
-    /// A one-or-more pattern (`+`).
-    OneOrMore(Box<Self>),
     /// An optional pattern (`?`).
     Optional(Box<Self>),
     /// A reference to a parent grammar definition.
@@ -179,8 +181,6 @@ pub enum Pattern {
         /// The literal value.
         value: String,
     },
-    /// A zero-or-more pattern (`*`).
-    ZeroOrMore(Box<Self>),
 }
 
 /// A name used in a Relax NG schema.

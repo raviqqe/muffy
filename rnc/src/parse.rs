@@ -313,7 +313,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
     let pattern = match quantifier {
         Some("?") => Pattern::Optional(Box::new(base_pattern)),
-        Some("*") => Pattern::ZeroOrMore(Box::new(base_pattern)),
+        Some("*") => Pattern::Many0(Box::new(base_pattern)),
         Some("+") => Pattern::OneOrMore(Box::new(base_pattern)),
         None => base_pattern,
         Some(_) => base_pattern,
