@@ -16,7 +16,7 @@ pub enum SchemaBody {
     Grammar(Grammar),
 }
 
-/// A grammar block.
+/// A grammar.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grammar {
     /// Items.
@@ -52,14 +52,14 @@ pub struct DatatypesDeclaration {
     pub uri: String,
 }
 
-/// Grammar items that appear in a grammar block.
+/// A grammar item.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrammarItem {
-    /// A start pattern.
+    /// A start.
     Start {
-        /// The combine operator, if any.
+        /// A combine operator.
         combine: Option<Combine>,
-        /// The start pattern.
+        /// A pattern.
         pattern: Pattern,
     },
     /// A definition.
@@ -94,18 +94,18 @@ pub struct Definition {
 pub struct Include {
     /// The included schema URI.
     pub uri: String,
-    /// The inherit modifier, if any.
+    /// An inherit modifier.
     pub inherit: Option<Inherit>,
-    /// The included grammar items.
+    /// A grammar.
     pub grammar: Option<Grammar>,
 }
 
-/// An inherit modifier for an include item.
+/// An inherit modifier.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Inherit {
-    /// Inherit the default namespace.
+    /// Inherits the default namespace.
     DefaultNamespace,
-    /// Inherit a named namespace prefix.
+    /// Inherits a namespace.
     Prefix(String),
 }
 
