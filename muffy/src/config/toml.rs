@@ -105,10 +105,10 @@ mod tests {
         let directory = tempdir().unwrap();
         let directory = directory.path();
         let base_file = directory.join("base.toml");
-        let nested_file = directory.join("nested");
-        let child_file = nested_file.join("child.toml");
+        let sub_directory = directory.join("nested");
+        let child_file = sub_directory.join("child.toml");
 
-        create_dir_all(&nested_file).await.unwrap();
+        create_dir_all(&sub_directory).await.unwrap();
         write(
             &base_file,
             indoc! {r#"
