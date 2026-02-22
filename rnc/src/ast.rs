@@ -92,7 +92,7 @@ pub struct Definition {
 /// An include.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Include {
-    /// A schema URI.
+    /// A URI.
     pub uri: String,
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
