@@ -55,9 +55,6 @@ impl SerializableConfig {
 
     /// Merges another configuration.
     pub fn merge(&mut self, other: Self) {
-        // We clear the `extend` field because its value is meaningless after merge.
-        self.extend = None;
-
         if other.concurrency.is_some() {
             self.concurrency = other.concurrency;
         }

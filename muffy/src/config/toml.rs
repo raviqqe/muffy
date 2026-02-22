@@ -4,46 +4,36 @@ use tokio::fs::{canonicalize, read_to_string};
 
 /// Reads a configuration file recursively.
 pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
-    let mut stack = Vec::new();
-    let mut configs = Vec::new();
-    let mut path = path.to_path_buf();
+    let mut paths = vec![];
+    let mut previous_path = canonicalize(path).await?;
+    let mut config = read_bare_config(path).await?;
 
-    loop {
-        path = canonicalize(&path).await?;
+    while let Some(path) = config.extend() {
+        let path = canonicalize(
+            previous_path
+                .parent()
+                .unwrap_or_else(|| Path::new("."))
+                .join(path),
+        )
+        .await?;
 
-        if let Some(index) = stack.iter().position(|item| item == &path) {
-            let mut cycle = stack[index..].to_vec();
-            cycle.push(path);
-            return Err(ConfigError::CircularConfigFiles(cycle));
+        if let Some(index) = paths.iter().position(|item| item == &path) {
+            paths.push(path);
+            return Err(ConfigError::CircularConfigFiles(paths[index..].to_vec()));
         }
 
-        stack.push(path.clone());
-
-        let contents = read_to_string(&path).await?;
-        let config: SerializableConfig = ::toml::from_str(&contents)?;
-        let extend_path = config.extend().map(ToOwned::to_owned);
-        configs.push(config);
-
-        let Some(extend_path) = extend_path else {
-            break;
-        };
-        path = if extend_path.is_absolute() {
-            extend_path
-        } else {
-            path.parent()
-                .unwrap_or_else(|| Path::new("."))
-                .join(extend_path)
-        };
+        paths.push(path.clone());
+        let mut parent = read_bare_config(&path).await?;
+        parent.merge(config);
+        config = parent;
+        previous_path = path.clone();
     }
 
-    let mut configs = configs.into_iter().rev();
-    let mut merged = configs.next().unwrap_or_default();
+    Ok(config)
+}
 
-    for config in configs {
-        merged.merge(config);
-    }
-
-    Ok(merged)
+async fn read_bare_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
+    Ok(toml::from_str(&read_to_string(&path).await?)?)
 }
 
 #[cfg(test)]
