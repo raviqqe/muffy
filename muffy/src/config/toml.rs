@@ -55,6 +55,7 @@ async fn read_config_inner(
 mod tests {
     use super::{ConfigError, read_config};
     use crate::config::compile_config;
+    use indoc::indoc;
     use pretty_assertions::assert_eq;
     use std::{
         env::temp_dir,
@@ -82,33 +83,33 @@ mod tests {
 
         write(
             &base_path,
-            r#"
-concurrency = 1
-[sites.default]
-roots = ["https://example.com/"]
-max_redirects = 5
-"#,
+            indoc! {r#"
+                concurrency = 1
+                [sites.default]
+                roots = ["https://example.com/"]
+                max_redirects = 5
+            "#},
         )
         .await
         .unwrap();
         write(
             &middle_path,
-            r#"
-extend = "base.toml"
-concurrency = 2
-[sites.default]
-max_redirects = 10
-"#,
+            indoc! {r#"
+                extend = "base.toml"
+                concurrency = 2
+                [sites.default]
+                max_redirects = 10
+            "#},
         )
         .await
         .unwrap();
         write(
             &child_path,
-            r#"
-extend = "middle.toml"
-[sites.default]
-recurse = true
-"#,
+            indoc! {r#"
+                extend = "middle.toml"
+                [sites.default]
+                recurse = true
+            "#},
         )
         .await
         .unwrap();
@@ -138,19 +139,19 @@ recurse = true
         create_dir_all(&nested_path).await.unwrap();
         write(
             &base_path,
-            r#"
-concurrency = 5
-sites = {}
-"#,
+            indoc! {r#"
+                concurrency = 5
+                sites = {}
+            "#},
         )
         .await
         .unwrap();
         write(
             &child_path,
-            r#"
-extend = "../base.toml"
-sites = {}
-"#,
+            indoc! {r#"
+                extend = "../base.toml"
+                sites = {}
+            "#},
         )
         .await
         .unwrap();
@@ -169,19 +170,19 @@ sites = {}
 
         write(
             &first_path,
-            r#"
-extend = "second.toml"
-sites = {}
-"#,
+            indoc! {r#"
+                extend = "second.toml"
+                sites = {}
+            "#},
         )
         .await
         .unwrap();
         write(
             &second_path,
-            r#"
-extend = "first.toml"
-sites = {}
-"#,
+            indoc! {r#"
+                extend = "first.toml"
+                sites = {}
+            "#},
         )
         .await
         .unwrap();
