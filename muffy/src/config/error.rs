@@ -10,7 +10,7 @@ use url::ParseError;
 #[derive(Debug)]
 pub enum ConfigError {
     /// Circular configuration extensions.
-    CircularConfigExtends(Vec<PathBuf>),
+    CircularConfigFiles(Vec<PathBuf>),
     /// Circular site configurations.
     CircularSiteConfigs(Vec<String>),
     /// An invalid status code.
@@ -36,13 +36,13 @@ pub enum ConfigError {
 impl Display for ConfigError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::CircularConfigExtends(paths) => {
-                let path_chain = paths
+            Self::CircularConfigFiles(paths) => {
+                let paths = paths
                     .iter()
                     .map(|path| path.display().to_string())
                     .collect::<Vec<_>>()
                     .join(" -> ");
-                write!(formatter, "circular configuration extends: {path_chain}")
+                write!(formatter, "circular configuration files: {paths}")
             }
             Self::CircularSiteConfigs(names) => {
                 write!(

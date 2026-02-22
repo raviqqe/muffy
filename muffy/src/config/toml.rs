@@ -19,7 +19,7 @@ fn read_config_inner(
     if let Some(position) = stack.iter().position(|item| item == &canonical_path) {
         let mut cycle = stack[position..].to_vec();
         cycle.push(canonical_path);
-        return Err(ConfigError::CircularConfigExtends(cycle));
+        return Err(ConfigError::CircularConfigFiles(cycle));
     }
 
     stack.push(canonical_path.clone());
@@ -164,6 +164,6 @@ sites = {}
 
         let result = read_config(&first_path);
 
-        assert!(matches!(result, Err(ConfigError::CircularConfigExtends(_))));
+        assert!(matches!(result, Err(ConfigError::CircularConfigFiles(_))));
     }
 }
