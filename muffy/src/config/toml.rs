@@ -22,30 +22,25 @@ async fn read_config_recursively(
 
     stack.push(path.clone());
 
-    let result = async {
-        let contents = read_to_string(&path).await?;
-        let mut config: SerializableConfig = ::toml::from_str(&contents)?;
+    let contents = read_to_string(&path).await?;
+    let mut config: SerializableConfig = ::toml::from_str(&contents)?;
 
-        if let Some(extend_path) = config.extend().map(ToOwned::to_owned) {
-            let parent_path = if extend_path.is_absolute() {
-                extend_path
-            } else {
-                path.parent()
-                    .unwrap_or_else(|| Path::new("."))
-                    .join(extend_path)
-            };
-            let mut parent = read_config_recursively(&parent_path, stack).await?;
-            parent.merge(config);
-            config = parent;
-        }
-
-        Ok(config)
+    if let Some(extend_path) = config.extend().map(ToOwned::to_owned) {
+        let parent_path = if extend_path.is_absolute() {
+            extend_path
+        } else {
+            path.parent()
+                .unwrap_or_else(|| Path::new("."))
+                .join(extend_path)
+        };
+        let mut parent = read_config_recursively(&parent_path, stack).await?;
+        parent.merge(config);
+        config = parent;
     }
-    .await;
 
     stack.pop();
 
-    result
+    Ok(config)
 }
 
 #[cfg(test)]
