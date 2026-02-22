@@ -68,13 +68,13 @@ pub enum GrammarItem {
     Div(Grammar),
     /// An include block.
     Include(Include),
-    /// An annotation element.
+    /// An annotation.
     Annotation(Annotation),
-    /// A namespace declaration inside a grammar.
+    /// A namespace declaration.
     Namespace(NamespaceDeclaration),
-    /// A default namespace declaration inside a grammar.
+    /// A default namespace declaration.
     DefaultNamespace(String),
-    /// A datatype library declaration inside a grammar.
+    /// A datatype library declaration.
     Datatypes(DatatypesDeclaration),
 }
 
