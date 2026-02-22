@@ -1315,10 +1315,7 @@ extend = "first.toml"
 
         let result = read_config(&first_path);
 
-        assert!(matches!(
-            result,
-            Err(ConfigError::CircularConfigExtends(_))
-        ));
+        assert!(matches!(result, Err(ConfigError::CircularConfigExtends(_))));
     }
 
     mod merge {
