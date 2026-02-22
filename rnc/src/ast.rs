@@ -62,7 +62,7 @@ pub enum GrammarItem {
     /// A default namespace declaration.
     DefaultNamespace(String),
     /// A definition.
-    Define(Definition),
+    Definition(Definition),
     /// A div block containing nested grammar items.
     Div(Grammar),
     /// An include block.

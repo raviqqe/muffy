@@ -190,7 +190,7 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
 
     Ok((
         input,
-        GrammarItem::Define(Definition {
+        GrammarItem::Definition(Definition {
             name,
             combine,
             pattern,
@@ -847,7 +847,7 @@ mod tests {
                             pattern: Box::new(Pattern::Empty),
                         },
                     },
-                    GrammarItem::Define(Definition {
+                    GrammarItem::Definition(Definition {
                         name: "common".to_string(),
                         combine: Some(Combine::Interleave),
                         pattern: Pattern::Element {

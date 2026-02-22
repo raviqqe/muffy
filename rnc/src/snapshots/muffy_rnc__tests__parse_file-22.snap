@@ -3,710 +3,19 @@ source: rnc/src/lib.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
-    declarations: [
-        Datatypes(
-            DatatypesDeclaration {
-                prefix: Some(
-                    "w",
-                ),
-                uri: "http://whattf.org/datatype-draft",
-            },
-        ),
-        Namespace(
-            NamespaceDeclaration {
-                prefix: "c",
-                uri: "http://n.validator.nu/custom-elements/",
-            },
-        ),
-    ],
+    declarations: [],
     body: Grammar(
         Grammar {
             items: [
-                Define(
+                Definition(
                     Definition {
-                        name: "template.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "template",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs.shadowrootmode",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs.shadowrootdelegatesfocus",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs.shadowrootclonable",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs.shadowrootserializable",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "template.attrs.shadowrootcustomelementregistry",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs.shadowrootmode",
+                        name: "scripting.attr.form.select",
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "shadowrootmode",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "open",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "closed",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs.shadowrootdelegatesfocus",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "shadowrootdelegatesfocus",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "shadowrootdelegatesfocus",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs.shadowrootclonable",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "shadowrootclonable",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "shadowrootclonable",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs.shadowrootserializable",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "shadowrootserializable",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "shadowrootserializable",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.attrs.shadowrootcustomelementregistry",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "shadowrootcustomelementregistry",
-                                },
-                            ),
-                            pattern: Choice(
-                                [
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "shadowrootcustomelementregistry",
-                                    },
-                                    Value {
-                                        name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    "w",
-                                                ),
-                                                local: "string",
-                                            },
-                                        ),
-                                        value: "",
-                                    },
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "template.inner",
-                        combine: None,
-                        pattern: Choice(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.inner.metadata",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.inner.flow",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "ol.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "ul.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "dl.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "figure.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "ruby.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "object.inner.flow",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "object.inner.phrasing",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "video.inner.flow",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "video.inner.phrasing",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "audio.inner.flow",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "audio.inner.phrasing",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "table.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "colgroup.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "thead.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "tbody.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "tfoot.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "tr.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "fieldset.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "select.inner",
-                                    },
-                                ),
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "details.inner",
-                                    },
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.metadata",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "template.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "template.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.script-supporting",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "template.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.script-supporting",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "script.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Element {
-                            name_class: NsName(
-                                Some(
-                                    "c",
-                                ),
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.inner.transparent.flow",
-                                        },
-                                    ),
-                                    Many0(
-                                        Name(
-                                            Name {
-                                                prefix: None,
-                                                local: "attr.any",
-                                            },
-                                        ),
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Element {
-                            name_class: NsName(
-                                Some(
-                                    "c",
-                                ),
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.inner.phrasing",
-                                        },
-                                    ),
-                                    Many0(
-                                        Name(
-                                            Name {
-                                                prefix: None,
-                                                local: "attr.any",
-                                            },
-                                        ),
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "attr.any",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: AnyName,
-                            pattern: Text,
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.attrs.other",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Optional(
-                            Attribute {
-                                name_class: Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "is",
-                                    },
-                                ),
-                                pattern: Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.data.custom.element.name",
-                                    },
-                                ),
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "slot.elem.flow",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "slot",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "slot.inner.flow",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "slot.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "slot.elem.phrasing",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "slot",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "slot.inner.phrasing",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "slot.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "slot.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "common.attrs",
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "slot.attrs.name",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "common.attrs.aria",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "slot.attrs.name",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "name",
+                                    local: "onselect",
                                 },
                             ),
                             pattern: Name(
@@ -718,75 +27,64 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "slot.inner.flow",
+                        name: "scripting.attr.form.change",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.transparent.flow",
-                            },
-                        ),
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onchange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "slot.inner.phrasing",
+                        name: "scripting.attr.form.submit",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.phrasing",
-                            },
-                        ),
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onsubmit",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "slot.elem.flow",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.phrasing",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "slot.elem.phrasing",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.attrs.other",
-                        combine: Some(
-                            Interleave,
-                        ),
-                        pattern: Optional(
-                            Attribute {
-                                name_class: Name(
-                                    Name {
-                                        prefix: None,
-                                        local: "slot",
-                                    },
-                                ),
-                                pattern: Text,
-                            },
-                        ),
+                        name: "scripting.attr.form.reset",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onreset",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
                     },
                 ),
             ],

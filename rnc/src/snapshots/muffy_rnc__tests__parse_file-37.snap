@@ -4,2784 +4,1511 @@ expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
     declarations: [
-        Namespace(
-            NamespaceDeclaration {
-                prefix: "inkscape",
-                uri: "http://www.inkscape.org/namespaces/inkscape",
-            },
+        DefaultNamespace(
+            "http://www.w3.org/2000/svg",
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "sodipodi",
-                uri: "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
     ],
-    body: Grammar(
-        Grammar {
-            items: [
-                Define(
-                    Definition {
-                        name: "sodipodi.namedview.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "namedview",
-                                },
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Definition(
+                        Definition {
+                            name: "SVG.Animation.extra.class",
+                            combine: None,
+                            pattern: NotAllowed,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Animation.class",
+                            combine: Some(
+                                Choice,
                             ),
-                            pattern: Interleave(
+                            pattern: Choice(
                                 [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.namedview.inner",
+                                            local: "animate",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.namedview.attrs",
+                                            local: "set",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "animateMotion",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "animateColor",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "animateTransform",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Animation.extra.class",
                                         },
                                     ),
                                 ],
                             ),
                         },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.namedview.attrs",
-                        combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "inkscape.attrs",
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
                             },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.namedview.inner",
-                        combine: None,
-                        pattern: Empty,
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.collect",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.connection-end",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.connection-start",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.connector-avoid",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.connector-spacing",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.connector-type",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.current-layer",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.cx",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.cy",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.dataloss",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.document-units",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.dstBox",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.dstColumn",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.dstPath",
-                                        },
-                                    ),
-                                ),
-                                Optional(
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Animation.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Animation.attrib",
+                            combine: None,
+                            pattern: Group(
+                                [
                                     Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.dstShape",
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.XLink.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.excludeShape",
-                                        },
-                                    ),
+                                            local: "SVG.Animation.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationAttribute.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationAttribute.attrib",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attributeName",
+                                            },
+                                        ),
+                                        pattern: Text,
+                                    },
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "attributeType",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationAttribute.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationTiming.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationTiming.attrib",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "begin",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "dur",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "end",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "min",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "max",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "restart",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "always",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "never",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "whenNotActive",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "repeatCount",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "repeatDur",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "fill",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "remove",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "freeze",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationTiming.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationValue.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationValue.attrib",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "calcMode",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "discrete",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "linear",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "paced",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "spline",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "values",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "keyTimes",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "keySplines",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "from",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "to",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "by",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationValue.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationAddtion.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.AnimationAddtion.attrib",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "additive",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "replace",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "sum",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "accumulate",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "none",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "sum",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationAddtion.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.animate.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
+                                ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "animate",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "animate",
+                                    },
+                                ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.animate",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.animate.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.animate",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Core.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Conditional.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationEvents.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.External.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Animation.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationAttribute.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationTiming.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationValue.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationAddtion.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.export-filename",
-                                        },
-                                    ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.set.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.export-xdpi",
-                                        },
-                                    ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "set",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "set",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.export-ydpi",
-                                        },
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.set",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.set.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.set",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Core.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Conditional.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationEvents.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.External.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Animation.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationAttribute.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.AnimationTiming.attrib",
+                                        },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.flatsided",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "to",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.grid-bbox",
-                                        },
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.animateMotion.content",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.Description.class",
+                                            },
+                                        ),
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.grid-points",
-                                        },
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "mpath",
+                                            },
+                                        ),
                                     ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "animateMotion",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "animateMotion",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.groupmode",
-                                        },
-                                    ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.animateMotion",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.animateMotion.content",
+                                            },
+                                        ),
+                                    ],
                                 ),
-                                Optional(
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.animateMotion",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.guide-bbox",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.guide-points",
+                                            local: "SVG.Conditional.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.has_abs_tolerance",
+                                            local: "SVG.AnimationEvents.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.href",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.label",
+                                            local: "SVG.Animation.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.layoutOptions",
+                                            local: "SVG.AnimationTiming.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.marker",
+                                            local: "SVG.AnimationAddtion.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.object-bbox",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "calcMode",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "discrete",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "linear",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "paced",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "spline",
+                                                    },
+                                                ],
+                                            ),
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.object-nodes",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "values",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.object-paths",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "keyTimes",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.object-points",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "keySplines",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "from",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.offset",
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "to",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "by",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "path",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "keyPoints",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.original",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "rotate",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.output_extension",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "origin",
+                                                },
+                                            ),
+                                            pattern: Text,
                                         },
                                     ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.pageopacity",
-                                        },
-                                    ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.animateColor.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.pageshadow",
-                                        },
-                                    ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "animateColor",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "animateColor",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.radius",
-                                        },
-                                    ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.animateColor",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.animateColor.content",
+                                            },
+                                        ),
+                                    ],
                                 ),
-                                Optional(
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.animateColor",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.randomized",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.rounded",
+                                            local: "SVG.Conditional.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.showpageshadow",
+                                            local: "SVG.AnimationEvents.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.srcNoMarkup",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.srcPango",
+                                            local: "SVG.Animation.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.stockid",
+                                            local: "SVG.AnimationAttribute.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.tile-cx",
+                                            local: "SVG.AnimationTiming.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.tile-cy",
+                                            local: "SVG.AnimationValue.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.tiled-clone-of",
+                                            local: "SVG.AnimationAddtion.attrib",
                                         },
                                     ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.tile-h",
-                                        },
-                                    ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.animateTransform.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.tile-w",
-                                        },
-                                    ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "animateTransform",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "animateTransform",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "inkscape.attrs.transform-center-x",
-                                        },
-                                    ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.animateTransform",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.animateTransform.content",
+                                            },
+                                        ),
+                                    ],
                                 ),
-                                Optional(
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.animateTransform",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.transform-center-y",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.version",
+                                            local: "SVG.Conditional.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.window-height",
+                                            local: "SVG.AnimationEvents.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.window-width",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.window-x",
+                                            local: "SVG.Animation.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.window-y",
+                                            local: "SVG.AnimationAttribute.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.attrs.zoom",
+                                            local: "SVG.AnimationTiming.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.attrs.absref",
+                                            local: "SVG.AnimationValue.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.attrs.arg1",
+                                            local: "SVG.AnimationAddtion.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.arg2",
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "type",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "translate",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "scale",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "rotate",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "skewX",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "skewY",
+                                                    },
+                                                ],
+                                            ),
                                         },
                                     ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.argument",
-                                        },
-                                    ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.mpath.content",
+                            combine: None,
+                            pattern: Many0(
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "SVG.Description.class",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.cx",
-                                        },
-                                    ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "mpath",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "mpath",
+                                    },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.cy",
-                                        },
-                                    ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.mpath",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.mpath.content",
+                                            },
+                                        ),
+                                    ],
                                 ),
-                                Optional(
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.mpath",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.attrs.docbase",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.attrs.docname",
+                                            local: "SVG.XLinkRequired.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.attrs.end",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.expansion",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.insensitive",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.linespacing",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.modified",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.nodetypes",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.nonprintable",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.open",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.original",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.r1",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.r2",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.radius",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.revolution",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.role",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.rx",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.ry",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.sides",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.spiral",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.star",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.start",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.t0",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.type",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "sodipodi.attrs.version",
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.collect",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "collect",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.connection-end",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "connection-end",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.connection-start",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "connection-start",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.connector-avoid",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "connector-avoid",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.connector-spacing",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "connector-spacing",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.connector-type",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "connector-type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.current-layer",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "current-layer",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.cx",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "cx",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.cy",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "cy",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.dataloss",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "dataloss",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.document-units",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "document-units",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.dstBox",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "dstBox",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.dstColumn",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "dstColumn",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.dstPath",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "dstPath",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.dstShape",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "dstShape",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.excludeShape",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "excludeShape",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.export-filename",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "export-filename",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.export-xdpi",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "export-xdpi",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.export-ydpi",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "export-ydpi",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.flatsided",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "flatsided",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.grid-bbox",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "grid-bbox",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.grid-points",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "grid-points",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.groupmode",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "groupmode",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.guide-bbox",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "guide-bbox",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.guide-points",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "guide-points",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.has_abs_tolerance",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "has_abs_tolerance",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.href",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "href",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.label",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "label",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.layoutOptions",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "layoutOptions",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.marker",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "marker",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.object-bbox",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "object-bbox",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.object-nodes",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "object-nodes",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.object-paths",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "object-paths",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.object-points",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "object-points",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.offset",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "offset",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.original",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "original",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.output_extension",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "output_extension",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.pageopacity",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "pageopacity",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.pageshadow",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "pageshadow",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.radius",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "radius",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.randomized",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "randomized",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.rounded",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "rounded",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.showpageshadow",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "showpageshadow",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.srcNoMarkup",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "srcNoMarkup",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.srcPango",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "srcPango",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.stockid",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "stockid",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.tile-cx",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "tile-cx",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.tile-cy",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "tile-cy",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.tiled-clone-of",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "tiled-clone-of",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.tile-h",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "tile-h",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.tile-w",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "tile-w",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.transform-center-x",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "transform-center-x",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.transform-center-y",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "transform-center-y",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.version",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "version",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.window-height",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "window-height",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.window-width",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "window-width",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.window-x",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "window-x",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.window-y",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "window-y",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "inkscape.attrs.zoom",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "inkscape",
-                                    ),
-                                    local: "zoom",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.absref",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "absref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.arg1",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "arg1",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.arg2",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "arg2",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.argument",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "argument",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.cx",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "cx",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.cy",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "cy",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.docbase",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "docbase",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.docname",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "docname",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.end",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "end",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.expansion",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "expansion",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.insensitive",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "insensitive",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.linespacing",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "linespacing",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.modified",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "modified",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.nodetypes",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "nodetypes",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.nonprintable",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "nonprintable",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.open",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "open",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.original",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "original",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.r1",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "r1",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.r2",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "r2",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.radius",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "radius",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.revolution",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "revolution",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.role",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "role",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.rx",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "rx",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.ry",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "ry",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.sides",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "sides",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.spiral",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "spiral",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.star",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "star",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.start",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "start",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.t0",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "t0",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.type",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "sodipodi.attrs.version",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: Some(
-                                        "sodipodi",
-                                    ),
-                                    local: "version",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "string",
-                                },
+                                ],
                             ),
                         },
-                    },
-                ),
-            ],
-        },
+                    ),
+                ],
+            },
+        ),
     ),
 }

@@ -3,19 +3,229 @@ source: rnc/src/lib.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
-    declarations: [],
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
     body: Grammar(
         Grammar {
             items: [
-                Define(
+                Definition(
                     Definition {
-                        name: "section.elem",
+                        name: "tables.attrs.alignment",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.align",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.char",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.valign",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.align",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "align",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "left",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "center",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "right",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "justify",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "char",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.char",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "char",
+                                },
+                            ),
+                            pattern: Data {
+                                name: Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                                parameters: [
+                                    Parameter {
+                                        name: Name {
+                                            prefix: None,
+                                            local: "pattern",
+                                        },
+                                        value: ".",
+                                    },
+                                ],
+                                except: None,
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.valign",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "valign",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "top",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "middle",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "bottom",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "baseline",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "table.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "section",
+                                    local: "table",
                                 },
                             ),
                             pattern: Interleave(
@@ -23,13 +233,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "section.inner",
+                                            local: "table.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "section.attrs",
+                                            local: "table.attrs",
                                         },
                                     ),
                                 ],
@@ -37,9 +247,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "section.attrs",
+                        name: "table.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -55,295 +265,13 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.region",
+                                                    local: "common.attrs.aria.implicit.table",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.alert",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.alertdialog",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.application",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.dialog",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.feed",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.log",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.marquee",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.region",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.status",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.tabpanel",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.banner",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.complementary",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.contentinfo",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.document",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.main",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.navigation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.note",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.search",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-abstract",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-acknowledgments",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-afterword",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-appendix",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-bibliography",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-chapter",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-colophon",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-conclusion",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-credit",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-credits",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-dedication",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-endnotes",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-epigraph",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-epilogue",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-errata",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-example",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-foreword",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-glossary",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-index",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-introduction",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-notice",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-pagelist",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-part",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-preface",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-prologue",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-pullquote",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-qna",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-toc",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -353,9 +281,163 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "section.inner",
+                        name: "table.inner",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Group(
+                                    [
+                                        Choice(
+                                            [
+                                                Many0(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "tbody.elem",
+                                                        },
+                                                    ),
+                                                ),
+                                                Many1(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "tr.elem",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                        Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "tfoot.elem",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "table.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "caption",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.inner",
                         combine: None,
                         pattern: Name(
                             Name {
@@ -365,29 +447,15 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "section.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "nav.elem",
+                        name: "colgroup.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "nav",
+                                    local: "colgroup",
                                 },
                             ),
                             pattern: Interleave(
@@ -395,13 +463,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "nav.inner",
+                                            local: "colgroup.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "nav.attrs",
+                                            local: "colgroup.attrs",
                                         },
                                     ),
                                 ],
@@ -409,9 +477,190 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "nav.attrs",
+                        name: "colgroup.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.attrs.span",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "span",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.inner",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Interleave(
+                                    [
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "col.elem",
+                                                },
+                                            ),
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.attrs.span",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "col",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.attrs.span",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.attrs.span",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "span",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "thead.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "thead",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "thead.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -427,61 +676,13 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.navigation",
+                                                    local: "common.attrs.aria.implicit.rowgroup",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.landmark.navigation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-index",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-pagelist",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-toc",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.menu",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.menubar",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.none",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.tablist",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -491,41 +692,41 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "nav.inner",
+                        name: "thead.inner",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
-                            },
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "nav.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "article.elem",
+                        name: "tfoot.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "article",
+                                    local: "tfoot",
                                 },
                             ),
                             pattern: Interleave(
@@ -533,13 +734,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "article.inner",
+                                            local: "tfoot.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "article.attrs",
+                                            local: "tfoot.attrs",
                                         },
                                     ),
                                 ],
@@ -547,9 +748,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "article.attrs",
+                        name: "tfoot.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -565,49 +766,13 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.article",
+                                                    local: "common.attrs.aria.implicit.rowgroup",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.landmark.article",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.document",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.application",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.main",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.feed",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.region",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -617,41 +782,41 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "article.inner",
+                        name: "tfoot.inner",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
-                            },
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "article.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "aside.elem",
+                        name: "tbody.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "aside",
+                                    local: "tbody",
                                 },
                             ),
                             pattern: Interleave(
@@ -659,13 +824,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "aside.inner",
+                                            local: "tbody.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "aside.attrs",
+                                            local: "tbody.attrs",
                                         },
                                     ),
                                 ],
@@ -673,9 +838,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "aside.attrs",
+                        name: "tbody.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -691,79 +856,13 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.complementary",
+                                                    local: "common.attrs.aria.implicit.rowgroup",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.landmark.note",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.complementary",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.search",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.feed",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.region",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-dedication",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-example",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-footnote",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-glossary",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-pullquote",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-tip",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -773,41 +872,41 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "aside.inner",
+                        name: "tbody.inner",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
-                            },
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "aside.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "header.elem",
+                        name: "tr.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "header",
+                                    local: "tr",
                                 },
                             ),
                             pattern: Interleave(
@@ -815,13 +914,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "header.inner",
+                                            local: "tr.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "header.attrs",
+                                            local: "tr.attrs",
                                         },
                                     ),
                                 ],
@@ -829,9 +928,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "header.attrs",
+                        name: "tr.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -847,31 +946,13 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.banner",
+                                                    local: "common.attrs.aria.implicit.row",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.landmark.banner",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-footnote",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -881,41 +962,236 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "header.inner",
+                        name: "tr.inner",
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
-                            },
+                        pattern: Many0(
+                            Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "td.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "th.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ],
+                            ),
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "header.elem",
-                            },
+                        name: "tables.attrs.cell-structure",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.colspan",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.rowspan",
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "footer.elem",
+                        name: "tables.attrs.colspan",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "colspan",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.rowspan",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rowspan",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.access-headers",
+                        combine: None,
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tables.attrs.headers",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.headers",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "headers",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idrefs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.define-headers",
+                        combine: None,
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tables.attrs.scope",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.scope",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "scope",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "row",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "col",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "rowgroup",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "colgroup",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.abbr",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "abbr",
+                                },
+                            ),
+                            pattern: Text,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "td.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "footer",
+                                    local: "td",
                                 },
                             ),
                             pattern: Interleave(
@@ -923,13 +1199,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "footer.inner",
+                                            local: "td.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "footer.attrs",
+                                            local: "td.attrs",
                                         },
                                     ),
                                 ],
@@ -937,9 +1213,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "footer.attrs",
+                        name: "td.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -949,37 +1225,39 @@ Schema {
                                         local: "common.attrs",
                                     },
                                 ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "tables.attrs.cell-structure",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.headers",
+                                        },
+                                    ),
+                                ),
                                 Optional(
                                     Choice(
                                         [
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.contentinfo",
+                                                    local: "common.attrs.aria.implicit.cell",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.landmark.contentinfo",
+                                                    local: "common.attrs.aria.implicit.gridcell",
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.doc-footnote",
+                                                    local: "common.attrs.aria",
                                                 },
                                             ),
                                         ],
@@ -989,9 +1267,9 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "footer.inner",
+                        name: "td.inner",
                         combine: None,
                         pattern: Name(
                             Name {
@@ -1001,29 +1279,15 @@ Schema {
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "footer.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "main.elem",
+                        name: "th.elem",
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "main",
+                                    local: "th",
                                 },
                             ),
                             pattern: Interleave(
@@ -1031,13 +1295,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "main.inner",
+                                            local: "th.inner",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "main.attrs",
+                                            local: "th.attrs",
                                         },
                                     ),
                                 ],
@@ -1045,9 +1309,9 @@ Schema {
                         },
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "main.attrs",
+                        name: "th.attrs",
                         combine: None,
                         pattern: Interleave(
                             [
@@ -1057,176 +1321,58 @@ Schema {
                                         local: "common.attrs",
                                     },
                                 ),
-                                Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.implicit.main",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.main",
-                                                },
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "main.inner",
-                        combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "common.inner.flow",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "main.elem",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "search.elem",
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "search",
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "search.inner",
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "search.attrs",
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "search.attrs",
-                        combine: None,
-                        pattern: Interleave(
-                            [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: "tables.attrs.cell-structure",
                                     },
                                 ),
                                 Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.implicit.search",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.search",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.landmark.form",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.group",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.none",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.region",
-                                                },
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "common.attrs.aria.role.search",
-                                                },
-                                            ),
-                                        ],
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.scope",
+                                        },
                                     ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.headers",
+                                        },
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.implicit.column-or-row-header",
+                                            },
+                                        ),
+                                    ],
                                 ),
                             ],
                         ),
                     },
                 ),
-                Define(
+                Definition(
                     Definition {
-                        name: "search.inner",
+                        name: "th.inner",
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
                                 local: "common.inner.flow",
-                            },
-                        ),
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "common.elem.flow",
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: "search.elem",
                             },
                         ),
                     },

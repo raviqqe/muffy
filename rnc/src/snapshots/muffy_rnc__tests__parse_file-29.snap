@@ -3,1381 +3,1142 @@ source: rnc/src/lib.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
-    declarations: [],
+    declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/1998/Math/MathML",
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "local",
+                uri: "",
+            },
+        ),
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
     body: Grammar(
         Grammar {
             items: [
-                Include(
-                    Include {
-                        uri: "its20-html5-types.rnc",
-                        inherit: None,
-                        grammar: None,
-                    },
-                ),
-                Define(
+                Definition(
                     Definition {
-                        name: "its-attribute.locNote.html",
+                        name: "math",
                         combine: None,
-                        pattern: Attribute {
+                        pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "its-loc-note",
+                                    local: "math",
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locNote.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locNoteType.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-note-type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locNoteType.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locNoteRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-note-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locNoteRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.termInfoRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-term-info-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-termInfoRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.term.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-term",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-term.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.termConfidence.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-term-confidence",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-termConfidence.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.withinText.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-within-text",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-withinText.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.domainMapping.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-domain-mapping",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-domainMapping.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.taConfidence.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-ta-confidence",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-taConfidence.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.taClassRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-ta-class-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-taClassRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.taIdent.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-ta-ident",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-taIdent.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.taIdentRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-ta-ident-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-taIdentRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.taSource.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-ta-source",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-taSource.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.localeFilterList.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locale-filter-list",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-localeFilterList.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.localeFilterType.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locale-filter-type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-localeFilterType.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.person.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-person",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-person.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.personRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-person-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-personRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.org.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-org",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-org.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.orgRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-org-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-orgRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.tool.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-tool",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-tool.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.toolRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-tool-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-toolRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revPerson.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-person",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revPerson.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revPersonRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-person-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revPersonRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revOrg.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-org",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revOrg.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revOrgRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-org-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revOrgRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revTool.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-tool",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revTool.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.revToolRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-rev-tool-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-revToolRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.provRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-prov-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-provRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.provenanceRecordsRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-provenance-records-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-provenanceRecordsRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssuesRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issues-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssuesRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssueType.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issue-type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssueType.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssueComment.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issue-comment",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssueComment.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssueSeverity.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issue-severity",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssueSeverity.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssueProfileRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issue-profile-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssueProfileRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityIssueEnabled.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-issue-enabled",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityIssueEnabled.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityRatingScore.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-rating-score",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityRatingScore.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityRatingVote.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-rating-vote",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityRatingVote.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityRatingScoreThreshold.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-rating-score-threshold",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityRatingScoreThreshold.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityRatingVoteThreshold.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-rating-vote-threshold",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityRatingVoteThreshold.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.locQualityRatingProfileRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-loc-quality-rating-profile-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-locQualityRatingProfileRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.mtConfidence.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-mt-confidence",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-mtConfidence.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.allowedCharacters.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-allowed-characters",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-allowedCharacters.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.storageSize.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-storage-size",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-storageSize.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.storageEncoding.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-storage-encoding",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-storageEncoding.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.lineBreakType.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-line-break-type",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-lineBreakType.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-attribute.annotatorsRef.html",
-                        combine: None,
-                        pattern: Attribute {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-annotators-ref",
-                                },
-                            ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: "its-annotatorsRef.type",
-                                },
-                            ),
-                        },
-                    },
-                ),
-                Define(
-                    Definition {
-                        name: "its-html-attributes",
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Optional(
-                                    Group(
-                                        [
-                                            Choice(
-                                                [
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: "its-attribute.locNote.html",
-                                                        },
-                                                    ),
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: "its-attribute.locNoteRef.html",
-                                                        },
-                                                    ),
-                                                ],
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.locNoteType.html",
-                                                    },
-                                                ),
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                                Optional(
-                                    Group(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.term.html",
-                                                },
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.termInfoRef.html",
-                                                    },
-                                                ),
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.termConfidence.html",
-                                                    },
-                                                ),
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                                Optional(
+                            pattern: Group(
+                                [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "its-attribute.withinText.html",
+                                            local: "math.attributes",
                                         },
                                     ),
-                                ),
-                                Interleave(
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "MathExpression",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "MathExpression",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "semantics",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "NonMathMLAtt",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Except {
+                                base: AnyName,
+                                except: Choice(
                                     [
-                                        Optional(
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.taConfidence.html",
-                                                },
+                                        NsName(
+                                            Some(
+                                                "local",
                                             ),
                                         ),
-                                        Interleave(
-                                            [
-                                                Optional(
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: "its-attribute.taClassRef.html",
-                                                        },
-                                                    ),
-                                                ),
-                                                Optional(
-                                                    Choice(
-                                                        [
-                                                            Group(
-                                                                [
-                                                                    Name(
-                                                                        Name {
-                                                                            prefix: None,
-                                                                            local: "its-attribute.taSource.html",
-                                                                        },
-                                                                    ),
-                                                                    Name(
-                                                                        Name {
-                                                                            prefix: None,
-                                                                            local: "its-attribute.taIdent.html",
-                                                                        },
-                                                                    ),
-                                                                ],
-                                                            ),
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: "its-attribute.taIdentRef.html",
-                                                                },
-                                                            ),
-                                                        ],
-                                                    ),
-                                                ),
-                                            ],
+                                        NsName(
+                                            Some(
+                                                "m",
+                                            ),
                                         ),
                                     ],
                                 ),
+                            },
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "CommonDeprecatedAtt",
+                        combine: None,
+                        pattern: Optional(
+                            Attribute {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "other",
+                                    },
+                                ),
+                                pattern: Text,
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "CommonAtt",
+                        combine: None,
+                        pattern: Group(
+                            [
                                 Optional(
-                                    Group(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.localeFilterList.html",
-                                                },
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.localeFilterType.html",
-                                                    },
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "id",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
                                                 ),
-                                            ),
-                                        ],
-                                    ),
+                                                local: "xml-name",
+                                            },
+                                        ),
+                                    },
                                 ),
                                 Optional(
-                                    Choice(
-                                        [
-                                            Interleave(
-                                                [
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.person.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.personRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.org.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.orgRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.tool.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.toolRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revPerson.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revPersonRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revOrg.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revOrgRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revTool.html",
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.revToolRef.html",
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: "its-attribute.provRef.html",
-                                                            },
-                                                        ),
-                                                    ),
-                                                ],
-                                            ),
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.provenanceRecordsRef.html",
-                                                },
-                                            ),
-                                        ],
-                                    ),
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "xref",
+                                            },
+                                        ),
+                                        pattern: Text,
+                                    },
                                 ),
                                 Optional(
-                                    Choice(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.locQualityIssuesRef.html",
-                                                },
-                                            ),
-                                            Interleave(
-                                                [
-                                                    Interleave(
-                                                        [
-                                                            Optional(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.locQualityIssueType.html",
-                                                                    },
-                                                                ),
-                                                            ),
-                                                            Optional(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.locQualityIssueComment.html",
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ],
-                                                    ),
-                                                    Optional(
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: "its-attribute.locQualityIssueSeverity.html",
-                                                            },
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: "its-attribute.locQualityIssueProfileRef.html",
-                                                            },
-                                                        ),
-                                                    ),
-                                                    Optional(
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: "its-attribute.locQualityIssueEnabled.html",
-                                                            },
-                                                        ),
-                                                    ),
-                                                ],
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                                Optional(
-                                    Group(
-                                        [
-                                            Choice(
-                                                [
-                                                    Group(
-                                                        [
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: "its-attribute.locQualityRatingScore.html",
-                                                                },
-                                                            ),
-                                                            Optional(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.locQualityRatingScoreThreshold.html",
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ],
-                                                    ),
-                                                    Group(
-                                                        [
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: "its-attribute.locQualityRatingVote.html",
-                                                                },
-                                                            ),
-                                                            Optional(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: "its-attribute.locQualityRatingVoteThreshold.html",
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ],
-                                                    ),
-                                                ],
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.locQualityRatingProfileRef.html",
-                                                    },
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "class",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
                                                 ),
-                                            ),
-                                        ],
-                                    ),
+                                                local: "NMTOKENS",
+                                            },
+                                        ),
+                                    },
                                 ),
                                 Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "style",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "href",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonDeprecatedAtt",
+                                    },
+                                ),
+                                Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "its-attribute.mtConfidence.html",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "its-attribute.allowedCharacters.html",
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Group(
-                                        [
-                                            Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "its-attribute.storageSize.html",
-                                                },
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.storageEncoding.html",
-                                                    },
-                                                ),
-                                            ),
-                                            Optional(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: "its-attribute.lineBreakType.html",
-                                                    },
-                                                ),
-                                            ),
-                                        ],
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "its-attribute.annotatorsRef.html",
+                                            local: "NonMathMLAtt",
                                         },
                                     ),
                                 ),
                             ],
                         ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "math.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "display",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Value {
+                                                    name: None,
+                                                    value: "block",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "inline",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "maxwidth",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "overflow",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Value {
+                                                    name: None,
+                                                    value: "linebreak",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "scroll",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "elide",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "truncate",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "scale",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-width",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-height",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-valign",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "length",
+                                                    },
+                                                ),
+                                                Value {
+                                                    name: None,
+                                                    value: "top",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "middle",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "bottom",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "alttext",
+                                            },
+                                        ),
+                                        pattern: Text,
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "cdgroup",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "math.deprecatedattributes",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "math.deprecatedattributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "mode",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "macros",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "NCName",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "cd",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cd",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "NCName",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "src",
+                        combine: None,
+                        pattern: Optional(
+                            Attribute {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "src",
+                                    },
+                                ),
+                                pattern: Name(
+                                    Name {
+                                        prefix: Some(
+                                            "xsd",
+                                        ),
+                                        local: "anyURI",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation.attributes",
+                                        },
+                                    ),
+                                    Text,
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.xhtml",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.svg",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.mathml",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model",
+                        combine: None,
+                        pattern: Many0(
+                            Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "MathExpression",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "anyElement",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "anyElement",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Except {
+                                base: AnyName,
+                                except: NsName(
+                                    Some(
+                                        "m",
+                                    ),
+                                ),
+                            },
+                            pattern: Many0(
+                                Choice(
+                                    [
+                                        Attribute {
+                                            name_class: AnyName,
+                                            pattern: Text,
+                                        },
+                                        Text,
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "anyElement",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.xhtml",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.xhtml",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.xhtml",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.xhtml",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "application/xhtml+xml",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "text/html",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.svg",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.svg",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.svg",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.svg",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: None,
+                                        local: "string",
+                                    },
+                                ),
+                                value: "SVG1.1",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.mathml",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.mathml",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.mathml",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "math",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.mathml",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML-Content",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML-Presentation",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "DefEncAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "src",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "src",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "DefEncAtt",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "encoding",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "definitionURL",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "semantics",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "semantics",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "semantics.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "MathExpression",
+                                        },
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation-xml",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "semantics.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "DefEncAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "length",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "string",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "pattern",
+                                    },
+                                    value: "s*((-?[0-9]*(.[0-9]*)?(e[mx]|in|cm|mm|p[xtc]|%)?)|(negative)?((very){0,2}thi(n|ck)|medium)mathspace)s*",
+                                },
+                            ],
+                            except: None,
+                        },
                     },
                 ),
             ],

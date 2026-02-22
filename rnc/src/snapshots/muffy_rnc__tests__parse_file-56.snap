@@ -4,6 +4,9 @@ expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
     declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/2000/svg",
+        ),
         Namespace(
             NamespaceDeclaration {
                 prefix: "a",
@@ -15,238 +18,228 @@ Schema {
         Grammar(
             Grammar {
                 items: [
-                    Define(
+                    Definition(
                         Definition {
-                            name: "SVG.onfocusin.attrib",
+                            name: "NumberOrPercentage.datatype",
                             combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onfocusin",
-                                        },
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
                                     ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
+                                    local: "string",
                                 },
                             ),
                         },
                     ),
-                    Define(
-                        Definition {
-                            name: "SVG.onfocusout.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onfocusout",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
                         },
                     ),
-                    Define(
+                    Definition(
                         Definition {
-                            name: "SVG.onactivate.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onactivate",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onclick.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onclick",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onmousedown.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onmousedown",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onmouseup.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onmouseup",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onmouseover.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onmouseover",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onmousemove.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onmousemove",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onmouseout.attrib",
-                            combine: None,
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onmouseout",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.onload.attrib",
-                            combine: Some(
-                                Interleave,
-                            ),
-                            pattern: Optional(
-                                Attribute {
-                                    name_class: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "onload",
-                                        },
-                                    ),
-                                    pattern: Name(
-                                        Name {
-                                            prefix: None,
-                                            local: "Script.datatype",
-                                        },
-                                    ),
-                                },
-                            ),
-                        },
-                    ),
-                    Define(
-                        Definition {
-                            name: "SVG.GraphicalEvents.extra.attrib",
+                            name: "SVG.Gradient.extra.attrib",
                             combine: None,
                             pattern: Empty,
                         },
                     ),
-                    Define(
+                    Definition(
                         Definition {
-                            name: "SVG.GraphicalEvents.attrib",
+                            name: "SVG.Gradient.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "stop-color",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "SVGColor.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "stop-opacity",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "OpacityValue.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Gradient.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Gradient.extra.class",
+                            combine: None,
+                            pattern: NotAllowed,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Gradient.class",
+                            combine: Some(
+                                Choice,
+                            ),
+                            pattern: Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "linearGradient",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "radialGradient",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Gradient.extra.class",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.linearGradient.content",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.Description.class",
+                                            },
+                                        ),
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "stop",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "animate",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "set",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "animateTransform",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "linearGradient",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "linearGradient",
+                                    },
+                                ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.linearGradient",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.linearGradient.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.linearGradient",
                             combine: Some(
                                 Interleave,
                             ),
@@ -255,69 +248,619 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onfocusin.attrib",
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onfocusout.attrib",
+                                            local: "SVG.Style.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onactivate.attrib",
+                                            local: "SVG.Color.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onclick.attrib",
+                                            local: "SVG.Gradient.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmousedown.attrib",
+                                            local: "SVG.XLink.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseup.attrib",
+                                            local: "SVG.External.attrib",
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "x1",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "y1",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "x2",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "y2",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "gradientUnits",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "userSpaceOnUse",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "objectBoundingBox",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "gradientTransform",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "TransformList.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "spreadMethod",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "pad",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "reflect",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "repeat",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.radialGradient.content",
+                            combine: None,
+                            pattern: Group(
+                                [
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.Description.class",
+                                            },
+                                        ),
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "stop",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "animate",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "set",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "animateTransform",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "radialGradient",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "radialGradient",
+                                    },
+                                ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.radialGradient",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.radialGradient.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.radialGradient",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Core.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseover.attrib",
+                                            local: "SVG.Style.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmousemove.attrib",
+                                            local: "SVG.Color.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseout.attrib",
+                                            local: "SVG.Gradient.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onload.attrib",
+                                            local: "SVG.XLink.attrib",
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.GraphicalEvents.extra.attrib",
+                                            local: "SVG.External.attrib",
                                         },
                                     ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "cx",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "cy",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "r",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Length.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "fx",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "fy",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "Coordinate.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "gradientUnits",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "userSpaceOnUse",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "objectBoundingBox",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "gradientTransform",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "TransformList.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "spreadMethod",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "pad",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "reflect",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "repeat",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Annotation(
+                        Annotation {
+                            name: Name {
+                                prefix: Some(
+                                    "a",
+                                ),
+                                local: "documentation",
+                            },
+                            attributes: [],
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.stop.content",
+                            combine: None,
+                            pattern: Many0(
+                                Choice(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "animate",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "set",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "animateColor",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "stop",
+                            combine: None,
+                            pattern: Element {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "stop",
+                                    },
+                                ),
+                                pattern: Group(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "attlist.stop",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "SVG.stop.content",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "attlist.stop",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Core.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Style.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Color.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Gradient.attrib",
+                                        },
+                                    ),
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "offset",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "NumberOrPercentage.datatype",
+                                            },
+                                        ),
+                                    },
                                 ],
                             ),
                         },
