@@ -1224,7 +1224,7 @@ mod tests {
                 .into(),
             });
 
-            assert_eq!(config.extend, None);
+            assert_eq!(config.extend, Some("base.toml".into()));
             assert_eq!(config.concurrency, Some(2));
             assert!(config.cache.as_ref().unwrap().persistent.unwrap());
             assert_eq!(config.rate_limit.as_ref().unwrap().supply, 2);
@@ -1357,7 +1357,7 @@ mod tests {
                 .into(),
             });
 
-            assert_eq!(config.extend, None);
+            assert_eq!(config.extend, Some("base.toml".into()));
             assert_eq!(config.concurrency, Some(1));
             assert!(config.cache.as_ref().unwrap().persistent.unwrap());
             assert_eq!(config.rate_limit.as_ref().unwrap().supply, 1);
