@@ -183,12 +183,12 @@ pub enum Pattern {
     },
 }
 
-/// A name used in a Relax NG schema.
+/// A name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
-    /// The optional namespace prefix.
+    /// A prefix.
     pub prefix: Option<String>,
-    /// The local name.
+    /// A local name.
     pub local: String,
 }
 
