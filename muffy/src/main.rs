@@ -70,7 +70,7 @@ enum Command {
 #[derive(clap::Args, Default)]
 struct CheckArguments {
     /// A configuration file.
-    #[arg(short, long)]
+    #[arg()]
     config: Option<PathBuf>,
 }
 
@@ -386,17 +386,6 @@ mod tests {
     use core::time::Duration;
 
     #[test]
-    fn parse_check_arguments() {
-        let Command::Check(arguments) =
-            Arguments::parse_from(["command", "check"]).command.unwrap()
-        else {
-            panic!()
-        };
-
-        assert_eq!(arguments.config, None);
-    }
-
-    #[test]
     fn default_check_site_arguments() {
         let Command::CheckSite(arguments) =
             Arguments::parse_from(["command", "check-site", "https://foo.com"])
@@ -445,5 +434,33 @@ mod tests {
             .join(SLED_DIRECTORY);
 
         assert!(CACHE_DIRECTORY.ends_with(&expected));
+    }
+
+    mod check {
+        use super::*;
+
+        #[test]
+        fn parse_none() {
+            let Command::Check(arguments) =
+                Arguments::parse_from(["command", "check"]).command.unwrap()
+            else {
+                panic!()
+            };
+
+            assert_eq!(arguments.config, None);
+        }
+
+        #[test]
+        fn parse_config_file() {
+            let Command::Check(arguments) =
+                Arguments::parse_from(["command", "check", "config.toml"])
+                    .command
+                    .unwrap()
+            else {
+                panic!()
+            };
+
+            assert_eq!(arguments.config, Some("config.toml".into()));
+        }
     }
 }
