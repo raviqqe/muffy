@@ -390,7 +390,7 @@ mod tests {
         let Command::Check(arguments) =
             Arguments::parse_from(["command", "check"]).command.unwrap()
         else {
-            panic!("expected check command")
+            panic!()
         };
 
         assert_eq!(arguments.config, None);
@@ -403,7 +403,7 @@ mod tests {
                 .command
                 .unwrap()
         else {
-            panic!("expected check-site command")
+            panic!()
         };
 
         assert_eq!(
@@ -420,7 +420,7 @@ mod tests {
             .command
             .unwrap()
         else {
-            panic!("expected cache command")
+            panic!()
         };
 
         assert!(matches!(arguments.command, CacheCommand::Path));
@@ -432,7 +432,7 @@ mod tests {
             .command
             .unwrap()
         else {
-            panic!("expected cache command")
+            panic!()
         };
 
         assert!(matches!(arguments.command, CacheCommand::Clean));
