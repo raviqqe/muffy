@@ -121,29 +121,6 @@ pub enum Combine {
 /// A schema pattern.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Pattern {
-    /// A choice pattern (`|`).
-    Choice(Vec<Self>),
-    /// An interleave pattern (`&`).
-    Interleave(Vec<Self>),
-    /// A group pattern (`,`) representing sequence.
-    Group(Vec<Self>),
-    /// An optional pattern (`?`).
-    Optional(Box<Self>),
-    /// A zero-or-more pattern (`*`).
-    ZeroOrMore(Box<Self>),
-    /// A one-or-more pattern (`+`).
-    OneOrMore(Box<Self>),
-    /// A list pattern.
-    List(Box<Self>),
-    /// A mixed pattern.
-    Mixed(Box<Self>),
-    /// An element pattern.
-    Element {
-        /// The element name class.
-        name_class: NameClass,
-        /// The element content pattern.
-        pattern: Box<Self>,
-    },
     /// An attribute pattern.
     Attribute {
         /// The attribute name class.
@@ -151,6 +128,8 @@ pub enum Pattern {
         /// The attribute value pattern.
         pattern: Box<Self>,
     },
+    /// A choice pattern (`|`).
+    Choice(Vec<Self>),
     /// A data pattern.
     Data {
         /// The datatype name.
@@ -160,6 +139,39 @@ pub enum Pattern {
         /// An optional except pattern.
         except: Option<Box<Self>>,
     },
+    /// An element pattern.
+    Element {
+        /// The element name class.
+        name_class: NameClass,
+        /// The element content pattern.
+        pattern: Box<Self>,
+    },
+    /// An empty pattern.
+    Empty,
+    /// An external reference.
+    ExternalRef(String),
+    /// A nested grammar pattern.
+    Grammar(Grammar),
+    /// A group pattern (`,`) representing sequence.
+    Group(Vec<Self>),
+    /// An interleave pattern (`&`).
+    Interleave(Vec<Self>),
+    /// A list pattern.
+    List(Box<Self>),
+    /// A mixed pattern.
+    Mixed(Box<Self>),
+    /// A named pattern that requires later semantic resolution.
+    Name(Name),
+    /// A not-allowed pattern.
+    NotAllowed,
+    /// A one-or-more pattern (`+`).
+    OneOrMore(Box<Self>),
+    /// An optional pattern (`?`).
+    Optional(Box<Self>),
+    /// A reference to a parent grammar definition.
+    ParentRef(String),
+    /// A text pattern.
+    Text,
     /// A value pattern.
     Value {
         /// The datatype name, if specified.
@@ -167,20 +179,8 @@ pub enum Pattern {
         /// The literal value.
         value: String,
     },
-    /// A text pattern.
-    Text,
-    /// An empty pattern.
-    Empty,
-    /// A not-allowed pattern.
-    NotAllowed,
-    /// A named pattern that requires later semantic resolution.
-    Name(Name),
-    /// A reference to a parent grammar definition.
-    ParentRef(String),
-    /// An external reference.
-    ExternalRef(String),
-    /// A nested grammar pattern.
-    Grammar(Grammar),
+    /// A zero-or-more pattern (`*`).
+    ZeroOrMore(Box<Self>),
 }
 
 /// A name used in a Relax NG schema.
@@ -195,10 +195,6 @@ pub struct Name {
 /// A name class for element and attribute patterns.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameClass {
-    /// A single name.
-    Name(Name),
-    /// A namespace wildcard for a prefix.
-    NsName(Option<String>),
     /// Any name.
     AnyName,
     /// A choice of name classes.
@@ -210,6 +206,10 @@ pub enum NameClass {
         /// The excluded name class.
         except: Box<Self>,
     },
+    /// A single name.
+    Name(Name),
+    /// A namespace wildcard for a prefix.
+    NsName(Option<String>),
 }
 
 /// A datatype parameter.
