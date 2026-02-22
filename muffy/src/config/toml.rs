@@ -1,46 +1,49 @@
 use super::{ConfigError, SerializableConfig};
-use async_recursion::async_recursion;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tokio::fs::{canonicalize, read_to_string};
 
 /// Reads a configuration file recursively.
 pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError> {
-    read_config_recursively(path, &mut vec![]).await
-}
+    let mut stack = Vec::new();
+    let mut configs = Vec::new();
+    let mut path = path.to_path_buf();
 
-#[async_recursion]
-async fn read_config_recursively(
-    path: &Path,
-    stack: &mut Vec<PathBuf>,
-) -> Result<SerializableConfig, ConfigError> {
-    let path = canonicalize(path).await?;
+    loop {
+        path = canonicalize(&path).await?;
 
-    if let Some(index) = stack.iter().position(|item| item == &path) {
-        stack.push(path);
-        return Err(ConfigError::CircularConfigFiles(stack[index..].to_vec()));
-    }
+        if let Some(index) = stack.iter().position(|item| item == &path) {
+            let mut cycle = stack[index..].to_vec();
+            cycle.push(path);
+            return Err(ConfigError::CircularConfigFiles(cycle));
+        }
 
-    stack.push(path.clone());
+        stack.push(path.clone());
 
-    let contents = read_to_string(&path).await?;
-    let mut config: SerializableConfig = ::toml::from_str(&contents)?;
+        let contents = read_to_string(&path).await?;
+        let config: SerializableConfig = ::toml::from_str(&contents)?;
+        let extend_path = config.extend().map(ToOwned::to_owned);
+        configs.push(config);
 
-    if let Some(extend_path) = config.extend().map(ToOwned::to_owned) {
-        let parent_path = if extend_path.is_absolute() {
+        let Some(extend_path) = extend_path else {
+            break;
+        };
+        path = if extend_path.is_absolute() {
             extend_path
         } else {
             path.parent()
                 .unwrap_or_else(|| Path::new("."))
                 .join(extend_path)
         };
-        let mut parent = read_config_recursively(&parent_path, stack).await?;
-        parent.merge(config);
-        config = parent;
     }
 
-    stack.pop();
+    let mut configs = configs.into_iter().rev();
+    let mut merged = configs.next().unwrap_or_default();
 
-    Ok(config)
+    for config in configs {
+        merged.merge(config);
+    }
+
+    Ok(merged)
 }
 
 #[cfg(test)]
