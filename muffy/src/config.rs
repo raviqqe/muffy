@@ -1,9 +1,11 @@
 mod error;
 mod serde;
+mod toml;
 
 pub use self::{
     error::ConfigError,
     serde::{SerializableConfig, compile_config},
+    toml::read_config,
 };
 use alloc::sync::Arc;
 use core::{cmp::Reverse, ops::Deref, time::Duration};
