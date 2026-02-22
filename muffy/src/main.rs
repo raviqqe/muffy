@@ -59,12 +59,19 @@ struct Arguments {
 
 #[derive(clap::Subcommand)]
 enum Command {
+    /// Validates websites with a configuration file.
+    Check(CheckArguments),
     /// Validates a website.
     CheckSite(Box<CheckSiteArguments>),
-    /// Runs validation with a configuration file.
-    Run(RunArguments),
     /// Manages the persistent cache.
     Cache(CacheArguments),
+}
+
+#[derive(clap::Args, Default)]
+struct CheckArguments {
+    /// A configuration file.
+    #[arg(short, long)]
+    config: Option<PathBuf>,
 }
 
 #[derive(clap::Args, Debug)]
@@ -119,13 +126,6 @@ struct CheckSiteArguments {
     retry_interval_cap: DurationString,
 }
 
-#[derive(clap::Args, Default)]
-struct RunArguments {
-    /// A configuration file.
-    #[arg(short, long)]
-    config: Option<PathBuf>,
-}
-
 #[derive(clap::Args, Debug)]
 struct CacheArguments {
     #[command(subcommand)]
@@ -157,14 +157,11 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
     match arguments
         .command
-        .unwrap_or(Command::Run(Default::default()))
+        .unwrap_or(Command::Check(Default::default()))
     {
         Command::Cache(arguments) => handle_cache_command(arguments).await,
-        Command::CheckSite(check_arguments) => {
-            run_config(&compile_check_config(&check_arguments)?, format, verbose).await
-        }
-        Command::Run(run_arguments) => {
-            let config_file = if let Some(file) = run_arguments.config {
+        Command::Check(sub_arguments) => {
+            let config_file = if let Some(file) = sub_arguments.config {
                 file
             } else {
                 let directory = current_dir()?;
@@ -190,6 +187,9 @@ async fn run() -> Result<(), Box<dyn Error>> {
                 verbose,
             )
             .await
+        }
+        Command::CheckSite(sub_arguments) => {
+            run_config(&compile_check_site_config(&sub_arguments)?, format, verbose).await
         }
     }
 }
@@ -305,7 +305,7 @@ async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn E
     Ok(())
 }
 
-fn compile_check_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
+fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
         .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
         .set_status(StatusConfig::new(
@@ -386,13 +386,24 @@ mod tests {
     use core::time::Duration;
 
     #[test]
-    fn default_check_arguments() {
+    fn parse_check_arguments() {
+        let Command::Check(arguments) =
+            Arguments::parse_from(["command", "check"]).command.unwrap()
+        else {
+            panic!("expected check command")
+        };
+
+        assert_eq!(arguments.config, None);
+    }
+
+    #[test]
+    fn default_check_site_arguments() {
         let Command::CheckSite(arguments) =
             Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
                 .unwrap()
         else {
-            panic!("expected check command")
+            panic!("expected check-site command")
         };
 
         assert_eq!(
