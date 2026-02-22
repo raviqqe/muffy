@@ -233,8 +233,8 @@ pub struct Annotation {
 /// An annotation attribute.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnnotationAttribute {
-    /// The attribute name.
+    /// A name.
     pub name: Name,
-    /// The attribute value.
+    /// A value.
     pub value: String,
 }
