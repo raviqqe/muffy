@@ -14,26 +14,25 @@ async fn read_config_inner(
     path: &Path,
     stack: &mut Vec<PathBuf>,
 ) -> Result<SerializableConfig, ConfigError> {
-    let canonical_path = canonicalize(path).await?;
+    let path = canonicalize(path).await?;
 
-    if let Some(position) = stack.iter().position(|item| item == &canonical_path) {
+    if let Some(position) = stack.iter().position(|item| item == &path) {
         let mut cycle = stack[position..].to_vec();
-        cycle.push(canonical_path);
+        cycle.push(path);
         return Err(ConfigError::CircularConfigFiles(cycle));
     }
 
-    stack.push(canonical_path.clone());
+    stack.push(path.clone());
 
     let result = async {
-        let contents = read_to_string(&canonical_path).await?;
+        let contents = read_to_string(&path).await?;
         let mut config: SerializableConfig = ::toml::from_str(&contents)?;
 
         if let Some(extend_path) = config.extend().map(ToOwned::to_owned) {
             let parent_path = if extend_path.is_absolute() {
                 extend_path
             } else {
-                canonical_path
-                    .parent()
+                path.parent()
                     .unwrap_or_else(|| Path::new("."))
                     .join(extend_path)
             };
