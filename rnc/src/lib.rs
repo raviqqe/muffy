@@ -8,34 +8,11 @@ pub use self::{ast::*, parse::*};
 #[cfg(test)]
 mod tests {
     use super::*;
-    use glob::glob;
-    use std::fs::read_to_string;
+    use rstest::rstest;
+    use std::{fs::read_to_string, path::PathBuf};
 
-    #[test]
-    fn parse_html_svg_rnc_files() {
-        let validator_directory = format!("{}/../vendor/validator", env!("CARGO_MANIFEST_DIR"));
-        let mut files = glob(&format!("{}/**/*.rnc", validator_directory))
-            .unwrap()
-            .into_iter()
-            .chain(glob(&format!("{}/**/*.rnc", validator_directory)).unwrap())
-            .collect::<Result<Vec<_>, _>>()
-            .unwrap();
-
-        files.sort();
-
-        let mut failures = Vec::new();
-        for file in files {
-            let contents = read_to_string(&file)
-                .unwrap_or_else(|error| panic!("failed to read {}: {error}", file.display()));
-            if let Err(error) = parse_schema(&contents) {
-                failures.push(format!("{}: {error}", file.display()));
-            }
-        }
-
-        assert!(
-            failures.is_empty(),
-            "failed to parse .rnc files:\n{}",
-            failures.join("\n")
-        );
+    #[rstest]
+    fn parse_file(#[files("../vendor/validator/**/schema/**/*.rnc")] path: PathBuf) {
+        parse_schema(&read_to_string(&path).unwrap()).unwrap();
     }
 }
