@@ -109,12 +109,12 @@ pub enum Inherit {
     Prefix(String),
 }
 
-/// A combine operator for definitions.
+/// A combine operator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Combine {
-    /// A choice combine operator (`|=`).
+    /// A choice operator.
     Choice,
-    /// An interleave combine operator (`&=`).
+    /// An interleave operator.
     Interleave,
 }
 
