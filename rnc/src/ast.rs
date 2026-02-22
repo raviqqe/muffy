@@ -10,10 +10,10 @@ pub struct Schema {
 /// A schema body.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SchemaBody {
-    /// A pattern.
-    Pattern(Pattern),
     /// A grammar.
     Grammar(Grammar),
+    /// A pattern.
+    Pattern(Pattern),
 }
 
 /// A grammar.
@@ -55,6 +55,20 @@ pub struct DatatypesDeclaration {
 /// A grammar item.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrammarItem {
+    /// An annotation.
+    Annotation(Annotation),
+    /// A datatype library declaration.
+    Datatypes(DatatypesDeclaration),
+    /// A default namespace declaration.
+    DefaultNamespace(String),
+    /// A definition.
+    Define(Definition),
+    /// A div block containing nested grammar items.
+    Div(Grammar),
+    /// An include block.
+    Include(Include),
+    /// A namespace declaration.
+    Namespace(NamespaceDeclaration),
     /// A start.
     Start {
         /// A combine operator.
@@ -62,20 +76,6 @@ pub enum GrammarItem {
         /// A pattern.
         pattern: Pattern,
     },
-    /// A definition.
-    Define(Definition),
-    /// A div block containing nested grammar items.
-    Div(Grammar),
-    /// An include block.
-    Include(Include),
-    /// An annotation.
-    Annotation(Annotation),
-    /// A namespace declaration.
-    Namespace(NamespaceDeclaration),
-    /// A default namespace declaration.
-    DefaultNamespace(String),
-    /// A datatype library declaration.
-    Datatypes(DatatypesDeclaration),
 }
 
 /// A definition item.
