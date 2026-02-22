@@ -43,18 +43,18 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use tempfile::tempdir;
-    use tokio::fs::{create_dir_all, remove_dir_all, write};
+    use tokio::fs::{create_dir_all, write};
 
     #[tokio::test]
     async fn merge_configs() {
         let directory = tempdir().unwrap();
         let directory = directory.path();
-        let base_path = directory.join("base.toml");
-        let middle_path = directory.join("middle.toml");
-        let child_path = directory.join("child.toml");
+        let base_file = directory.join("base.toml");
+        let middle_file = directory.join("middle.toml");
+        let child_file = directory.join("child.toml");
 
         write(
-            &base_path,
+            &base_file,
             indoc! {r#"
                 concurrency = 1
                 [sites.default]
@@ -65,7 +65,7 @@ mod tests {
         .await
         .unwrap();
         write(
-            &middle_path,
+            &middle_file,
             indoc! {r#"
                 extend = "base.toml"
                 concurrency = 2
@@ -76,7 +76,7 @@ mod tests {
         .await
         .unwrap();
         write(
-            &child_path,
+            &child_file,
             indoc! {r#"
                 extend = "middle.toml"
                 [sites.default]
@@ -86,7 +86,7 @@ mod tests {
         .await
         .unwrap();
 
-        let config = compile_config(read_config(&child_path).await.unwrap()).unwrap();
+        let config = compile_config(read_config(&child_file).await.unwrap()).unwrap();
 
         assert_eq!(config.concurrency().global(), Some(2));
 
@@ -98,20 +98,19 @@ mod tests {
             config.roots().collect::<Vec<_>>(),
             vec!["https://example.com/"]
         );
-        remove_dir_all(&directory).await.unwrap();
     }
 
     #[tokio::test]
-    async fn resolve_relative_paths() {
+    async fn resolve_relative_files() {
         let directory = tempdir().unwrap();
         let directory = directory.path();
-        let base_path = directory.join("base.toml");
-        let nested_path = directory.join("nested");
-        let child_path = nested_path.join("child.toml");
+        let base_file = directory.join("base.toml");
+        let nested_file = directory.join("nested");
+        let child_file = nested_file.join("child.toml");
 
-        create_dir_all(&nested_path).await.unwrap();
+        create_dir_all(&nested_file).await.unwrap();
         write(
-            &base_path,
+            &base_file,
             indoc! {r#"
                 concurrency = 5
                 sites = {}
@@ -120,7 +119,7 @@ mod tests {
         .await
         .unwrap();
         write(
-            &child_path,
+            &child_file,
             indoc! {r#"
                 extend = "../base.toml"
                 sites = {}
@@ -129,21 +128,20 @@ mod tests {
         .await
         .unwrap();
 
-        let config = compile_config(read_config(&child_path).await.unwrap()).unwrap();
+        let config = compile_config(read_config(&child_file).await.unwrap()).unwrap();
 
         assert_eq!(config.concurrency().global(), Some(5));
-        remove_dir_all(&directory).await.unwrap();
     }
 
     #[tokio::test]
     async fn detect_circular_extends() {
         let directory = tempdir().unwrap();
         let directory = directory.path();
-        let first_path = directory.join("first.toml");
-        let second_path = directory.join("second.toml");
+        let first_file = directory.join("first.toml");
+        let second_file = directory.join("second.toml");
 
         write(
-            &first_path,
+            &first_file,
             indoc! {r#"
                 extend = "second.toml"
                 sites = {}
@@ -152,7 +150,7 @@ mod tests {
         .await
         .unwrap();
         write(
-            &second_path,
+            &second_file,
             indoc! {r#"
                 extend = "first.toml"
                 sites = {}
@@ -161,9 +159,8 @@ mod tests {
         .await
         .unwrap();
 
-        let result = read_config(&first_path).await;
+        let result = read_config(&first_file).await;
 
         assert!(matches!(result, Err(ConfigError::CircularConfigFiles(_))));
-        remove_dir_all(&directory).await.unwrap();
     }
 }
