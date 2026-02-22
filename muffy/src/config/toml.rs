@@ -26,7 +26,7 @@ pub async fn read_config(path: &Path) -> Result<SerializableConfig, ConfigError>
         let mut parent = read_bare_config(&path).await?;
         parent.merge(config);
         config = parent;
-        previous_path = path.clone();
+        previous_path = path;
     }
 
     Ok(config)
