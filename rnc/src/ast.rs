@@ -78,21 +78,21 @@ pub enum GrammarItem {
     },
 }
 
-/// A definition item.
+/// A definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Definition {
     /// A name.
     pub name: String,
-    /// A combine operator, if any.
+    /// A combine operator.
     pub combine: Option<Combine>,
     /// A pattern.
     pub pattern: Pattern,
 }
 
-/// A grammar include item.
+/// An include.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Include {
-    /// The included schema URI.
+    /// A schema URI.
     pub uri: String,
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
