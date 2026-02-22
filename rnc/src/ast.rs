@@ -168,7 +168,7 @@ pub enum Pattern {
     Name(Name),
     /// A not-allowed pattern.
     NotAllowed,
-    /// An optional pattern (`?`).
+    /// An optional pattern.
     Optional(Box<Self>),
     /// A reference to a parent grammar definition.
     ParentRef(String),
