@@ -9,7 +9,7 @@ use url::ParseError;
 /// A configuration error.
 #[derive(Debug)]
 pub enum ConfigError {
-    /// Circular configuration extensions.
+    /// Circular configuration files.
     CircularConfigFiles(Vec<PathBuf>),
     /// Circular site configurations.
     CircularSiteConfigs(Vec<String>),
