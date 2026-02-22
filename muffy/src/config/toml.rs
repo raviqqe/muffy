@@ -42,26 +42,13 @@ mod tests {
     use crate::config::compile_config;
     use indoc::indoc;
     use pretty_assertions::assert_eq;
-    use std::{
-        env::temp_dir,
-        path::PathBuf,
-        time::{SystemTime, UNIX_EPOCH},
-    };
+    use tempfile::tempdir;
     use tokio::fs::{create_dir_all, remove_dir_all, write};
 
-    async fn create_temp_directory() -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let directory = temp_dir().join(format!("muffy-test-{}-{unique}", std::process::id()));
-        create_dir_all(&directory).await.unwrap();
-        directory
-    }
-
     #[tokio::test]
-    async fn read_config_merge_extends() {
-        let directory = create_temp_directory().await;
+    async fn merge_configs() {
+        let directory = tempdir().unwrap();
+        let directory = directory.path();
         let base_path = directory.join("base.toml");
         let middle_path = directory.join("middle.toml");
         let child_path = directory.join("child.toml");
@@ -115,8 +102,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn read_config_resolve_relative_paths() {
-        let directory = create_temp_directory().await;
+    async fn resolve_relative_paths() {
+        let directory = tempdir().unwrap();
+        let directory = directory.path();
         let base_path = directory.join("base.toml");
         let nested_path = directory.join("nested");
         let child_path = nested_path.join("child.toml");
@@ -148,8 +136,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn read_config_detect_circular_extends() {
-        let directory = create_temp_directory().await;
+    async fn detect_circular_extends() {
+        let directory = tempdir().unwrap();
+        let directory = directory.path();
         let first_path = directory.join("first.toml");
         let second_path = directory.join("second.toml");
 
