@@ -221,7 +221,7 @@ pub struct Parameter {
     pub value: String,
 }
 
-/// An annotation element.
+/// An annotation.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Annotation {
     /// A name.
