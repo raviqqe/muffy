@@ -55,9 +55,6 @@ impl SerializableConfig {
 
     /// Merges another configuration.
     pub fn merge(&mut self, other: Self) {
-        // We clear the `extend` field because its value is meaningless after merge.
-        self.extend = None;
-
         if other.concurrency.is_some() {
             self.concurrency = other.concurrency;
         }
@@ -1227,7 +1224,7 @@ mod tests {
                 .into(),
             });
 
-            assert_eq!(config.extend, None);
+            assert_eq!(config.extend, Some("base.toml".into()));
             assert_eq!(config.concurrency, Some(2));
             assert!(config.cache.as_ref().unwrap().persistent.unwrap());
             assert_eq!(config.rate_limit.as_ref().unwrap().supply, 2);
@@ -1360,7 +1357,7 @@ mod tests {
                 .into(),
             });
 
-            assert_eq!(config.extend, None);
+            assert_eq!(config.extend, Some("base.toml".into()));
             assert_eq!(config.concurrency, Some(1));
             assert!(config.cache.as_ref().unwrap().persistent.unwrap());
             assert_eq!(config.rate_limit.as_ref().unwrap().supply, 1);
