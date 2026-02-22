@@ -19,7 +19,7 @@ pub enum ConfigError {
     HttpInvalidHeaderName(http::header::InvalidHeaderName),
     /// An invalid header value.
     HttpInvalidHeaderValue(http::header::InvalidHeaderValue),
-    /// An I/O error while reading configuration.
+    /// An I/O error.
     Io(io::Error),
     /// Missing parent configuration.
     MissingParentConfig(String),
