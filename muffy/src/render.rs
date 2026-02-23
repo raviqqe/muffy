@@ -7,6 +7,7 @@ mod result;
 
 use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
+use self::result::RenderedResult;
 use crate::{DocumentOutput, error::Error};
 use colored::Colorize;
 use core::pin::pin;
@@ -28,7 +29,7 @@ pub async fn render_document(
     if !options.verbose()
         && document
             .elements()
-            .all(|element| element.results().all(Result::is_ok))
+            .all(|element| element.results().all(RenderedResult::is_ok))
     {
         return Ok(());
     }
@@ -61,7 +62,7 @@ pub async fn render_document(
         .await?;
 
         for result in output.results() {
-            match result {
+            match result.result() {
                 Ok(success) => {
                     render_line(
                         &success.response().map_or_else(
