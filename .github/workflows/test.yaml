@@ -30,6 +30,12 @@ jobs:
           fail_ci_if_error: true
           files: lcov.info
   check_command_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: raviqqe/cargo-cache@v1
+      - run: cargo run -- --verbose
+  check_site_command_test:
     strategy:
       fail-fast: false
       matrix:
@@ -66,12 +72,6 @@ jobs:
           --verbose
           ${{ matrix.cache && '--cache' || '' }}
           ${{ join(matrix.arguments, ' ') }}
-  run_command_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: raviqqe/cargo-cache@v1
-      - run: cargo run -- --verbose
   docker_test:
     runs-on: ubuntu-latest
     steps:
@@ -90,7 +90,7 @@ jobs:
       - build
       - unit_test
       - check_command_test
-      - run_command_test
+      - check_site_command_test
       - docker_test
       - coverage
     if: always()
