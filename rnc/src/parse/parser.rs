@@ -388,7 +388,7 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
             classes
                 .into_iter()
                 .next()
-                .expect("name class list must contain one item")
+            .unwrap()
         } else {
             NameClass::Choice(classes)
         }
@@ -634,7 +634,7 @@ fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Patter
         patterns
             .into_iter()
             .next()
-            .expect("pattern list must contain one item")
+            .unwrap()
     } else {
         constructor(patterns)
     }
@@ -665,7 +665,7 @@ mod tests {
         let input = "element foo { (text | empty)+, attribute id { text }? }";
 
         assert_eq!(
-            parse_schema(input).expect("schema should parse"),
+            parse_schema(input).unwrap(),
             Schema {
                 declarations: Vec::new(),
                 body: SchemaBody::Pattern(Pattern::Element {
@@ -696,7 +696,7 @@ mod tests {
         "#};
 
         assert_eq!(
-            parse_schema(input).expect("schema should parse"),
+            parse_schema(input).unwrap(),
             Schema {
                 declarations: vec![Declaration::Namespace(NamespaceDeclaration {
                     prefix: "sch".to_string(),
@@ -743,7 +743,7 @@ mod tests {
         let input = "attribute size { xsd:integer { minInclusive = \"1\" } - \"5\" }";
 
         assert_eq!(
-            parse_schema(input).expect("schema should parse"),
+            parse_schema(input).unwrap(),
             Schema {
                 declarations: Vec::new(),
                 body: SchemaBody::Pattern(Pattern::Attribute {
@@ -769,7 +769,7 @@ mod tests {
         let input = "element (* - (foo | bar)) { text }";
 
         assert_eq!(
-            parse_schema(input).expect("schema should parse"),
+            parse_schema(input).unwrap(),
             Schema {
                 declarations: Vec::new(),
                 body: SchemaBody::Pattern(Pattern::Element {
@@ -844,7 +844,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).expect("definition should parse");
+        let (remaining_input, _) = grammar_item(input).unwrap();
 
         assert!(
             remaining_input.trim_start().starts_with("class.attrib"),
@@ -868,7 +868,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = pattern(input).expect("attribute pattern should parse");
+        let (remaining_input, _) = pattern(input).unwrap();
 
         assert!(
             remaining_input.trim_start().starts_with("class.attrib"),
@@ -883,7 +883,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = attribute_pattern(input).expect("attribute should parse");
+        let (remaining_input, _) = attribute_pattern(input).unwrap();
 
         assert!(
             remaining_input.trim_start().starts_with("?"),
@@ -999,7 +999,7 @@ mod tests {
     fn parse_grammar_with_leading_annotation_block() {
         let input = "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
 
-        let (remaining_input, _) = grammar(input).expect("grammar should parse");
+        let (remaining_input, _) = grammar(input).unwrap();
 
         assert!(
             remaining_input.trim_start().is_empty(),
@@ -1072,7 +1072,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).expect("include item should parse");
+        let (remaining_input, _) = grammar_item(input).unwrap();
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),
@@ -1097,7 +1097,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = raw_grammar_block(input).expect("raw block should parse");
+        let (remaining_input, _) = raw_grammar_block(input).unwrap();
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),

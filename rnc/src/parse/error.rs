@@ -4,7 +4,7 @@ use core::{
 };
 
 /// A parse error.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
     message: String,
 }
