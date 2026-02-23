@@ -101,31 +101,38 @@ fn declaration(input: &str) -> ParserResult<'_, Declaration> {
 }
 
 fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> {
-    let (input, _) = keyword("namespace").parse(input)?;
-    let (input, prefix) = identifier_token(input)?;
-    let (input, _) = symbol("=").parse(input)?;
-    let (input, uri) = string_literal_token(input)?;
-
-    Ok((input, NamespaceDeclaration { prefix, uri }))
+    map(
+        (keyword("namespace"), identifier_token, symbol("="), string_literal_token),
+        |(_, prefix, _, uri)| NamespaceDeclaration { prefix, uri },
+    )
+    .parse(input)
 }
 
 fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
-    let (input, _) = keyword("default").parse(input)?;
-    let (input, _) = keyword("namespace").parse(input)?;
-    let (input, _) = opt(identifier_token).parse(input)?;
-    let (input, _) = symbol("=").parse(input)?;
-    let (input, uri) = string_literal_token(input)?;
-
-    Ok((input, uri))
+    map(
+        (
+            keyword("default"),
+            keyword("namespace"),
+            opt(identifier_token),
+            symbol("="),
+            string_literal_token,
+        ),
+        |(_, _, _, _, uri)| uri,
+    )
+    .parse(input)
 }
 
 fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> {
-    let (input, _) = keyword("datatypes").parse(input)?;
-    let (input, prefix) = opt(identifier_token).parse(input)?;
-    let (input, _) = symbol("=").parse(input)?;
-    let (input, uri) = string_literal_token(input)?;
-
-    Ok((input, DatatypesDeclaration { prefix, uri }))
+    map(
+        (
+            keyword("datatypes"),
+            opt(identifier_token),
+            symbol("="),
+            string_literal_token,
+        ),
+        |(_, prefix, _, uri)| DatatypesDeclaration { prefix, uri },
+    )
+    .parse(input)
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
@@ -173,49 +180,52 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn start_item(input: &str) -> ParserResult<'_, GrammarItem> {
-    let (input, _) = keyword("start").parse(input)?;
-    let (input, combine) = assignment_operator(input)?;
-    let (input, pattern) = pattern(input)?;
-
-    Ok((input, GrammarItem::Start { combine, pattern }))
+    map(
+        (keyword("start"), assignment_operator, pattern),
+        |(_, combine, pattern)| GrammarItem::Start { combine, pattern },
+    )
+    .parse(input)
 }
 
 fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
-    let (input, name) = identifier_token(input)?;
-    let (input, combine) = assignment_operator(input)?;
-    let (input, pattern) = pattern(input)?;
-
-    Ok((
-        input,
-        GrammarItem::Definition(Definition {
-            name,
-            combine,
-            pattern,
-        }),
-    ))
+    map(
+        (identifier_token, assignment_operator, pattern),
+        |(name, combine, pattern)| {
+            GrammarItem::Definition(Definition {
+                name,
+                combine,
+                pattern,
+            })
+        },
+    )
+    .parse(input)
 }
 
 fn div_item(input: &str) -> ParserResult<'_, GrammarItem> {
-    let (input, _) = keyword("div").parse(input)?;
-    let (input, grammar) = delimited(symbol("{"), grammar, symbol("}")).parse(input)?;
-
-    Ok((input, GrammarItem::Div(grammar)))
+    map(
+        (keyword("div"), delimited(symbol("{"), grammar, symbol("}"))),
+        |(_, grammar)| GrammarItem::Div(grammar),
+    )
+    .parse(input)
 }
 
 fn include_item(input: &str) -> ParserResult<'_, GrammarItem> {
-    let (input, _) = keyword("include").parse(input)?;
-    let (input, uri) = string_literal_token(input)?;
-    let (input, inherit) = opt(inherit).parse(input)?;
-    let (input, grammar) = opt(raw_grammar_block).parse(input)?;
-
-    Ok((
-        input,
-        GrammarItem::Include(Include {
-            uri,
-            inherit,
-            grammar,
-        }),
-    ))
+    map(
+        (
+            keyword("include"),
+            string_literal_token,
+            opt(inherit),
+            opt(raw_grammar_block),
+        ),
+        |(_, uri, inherit, grammar)| {
+            GrammarItem::Include(Include {
+                uri,
+                inherit,
+                grammar,
+            })
+        },
+    )
+    .parse(input)
 }
 
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
@@ -258,10 +268,11 @@ fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
 }
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
-    let (input, _) = keyword("inherit").parse(input)?;
-    let (input, prefix) = preceded(symbol("="), identifier_token).parse(input)?;
-
-    Ok((input, Inherit::Prefix(prefix)))
+    map(
+        (keyword("inherit"), preceded(symbol("="), identifier_token)),
+        |(_, prefix)| Inherit::Prefix(prefix),
+    )
+    .parse(input)
 }
 
 fn assignment_operator(input: &str) -> ParserResult<'_, Option<Combine>> {
@@ -293,14 +304,16 @@ fn group_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, base_pattern) = primary_pattern(input)?;
-    let (input, _) = many0(annotation_attachment).parse(input)?;
-    let (input, quantifier) = opt(alt((
-        value("?", symbol("?")),
-        value("*", symbol("*")),
-        value("+", symbol("+")),
-    )))
-    .parse(input)?;
+    let (input, (base_pattern, _, quantifier)) = (
+        primary_pattern,
+        many0(annotation_attachment),
+        opt(alt((
+            value("?", symbol("?")),
+            value("*", symbol("*")),
+            value("+", symbol("+")),
+        ))),
+    )
+        .parse(input)?;
 
     let pattern = match quantifier {
         Some("?") => Pattern::Optional(Box::new(base_pattern)),
@@ -314,9 +327,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = symbol(">>").parse(input)?;
-    let (input, _) = annotation_element(input)?;
-    Ok((input, ()))
+    map((symbol(">>"), annotation_element), |_| ()).parse(input)
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -339,49 +350,52 @@ fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("element").parse(input)?;
-    let (input, name_class) = name_class(input)?;
-    let (input, pattern) = delimited(symbol("{"), pattern, symbol("}")).parse(input)?;
-
-    Ok((
-        input,
-        Pattern::Element {
+    map(
+        (keyword("element"), name_class, delimited(symbol("{"), pattern, symbol("}"))),
+        |(_, name_class, pattern)| Pattern::Element {
             name_class,
             pattern: Box::new(pattern),
         },
-    ))
+    )
+    .parse(input)
 }
 
 fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("attribute").parse(input)?;
-    let (input, name_class) = name_class(input)?;
-    let (input, pattern) = delimited(symbol("{"), pattern, symbol("}")).parse(input)?;
-
-    Ok((
-        input,
-        Pattern::Attribute {
+    map(
+        (
+            keyword("attribute"),
+            name_class,
+            delimited(symbol("{"), pattern, symbol("}")),
+        ),
+        |(_, name_class, pattern)| Pattern::Attribute {
             name_class,
             pattern: Box::new(pattern),
         },
-    ))
+    )
+    .parse(input)
 }
 
 fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("list").parse(input)?;
-    let (input, pattern) = delimited(symbol("{"), pattern, symbol("}")).parse(input)?;
-    Ok((input, Pattern::List(Box::new(pattern))))
+    map(
+        (keyword("list"), delimited(symbol("{"), pattern, symbol("}"))),
+        |(_, pattern)| Pattern::List(Box::new(pattern)),
+    )
+    .parse(input)
 }
 
 fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("grammar").parse(input)?;
-    let (input, grammar) = delimited(symbol("{"), grammar, symbol("}")).parse(input)?;
-    Ok((input, Pattern::Grammar(grammar)))
+    map(
+        (keyword("grammar"), delimited(symbol("{"), grammar, symbol("}"))),
+        |(_, grammar)| Pattern::Grammar(grammar),
+    )
+    .parse(input)
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("external").parse(input)?;
-    let (input, uri) = string_literal_token(input)?;
-    Ok((input, Pattern::ExternalRef(uri)))
+    map((keyword("external"), string_literal_token), |(_, uri)| {
+        Pattern::ExternalRef(uri)
+    })
+    .parse(input)
 }
 
 fn text_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -425,16 +439,17 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, datatype_name) = opt(terminated(name_token_leading, whitespace1)).parse(input)?;
-    let (input, value) = string_literal_token(input)?;
-
-    Ok((
-        input,
-        Pattern::Value {
+    map(
+        (
+            opt(terminated(name_token_leading, whitespace1)),
+            string_literal_token,
+        ),
+        |(datatype_name, value)| Pattern::Value {
             name: datatype_name,
             value,
         },
-    ))
+    )
+    .parse(input)
 }
 
 fn name_class(input: &str) -> ParserResult<'_, NameClass> {
@@ -492,18 +507,18 @@ fn parameter_separator(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
-    let (input, name) = name_token(input)?;
-    let (input, _) = symbol("=").parse(input)?;
-    let (input, value) = string_literal(input)?;
-
-    Ok((input, Parameter { name, value }))
+    map(
+        (name_token, preceded(symbol("="), string_literal)),
+        |(name, value)| Parameter { name, value },
+    )
+    .parse(input)
 }
 
 fn annotation_element(input: &str) -> ParserResult<'_, Annotation> {
-    let (input, name) = name_token(input)?;
-    let (input, attributes) = annotation_block(input)?;
-
-    Ok((input, Annotation { name, attributes }))
+    map((name_token, annotation_block), |(name, attributes)| {
+        Annotation { name, attributes }
+    })
+    .parse(input)
 }
 
 fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
@@ -511,13 +526,16 @@ fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
 }
 
 fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    let (input, _) = open_bracket(input)?;
-    let (input, attributes) =
-        separated_list0(annotation_separator, annotation_attribute).parse(input)?;
-    let (input, _) = whitespace0(input)?;
-    let (input, _) = close_bracket(input)?;
-
-    Ok((input, attributes))
+    map(
+        (
+            open_bracket,
+            separated_list0(annotation_separator, annotation_attribute),
+            whitespace0,
+            close_bracket,
+        ),
+        |(_, attributes, _, _)| attributes,
+    )
+    .parse(input)
 }
 
 fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
