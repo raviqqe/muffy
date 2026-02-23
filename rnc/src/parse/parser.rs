@@ -926,7 +926,10 @@ mod tests {
 
         assert_eq!(
             name_class(input).unwrap(),
-            ("{ string \"preserve\" }", NameClass::Name(prefixed_name("xml", "space")))
+            (
+                "{ string \"preserve\" }",
+                NameClass::Name(prefixed_name("xml", "space"))
+            )
         );
     }
 
