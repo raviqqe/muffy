@@ -463,19 +463,15 @@ fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
 fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
     delimited(
         symbol("{"),
-        separated_list0(parameter_separator, parameter),
+        separated_list0(opt(symbol(",")), parameter),
         symbol("}"),
     )
     .parse(input)
 }
 
-fn parameter_separator(input: &str) -> ParserResult<'_, ()> {
-    alt((value((), symbol(",")), blank1)).parse(input)
-}
-
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     map(
-        (name_token, preceded(symbol("="), string_literal)),
+        (name_token, preceded(symbol("="), string_literal_token)),
         |(name, value)| Parameter { name, value },
     )
     .parse(input)
@@ -576,7 +572,7 @@ fn close_bracket(input: &str) -> ParserResult<'_, &str> {
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     map(
-        (name_token, preceded(symbol("="), string_literal)),
+        (name_token, preceded(symbol("="), string_literal_token)),
         |(name, value)| AnnotationAttribute { name, value },
     )
     .parse(input)
@@ -595,7 +591,7 @@ fn name_token_leading(input: &str) -> ParserResult<'_, Name> {
 }
 
 fn string_literal_token(input: &str) -> ParserResult<'_, String> {
-    spaced(string_literal).parse(input)
+    preceded(blank0, string_literal).parse(input)
 }
 
 fn spaced<'a, T>(
