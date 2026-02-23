@@ -215,9 +215,9 @@ pub enum NameClass {
 /// A datatype parameter.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Parameter {
-    /// The parameter name.
+    /// A name.
     pub name: Name,
-    /// The parameter value.
+    /// A value.
     pub value: String,
 }
 
