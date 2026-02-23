@@ -270,7 +270,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
-    map((symbol(">>"), annotation), |_| ()).parse(input)
+    value((), (symbol(">>"), annotation)).parse(input)
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -587,16 +587,16 @@ fn blanked<'a, T>(
 }
 
 fn blank(input: &str) -> ParserResult<'_, ()> {
-    map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
+    value((), many0(alt((value((), multispace1), comment)))).parse(input)
 }
 
 fn comment(input: &str) -> ParserResult<'_, ()> {
-    map(
+    value(
+        (),
         (
             preceded(tag("#"), take_till(|character| character == '\n')),
             opt(char('\n')),
         ),
-        |_| (),
     )
     .parse(input)
 }
