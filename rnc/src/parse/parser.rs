@@ -1,4 +1,5 @@
 //! Parser implementation details for Relax NG Compact Syntax.
+
 use crate::ast::{
     Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
     Grammar, GrammarItem, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
