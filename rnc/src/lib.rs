@@ -1,4 +1,4 @@
-//! The parser for Relax NG Compact Syntax.
+//! Relax NG Compact Syntax.
 
 mod ast;
 mod parse;
