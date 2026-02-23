@@ -370,17 +370,13 @@ fn not_allowed_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(name_token, Pattern::Name).parse(input)
+    map(name, Pattern::Name).parse(input)
 }
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         verify(
-            (
-                name_token,
-                opt(parameters),
-                opt(preceded(symbol("-"), pattern)),
-            ),
+            (name, opt(parameters), opt(preceded(symbol("-"), pattern))),
             |(_, parameters, except_pattern)| parameters.is_some() || except_pattern.is_some(),
         ),
         |(name, parameters, except_pattern)| Pattern::Data {
@@ -393,13 +389,12 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(
-        (opt(name_token), string_literal),
-        |(datatype_name, value)| Pattern::Value {
+    map((opt(name), string_literal), |(datatype_name, value)| {
+        Pattern::Value {
             name: datatype_name,
             value,
-        },
-    )
+        }
+    })
     .parse(input)
 }
 
@@ -440,7 +435,7 @@ fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
 
 fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
     delimited(
-        blank0,
+        blank,
         alt((
             value(NameClass::AnyName, tag("*")),
             map((identifier, char(':'), char('*')), |(prefix, _, _)| {
@@ -449,7 +444,7 @@ fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
             map(name, NameClass::Name),
             delimited(tag("("), name_class, tag(")")),
         )),
-        blank0,
+        blank,
     )
     .parse(input)
 }
@@ -465,15 +460,16 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     map(
-        (name_token, preceded(symbol("="), string_literal)),
+        (name, preceded(symbol("="), string_literal)),
         |(name, value)| Parameter { name, value },
     )
     .parse(input)
 }
 
 fn annotation(input: &str) -> ParserResult<'_, Annotation> {
-    map((name_token, annotation_block), |(name, attributes)| {
-        Annotation { name, attributes }
+    map((name, annotation_block), |(name, attributes)| Annotation {
+        name,
+        attributes,
     })
     .parse(input)
 }
@@ -487,7 +483,7 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
         (
             open_bracket,
             many0(annotation_attribute),
-            blank0,
+            blank,
             close_bracket,
         ),
         |(_, attributes, _, _)| attributes,
@@ -541,7 +537,7 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    preceded(blank0, preceded(peek(open_bracket), annotation_block)).parse(input)
+    preceded(blank, preceded(peek(open_bracket), annotation_block)).parse(input)
 }
 
 fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
@@ -558,7 +554,7 @@ fn close_bracket(input: &str) -> ParserResult<'_, &str> {
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     map(
-        (name_token, preceded(symbol("="), string_literal)),
+        (name, preceded(symbol("="), string_literal)),
         |(name, value)| AnnotationAttribute { name, value },
     )
     .parse(input)
@@ -568,8 +564,18 @@ fn identifier_token(input: &str) -> ParserResult<'_, String> {
     spaced(identifier).parse(input)
 }
 
-fn name_token(input: &str) -> ParserResult<'_, Name> {
-    spaced(name).parse(input)
+fn name(input: &str) -> ParserResult<'_, Name> {
+    map(
+        spaced((identifier, opt(preceded(char(':'), identifier)))),
+        |(first, rest)| {
+            let (prefix, local) = match rest {
+                Some(local) => (Some(first), local),
+                None => (None, first),
+            };
+            Name { prefix, local }
+        },
+    )
+    .parse(input)
 }
 
 fn string_literal(input: &str) -> ParserResult<'_, String> {
@@ -597,15 +603,15 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
 fn spaced<'a, T>(
     parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
 ) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
-    delimited(blank0, parser, blank0)
+    delimited(blank, parser, blank)
 }
 
 fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
         delimited(
-            blank0,
+            blank,
             terminated(tag(keyword), not(peek(satisfy(is_identifier_char)))),
-            blank0,
+            blank,
         )
         .parse(input)
     }
@@ -615,7 +621,7 @@ fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| spaced(tag(symbol)).parse(input)
 }
 
-fn blank0(input: &str) -> ParserResult<'_, ()> {
+fn blank(input: &str) -> ParserResult<'_, ()> {
     map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
@@ -626,20 +632,6 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
             opt(char('\n')),
         ),
         |_| (),
-    )
-    .parse(input)
-}
-
-fn name(input: &str) -> ParserResult<'_, Name> {
-    map(
-        (identifier, opt(preceded(char(':'), identifier))),
-        |(first, rest)| {
-            let (prefix, local) = match rest {
-                Some(local) => (Some(first), local),
-                None => (None, first),
-            };
-            Name { prefix, local }
-        },
     )
     .parse(input)
 }
