@@ -4,6 +4,9 @@ branding:
   icon: pen-tool
   color: orange
 inputs:
+  config:
+    description: A configuration file
+    required: false
   verbose:
     description: Be verbose
     required: false
@@ -21,3 +24,4 @@ runs:
         raviqqe/muffy:${{ steps.version.outputs.version }}
         check
         ${{ inputs.verbose == 'true' && '--verbose' || '' }}
+        ${{ inputs.config }}
