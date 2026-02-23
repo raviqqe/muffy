@@ -14,6 +14,9 @@ mod tests {
 
     #[rstest]
     fn parse_file(#[files("../vendor/validator/**/schema/**/*.rnc")] path: PathBuf) {
-        assert_debug_snapshot!(parse_schema(&read_to_string(&path).unwrap()).unwrap());
+        assert_debug_snapshot!(
+            path.display().to_string(),
+            parse_schema(&read_to_string(&path).unwrap()).unwrap()
+        );
     }
 }

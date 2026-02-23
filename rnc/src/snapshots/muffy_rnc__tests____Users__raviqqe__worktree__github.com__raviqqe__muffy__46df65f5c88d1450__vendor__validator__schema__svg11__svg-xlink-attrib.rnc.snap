@@ -1,0 +1,741 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "xlink",
+                uri: "http://www.w3.org/1999/xlink",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Definition(
+                        Definition {
+                            name: "SVG.XLink.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLink.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "type",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "simple",
+                                            },
+                                        },
+                                    ),
+                                    Interleave(
+                                        [
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: Some(
+                                                                "xlink",
+                                                            ),
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "role",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "arcrole",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "title",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "show",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "other",
+                                            },
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "actuate",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "onLoad",
+                                            },
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.XLink.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkRequired.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkRequired.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "type",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "simple",
+                                            },
+                                        },
+                                    ),
+                                    Interleave(
+                                        [
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: Some(
+                                                                "xlink",
+                                                            ),
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "role",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "arcrole",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "title",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "show",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "other",
+                                            },
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "actuate",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "onLoad",
+                                            },
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.XLinkRequired.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkEmbed.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkEmbed.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "type",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "simple",
+                                            },
+                                        },
+                                    ),
+                                    Interleave(
+                                        [
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: Some(
+                                                                "xlink",
+                                                            ),
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "role",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "arcrole",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "title",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "show",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "embed",
+                                            },
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "actuate",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "onLoad",
+                                            },
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.XLinkEmbed.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkReplace.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.XLinkReplace.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "type",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "simple",
+                                            },
+                                        },
+                                    ),
+                                    Interleave(
+                                        [
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: Some(
+                                                                "xlink",
+                                                            ),
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "href",
+                                                        },
+                                                    ),
+                                                    pattern: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "URI.datatype",
+                                                        },
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "role",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "arcrole",
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "URI.datatype",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "title",
+                                                },
+                                            ),
+                                            pattern: Text,
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "show",
+                                                },
+                                            ),
+                                            pattern: Choice(
+                                                [
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "new",
+                                                    },
+                                                    Value {
+                                                        name: Some(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "string",
+                                                            },
+                                                        ),
+                                                        value: "replace",
+                                                    },
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        "xlink",
+                                                    ),
+                                                    local: "actuate",
+                                                },
+                                            ),
+                                            pattern: Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "onRequest",
+                                            },
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.XLinkReplace.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

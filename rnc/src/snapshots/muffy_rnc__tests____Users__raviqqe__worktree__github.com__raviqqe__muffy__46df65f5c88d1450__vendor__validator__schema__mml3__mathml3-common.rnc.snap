@@ -1,0 +1,1147 @@
+---
+source: rnc/src/lib.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        DefaultNamespace(
+            "http://www.w3.org/1998/Math/MathML",
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "local",
+                uri: "",
+            },
+        ),
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "math",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "math",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "math.attributes",
+                                        },
+                                    ),
+                                    Many0(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "MathExpression",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "MathExpression",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "semantics",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "NonMathMLAtt",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Except {
+                                base: AnyName,
+                                except: Choice(
+                                    [
+                                        NsName(
+                                            Some(
+                                                "local",
+                                            ),
+                                        ),
+                                        NsName(
+                                            Some(
+                                                "m",
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            },
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "CommonDeprecatedAtt",
+                        combine: None,
+                        pattern: Optional(
+                            Attribute {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "other",
+                                    },
+                                ),
+                                pattern: Text,
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "CommonAtt",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "id",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "xml-name",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "xref",
+                                            },
+                                        ),
+                                        pattern: Text,
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "class",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "NMTOKENS",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "style",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "href",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonDeprecatedAtt",
+                                    },
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "NonMathMLAtt",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "math.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "display",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Value {
+                                                    name: None,
+                                                    value: "block",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "inline",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "maxwidth",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "overflow",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Value {
+                                                    name: None,
+                                                    value: "linebreak",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "scroll",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "elide",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "truncate",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "scale",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-width",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-height",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "length",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "altimg-valign",
+                                            },
+                                        ),
+                                        pattern: Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "length",
+                                                    },
+                                                ),
+                                                Value {
+                                                    name: None,
+                                                    value: "top",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "middle",
+                                                },
+                                                Value {
+                                                    name: None,
+                                                    value: "bottom",
+                                                },
+                                            ],
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "alttext",
+                                            },
+                                        ),
+                                        pattern: Text,
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "cdgroup",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "math.deprecatedattributes",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "math.deprecatedattributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "mode",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "macros",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "NCName",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "cd",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cd",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "NCName",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "src",
+                        combine: None,
+                        pattern: Optional(
+                            Attribute {
+                                name_class: Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "src",
+                                    },
+                                ),
+                                pattern: Name(
+                                    Name {
+                                        prefix: Some(
+                                            "xsd",
+                                        ),
+                                        local: "anyURI",
+                                    },
+                                ),
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation.attributes",
+                                        },
+                                    ),
+                                    Text,
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.xhtml",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.svg",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "annotation-xml.mathml",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model",
+                        combine: None,
+                        pattern: Many0(
+                            Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "MathExpression",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "anyElement",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "anyElement",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Except {
+                                base: AnyName,
+                                except: NsName(
+                                    Some(
+                                        "m",
+                                    ),
+                                ),
+                            },
+                            pattern: Many0(
+                                Choice(
+                                    [
+                                        Attribute {
+                                            name_class: AnyName,
+                                            pattern: Text,
+                                        },
+                                        Text,
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "anyElement",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.xhtml",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.xhtml",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.xhtml",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.xhtml",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "application/xhtml+xml",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "text/html",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.svg",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.svg",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.svg",
+                        combine: None,
+                        pattern: NotAllowed,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.svg",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: None,
+                                        local: "string",
+                                    },
+                                ),
+                                value: "SVG1.1",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.mathml",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "annotation-xml",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.model",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "annotation-xml.attributes",
+                                        },
+                                    ),
+                                    Optional(
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "att-encoding.mathml",
+                                            },
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.model.mathml",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "math",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "att-encoding.mathml",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "encoding",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML-Content",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "MathML-Presentation",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "DefEncAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "src",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "annotation-xml.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "src",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "DefEncAtt",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "encoding",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                    },
+                                ),
+                                Optional(
+                                    Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "definitionURL",
+                                            },
+                                        ),
+                                        pattern: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    "xsd",
+                                                ),
+                                                local: "anyURI",
+                                            },
+                                        ),
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "semantics",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "semantics",
+                                },
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "semantics.attributes",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "MathExpression",
+                                        },
+                                    ),
+                                    Many0(
+                                        Choice(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation",
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "annotation-xml",
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "semantics.attributes",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "CommonAtt",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "DefEncAtt",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "cd",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "name",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "length",
+                        combine: None,
+                        pattern: Data {
+                            name: Name {
+                                prefix: Some(
+                                    "xsd",
+                                ),
+                                local: "string",
+                            },
+                            parameters: [
+                                Parameter {
+                                    name: Name {
+                                        prefix: None,
+                                        local: "pattern",
+                                    },
+                                    value: "s*((-?[0-9]*(.[0-9]*)?(e[mx]|in|cm|mm|p[xtc]|%)?)|(negative)?((very){0,2}thi(n|ck)|medium)mathspace)s*",
+                                },
+                            ],
+                            except: None,
+                        },
+                    },
+                ),
+            ],
+        },
+    ),
+}
