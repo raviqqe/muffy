@@ -1163,11 +1163,12 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = raw_grammar_block(input).expect("raw include should parse");
-
         assert!(
-            remaining_input.trim_start().starts_with("form.attlist"),
-            "expected to stop at form.attlist, got: {remaining_input:?}"
+            raw_grammar_block(input)
+                .unwrap()
+                .0
+                .trim_start()
+                .starts_with("form.attlist")
         );
     }
 
@@ -1181,8 +1182,6 @@ mod tests {
                   string "file"
         "#};
 
-        let result = grammar_item(input);
-
-        assert!(result.is_ok(), "choice with comment failed: {result:?}");
+        assert!(grammar_item(input).is_ok());
     }
 }
