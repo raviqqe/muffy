@@ -1,11 +1,11 @@
-use super::item_output::RenderedItemOutput;
+use super::{item_output::RenderedItemOutput, result::RenderedResult};
 use crate::{element::Element, error::Error};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedElementOutput<'a> {
     element: &'a Element,
-    results: Vec<Result<RenderedItemOutput<'a>, &'a Error>>,
+    results: Vec<RenderedResult<RenderedItemOutput<'a>, &'a Error>>,
 }
 
 impl<'a> RenderedElementOutput<'a> {
