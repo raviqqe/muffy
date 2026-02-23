@@ -10,7 +10,7 @@ use nom::{
     character::complete::{char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::{Error, ErrorKind},
-    multi::{many0, many1, separated_list0, separated_list1},
+    multi::{many0, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -394,7 +394,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (opt(terminated(name_token_leading, blank1)), string_literal),
+        (opt(name_token), string_literal),
         |(datatype_name, value)| Pattern::Value {
             name: datatype_name,
             value,
@@ -572,10 +572,6 @@ fn name_token(input: &str) -> ParserResult<'_, Name> {
     spaced(name).parse(input)
 }
 
-fn name_token_leading(input: &str) -> ParserResult<'_, Name> {
-    preceded(blank0, name).parse(input)
-}
-
 fn string_literal(input: &str) -> ParserResult<'_, String> {
     spaced(alt((
         map(
@@ -621,10 +617,6 @@ fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
 
 fn blank0(input: &str) -> ParserResult<'_, ()> {
     map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
-}
-
-fn blank1(input: &str) -> ParserResult<'_, ()> {
-    map(many1(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
 fn comment(input: &str) -> ParserResult<'_, ()> {
