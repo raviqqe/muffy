@@ -790,10 +790,7 @@ mod tests {
         );
         let result = grammar_item(input);
 
-        assert!(
-            result.is_ok(),
-            "annotation element parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -802,7 +799,7 @@ mod tests {
 
         let result = grammar_item(input);
 
-        assert!(result.is_ok(), "definition parse failed: {result:?}");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -811,10 +808,7 @@ mod tests {
 
         let result = pattern(input);
 
-        assert!(
-            result.is_ok(),
-            "prefixed attribute parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -826,7 +820,7 @@ mod tests {
 
         let result = grammar_item(input);
 
-        assert!(result.is_ok(), "inline comment parse failed: {result:?}");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -839,10 +833,7 @@ mod tests {
 
         let (remaining_input, _) = grammar_item(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().starts_with("class.attrib"),
-            "expected to stop at next definition, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().starts_with("class.attrib"));
     }
 
     #[test]
@@ -851,7 +842,7 @@ mod tests {
 
         let result = name_class(input);
 
-        assert!(result.is_ok(), "prefixed name class failed: {result:?}");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -863,10 +854,7 @@ mod tests {
 
         let (remaining_input, _) = pattern(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().starts_with("class.attrib"),
-            "expected to stop at next definition, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().starts_with("class.attrib"));
     }
 
     #[test]
@@ -878,10 +866,7 @@ mod tests {
 
         let (remaining_input, _) = attribute_pattern(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().starts_with("?"),
-            "expected quantifier, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().starts_with("?"));
     }
 
     #[test]
@@ -894,7 +879,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "default namespace parse failed: {result:?}");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -903,7 +888,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(result.is_ok(), "empty schema parse failed: {result:?}");
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -912,10 +897,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "annotation attachment parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -929,10 +911,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "include annotation parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -941,10 +920,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "parenthesized choice parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -963,10 +939,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "nested annotation include failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -982,10 +955,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "annotation attachment comment failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -994,10 +964,7 @@ mod tests {
 
         let (remaining_input, _) = grammar(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().is_empty(),
-            "expected grammar to consume input, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().is_empty());
     }
 
     #[test]
@@ -1018,10 +985,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "bracketed annotation include failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -1042,10 +1006,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "schematron include parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -1067,10 +1028,7 @@ mod tests {
 
         let (remaining_input, _) = grammar_item(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().starts_with("form.attlist"),
-            "expected to stop at form.attlist, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().starts_with("form.attlist"));
     }
 
     #[test]
@@ -1092,10 +1050,7 @@ mod tests {
 
         let (remaining_input, _) = raw_grammar_block(input).unwrap();
 
-        assert!(
-            remaining_input.trim_start().starts_with("form.attlist"),
-            "expected to stop at form.attlist, got: {remaining_input:?}"
-        );
+        assert!(remaining_input.trim_start().starts_with("form.attlist"));
     }
 
     #[test]
@@ -1118,10 +1073,7 @@ mod tests {
 
         let result = parse_schema(input);
 
-        assert!(
-            result.is_ok(),
-            "annotation include parse failed: {result:?}"
-        );
+        assert!(result.is_ok());
     }
 
     #[test]
