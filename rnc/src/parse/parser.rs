@@ -206,8 +206,8 @@ fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
     map(
-        (keyword("inherit"), preceded(symbol("="), identifier)),
-        |(_, prefix)| Inherit::Prefix(prefix),
+        preceded((keyword("inherit"), symbol("=")), identifier),
+        Inherit::Prefix,
     )
     .parse(input)
 }
@@ -222,10 +222,6 @@ fn assignment_operator(input: &str) -> ParserResult<'_, Option<Combine>> {
 }
 
 fn pattern(input: &str) -> ParserResult<'_, Pattern> {
-    choice_pattern(input)
-}
-
-fn choice_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         separated_list1(symbol("|"), interleave_pattern),
         |patterns| fold_patterns(patterns, Pattern::Choice),
