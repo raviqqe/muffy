@@ -172,9 +172,9 @@ pub enum Pattern {
     Optional(Box<Self>),
     /// A reference to a parent grammar definition.
     ParentRef(String),
-    /// A text pattern.
+    /// A text.
     Text,
-    /// A value pattern.
+    /// A value.
     Value {
         /// The datatype name, if specified.
         name: Option<Name>,
