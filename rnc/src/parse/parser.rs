@@ -101,7 +101,7 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
         (
             spaced(alt((
                 start_item,
-                map(annotation_element, GrammarItem::Annotation),
+                map(annotation, GrammarItem::Annotation),
                 define_item,
                 div,
                 include,
@@ -274,7 +274,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
-    map((symbol(">>"), annotation_element), |_| ()).parse(input)
+    map((symbol(">>"), annotation), |_| ()).parse(input)
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -481,7 +481,7 @@ fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     .parse(input)
 }
 
-fn annotation_element(input: &str) -> ParserResult<'_, Annotation> {
+fn annotation(input: &str) -> ParserResult<'_, Annotation> {
     map((name_token, annotation_block), |(name, attributes)| {
         Annotation { name, attributes }
     })
@@ -880,7 +880,7 @@ mod tests {
     fn parse_annotation_item() {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
-        let annotation_result = super::annotation_element(input);
+        let annotation_result = super::annotation(input);
         assert!(
             annotation_result.is_ok(),
             "annotation element parse failed: {annotation_result:?}"
