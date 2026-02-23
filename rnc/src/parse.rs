@@ -499,22 +499,20 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
-    let (input, (base, except)) = (
-        name_class_primary,
-        opt(preceded(symbol("-"), name_class_primary)),
-    )
-        .parse(input)?;
-
-    match except {
-        Some(except) => Ok((
-            input,
-            NameClass::Except {
+    map(
+        (
+            name_class_primary,
+            opt(preceded(symbol("-"), name_class_primary)),
+        ),
+        |(base, except)| match except {
+            Some(except) => NameClass::Except {
                 base: Box::new(base),
                 except: Box::new(except),
             },
-        )),
-        None => Ok((input, base)),
-    }
+            None => base,
+        },
+    )
+    .parse(input)
 }
 
 fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
@@ -717,14 +715,17 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
-    let (input, (first, rest)) = (identifier, opt(preceded(char(':'), identifier))).parse(input)?;
-
-    let (prefix, local) = match rest {
-        Some(local) => (Some(first), local),
-        None => (None, first),
-    };
-
-    Ok((input, Name { prefix, local }))
+    map(
+        (identifier, opt(preceded(char(':'), identifier))),
+        |(first, rest)| {
+            let (prefix, local) = match rest {
+                Some(local) => (Some(first), local),
+                None => (None, first),
+            };
+            Name { prefix, local }
+        },
+    )
+    .parse(input)
 }
 
 fn identifier(input: &str) -> ParserResult<'_, String> {
