@@ -10,12 +10,15 @@ mod tests {
     use super::*;
     use insta::assert_debug_snapshot;
     use rstest::rstest;
-    use std::{fs::read_to_string, path::PathBuf};
+    use std::{
+        fs::read_to_string,
+        path::{Path, PathBuf},
+    };
 
     #[rstest]
     fn parse_file(#[files("../vendor/validator/**/schema/**/*.rnc")] path: PathBuf) {
         assert_debug_snapshot!(
-            path.strip_prefix("../vendor")
+            path.strip_prefix(Path::new("../vendor").canonicalize().unwrap())
                 .unwrap()
                 .display()
                 .to_string(),
