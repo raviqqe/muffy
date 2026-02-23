@@ -20,7 +20,7 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        spaced((many0(declaration), schema_body)),
+        blanked((many0(declaration), schema_body)),
         |(declarations, body)| Schema { declarations, body },
     )
     .parse(input)
@@ -40,7 +40,7 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
 }
 
 fn declaration(input: &str) -> ParserResult<'_, Declaration> {
-    spaced(alt((
+    blanked(alt((
         map(namespace_declaration, Declaration::Namespace),
         map(default_namespace_declaration, Declaration::DefaultNamespace),
         map(datatypes_declaration, Declaration::Datatypes),
@@ -99,7 +99,7 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (
-            spaced(alt((
+            blanked(alt((
                 start_item,
                 map(annotation, GrammarItem::Annotation),
                 define_item,
@@ -414,7 +414,7 @@ fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
-    spaced(alt((
+    blanked(alt((
         value(NameClass::AnyName, tag("*")),
         map((identifier, char(':'), char('*')), |(prefix, _, _)| {
             NameClass::NamespaceName(Some(prefix))
@@ -508,12 +508,12 @@ fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
 }
 
 fn identifier_token(input: &str) -> ParserResult<'_, String> {
-    spaced(identifier).parse(input)
+    blanked(identifier).parse(input)
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
-        spaced((identifier, opt(preceded(char(':'), identifier)))),
+        blanked((identifier, opt(preceded(char(':'), identifier)))),
         |(first, rest)| {
             let (prefix, local) = match rest {
                 Some(local) => (Some(first), local),
@@ -526,7 +526,7 @@ fn name(input: &str) -> ParserResult<'_, Name> {
 }
 
 fn string_literal(input: &str) -> ParserResult<'_, String> {
-    spaced(alt((
+    blanked(alt((
         map(
             delimited(
                 char('"'),
@@ -547,12 +547,6 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
     .parse(input)
 }
 
-fn spaced<'a, T>(
-    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
-) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
-    delimited(blank, parser, blank)
-}
-
 fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
         delimited(
@@ -565,7 +559,7 @@ fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
 }
 
 fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
-    move |input| spaced(tag(symbol)).parse(input)
+    move |input| blanked(tag(symbol)).parse(input)
 }
 
 fn parenthesized<'a, T>(
@@ -584,6 +578,12 @@ fn bracketed<'a, T>(
     parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
 ) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
     delimited(symbol("["), parser, symbol("]"))
+}
+
+fn blanked<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    delimited(blank, parser, blank)
 }
 
 fn blank(input: &str) -> ParserResult<'_, ()> {
