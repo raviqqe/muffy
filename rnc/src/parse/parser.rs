@@ -503,14 +503,6 @@ fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
     map(many0(annotation_block), |_| ()).parse(input)
 }
 
-fn open_bracket(input: &str) -> ParserResult<'_, &str> {
-    tag("[").parse(input)
-}
-
-fn close_bracket(input: &str) -> ParserResult<'_, &str> {
-    tag("]").parse(input)
-}
-
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     map(
         (name, preceded(symbol("="), string_literal)),
@@ -595,7 +587,7 @@ fn braced<'a, T>(
 fn bracketed<'a, T>(
     parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
 ) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
-    delimited(open_bracket, parser, close_bracket)
+    delimited(symbol("["), parser, symbol("]"))
 }
 
 fn blank(input: &str) -> ParserResult<'_, ()> {
