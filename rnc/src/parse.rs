@@ -78,12 +78,13 @@ fn schema(input: &str) -> ParserResult<'_, Schema> {
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     let (input, _) = skip_annotation_blocks(input)?;
     if grammar_item(input).is_ok() {
-        let (remaining, items) = all_consuming(many1(grammar_item)).parse(input)?;
-        return Ok((remaining, SchemaBody::Grammar(Grammar { items })));
+        return map(all_consuming(many1(grammar_item)), |items| {
+            SchemaBody::Grammar(Grammar { items })
+        })
+        .parse(input);
     }
 
-    let (input, pattern) = pattern(input)?;
-    Ok((input, SchemaBody::Pattern(pattern)))
+    map(pattern, SchemaBody::Pattern).parse(input)
 }
 
 fn declaration(input: &str) -> ParserResult<'_, Declaration> {
@@ -318,26 +319,25 @@ fn group_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, (base_pattern, _, quantifier)) = (
-        primary_pattern,
-        many0(annotation_attachment),
-        opt(alt((
-            value("?", symbol("?")),
-            value("*", symbol("*")),
-            value("+", symbol("+")),
-        ))),
+    map(
+        (
+            primary_pattern,
+            many0(annotation_attachment),
+            opt(alt((
+                value("?", symbol("?")),
+                value("*", symbol("*")),
+                value("+", symbol("+")),
+            ))),
+        ),
+        |(base_pattern, _, quantifier)| match quantifier {
+            Some("?") => Pattern::Optional(Box::new(base_pattern)),
+            Some("*") => Pattern::Many0(Box::new(base_pattern)),
+            Some("+") => Pattern::Many1(Box::new(base_pattern)),
+            None => base_pattern,
+            Some(_) => base_pattern,
+        },
     )
-        .parse(input)?;
-
-    let pattern = match quantifier {
-        Some("?") => Pattern::Optional(Box::new(base_pattern)),
-        Some("*") => Pattern::Many0(Box::new(base_pattern)),
-        Some("+") => Pattern::Many1(Box::new(base_pattern)),
-        None => base_pattern,
-        Some(_) => base_pattern,
-    };
-
-    Ok((input, pattern))
+    .parse(input)
 }
 
 fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
