@@ -664,26 +664,25 @@ mod tests {
     fn parse_pattern_schema() {
         let input = "element foo { (text | empty)+, attribute id { text }? }";
 
-        let schema = parse_schema(input).expect("schema should parse");
-
-        let expected = Schema {
-            declarations: Vec::new(),
-            body: SchemaBody::Pattern(Pattern::Element {
-                name_class: NameClass::Name(local_name("foo")),
-                pattern: Box::new(Pattern::Group(vec![
-                    Pattern::Many1(Box::new(Pattern::Choice(vec![
-                        Pattern::Text,
-                        Pattern::Empty,
-                    ]))),
-                    Pattern::Optional(Box::new(Pattern::Attribute {
-                        name_class: NameClass::Name(local_name("id")),
-                        pattern: Box::new(Pattern::Text),
-                    })),
-                ])),
-            }),
-        };
-
-        assert_eq!(schema, expected);
+        assert_eq!(
+            parse_schema(input).expect("schema should parse"),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("foo")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                            Pattern::Text,
+                            Pattern::Empty,
+                        ]))),
+                        Pattern::Optional(Box::new(Pattern::Attribute {
+                            name_class: NameClass::Name(local_name("id")),
+                            pattern: Box::new(Pattern::Text),
+                        })),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -696,110 +695,107 @@ mod tests {
             common &= element div { text }
         "#};
 
-        let schema = parse_schema(input).expect("schema should parse");
-
-        let expected = Schema {
-            declarations: vec![Declaration::Namespace(NamespaceDeclaration {
-                prefix: "sch".to_string(),
-                uri: "http://example.com/sch".to_string(),
-            })],
-            body: SchemaBody::Grammar(Grammar {
-                items: vec![
-                    GrammarItem::Annotation(Annotation {
-                        name: prefixed_name("sch", "ns"),
-                        attributes: vec![
-                            AnnotationAttribute {
-                                name: local_name("prefix"),
-                                value: "html".to_string(),
+        assert_eq!(
+            parse_schema(input).expect("schema should parse"),
+            Schema {
+                declarations: vec![Declaration::Namespace(NamespaceDeclaration {
+                    prefix: "sch".to_string(),
+                    uri: "http://example.com/sch".to_string(),
+                })],
+                body: SchemaBody::Grammar(Grammar {
+                    items: vec![
+                        GrammarItem::Annotation(Annotation {
+                            name: prefixed_name("sch", "ns"),
+                            attributes: vec![
+                                AnnotationAttribute {
+                                    name: local_name("prefix"),
+                                    value: "html".to_string(),
+                                },
+                                AnnotationAttribute {
+                                    name: local_name("uri"),
+                                    value: "http://example.com/ns".to_string(),
+                                },
+                            ],
+                        }),
+                        GrammarItem::Start {
+                            combine: None,
+                            pattern: Pattern::Element {
+                                name_class: NameClass::Name(local_name("html")),
+                                pattern: Box::new(Pattern::Empty),
                             },
-                            AnnotationAttribute {
-                                name: local_name("uri"),
-                                value: "http://example.com/ns".to_string(),
+                        },
+                        GrammarItem::Definition(Definition {
+                            name: "common".to_string(),
+                            combine: Some(Combine::Interleave),
+                            pattern: Pattern::Element {
+                                name_class: NameClass::Name(local_name("div")),
+                                pattern: Box::new(Pattern::Text),
                             },
-                        ],
-                    }),
-                    GrammarItem::Start {
-                        combine: None,
-                        pattern: Pattern::Element {
-                            name_class: NameClass::Name(local_name("html")),
-                            pattern: Box::new(Pattern::Empty),
-                        },
-                    },
-                    GrammarItem::Definition(Definition {
-                        name: "common".to_string(),
-                        combine: Some(Combine::Interleave),
-                        pattern: Pattern::Element {
-                            name_class: NameClass::Name(local_name("div")),
-                            pattern: Box::new(Pattern::Text),
-                        },
-                    }),
-                ],
-            }),
-        };
-
-        assert_eq!(schema, expected);
+                        }),
+                    ],
+                }),
+            }
+        );
     }
 
     #[test]
     fn parse_data_and_value_patterns() {
         let input = "attribute size { xsd:integer { minInclusive = \"1\" } - \"5\" }";
 
-        let schema = parse_schema(input).expect("schema should parse");
-
-        let expected = Schema {
-            declarations: Vec::new(),
-            body: SchemaBody::Pattern(Pattern::Attribute {
-                name_class: NameClass::Name(local_name("size")),
-                pattern: Box::new(Pattern::Data {
-                    name: prefixed_name("xsd", "integer"),
-                    parameters: vec![Parameter {
-                        name: local_name("minInclusive"),
-                        value: "1".to_string(),
-                    }],
-                    except: Some(Box::new(Pattern::Value {
-                        name: None,
-                        value: "5".to_string(),
-                    })),
+        assert_eq!(
+            parse_schema(input).expect("schema should parse"),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Attribute {
+                    name_class: NameClass::Name(local_name("size")),
+                    pattern: Box::new(Pattern::Data {
+                        name: prefixed_name("xsd", "integer"),
+                        parameters: vec![Parameter {
+                            name: local_name("minInclusive"),
+                            value: "1".to_string(),
+                        }],
+                        except: Some(Box::new(Pattern::Value {
+                            name: None,
+                            value: "5".to_string(),
+                        })),
+                    }),
                 }),
-            }),
-        };
-
-        assert_eq!(schema, expected);
+            }
+        );
     }
 
     #[test]
     fn parse_name_class_except() {
         let input = "element (* - (foo | bar)) { text }";
 
-        let schema = parse_schema(input).expect("schema should parse");
-
-        let expected = Schema {
-            declarations: Vec::new(),
-            body: SchemaBody::Pattern(Pattern::Element {
-                name_class: NameClass::Except {
-                    base: Box::new(NameClass::AnyName),
-                    except: Box::new(NameClass::Choice(vec![
-                        NameClass::Name(local_name("foo")),
-                        NameClass::Name(local_name("bar")),
-                    ])),
-                },
-                pattern: Box::new(Pattern::Text),
-            }),
-        };
-
-        assert_eq!(schema, expected);
+        assert_eq!(
+            parse_schema(input).expect("schema should parse"),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Except {
+                        base: Box::new(NameClass::AnyName),
+                        except: Box::new(NameClass::Choice(vec![
+                            NameClass::Name(local_name("foo")),
+                            NameClass::Name(local_name("bar")),
+                        ])),
+                    },
+                    pattern: Box::new(Pattern::Text),
+                }),
+            }
+        );
     }
 
     #[test]
     fn parse_annotation_item() {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
-        let annotation_result = super::annotation(input);
+        let annotation_result = annotation(input);
         assert!(
             annotation_result.is_ok(),
             "annotation element parse failed: {annotation_result:?}"
         );
-        let result = super::grammar_item(input);
+        let result = grammar_item(input);
 
         assert!(
             result.is_ok(),
@@ -811,7 +807,7 @@ mod tests {
     fn parse_basic_table_definition() {
         let input = "table = element table { table.attlist, caption?, tr+ }";
 
-        let result = super::grammar_item(input);
+        let result = grammar_item(input);
 
         assert!(result.is_ok(), "definition parse failed: {result:?}");
     }
@@ -820,7 +816,7 @@ mod tests {
     fn parse_prefixed_attribute_pattern() {
         let input = "attribute xml:space { string \"preserve\" }?";
 
-        let result = super::pattern(input);
+        let result = pattern(input);
 
         assert!(
             result.is_ok(),
@@ -835,7 +831,7 @@ mod tests {
                 attribute xml:space { string "preserve" }?
         "#};
 
-        let result = super::grammar_item(input);
+        let result = grammar_item(input);
 
         assert!(result.is_ok(), "inline comment parse failed: {result:?}");
     }
@@ -848,7 +844,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = super::grammar_item(input).expect("definition should parse");
+        let (remaining_input, _) = grammar_item(input).expect("definition should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("class.attrib"),
@@ -860,7 +856,7 @@ mod tests {
     fn parse_prefixed_name_class() {
         let input = "xml:space { string \"preserve\" }";
 
-        let result = super::name_class(input);
+        let result = name_class(input);
 
         assert!(result.is_ok(), "prefixed name class failed: {result:?}");
     }
@@ -872,7 +868,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = super::pattern(input).expect("attribute pattern should parse");
+        let (remaining_input, _) = pattern(input).expect("attribute pattern should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("class.attrib"),
@@ -887,7 +883,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = super::attribute_pattern(input).expect("attribute should parse");
+        let (remaining_input, _) = attribute_pattern(input).expect("attribute should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("?"),
@@ -1003,7 +999,7 @@ mod tests {
     fn parse_grammar_with_leading_annotation_block() {
         let input = "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
 
-        let (remaining_input, _) = super::grammar(input).expect("grammar should parse");
+        let (remaining_input, _) = grammar(input).expect("grammar should parse");
 
         assert!(
             remaining_input.trim_start().is_empty(),
@@ -1076,7 +1072,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = super::grammar_item(input).expect("include item should parse");
+        let (remaining_input, _) = grammar_item(input).expect("include item should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),
@@ -1101,7 +1097,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = super::raw_grammar_block(input).expect("raw block should parse");
+        let (remaining_input, _) = raw_grammar_block(input).expect("raw block should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),
@@ -1167,8 +1163,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) =
-            super::raw_grammar_block(input).expect("raw include should parse");
+        let (remaining_input, _) = raw_grammar_block(input).expect("raw include should parse");
 
         assert!(
             remaining_input.trim_start().starts_with("form.attlist"),
@@ -1186,7 +1181,7 @@ mod tests {
                   string "file"
         "#};
 
-        let result = super::grammar_item(input);
+        let result = grammar_item(input);
 
         assert!(result.is_ok(), "choice with comment failed: {result:?}");
     }
