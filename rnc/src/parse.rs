@@ -162,9 +162,6 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
             define_item,
             div_item,
             include_item,
-            map(namespace_declaration, GrammarItem::Namespace),
-            map(default_namespace_declaration, GrammarItem::DefaultNamespace),
-            map(datatypes_declaration, GrammarItem::Datatypes),
         )),
         whitespace0,
     )
@@ -262,15 +259,9 @@ fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
     let (input, _) = keyword("inherit").parse(input)?;
-    let (input, prefix) = opt(preceded(symbol("="), identifier_token)).parse(input)?;
+    let (input, prefix) = preceded(symbol("="), identifier_token).parse(input)?;
 
-    Ok((
-        input,
-        match prefix {
-            Some(prefix) => Inherit::Prefix(prefix),
-            None => Inherit::DefaultNamespace,
-        },
-    ))
+    Ok((input, Inherit::Prefix(prefix)))
 }
 
 fn assignment_operator(input: &str) -> ParserResult<'_, Option<Combine>> {
@@ -334,9 +325,7 @@ fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
         element_pattern,
         attribute_pattern,
         list_pattern,
-        mixed_pattern,
         grammar_pattern,
-        parent_pattern,
         external_pattern,
         text_pattern,
         empty_pattern,
@@ -383,22 +372,10 @@ fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
     Ok((input, Pattern::List(Box::new(pattern))))
 }
 
-fn mixed_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("mixed").parse(input)?;
-    let (input, pattern) = delimited(symbol("{"), pattern, symbol("}")).parse(input)?;
-    Ok((input, Pattern::Mixed(Box::new(pattern))))
-}
-
 fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
     let (input, _) = keyword("grammar").parse(input)?;
     let (input, grammar) = delimited(symbol("{"), grammar, symbol("}")).parse(input)?;
     Ok((input, Pattern::Grammar(grammar)))
-}
-
-fn parent_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("parent").parse(input)?;
-    let (input, name) = identifier_token(input)?;
-    Ok((input, Pattern::ParentRef(name)))
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {

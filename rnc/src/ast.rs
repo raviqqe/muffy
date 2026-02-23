@@ -57,18 +57,12 @@ pub struct DatatypesDeclaration {
 pub enum GrammarItem {
     /// An annotation.
     Annotation(Annotation),
-    /// A datatype library declaration.
-    Datatypes(DatatypesDeclaration),
-    /// A default namespace declaration.
-    DefaultNamespace(String),
     /// A definition.
     Definition(Definition),
     /// A div block containing nested grammar items.
     Div(Grammar),
     /// An include block.
     Include(Include),
-    /// A namespace declaration.
-    Namespace(NamespaceDeclaration),
     /// A start.
     Start {
         /// A combine operator.
@@ -103,8 +97,6 @@ pub struct Include {
 /// An inherit modifier.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Inherit {
-    /// Inherits the default namespace.
-    DefaultNamespace,
     /// Inherits a namespace.
     Prefix(String),
 }
@@ -162,16 +154,12 @@ pub enum Pattern {
     Many0(Box<Self>),
     /// A repetition more than 0.
     Many1(Box<Self>),
-    /// A mixed pattern.
-    Mixed(Box<Self>),
     /// A name.
     Name(Name),
     /// A not-allowed pattern.
     NotAllowed,
     /// An optional pattern.
     Optional(Box<Self>),
-    /// A reference to a parent grammar definition.
-    ParentRef(String),
     /// A text.
     Text,
     /// A value.
