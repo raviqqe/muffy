@@ -201,15 +201,15 @@ pub enum NameClass {
     Choice(Vec<Self>),
     /// A name class with exclusions.
     Except {
-        /// The base name class.
+        /// A base name class.
         base: Box<Self>,
         /// The excluded name class.
         except: Box<Self>,
     },
-    /// A single name.
+    /// A name.
     Name(Name),
     /// A namespace wildcard for a prefix.
-    NsName(Option<String>),
+    NamespaceName(Option<String>),
 }
 
 /// A datatype parameter.

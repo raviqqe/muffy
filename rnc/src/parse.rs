@@ -491,7 +491,7 @@ fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
         alt((
             value(NameClass::AnyName, tag("*")),
             map((identifier, char(':'), char('*')), |(prefix, _, _)| {
-                NameClass::NsName(Some(prefix))
+                NameClass::NamespaceName(Some(prefix))
             }),
             map(name, NameClass::Name),
             delimited(tag("("), name_class, tag(")")),
