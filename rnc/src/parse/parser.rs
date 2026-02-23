@@ -20,7 +20,7 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        delimited(blank0, (many0(declaration), blank0, schema_body), blank0),
+        spaced((many0(declaration), blank0, schema_body)),
         |(declarations, _, body)| Schema { declarations, body },
     )
     .parse(input)
@@ -40,15 +40,11 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
 }
 
 fn declaration(input: &str) -> ParserResult<'_, Declaration> {
-    delimited(
-        blank0,
-        alt((
-            map(namespace_declaration, Declaration::Namespace),
-            map(default_namespace_declaration, Declaration::DefaultNamespace),
-            map(datatypes_declaration, Declaration::Datatypes),
-        )),
-        blank0,
-    )
+    spaced(alt((
+        map(namespace_declaration, Declaration::Namespace),
+        map(default_namespace_declaration, Declaration::DefaultNamespace),
+        map(datatypes_declaration, Declaration::Datatypes),
+    )))
     .parse(input)
 }
 
@@ -103,17 +99,13 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (
-            delimited(
-                blank0,
-                alt((
-                    start_item,
-                    map(annotation_element, GrammarItem::Annotation),
-                    define_item,
-                    div_item,
-                    include_item,
-                )),
-                blank0,
-            ),
+            spaced(alt((
+                start_item,
+                map(annotation_element, GrammarItem::Annotation),
+                define_item,
+                div,
+                include,
+            ))),
             many0(annotation_block_after),
         ),
         |(item, _)| item,
@@ -143,7 +135,7 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn div_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn div(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (keyword("div"), delimited(symbol("{"), grammar, symbol("}"))),
         |(_, grammar)| GrammarItem::Div(grammar),
@@ -151,7 +143,7 @@ fn div_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn include_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn include(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (
             keyword("include"),
