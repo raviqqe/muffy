@@ -642,14 +642,8 @@ fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Patter
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        ast::{
-            Annotation, AnnotationAttribute, Combine, Declaration, Definition, Grammar,
-            GrammarItem, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema,
-            SchemaBody,
-        },
-        parse_schema,
-    };
+    use super::super::parse_schema;
+    use super::*;
     use indoc::indoc;
 
     fn local_name(value: &str) -> Name {
