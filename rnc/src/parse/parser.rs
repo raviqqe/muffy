@@ -449,10 +449,9 @@ fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
 }
 
 fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(
-        bracketed((many0(annotation_attribute), blank)),
-        |(attributes, _)| attributes,
-    )
+    map(bracketed(many0(annotation_attribute)), |attributes| {
+        attributes
+    })
     .parse(input)
 }
 
@@ -548,11 +547,10 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
 
 fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
-        delimited(
-            blank,
-            terminated(tag(keyword), not(peek(satisfy(is_identifier_char)))),
-            blank,
-        )
+        blanked(terminated(
+            tag(keyword),
+            not(peek(satisfy(is_identifier_char))),
+        ))
         .parse(input)
     }
 }
