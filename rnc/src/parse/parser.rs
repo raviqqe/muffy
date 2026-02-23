@@ -10,7 +10,7 @@ use nom::{
     character::complete::{char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::{Error, ErrorKind},
-    multi::{fold_many0, many0, many1, separated_list0, separated_list1},
+    multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -94,14 +94,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
     map(
-        fold_many0(
-            preceded(skip_annotation_blocks, grammar_item),
-            Vec::new,
-            |mut items, item| {
-                items.push(item);
-                items
-            },
-        ),
+        many0(preceded(skip_annotation_blocks, grammar_item)),
         |items| Grammar { items },
     )
     .parse(input)
@@ -178,8 +171,8 @@ fn include_item(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(preceded(symbol("{"), raw_grammar_body), |_| {
-        Grammar { items: Vec::new() }
+    map(preceded(symbol("{"), raw_grammar_body), |_| Grammar {
+        items: Vec::new(),
     })
     .parse(input)
 }
@@ -399,9 +392,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
                 opt(parameters),
                 opt(preceded(symbol("-"), pattern)),
             ),
-            |(_, parameters, except_pattern)| {
-                parameters.is_some() || except_pattern.is_some()
-            },
+            |(_, parameters, except_pattern)| parameters.is_some() || except_pattern.is_some(),
         ),
         |(name, parameters, except_pattern)| Pattern::Data {
             name,
@@ -523,7 +514,10 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
 }
 
 fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(preceded(open_bracket, annotation_block_body), |_| Vec::new()).parse(input)
+    map(preceded(open_bracket, annotation_block_body), |_| {
+        Vec::new()
+    })
+    .parse(input)
 }
 
 fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
