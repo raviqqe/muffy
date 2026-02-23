@@ -380,13 +380,18 @@ fn name_class(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
-    map(separated_list1(symbol("|"), name_class_except), |classes| {
-        if classes.len() == 1 {
-            classes.into_iter().next().unwrap()
-        } else {
-            NameClass::Choice(classes)
-        }
-    })
+    map(
+        separated_list1(symbol("|"), name_class_except),
+        |mut classes| {
+            if classes.len() == 1
+                && let Some(class) = classes.pop()
+            {
+                class
+            } else {
+                NameClass::Choice(classes)
+            }
+        },
+    )
     .parse(input)
 }
 
@@ -623,9 +628,11 @@ fn string_escape(input: &str) -> ParserResult<'_, &str> {
     .parse(input)
 }
 
-fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
-    if patterns.len() == 1 {
-        patterns.into_iter().next().unwrap()
+fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
+    if patterns.len() == 1
+        && let Some(pattern) = patterns.pop()
+    {
+        pattern
     } else {
         constructor(patterns)
     }
