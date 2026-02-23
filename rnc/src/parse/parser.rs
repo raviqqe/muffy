@@ -28,7 +28,7 @@ pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
 
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     preceded(
-        skip_annotation_blocks,
+        many0(annotation_block),
         alt((
             map(all_consuming(many0(grammar_item)), |items| {
                 SchemaBody::Grammar(Grammar { items })
@@ -90,7 +90,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
     map(
-        many0(preceded(skip_annotation_blocks, grammar_item)),
+        many0(preceded(many0(annotation_block), grammar_item)),
         |items| Grammar { items },
     )
     .parse(input)
@@ -275,7 +275,7 @@ fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
     preceded(
-        skip_annotation_blocks,
+        many0(annotation_block),
         alt((
             element_pattern,
             attribute_pattern,
@@ -497,10 +497,6 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
     }
 
     Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)))
-}
-
-fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
-    map(many0(annotation_block), |_| ()).parse(input)
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
