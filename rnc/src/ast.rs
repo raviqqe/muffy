@@ -150,11 +150,11 @@ pub enum Pattern {
     Empty,
     /// An external reference.
     ExternalRef(String),
-    /// A nested grammar pattern.
+    /// A grammar.
     Grammar(Grammar),
-    /// A group pattern (`,`) representing sequence.
+    /// A group.
     Group(Vec<Self>),
-    /// An interleave pattern (`&`).
+    /// An interleave pattern.
     Interleave(Vec<Self>),
     /// A list pattern.
     List(Box<Self>),
