@@ -14,7 +14,7 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{char, multispace1, satisfy},
-    combinator::{all_consuming, map, not, opt, peek, recognize, value},
+    combinator::{all_consuming, eof, map, not, opt, peek, recognize, value},
     error::{Error, ErrorKind},
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
@@ -59,32 +59,31 @@ type ParserError<'input> = Error<&'input str>;
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
 fn schema(input: &str) -> ParserResult<'_, Schema> {
-    let (input, (declarations, _)) = (many0(declaration), whitespace0).parse(input)?;
-    if input.is_empty() {
-        return Ok((
-            input,
-            Schema {
-                declarations,
-                body: SchemaBody::Grammar(Grammar { items: Vec::new() }),
-            },
-        ));
-    }
-
-    let (input, body) = schema_body(input)?;
-
-    Ok((input, Schema { declarations, body }))
+    map(
+        (
+            many0(declaration),
+            whitespace0,
+            alt((
+                map(eof, |_| SchemaBody::Grammar(Grammar { items: Vec::new() })),
+                schema_body,
+            )),
+        ),
+        |(declarations, _, body)| Schema { declarations, body },
+    )
+    .parse(input)
 }
 
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
-    let (input, _) = skip_annotation_blocks(input)?;
-    if grammar_item(input).is_ok() {
-        return map(all_consuming(many1(grammar_item)), |items| {
-            SchemaBody::Grammar(Grammar { items })
-        })
-        .parse(input);
-    }
-
-    map(pattern, SchemaBody::Pattern).parse(input)
+    preceded(
+        skip_annotation_blocks,
+        alt((
+            map(all_consuming(many1(grammar_item)), |items| {
+                SchemaBody::Grammar(Grammar { items })
+            }),
+            map(pattern, SchemaBody::Pattern),
+        )),
+    )
+    .parse(input)
 }
 
 fn declaration(input: &str) -> ParserResult<'_, Declaration> {
