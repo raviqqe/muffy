@@ -136,10 +136,9 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn div(input: &str) -> ParserResult<'_, GrammarItem> {
-    map(
-        (keyword("div"), delimited(symbol("{"), grammar, symbol("}"))),
-        |(_, grammar)| GrammarItem::Div(grammar),
-    )
+    map((keyword("div"), braced(grammar)), |(_, grammar)| {
+        GrammarItem::Div(grammar)
+    })
     .parse(input)
 }
 
@@ -163,14 +162,14 @@ fn include(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(preceded(symbol("{"), raw_grammar_body), |_| Grammar {
+    map(braced(raw_grammar_body), |_| Grammar {
         items: Vec::new(),
     })
     .parse(input)
 }
 
 fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
-    let mut depth = 1_u32;
+    let mut depth = 0_u32;
     let mut string_delimiter: Option<char> = None;
     let mut escape_next = false;
 
@@ -194,11 +193,11 @@ fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
             '"' | '\'' => string_delimiter = Some(character),
             '{' => depth += 1,
             '}' => {
-                depth = depth.saturating_sub(1);
                 if depth == 0 {
-                    let remaining_input = &input[offset_index + 1..];
+                    let remaining_input = &input[offset_index..];
                     return Ok((remaining_input, ()));
                 }
+                depth = depth.saturating_sub(1);
             }
             _ => {}
         }
@@ -303,7 +302,7 @@ fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
         (
             keyword("element"),
             name_class,
-            delimited(symbol("{"), pattern, symbol("}")),
+            braced(pattern),
         ),
         |(_, name_class, pattern)| Pattern::Element {
             name_class,
@@ -318,7 +317,7 @@ fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
         (
             keyword("attribute"),
             name_class,
-            delimited(symbol("{"), pattern, symbol("}")),
+            braced(pattern),
         ),
         |(_, name_class, pattern)| Pattern::Attribute {
             name_class,
@@ -332,7 +331,7 @@ fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
             keyword("list"),
-            delimited(symbol("{"), pattern, symbol("}")),
+            braced(pattern),
         ),
         |(_, pattern)| Pattern::List(pattern.into()),
     )
@@ -343,7 +342,7 @@ fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
             keyword("grammar"),
-            delimited(symbol("{"), grammar, symbol("}")),
+            braced(grammar),
         ),
         |(_, grammar)| Pattern::Grammar(grammar),
     )
@@ -446,12 +445,7 @@ fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
-    delimited(
-        symbol("{"),
-        separated_list0(opt(symbol(",")), parameter),
-        symbol("}"),
-    )
-    .parse(input)
+    braced(separated_list0(opt(symbol(",")), parameter)).parse(input)
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
@@ -615,6 +609,12 @@ fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
 
 fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| spaced(tag(symbol)).parse(input)
+}
+
+fn braced<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    delimited(symbol("{"), parser, symbol("}"))
 }
 
 fn blank(input: &str) -> ParserResult<'_, ()> {
