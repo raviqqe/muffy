@@ -1,13 +1,12 @@
 //! Parser implementation for Relax NG Compact Syntax.
 
+mod error;
+
+use self::error::ParseError;
 use crate::ast::{
     Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
     Grammar, GrammarItem, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
-};
-use core::{
-    error::Error as StdError,
-    fmt::{self, Display, Formatter},
 };
 use nom::{
     IResult, Parser,
@@ -20,32 +19,7 @@ use nom::{
     sequence::{delimited, preceded, terminated},
 };
 
-/// A parse error.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParseError {
-    message: String,
-}
-
-impl ParseError {
-    fn from_nom<'input>(error: nom::Err<ParserError<'input>>) -> Self {
-        let message = match error {
-            nom::Err::Incomplete(_) => "incomplete input".to_string(),
-            nom::Err::Error(error) | nom::Err::Failure(error) => error.to_string(),
-        };
-
-        Self { message }
-    }
-}
-
-impl Display for ParseError {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}", self.message)
-    }
-}
-
-impl StdError for ParseError {}
-
-/// Parse a Relax NG compact syntax schema.
+/// Parses a schema.
 pub fn parse_schema(input: &str) -> Result<Schema, ParseError> {
     let mut parser = all_consuming(delimited(whitespace0, schema, whitespace0));
 
