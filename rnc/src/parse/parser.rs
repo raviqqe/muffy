@@ -8,7 +8,7 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{char, multispace1, satisfy},
-    combinator::{all_consuming, map, not, opt, peek, recognize, value},
+    combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::{Error, ErrorKind},
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
@@ -188,7 +188,13 @@ fn include_item(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    let (input, _) = symbol("{").parse(input)?;
+    map(preceded(symbol("{"), raw_grammar_body), |_| {
+        Grammar { items: Vec::new() }
+    })
+    .parse(input)
+}
+
+fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
     let mut depth = 1_u32;
     let mut string_delimiter: Option<char> = None;
     let mut escape_next = false;
@@ -216,7 +222,7 @@ fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
                 depth = depth.saturating_sub(1);
                 if depth == 0 {
                     let remaining_input = &input[offset_index + 1..];
-                    return Ok((remaining_input, Grammar { items: Vec::new() }));
+                    return Ok((remaining_input, ()));
                 }
             }
             _ => {}
@@ -396,26 +402,24 @@ fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let starting_input = input;
-    let (input, (name, parameters, except_pattern)) = (
-        name_token,
-        opt(parameters),
-        opt(preceded(symbol("-"), pattern)),
-    )
-        .parse(input)?;
-
-    if parameters.is_none() && except_pattern.is_none() {
-        return Err(nom::Err::Error(Error::new(starting_input, ErrorKind::Tag)));
-    }
-
-    Ok((
-        input,
-        Pattern::Data {
+    map(
+        verify(
+            (
+                name_token,
+                opt(parameters),
+                opt(preceded(symbol("-"), pattern)),
+            ),
+            |(_, parameters, except_pattern)| {
+                parameters.is_some() || except_pattern.is_some()
+            },
+        ),
+        |(name, parameters, except_pattern)| Pattern::Data {
             name,
             parameters: parameters.unwrap_or_default(),
             except: except_pattern.map(Box::new),
         },
-    ))
+    )
+    .parse(input)
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -529,7 +533,10 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
 }
 
 fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    let (input, _) = open_bracket(input)?;
+    map(preceded(open_bracket, annotation_block_body), |_| Vec::new()).parse(input)
+}
+
+fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
     let mut depth = 1_u32;
     let mut string_delimiter: Option<char> = None;
     let mut escape_next = false;
@@ -557,7 +564,7 @@ fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute
                 depth = depth.saturating_sub(1);
                 if depth == 0 {
                     let remaining_input = &input[offset_index + 1..];
-                    return Ok((remaining_input, Vec::new()));
+                    return Ok((remaining_input, ()));
                 }
             }
             _ => {}
@@ -576,12 +583,7 @@ fn annotation_separator(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    let (input_after_space, _) = blank0(input)?;
-    if peek(open_bracket).parse(input_after_space).is_err() {
-        return Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)));
-    }
-
-    annotation_block(input_after_space)
+    preceded(blank0, preceded(peek(open_bracket), annotation_block)).parse(input)
 }
 
 fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
