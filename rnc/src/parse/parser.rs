@@ -604,11 +604,11 @@ fn spaced<'a, T>(
     delimited(blank0, parser, blank0)
 }
 
-fn keyword(keyword_text: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
+fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
         delimited(
             blank0,
-            terminated(tag(keyword_text), not(peek(satisfy(is_identifier_char)))),
+            terminated(tag(keyword), not(peek(satisfy(is_identifier_char)))),
             blank0,
         )
         .parse(input)
