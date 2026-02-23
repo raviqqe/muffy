@@ -106,7 +106,7 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
                 div,
                 include,
             ))),
-            many0(annotation_block_after),
+            many0(annotation_block),
         ),
         |(item, _)| item,
     )
@@ -162,10 +162,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarItem> {
 }
 
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(braced(raw_grammar_body), |_| Grammar {
-        items: Vec::new(),
-    })
-    .parse(input)
+    map(braced(raw_grammar_body), |_| Grammar { items: Vec::new() }).parse(input)
 }
 
 fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
@@ -291,7 +288,7 @@ fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
             value_pattern,
             data_pattern,
             name_pattern,
-            delimited(symbol("("), pattern, symbol(")")),
+            parenthesized(pattern),
         )),
     )
     .parse(input)
@@ -299,11 +296,7 @@ fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (
-            keyword("element"),
-            name_class,
-            braced(pattern),
-        ),
+        (keyword("element"), name_class, braced(pattern)),
         |(_, name_class, pattern)| Pattern::Element {
             name_class,
             pattern: pattern.into(),
@@ -314,11 +307,7 @@ fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (
-            keyword("attribute"),
-            name_class,
-            braced(pattern),
-        ),
+        (keyword("attribute"), name_class, braced(pattern)),
         |(_, name_class, pattern)| Pattern::Attribute {
             name_class,
             pattern: pattern.into(),
@@ -328,24 +317,16 @@ fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(
-        (
-            keyword("list"),
-            braced(pattern),
-        ),
-        |(_, pattern)| Pattern::List(pattern.into()),
-    )
+    map((keyword("list"), braced(pattern)), |(_, pattern)| {
+        Pattern::List(pattern.into())
+    })
     .parse(input)
 }
 
 fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(
-        (
-            keyword("grammar"),
-            braced(grammar),
-        ),
-        |(_, grammar)| Pattern::Grammar(grammar),
-    )
+    map((keyword("grammar"), braced(grammar)), |(_, grammar)| {
+        Pattern::Grammar(grammar)
+    })
     .parse(input)
 }
 
@@ -439,7 +420,7 @@ fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
             NameClass::NamespaceName(Some(prefix))
         }),
         map(name, NameClass::Name),
-        delimited(tag("("), name_class, tag(")")),
+        parenthesized(name_class),
     )))
     .parse(input)
 }
@@ -470,26 +451,18 @@ fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
 
 fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
     map(
-        (
-            open_bracket,
-            many0(annotation_attribute),
-            blank,
-            close_bracket,
-        ),
-        |(_, attributes, _, _)| attributes,
+        bracketed((many0(annotation_attribute), blank)),
+        |(attributes, _)| attributes,
     )
     .parse(input)
 }
 
 fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(preceded(open_bracket, annotation_block_body), |_| {
-        Vec::new()
-    })
-    .parse(input)
+    map(bracketed(annotation_block_body), |_| Vec::new()).parse(input)
 }
 
 fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
-    let mut depth = 1_u32;
+    let mut depth = 0_u32;
     let mut string_delimiter: Option<char> = None;
     let mut escape_next = false;
 
@@ -513,11 +486,11 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
             '"' | '\'' => string_delimiter = Some(character),
             '[' => depth += 1,
             ']' => {
-                depth = depth.saturating_sub(1);
                 if depth == 0 {
-                    let remaining_input = &input[offset_index + 1..];
+                    let remaining_input = &input[offset_index..];
                     return Ok((remaining_input, ()));
                 }
+                depth = depth.saturating_sub(1);
             }
             _ => {}
         }
@@ -526,12 +499,8 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
     Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)))
 }
 
-fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    preceded(blank, preceded(peek(open_bracket), annotation_block)).parse(input)
-}
-
 fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
-    map(many0(annotation_block_after), |_| ()).parse(input)
+    map(many0(annotation_block), |_| ()).parse(input)
 }
 
 fn open_bracket(input: &str) -> ParserResult<'_, &str> {
@@ -611,10 +580,22 @@ fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| spaced(tag(symbol)).parse(input)
 }
 
+fn parenthesized<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    delimited(symbol("("), parser, symbol(")"))
+}
+
 fn braced<'a, T>(
     parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
 ) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
     delimited(symbol("{"), parser, symbol("}"))
+}
+
+fn bracketed<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    delimited(open_bracket, parser, close_bracket)
 }
 
 fn blank(input: &str) -> ParserResult<'_, ()> {
