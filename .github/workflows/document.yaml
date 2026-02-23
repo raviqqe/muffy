@@ -52,6 +52,7 @@ jobs:
       - uses: ./.github/actions/setup
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &
+      - run: cargo run check --verbose ../muffy.local.toml
       - run: >
           cargo run check-site
           --accept-status 200
@@ -59,7 +60,6 @@ jobs:
           --accept-status 429
           --verbose
           http://localhost:4321/muffy/
-      - run: cargo run check --verbose ../muffy.local.toml
   document:
     needs:
       - rust_build
