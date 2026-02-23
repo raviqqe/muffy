@@ -1,5 +1,5 @@
 use core::{
-    sync::atomic::{AtomicU32, AtomicU64, Ordering},
+    sync::atomic::{AtomicU64, Ordering},
     time::Duration,
 };
 use tokio::time::{Instant, sleep};
@@ -10,7 +10,7 @@ use tokio::time::{Instant, sleep};
 /// A token bucket rate limiter.
 pub struct RateLimiter {
     token_count: AtomicU64,
-    window_count: AtomicU32,
+    window_count: AtomicU64,
     time: Instant,
     supply: u64,
     window: Duration,
