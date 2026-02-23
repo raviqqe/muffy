@@ -20,8 +20,8 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        spaced((many0(declaration), blank0, schema_body)),
-        |(declarations, _, body)| Schema { declarations, body },
+        spaced((many0(declaration), schema_body)),
+        |(declarations, body)| Schema { declarations, body },
     )
     .parse(input)
 }
@@ -262,12 +262,12 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
                 value("+", symbol("+")),
             ))),
         ),
-        |(base_pattern, _, quantifier)| match quantifier {
-            Some("?") => Pattern::Optional(Box::new(base_pattern)),
-            Some("*") => Pattern::Many0(Box::new(base_pattern)),
-            Some("+") => Pattern::Many1(Box::new(base_pattern)),
-            None => base_pattern,
-            Some(_) => base_pattern,
+        |(pattern, _, quantifier)| match quantifier {
+            Some("?") => Pattern::Optional(pattern.into()),
+            Some("*") => Pattern::Many0(pattern.into()),
+            Some("+") => Pattern::Many1(pattern.into()),
+            // TODO Return an error on an invalid quantifier.
+            Some(_) | None => pattern,
         },
     )
     .parse(input)
@@ -278,25 +278,22 @@ fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(
-        (
-            skip_annotation_blocks,
-            alt((
-                element_pattern,
-                attribute_pattern,
-                list_pattern,
-                grammar_pattern,
-                external_pattern,
-                text_pattern,
-                empty_pattern,
-                not_allowed_pattern,
-                delimited(symbol("("), pattern, symbol(")")),
-                value_pattern,
-                data_pattern,
-                name_pattern,
-            )),
-        ),
-        |(_, pattern)| pattern,
+    preceded(
+        skip_annotation_blocks,
+        alt((
+            element_pattern,
+            attribute_pattern,
+            list_pattern,
+            grammar_pattern,
+            external_pattern,
+            text_pattern,
+            empty_pattern,
+            not_allowed_pattern,
+            value_pattern,
+            data_pattern,
+            name_pattern,
+            delimited(symbol("("), pattern, symbol(")")),
+        )),
     )
     .parse(input)
 }
@@ -310,7 +307,7 @@ fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
         ),
         |(_, name_class, pattern)| Pattern::Element {
             name_class,
-            pattern: Box::new(pattern),
+            pattern: pattern.into(),
         },
     )
     .parse(input)
@@ -325,7 +322,7 @@ fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
         ),
         |(_, name_class, pattern)| Pattern::Attribute {
             name_class,
-            pattern: Box::new(pattern),
+            pattern: pattern.into(),
         },
     )
     .parse(input)
@@ -337,7 +334,7 @@ fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
             keyword("list"),
             delimited(symbol("{"), pattern, symbol("}")),
         ),
-        |(_, pattern)| Pattern::List(Box::new(pattern)),
+        |(_, pattern)| Pattern::List(pattern.into()),
     )
     .parse(input)
 }
