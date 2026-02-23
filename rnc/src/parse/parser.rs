@@ -54,7 +54,7 @@ fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> 
             keyword("namespace"),
             identifier_token,
             symbol("="),
-            string_literal_token,
+            string_literal,
         ),
         |(_, prefix, _, uri)| NamespaceDeclaration { prefix, uri },
     )
@@ -68,7 +68,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
             keyword("namespace"),
             opt(identifier_token),
             symbol("="),
-            string_literal_token,
+            string_literal,
         ),
         |(_, _, _, _, uri)| uri,
     )
@@ -81,7 +81,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
             keyword("datatypes"),
             opt(identifier_token),
             symbol("="),
-            string_literal_token,
+            string_literal,
         ),
         |(_, prefix, _, uri)| DatatypesDeclaration { prefix, uri },
     )
@@ -147,7 +147,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (
             keyword("include"),
-            string_literal_token,
+            string_literal,
             opt(inherit),
             opt(raw_grammar_block),
         ),
@@ -354,7 +354,7 @@ fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("external"), string_literal_token), |(_, uri)| {
+    map((keyword("external"), string_literal), |(_, uri)| {
         Pattern::ExternalRef(uri)
     })
     .parse(input)
@@ -397,10 +397,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (
-            opt(terminated(name_token_leading, blank1)),
-            string_literal_token,
-        ),
+        (opt(terminated(name_token_leading, blank1)), string_literal),
         |(datatype_name, value)| Pattern::Value {
             name: datatype_name,
             value,
@@ -471,7 +468,7 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     map(
-        (name_token, preceded(symbol("="), string_literal_token)),
+        (name_token, preceded(symbol("="), string_literal)),
         |(name, value)| Parameter { name, value },
     )
     .parse(input)
@@ -492,7 +489,7 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
     map(
         (
             open_bracket,
-            separated_list0(annotation_separator, annotation_attribute),
+            many0(annotation_attribute),
             blank0,
             close_bracket,
         ),
@@ -546,14 +543,6 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
     Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)))
 }
 
-fn annotation_separator(input: &str) -> ParserResult<'_, ()> {
-    map(
-        (peek(preceded(blank1, annotation_attribute)), blank1),
-        |_| (),
-    )
-    .parse(input)
-}
-
 fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
     preceded(blank0, preceded(peek(open_bracket), annotation_block)).parse(input)
 }
@@ -572,7 +561,7 @@ fn close_bracket(input: &str) -> ParserResult<'_, &str> {
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     map(
-        (name_token, preceded(symbol("="), string_literal_token)),
+        (name_token, preceded(symbol("="), string_literal)),
         |(name, value)| AnnotationAttribute { name, value },
     )
     .parse(input)
@@ -590,8 +579,26 @@ fn name_token_leading(input: &str) -> ParserResult<'_, Name> {
     preceded(blank0, name).parse(input)
 }
 
-fn string_literal_token(input: &str) -> ParserResult<'_, String> {
-    preceded(blank0, string_literal).parse(input)
+fn string_literal(input: &str) -> ParserResult<'_, String> {
+    spaced(alt((
+        map(
+            delimited(
+                char('"'),
+                opt(escaped_transform(is_not("\\\""), '\\', string_escape)),
+                char('"'),
+            ),
+            |value| value.unwrap_or_default(),
+        ),
+        map(
+            delimited(
+                char('\''),
+                opt(escaped_transform(is_not("\\'"), '\\', string_escape)),
+                char('\''),
+            ),
+            |value| value.unwrap_or_default(),
+        ),
+    )))
+    .parse(input)
 }
 
 fn spaced<'a, T>(
@@ -668,28 +675,6 @@ const fn is_identifier_start(character: char) -> bool {
 
 const fn is_identifier_char(character: char) -> bool {
     character.is_ascii_alphanumeric() || character == '_' || character == '-' || character == '.'
-}
-
-fn string_literal(input: &str) -> ParserResult<'_, String> {
-    alt((
-        map(
-            delimited(
-                char('"'),
-                opt(escaped_transform(is_not("\\\""), '\\', string_escape)),
-                char('"'),
-            ),
-            |value| value.unwrap_or_default(),
-        ),
-        map(
-            delimited(
-                char('\''),
-                opt(escaped_transform(is_not("\\'"), '\\', string_escape)),
-                char('\''),
-            ),
-            |value| value.unwrap_or_default(),
-        ),
-    ))
-    .parse(input)
 }
 
 fn string_escape(input: &str) -> ParserResult<'_, &str> {
