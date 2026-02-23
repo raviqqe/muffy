@@ -1,0 +1,59 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "m",
+                uri: "http://www.w3.org/1998/Math/MathML",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Include(
+                    Include {
+                        uri: "mathml3-content.rnc",
+                        inherit: Some(
+                            Prefix(
+                                "m",
+                            ),
+                        ),
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "mathml3-presentation.rnc",
+                        inherit: Some(
+                            Prefix(
+                                "m",
+                            ),
+                        ),
+                        grammar: None,
+                    },
+                ),
+                Include(
+                    Include {
+                        uri: "mathml3-common.rnc",
+                        inherit: Some(
+                            Prefix(
+                                "m",
+                            ),
+                        ),
+                        grammar: None,
+                    },
+                ),
+            ],
+        },
+    ),
+}
