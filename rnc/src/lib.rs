@@ -18,7 +18,7 @@ mod tests {
     #[rstest]
     fn parse_file(#[files("../vendor/validator/**/schema/**/*.rnc")] path: PathBuf) {
         assert_debug_snapshot!(
-            path.strip_prefix(Path::new("../vendor").canonicalize().unwrap())
+            path.strip_prefix(Path::new("../vendor/validator").canonicalize().unwrap())
                 .unwrap()
                 .display()
                 .to_string(),
