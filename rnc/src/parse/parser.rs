@@ -655,6 +655,19 @@ mod tests {
         }
     }
 
+    fn include_schema(uri: &str) -> Schema {
+        Schema {
+            declarations: Vec::new(),
+            body: SchemaBody::Grammar(Grammar {
+                items: vec![GrammarItem::Include(Include {
+                    uri: uri.to_string(),
+                    inherit: None,
+                    grammar: Some(Grammar { items: Vec::new() }),
+                })],
+            }),
+        }
+    }
+
     #[test]
     fn parse_pattern_schema() {
         let input = "element foo { (text | empty)+, attribute id { text }? }";
@@ -785,32 +798,87 @@ mod tests {
     fn parse_annotation_item() {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
-        let annotation_result = annotation(input);
-        assert!(
-            annotation_result.is_ok(),
-            "annotation element parse failed: {annotation_result:?}"
+        assert_eq!(
+            annotation(input).unwrap(),
+            (
+                "",
+                Annotation {
+                    name: prefixed_name("sch", "ns"),
+                    attributes: vec![
+                        AnnotationAttribute {
+                            name: local_name("prefix"),
+                            value: "html".to_string(),
+                        },
+                        AnnotationAttribute {
+                            name: local_name("uri"),
+                            value: "http://example.com/ns".to_string(),
+                        },
+                    ],
+                }
+            )
         );
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_item(input).unwrap(),
+            (
+                "",
+                GrammarItem::Annotation(Annotation {
+                    name: prefixed_name("sch", "ns"),
+                    attributes: vec![
+                        AnnotationAttribute {
+                            name: local_name("prefix"),
+                            value: "html".to_string(),
+                        },
+                        AnnotationAttribute {
+                            name: local_name("uri"),
+                            value: "http://example.com/ns".to_string(),
+                        },
+                    ],
+                })
+            )
+        );
     }
 
     #[test]
     fn parse_basic_table_definition() {
         let input = "table = element table { table.attlist, caption?, tr+ }";
 
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_item(input).unwrap(),
+            (
+                "",
+                GrammarItem::Definition(Definition {
+                    name: "table".to_string(),
+                    combine: None,
+                    pattern: Pattern::Element {
+                        name_class: NameClass::Name(local_name("table")),
+                        pattern: Box::new(Pattern::Group(vec![
+                            Pattern::Name(local_name("table.attlist")),
+                            Pattern::Optional(Box::new(Pattern::Name(local_name("caption")))),
+                            Pattern::Many1(Box::new(Pattern::Name(local_name("tr")))),
+                        ])),
+                    },
+                })
+            )
+        );
     }
 
     #[test]
     fn parse_prefixed_attribute_pattern() {
         let input = "attribute xml:space { string \"preserve\" }?";
 
-        let result = pattern(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            pattern(input).unwrap(),
+            (
+                "",
+                Pattern::Optional(Box::new(Pattern::Attribute {
+                    name_class: NameClass::Name(prefixed_name("xml", "space")),
+                    pattern: Box::new(Pattern::Value {
+                        name: Some(local_name("string")),
+                        value: "preserve".to_string(),
+                    }),
+                }))
+            )
+        );
     }
 
     #[test]
@@ -820,9 +888,23 @@ mod tests {
                 attribute xml:space { string "preserve" }?
         "#};
 
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_item(input).unwrap(),
+            (
+                "",
+                GrammarItem::Definition(Definition {
+                    name: "xml.space.attrib".to_string(),
+                    combine: None,
+                    pattern: Pattern::Optional(Box::new(Pattern::Attribute {
+                        name_class: NameClass::Name(prefixed_name("xml", "space")),
+                        pattern: Box::new(Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "preserve".to_string(),
+                        }),
+                    })),
+                })
+            )
+        );
     }
 
     #[test]
@@ -842,9 +924,10 @@ mod tests {
     fn parse_prefixed_name_class() {
         let input = "xml:space { string \"preserve\" }";
 
-        let result = name_class(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            name_class(input).unwrap(),
+            ("{ string \"preserve\" }", NameClass::Name(prefixed_name("xml", "space")))
+        );
     }
 
     #[test]
@@ -879,27 +962,50 @@ mod tests {
             element svg { empty }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: vec![Declaration::DefaultNamespace(
+                    "http://example.com".to_string()
+                )],
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("svg")),
+                    pattern: Box::new(Pattern::Empty),
+                }),
+            }
+        );
     }
 
     #[test]
     fn parse_empty_schema() {
         let input = "# comment only";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Grammar(Grammar { items: Vec::new() }),
+            }
+        );
     }
 
     #[test]
     fn parse_annotation_attachment() {
         let input = "element pre { pre.attlist >> sch:pattern [ name = \"pre\" ] , Inline.model }";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("pre")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("pre.attlist")),
+                        Pattern::Name(local_name("Inline.model")),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -911,18 +1017,29 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(parse_schema(input).unwrap(), include_schema("base.rnc"));
     }
 
     #[test]
     fn parse_element_with_parenthesized_choice() {
         let input = "element select { select.attlist, (option | optgroup)+ }";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("select")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("select.attlist")),
+                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                            Pattern::Name(local_name("option")),
+                            Pattern::Name(local_name("optgroup")),
+                        ]))),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -939,9 +1056,10 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
@@ -955,9 +1073,19 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("button")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("button.attlist")),
+                        Pattern::Name(local_name("Flow.model")),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -985,9 +1113,10 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
@@ -1006,9 +1135,10 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
@@ -1073,9 +1203,42 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Grammar(Grammar {
+                    items: vec![
+                        GrammarItem::Annotation(Annotation {
+                            name: prefixed_name("sch", "ns"),
+                            attributes: vec![
+                                AnnotationAttribute {
+                                    name: local_name("prefix"),
+                                    value: "html".to_string(),
+                                },
+                                AnnotationAttribute {
+                                    name: local_name("uri"),
+                                    value: "http://www.w3.org/1999/xhtml".to_string(),
+                                },
+                            ],
+                        }),
+                        GrammarItem::Include(Include {
+                            uri: "basic-form.rnc".to_string(),
+                            inherit: None,
+                            grammar: Some(Grammar { items: Vec::new() }),
+                        }),
+                        GrammarItem::Definition(Definition {
+                            name: "form.attlist".to_string(),
+                            combine: Some(Combine::Interleave),
+                            pattern: Pattern::Optional(Box::new(Pattern::Attribute {
+                                name_class: NameClass::Name(local_name("accept-charset")),
+                                pattern: Box::new(Pattern::Name(local_name("charsets.datatype"))),
+                            })),
+                        }),
+                    ],
+                }),
+            }
+        );
     }
 
     #[test]
@@ -1129,6 +1292,29 @@ mod tests {
                   string "file"
         "#};
 
-        assert!(grammar_item(input).is_ok());
+        assert_eq!(
+            grammar_item(input).unwrap(),
+            (
+                "",
+                GrammarItem::Definition(Definition {
+                    name: "InputType.class".to_string(),
+                    combine: Some(Combine::Choice),
+                    pattern: Pattern::Choice(vec![
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "image".to_string(),
+                        },
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "button".to_string(),
+                        },
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "file".to_string(),
+                        },
+                    ]),
+                })
+            )
+        );
     }
 }
