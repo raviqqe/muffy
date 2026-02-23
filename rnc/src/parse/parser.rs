@@ -607,7 +607,7 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
             opt(char::<&str, _>('\\')),
             recognize((alpha1, many0(satisfy(is_identifier_char)))),
         ),
-        ToOwned::to_owned,
+        Into::into,
     )
     .parse(input)
 }
