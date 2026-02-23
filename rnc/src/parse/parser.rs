@@ -21,7 +21,7 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        (many0(declaration), whitespace0, schema_body),
+        (many0(declaration), blank0, schema_body),
         |(declarations, _, body)| Schema { declarations, body },
     )
     .parse(input)
@@ -42,13 +42,13 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
 
 fn declaration(input: &str) -> ParserResult<'_, Declaration> {
     delimited(
-        whitespace0,
+        blank0,
         alt((
             map(namespace_declaration, Declaration::Namespace),
             map(default_namespace_declaration, Declaration::DefaultNamespace),
             map(datatypes_declaration, Declaration::Datatypes),
         )),
-        whitespace0,
+        blank0,
     )
     .parse(input)
 }
@@ -122,7 +122,7 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
         (
             delimited(
-                whitespace0,
+                blank0,
                 alt((
                     start_item,
                     map(annotation_element, GrammarItem::Annotation),
@@ -130,7 +130,7 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
                     div_item,
                     include_item,
                 )),
-                whitespace0,
+                blank0,
             ),
             many0(annotation_block_after),
         ),
@@ -422,7 +422,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
-            opt(terminated(name_token_leading, whitespace1)),
+            opt(terminated(name_token_leading, blank1)),
             string_literal_token,
         ),
         |(datatype_name, value)| Pattern::Value {
@@ -470,7 +470,7 @@ fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
 
 fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
     delimited(
-        whitespace0,
+        blank0,
         alt((
             value(NameClass::AnyName, tag("*")),
             map((identifier, char(':'), char('*')), |(prefix, _, _)| {
@@ -479,7 +479,7 @@ fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
             map(name, NameClass::Name),
             delimited(tag("("), name_class, tag(")")),
         )),
-        whitespace0,
+        blank0,
     )
     .parse(input)
 }
@@ -494,7 +494,7 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 }
 
 fn parameter_separator(input: &str) -> ParserResult<'_, ()> {
-    alt((value((), symbol(",")), whitespace1)).parse(input)
+    alt((value((), symbol(",")), blank1)).parse(input)
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
@@ -521,7 +521,7 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
         (
             open_bracket,
             separated_list0(annotation_separator, annotation_attribute),
-            whitespace0,
+            blank0,
             close_bracket,
         ),
         |(_, attributes, _, _)| attributes,
@@ -570,17 +570,14 @@ fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute
 
 fn annotation_separator(input: &str) -> ParserResult<'_, ()> {
     map(
-        (
-            peek(preceded(whitespace1, annotation_attribute)),
-            whitespace1,
-        ),
+        (peek(preceded(blank1, annotation_attribute)), blank1),
         |_| (),
     )
     .parse(input)
 }
 
 fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    let (input_after_space, _) = whitespace0(input)?;
+    let (input_after_space, _) = blank0(input)?;
     if peek(open_bracket).parse(input_after_space).is_err() {
         return Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)));
     }
@@ -617,7 +614,7 @@ fn name_token(input: &str) -> ParserResult<'_, Name> {
 }
 
 fn name_token_leading(input: &str) -> ParserResult<'_, Name> {
-    preceded(whitespace0, name).parse(input)
+    preceded(blank0, name).parse(input)
 }
 
 fn string_literal_token(input: &str) -> ParserResult<'_, String> {
@@ -630,29 +627,29 @@ fn spaced<'input, Output, ParserType>(
 where
     ParserType: Parser<&'input str, Output = Output, Error = ParserError<'input>>,
 {
-    delimited(whitespace0, parser, whitespace0)
+    delimited(blank0, parser, blank0)
 }
 
 fn keyword(keyword_text: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
     move |input| {
         delimited(
-            whitespace0,
+            blank0,
             terminated(tag(keyword_text), not(peek(satisfy(is_identifier_char)))),
-            whitespace0,
+            blank0,
         )
         .parse(input)
     }
 }
 
 fn symbol(symbol: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
-    move |input| delimited(whitespace0, tag(symbol), whitespace0).parse(input)
+    move |input| delimited(blank0, tag(symbol), blank0).parse(input)
 }
 
-pub(super) fn whitespace0(input: &str) -> ParserResult<'_, ()> {
+pub(super) fn blank0(input: &str) -> ParserResult<'_, ()> {
     map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
-fn whitespace1(input: &str) -> ParserResult<'_, ()> {
+fn blank1(input: &str) -> ParserResult<'_, ()> {
     map(many1(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
