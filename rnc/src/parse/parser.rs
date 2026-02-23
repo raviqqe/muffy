@@ -604,7 +604,7 @@ fn spaced<'a, T>(
     delimited(blank0, parser, blank0)
 }
 
-fn keyword(keyword_text: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
+fn keyword(keyword_text: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
         delimited(
             blank0,
@@ -615,7 +615,7 @@ fn keyword(keyword_text: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &
     }
 }
 
-fn symbol(symbol: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
+fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| spaced(tag(symbol)).parse(input)
 }
 
