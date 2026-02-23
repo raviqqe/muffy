@@ -21,10 +21,9 @@ use nom::{
 
 /// Parses a schema.
 pub fn parse_schema(input: &str) -> Result<Schema, ParseError> {
-    match all_consuming(delimited(whitespace0, schema, whitespace0)).parse(input) {
-        Ok((_, schema)) => Ok(schema),
-        Err(error) => Err(ParseError::from_nom(error)),
-    }
+    Ok(all_consuming(delimited(whitespace0, schema, whitespace0))
+        .parse(input)?
+        .1)
 }
 
 type ParserError<'input> = Error<&'input str>;
