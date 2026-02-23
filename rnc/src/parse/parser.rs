@@ -385,10 +385,7 @@ fn name_class(input: &str) -> ParserResult<'_, NameClass> {
 fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
     map(separated_list1(symbol("|"), name_class_except), |classes| {
         if classes.len() == 1 {
-            classes
-                .into_iter()
-                .next()
-            .unwrap()
+            classes.into_iter().next().unwrap()
         } else {
             NameClass::Choice(classes)
         }
@@ -631,10 +628,7 @@ fn string_escape(input: &str) -> ParserResult<'_, &str> {
 
 fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
     if patterns.len() == 1 {
-        patterns
-            .into_iter()
-            .next()
-            .unwrap()
+        patterns.into_iter().next().unwrap()
     } else {
         constructor(patterns)
     }
@@ -642,8 +636,7 @@ fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Patter
 
 #[cfg(test)]
 mod tests {
-    use super::super::parse_schema;
-    use super::*;
+    use super::{super::parse_schema, *};
     use indoc::indoc;
 
     fn local_name(value: &str) -> Name {
