@@ -419,8 +419,8 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
 fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
     map(
         (
-            name_class_primary,
-            opt(preceded(symbol("-"), name_class_primary)),
+            primary_name_class,
+            opt(preceded(symbol("-"), primary_name_class)),
         ),
         |(base, except)| match except {
             Some(except) => NameClass::Except {
@@ -433,19 +433,15 @@ fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
     .parse(input)
 }
 
-fn name_class_primary(input: &str) -> ParserResult<'_, NameClass> {
-    delimited(
-        blank,
-        alt((
-            value(NameClass::AnyName, tag("*")),
-            map((identifier, char(':'), char('*')), |(prefix, _, _)| {
-                NameClass::NamespaceName(Some(prefix))
-            }),
-            map(name, NameClass::Name),
-            delimited(tag("("), name_class, tag(")")),
-        )),
-        blank,
-    )
+fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
+    spaced(alt((
+        value(NameClass::AnyName, tag("*")),
+        map((identifier, char(':'), char('*')), |(prefix, _, _)| {
+            NameClass::NamespaceName(Some(prefix))
+        }),
+        map(name, NameClass::Name),
+        delimited(tag("("), name_class, tag(")")),
+    )))
     .parse(input)
 }
 
