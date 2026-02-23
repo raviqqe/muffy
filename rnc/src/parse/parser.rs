@@ -7,7 +7,7 @@ use nom::{
     IResult, Parser,
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
-    character::complete::{char, multispace1, satisfy},
+    character::complete::{alpha1, char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::{Error, ErrorKind},
     multi::{many0, separated_list0, separated_list1},
@@ -605,18 +605,11 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
     map(
         preceded(
             opt(char::<&str, _>('\\')),
-            recognize((
-                satisfy(is_identifier_start),
-                many0(satisfy(is_identifier_char)),
-            )),
+            recognize((alpha1, many0(satisfy(is_identifier_char)))),
         ),
         |value| value.to_string(),
     )
     .parse(input)
-}
-
-const fn is_identifier_start(character: char) -> bool {
-    character.is_ascii_alphabetic() || character == '_'
 }
 
 const fn is_identifier_char(character: char) -> bool {
