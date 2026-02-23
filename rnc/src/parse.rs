@@ -345,21 +345,26 @@ fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = skip_annotation_blocks(input)?;
-    alt((
-        element_pattern,
-        attribute_pattern,
-        list_pattern,
-        grammar_pattern,
-        external_pattern,
-        text_pattern,
-        empty_pattern,
-        not_allowed_pattern,
-        delimited(symbol("("), pattern, symbol(")")),
-        value_pattern,
-        data_pattern,
-        name_pattern,
-    ))
+    map(
+        (
+            skip_annotation_blocks,
+            alt((
+                element_pattern,
+                attribute_pattern,
+                list_pattern,
+                grammar_pattern,
+                external_pattern,
+                text_pattern,
+                empty_pattern,
+                not_allowed_pattern,
+                delimited(symbol("("), pattern, symbol(")")),
+                value_pattern,
+                data_pattern,
+                name_pattern,
+            )),
+        ),
+        |(_, pattern)| pattern,
+    )
     .parse(input)
 }
 
@@ -435,8 +440,7 @@ fn not_allowed_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, name) = name_token(input)?;
-    Ok((input, Pattern::Name(name)))
+    map(name_token, Pattern::Name).parse(input)
 }
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -746,19 +750,25 @@ const fn is_identifier_char(character: char) -> bool {
 }
 
 fn string_literal(input: &str) -> ParserResult<'_, String> {
-    let (input, delimiter) = alt((char('"'), char('\''))).parse(input)?;
-    let (input, value) = if delimiter == '"' {
-        let (input, value) =
-            opt(escaped_transform(is_not("\\\""), '\\', string_escape)).parse(input)?;
-        (input, value.unwrap_or_default())
-    } else {
-        let (input, value) =
-            opt(escaped_transform(is_not("\\'"), '\\', string_escape)).parse(input)?;
-        (input, value.unwrap_or_default())
-    };
-    let (input, _) = char(delimiter).parse(input)?;
-
-    Ok((input, value))
+    alt((
+        map(
+            delimited(
+                char('"'),
+                opt(escaped_transform(is_not("\\\""), '\\', string_escape)),
+                char('"'),
+            ),
+            |value| value.unwrap_or_default(),
+        ),
+        map(
+            delimited(
+                char('\''),
+                opt(escaped_transform(is_not("\\'"), '\\', string_escape)),
+                char('\''),
+            ),
+            |value| value.unwrap_or_default(),
+        ),
+    ))
+    .parse(input)
 }
 
 fn string_escape(input: &str) -> ParserResult<'_, &str> {
