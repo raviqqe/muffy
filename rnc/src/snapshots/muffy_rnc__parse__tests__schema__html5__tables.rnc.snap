@@ -1,0 +1,1383 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "tables.attrs.alignment",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.align",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.char",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.valign",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.align",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "align",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "left",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "center",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "right",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "justify",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "char",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.char",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "char",
+                                },
+                            ),
+                            pattern: Data {
+                                name: Name {
+                                    prefix: Some(
+                                        "xsd",
+                                    ),
+                                    local: "string",
+                                },
+                                parameters: [
+                                    Parameter {
+                                        name: Name {
+                                            prefix: None,
+                                            local: "pattern",
+                                        },
+                                        value: ".",
+                                    },
+                                ],
+                                except: None,
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.valign",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "valign",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "top",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "middle",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "bottom",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "baseline",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "table.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "table",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "table.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "table.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "table.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.table",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "table.inner",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                                Group(
+                                    [
+                                        Choice(
+                                            [
+                                                Many0(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "tbody.elem",
+                                                        },
+                                                    ),
+                                                ),
+                                                Many1(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "tr.elem",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                        Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "tfoot.elem",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "table.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "caption",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "caption.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "caption.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "colgroup",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.attrs.span",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "span",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "colgroup.inner",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Interleave(
+                                    [
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "col.elem",
+                                                },
+                                            ),
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "colgroup.attrs.span",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "col",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "col.attrs.span",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.attrs.span",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "span",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "col.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "thead.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "thead",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "thead.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "thead.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.rowgroup",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "thead.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tfoot.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tfoot",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tfoot.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tfoot.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tfoot.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.rowgroup",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tfoot.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tbody.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tbody",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tbody.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tbody.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tbody.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.rowgroup",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tbody.inner",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.elem",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tr.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tr",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tr.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tr.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.row",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tr.inner",
+                        combine: None,
+                        pattern: Many0(
+                            Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "td.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "th.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.elem.script-supporting",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.cell-structure",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.colspan",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.rowspan",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.colspan",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "colspan",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.positive",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.rowspan",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "rowspan",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.access-headers",
+                        combine: None,
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tables.attrs.headers",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.headers",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "headers",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.idrefs",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.define-headers",
+                        combine: None,
+                        pattern: Optional(
+                            Name(
+                                Name {
+                                    prefix: None,
+                                    local: "tables.attrs.scope",
+                                },
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.scope",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "scope",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "row",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "col",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "rowgroup",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "colgroup",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "tables.attrs.abbr",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "abbr",
+                                },
+                            ),
+                            pattern: Text,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "td.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "td",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "td.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "td.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "td.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "tables.attrs.cell-structure",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.headers",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.cell",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.gridcell",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "td.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "th.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "th",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "th.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "th.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "th.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "tables.attrs.cell-structure",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.scope",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "tables.attrs.headers",
+                                        },
+                                    ),
+                                ),
+                                Choice(
+                                    [
+                                        Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria",
+                                                },
+                                            ),
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "common.attrs.aria.implicit.column-or-row-header",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "th.inner",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

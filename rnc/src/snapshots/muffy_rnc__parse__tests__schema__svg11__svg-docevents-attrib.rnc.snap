@@ -1,0 +1,215 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Definition(
+                        Definition {
+                            name: "SVG.onunload.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onunload",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.onabort.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onabort",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.onerror.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onerror",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.onresize.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onresize",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.onscroll.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onscroll",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.onzoom.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "onzoom",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "Script.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.DocumentEvents.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.DocumentEvents.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onunload.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onabort.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onerror.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onresize.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onscroll.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.onzoom.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.DocumentEvents.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

@@ -1,0 +1,3274 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "script.elem.embedded",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "script",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.inner.embedded",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.embedded",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.embedded",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.nomodule",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.language",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.integrity",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embedded.content.attrs.crossorigin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "referrerpolicy",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.elem.imported",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "script",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.inner.imported",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.imported",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.imported",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.src",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.defer",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.async",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.nomodule",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.language",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "script.attrs.integrity",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embedded.content.attrs.crossorigin",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.blocking",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.fetchpriority",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "referrerpolicy",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.src",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "src",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.defer",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "defer",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "defer",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.async",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "async",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "async",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "",
+                                            },
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "module",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "importmap",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "speculationrules",
+                                    },
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.scripttype",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.nomodule",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "nomodule",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "nomodule",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.language",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "language",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.attrs.integrity",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "integrity",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integrity",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.inner.embedded",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.anything",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.inner.imported",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.anything",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "script.elem",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "script.elem.embedded",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "script.elem.imported",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "script.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "script.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.elem.head",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Element {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "noscript",
+                                        },
+                                    ),
+                                    pattern: Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.inner.head",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.attrs",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "HTMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.inner.head",
+                        combine: None,
+                        pattern: Many0(
+                            Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "link.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.default-style.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "meta.http-equiv.refresh.elem",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "style.elem",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.elem.phrasing",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Element {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "noscript",
+                                        },
+                                    ),
+                                    pattern: Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.inner.phrasing",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.attrs",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "HTMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.elem.flow",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Element {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "noscript",
+                                        },
+                                    ),
+                                    pattern: Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.inner.flow",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "noscript.attrs",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "HTMLonly",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "noscript.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.metadata",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "noscript.elem.head",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "noscript.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "noscript.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.scripting",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onauxclick",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onbeforeinput",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onbeforematch",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onbeforetoggle",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onblur",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncancel",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncanplay",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncanplaythrough",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onchange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onclick",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onclose",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncommand",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncontextlost",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncontextmenu",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncontextrestored",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncopy",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncuechange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oncut",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondblclick",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondrag",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondragend",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondragenter",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondragleave",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondragover",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondragstart",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondrop",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ondurationchange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onemptied",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onended",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onerror",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onfocus",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onformdata",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oninput",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.oninvalid",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onkeydown",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onkeypress",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onkeyup",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onload",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onloadeddata",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onloadedmetadata",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onloadstart",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmousedown",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmouseenter",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmouseleave",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmousemove",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmouseout",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmouseover",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onmouseup",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpaste",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpause",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onplay",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onplaying",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onprogress",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onratechange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onreset",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onresize",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onscroll",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onscrollend",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onsecuritypolicyviolation",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onseeked",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onseeking",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onselect",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onslotchange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onstalled",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onsubmit",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onsuspend",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontimeupdate",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontoggle",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onvolumechange",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onwaiting",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onwheel",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.other",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs.scripting",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onauxclick",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onauxclick",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onbeforeinput",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onbeforeinput",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onbeforematch",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onbeforematch",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onbeforetoggle",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onbeforetoggle",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onblur",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onblur",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncancel",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncancel",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncanplay",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncanplay",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncanplaythrough",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncanplaythrough",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onchange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onchange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onclick",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onclick",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onclose",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onclose",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncommand",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncommand",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncontextlost",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncontextlost",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncontextmenu",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncontextmenu",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncontextrestored",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncontextrestored",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncopy",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncopy",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncuechange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncuechange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oncut",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oncut",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondblclick",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondblclick",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondrag",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondrag",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondragend",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondragend",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondragenter",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondragenter",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondragleave",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondragleave",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondragover",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondragover",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondragstart",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondragstart",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondrop",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondrop",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ondurationchange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ondurationchange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onemptied",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onemptied",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onended",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onended",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onerror",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onerror",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onfocus",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onfocus",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onformdata",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onformdata",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oninput",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oninput",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.oninvalid",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "oninvalid",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onkeydown",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onkeydown",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onkeypress",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onkeypress",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onkeyup",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onkeyup",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onload",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onload",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onloadeddata",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onloadeddata",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onloadedmetadata",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onloadedmetadata",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onloadstart",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onloadstart",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmousedown",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmousedown",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmouseenter",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmouseenter",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmouseleave",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmouseleave",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmousemove",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmousemove",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmouseout",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmouseout",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmouseover",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmouseover",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onmouseup",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onmouseup",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpaste",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpaste",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpause",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpause",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onplay",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onplay",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onplaying",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onplaying",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onprogress",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onprogress",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onratechange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onratechange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onreset",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onreset",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onresize",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onresize",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onscroll",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onscroll",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onscrollend",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onscrollend",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onsecuritypolicyviolation",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onsecuritypolicyviolation",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onseeked",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onseeked",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onseeking",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onseeking",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onselect",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onselect",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onslotchange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onslotchange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onstalled",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onstalled",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onsubmit",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onsubmit",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onsuspend",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onsuspend",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontimeupdate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontimeupdate",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontoggle",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontoggle",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onvolumechange",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onvolumechange",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onwaiting",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onwaiting",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onwheel",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onwheel",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.scripting",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerover",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerenter",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerdown",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointermove",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerrawupdate",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerup",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointercancel",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerout",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onpointerleave",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ongotpointercapture",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.onlostpointercapture",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerover",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerover",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerenter",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerenter",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerdown",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerdown",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointermove",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointermove",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerrawupdate",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerrawupdate",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerup",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerup",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointercancel",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointercancel",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerout",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerout",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onpointerleave",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onpointerleave",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ongotpointercapture",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ongotpointercapture",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.onlostpointercapture",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "onlostpointercapture",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.attrs.scripting",
+                        combine: Some(
+                            Interleave,
+                        ),
+                        pattern: Interleave(
+                            [
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontouchstart",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontouchend",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontouchmove",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "scripting.attr.ontouchcancel",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontouchstart",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontouchstart",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontouchend",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontouchend",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontouchmove",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontouchmove",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "scripting.attr.ontouchcancel",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ontouchcancel",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.functionbody",
+                                },
+                            ),
+                        },
+                    },
+                ),
+            ],
+        },
+    ),
+}

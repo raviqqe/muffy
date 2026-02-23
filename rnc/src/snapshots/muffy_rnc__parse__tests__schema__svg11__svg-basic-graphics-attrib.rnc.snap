@@ -1,0 +1,404 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "xsd",
+                uri: "http://www.w3.org/2001/XMLSchema-datatypes",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Definition(
+                        Definition {
+                            name: "SVG.display.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "display",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inline",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "block",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "list-item",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "run-in",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "compact",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "marker",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inline-table",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-row-group",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-header-group",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-footer-group",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-row",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-column-group",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-column",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-cell",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "table-caption",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "none",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.visibility.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "visibility",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visible",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "hidden",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "collapse",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.transform-origin.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "transform-origin",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: Some(
+                                                "xsd",
+                                            ),
+                                            local: "string",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.transform-box.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "transform-box",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "content-box",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "border-box",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "fill-box",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "stroke-box",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "view-box",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Graphics.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Graphics.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.display.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.visibility.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.transform-origin.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.transform-box.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Graphics.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

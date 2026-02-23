@@ -1,0 +1,131 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Definition(
+                        Definition {
+                            name: "SVG.opacity.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "opacity",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "OpacityValue.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.fill-opacity.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "fill-opacity",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "OpacityValue.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.stroke-opacity.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "stroke-opacity",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "OpacityValue.datatype",
+                                        },
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Opacity.extra.attrib",
+                            combine: None,
+                            pattern: Empty,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Opacity.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.opacity.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.fill-opacity.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.stroke-opacity.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.Opacity.extra.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

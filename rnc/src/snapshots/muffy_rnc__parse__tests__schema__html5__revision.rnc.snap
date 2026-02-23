@@ -1,0 +1,367 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "edit.attrs.cite",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "cite",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "edit.attrs.datetime",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "datetime",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.datetime",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.date",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.elem.flow",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ins",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.inner.flow",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ins",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "ins.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.cite",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.datetime",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "ins.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ins.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "ins.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.elem.flow",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "del",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.inner.flow",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "del",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "del.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.cite",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "edit.attrs.datetime",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.aria",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "del.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "del.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "del.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

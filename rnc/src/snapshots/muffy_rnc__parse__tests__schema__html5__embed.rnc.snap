@@ -1,0 +1,3893 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "local",
+                uri: "",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "shared-img.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Choice(
+                                    [
+                                        Interleave(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "img.attrs.src",
+                                                    },
+                                                ),
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "img.attrs.srcset",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                        Interleave(
+                                            [
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "img.attrs.srcset",
+                                                    },
+                                                ),
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "img.attrs.src",
+                                                        },
+                                                    ),
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.sizes",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.generator-unable-to-provide-required-alt",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.height",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.width",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.usemap",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.ismap",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.decoding",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.loading",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.attrs.fetchpriority",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "referrerpolicy",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embedded.content.attrs.crossorigin",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "img",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "shared-img.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "img.attrs.alt",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.img",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.button",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.checkbox",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.img",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.link",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.math",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.menuitem",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.menuitemcheckbox",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.menuitemradio",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.none",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.option",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.progressbar",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.radio",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.scrollbar",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.separator",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.slider",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.switch",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.tab",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.treeitem",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.doc-cover",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.src",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "src",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.srcset",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "srcset",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "string",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.sizes",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "sizes",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.source.size.list",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.alt",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "alt",
+                                },
+                            ),
+                            pattern: Text,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.generator-unable-to-provide-required-alt",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "generator-unable-to-provide-required-alt",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: None,
+                                        local: "string",
+                                    },
+                                ),
+                                value: "",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.usemap",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "usemap",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.hash-name",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.ismap",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "ismap",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "ismap",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.decoding",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "decoding",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "sync",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "async",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: None,
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "auto",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.attrs.loading",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "loading",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "lazy",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "eager",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "img.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "img.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "picture.elem",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Element {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "picture",
+                                        },
+                                    ),
+                                    pattern: Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "picture.inner",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "picture.attrs",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "picture.attrs",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.attrs",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "picture.inner",
+                        combine: None,
+                        pattern: Group(
+                            [
+                                Interleave(
+                                    [
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "source.picture.elem",
+                                                },
+                                            ),
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                Interleave(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "img.elem",
+                                            },
+                                        ),
+                                        Many0(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.elem.script-supporting",
+                                                },
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "picture.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "source",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs.media",
+                                        },
+                                    ),
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "source.picture.attrs.srcset",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs.sizes",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs.width",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "source.picture.attrs.height",
+                                        },
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.media",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "media",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.mediaquery",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.srcset",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "srcset",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.sizes",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "sizes",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.source.size.list",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.mimetype",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "source.picture.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "embed",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs.src",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs.height",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs.width",
+                                        },
+                                    ),
+                                ),
+                                Many0(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "embed.attrs.other",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.application",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.landmark.document",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.img",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs.src",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "src",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.mimetype",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.attrs.other",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Except {
+                                base: NamespaceName(
+                                    Some(
+                                        "local",
+                                    ),
+                                ),
+                                except: Choice(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "src",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "type",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "height",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "width",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "id",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "is",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "slot",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "class",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "title",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "dir",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "lang",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "translate",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "style",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "tabindex",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "autofocus",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "inert",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "contenteditable",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "draggable",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "hidden",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "popover",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "inputmode",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "nonce",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onauxclick",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onbeforeinput",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onbeforematch",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onbeforetoggle",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onblur",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncancel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncanplay",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncanplaythrough",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onchange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onclick",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onclose",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncommand",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncontextlost",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncontextmenu",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncontextrestored",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncopy",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncuechange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oncut",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondblclick",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondrag",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondragend",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondragenter",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondragleave",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondragover",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondragstart",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondrop",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ondurationchange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onemptied",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onended",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onerror",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onfocus",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onformdata",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oninput",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "oninvalid",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onkeydown",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onkeypress",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onkeyup",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onload",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onloadeddata",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onloadedmetadata",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onloadstart",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmousedown",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmouseenter",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmouseleave",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmousemove",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmouseout",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmouseover",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onmouseup",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpaste",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpause",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onplay",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onplaying",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onprogress",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onratechange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onreset",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onresize",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onscroll",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onscrollend",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onsecuritypolicyviolation",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onseeked",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onseeking",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onselect",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onslotchange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onstalled",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onsubmit",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onsuspend",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontimeupdate",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontoggle",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onvolumechange",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onwaiting",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onwheel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerover",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerenter",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerdown",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointermove",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerrawupdate",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerup",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointercancel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerout",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onpointerleave",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ongotpointercapture",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onlostpointercapture",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontouchstart",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontouchend",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontouchmove",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "ontouchcancel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "role",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-activedescendant",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-atomic",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-braillelabel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-brailleroledescription",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-busy",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-controls",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-current",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-details",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-describedby",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-description",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-disabled",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-dropeffect",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-errormessage",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-expanded",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-flowto",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-grabbed",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-haspopup",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-hidden",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-invalid",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-keyshortcuts",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-label",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-labelledby",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-live",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-owns",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-relevant",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-required",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "aria-roledescription",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "spellcheck",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "autocorrect",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "writingsuggestions",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "autocapitalize",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "enterkeyhint",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "accesskey",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "itemref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "itemprop",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "itemscope",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "itemtype",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "itemid",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "name",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "align",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "hspace",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "vspace",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "about",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "prefix",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "property",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "typeof",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "vocab",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "content",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "datatype",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "href",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "rel",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "resource",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "rev",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "inlist",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-note",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "contextmenu",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "dropzone",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "onshow",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "headingoffset",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "headingreset",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-note-type",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-note-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-term-info-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-term",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-term-confidence",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-within-text",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-domain-mapping",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-ta-confidence",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-ta-class-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-ta-ident",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-ta-ident-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-ta-source",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-locale-filter-list",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-locale-filter-type",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-person",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-person-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-org",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-org-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-tool",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-tool-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-person",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-person-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-org",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-org-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-tool",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-rev-tool-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-prov-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-provenance-records-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issues-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issue-type",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issue-comment",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issue-severity",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issue-profile-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-issue-enabled",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-rating-score",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-rating-vote",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-rating-score-threshold",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-rating-vote-threshold",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-loc-quality-rating-profile-ref",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-mt-confidence",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-allowed-characters",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-storage-size",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-storage-encoding",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-line-break-type",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "its-annotators-ref",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                            },
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embed.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "embed.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.elem.flow",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "object",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.inner.flow",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "object",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "object.attrs.data",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs.type",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs.height",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs.width",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "object.attrs.name",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common-form.attrs.form",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.application",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.landmark.document",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.img",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs.data",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "data",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs.type",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "type",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.mimetype",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.attrs.name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.browsing-context",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "object.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "object.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "object.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "iframe",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.src",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.srcdoc",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.name",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.width",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.height",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.loading",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.sandbox",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.allowfullscreen",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "iframe.attrs.allow",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "referrerpolicy",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.application",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.landmark.document",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.img",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.presentation",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.src",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "src",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.uri.non-empty",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.srcdoc",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "srcdoc",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "string",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.browsing-context",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.height",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "height",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.loading",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "loading",
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "lazy",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name {
+                                                prefix: Some(
+                                                    "w",
+                                                ),
+                                                local: "string",
+                                            },
+                                        ),
+                                        value: "eager",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.width",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "width",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.integer.non-negative",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.sandbox",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "sandbox",
+                                        },
+                                    ),
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "common.data.sandbox-allow-list",
+                                        },
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.allowfullscreen",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "allowfullscreen",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "allowfullscreen",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "",
+                                            },
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.attrs.allow",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "allow",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.feature-policy",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "iframe.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "iframe.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.elem.flow",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "map",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "map.inner.flow",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "map.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.elem.phrasing",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "map",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "map.inner.phrasing",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "map.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "map.attrs.name",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.attrs.name",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "name",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "common.data.name",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.inner.flow",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.transparent.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "map.inner.phrasing",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "common.inner.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.flow",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "map.elem.flow",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "map.elem.phrasing",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.elem",
+                        combine: None,
+                        pattern: Element {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "area",
+                                },
+                            ),
+                            pattern: Interleave(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "area.inner",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "area.attrs",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.basic",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.i18n",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.present",
+                                    },
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "common.attrs.other",
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "aria.global",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.download",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Interleave(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "area.attrs.alt",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "shared-hyperlink.attrs.href",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.target",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.ping",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shared-hyperlink.attrs.rel",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "area.attrs.shape",
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Choice(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.link",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.role.button",
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "common.attrs.aria.implicit.link",
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.alt",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "alt",
+                                },
+                            ),
+                            pattern: Text,
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.shape",
+                        combine: None,
+                        pattern: Choice(
+                            [
+                                Interleave(
+                                    [
+                                        Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "area.attrs.shape.rect",
+                                                },
+                                            ),
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "area.attrs.coords.rect",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                Interleave(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "area.attrs.shape.circle",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "area.attrs.coords.circle",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                Interleave(
+                                    [
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "area.attrs.shape.poly",
+                                            },
+                                        ),
+                                        Name(
+                                            Name {
+                                                prefix: None,
+                                                local: "area.attrs.coords.poly",
+                                            },
+                                        ),
+                                    ],
+                                ),
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "area.attrs.shape.default",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.shape.rect",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shape",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "rect",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.coords.rect",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "coords",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "rectangle",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.shape.circle",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shape",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "circle",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.coords.circle",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "coords",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "circle",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.shape.poly",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shape",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "poly",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.coords.poly",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "coords",
+                                },
+                            ),
+                            pattern: Name(
+                                Name {
+                                    prefix: Some(
+                                        "w",
+                                    ),
+                                    local: "polyline",
+                                },
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.attrs.shape.default",
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: "shape",
+                                },
+                            ),
+                            pattern: Value {
+                                name: Some(
+                                    Name {
+                                        prefix: Some(
+                                            "w",
+                                        ),
+                                        local: "string",
+                                    },
+                                ),
+                                value: "default",
+                            },
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "area.inner",
+                        combine: None,
+                        pattern: Empty,
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "common.elem.phrasing",
+                        combine: Some(
+                            Choice,
+                        ),
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "area.elem",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "embedded.content.attrs.crossorigin",
+                        combine: None,
+                        pattern: Interleave(
+                            [
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "crossorigin",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "anonymous",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "use-credentials",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: Some(
+                                                            "w",
+                                                        ),
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "",
+                                            },
+                                        ],
+                                    ),
+                                },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: "v5only",
+                                    },
+                                ),
+                            ],
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

@@ -1,0 +1,188 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Datatypes(
+            DatatypesDeclaration {
+                prefix: Some(
+                    "w",
+                ),
+                uri: "http://whattf.org/datatype-draft",
+            },
+        ),
+    ],
+    body: Grammar(
+        Grammar {
+            items: [
+                Definition(
+                    Definition {
+                        name: "form.data.mimetypelist",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "mime-type-list",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.pattern",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: "string",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.datetime-local",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "datetime-local",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.date",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "date",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.month",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "month",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.week",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "week",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.time",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "time",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.emailaddress",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "email-address",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.emailaddresslist",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "email-address-list",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.color",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "simple-color",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.stringwithoutlinebreaks",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "string-without-line-breaks",
+                            },
+                        ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: "form.data.nonemptystring",
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: Some(
+                                    "w",
+                                ),
+                                local: "non-empty-string",
+                            },
+                        ),
+                    },
+                ),
+            ],
+        },
+    ),
+}

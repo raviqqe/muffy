@@ -1,0 +1,371 @@
+---
+source: rnc/src/parse.rs
+expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
+---
+Schema {
+    declarations: [
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "a",
+                uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
+            },
+        ),
+        Namespace(
+            NamespaceDeclaration {
+                prefix: "svg",
+                uri: "http://www.w3.org/2000/svg",
+            },
+        ),
+    ],
+    body: Pattern(
+        Grammar(
+            Grammar {
+                items: [
+                    Include(
+                        Include {
+                            uri: "svg-basic-graphics-attrib.rnc",
+                            inherit: Some(
+                                Prefix(
+                                    "svg",
+                                ),
+                            ),
+                            grammar: None,
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.image-rendering.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "image-rendering",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "auto",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "optimizeSpeed",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "optimizeQuality",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.pointer-events.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "pointer-events",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visiblePainted",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visibleFill",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visibleStroke",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "visible",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "painted",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "fill",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "stroke",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "all",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "none",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.shape-rendering.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "shape-rendering",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "auto",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "optimizeSpeed",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "crispEdges",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "geometricPrecision",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.text-rendering.attrib",
+                            combine: None,
+                            pattern: Optional(
+                                Attribute {
+                                    name_class: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "text-rendering",
+                                        },
+                                    ),
+                                    pattern: Choice(
+                                        [
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "auto",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "optimizeSpeed",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "optimizeLegibility",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "geometricPrecision",
+                                            },
+                                            Value {
+                                                name: Some(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "string",
+                                                    },
+                                                ),
+                                                value: "inherit",
+                                            },
+                                        ],
+                                    ),
+                                },
+                            ),
+                        },
+                    ),
+                    Definition(
+                        Definition {
+                            name: "SVG.Graphics.attrib",
+                            combine: Some(
+                                Interleave,
+                            ),
+                            pattern: Group(
+                                [
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.image-rendering.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.pointer-events.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.shape-rendering.attrib",
+                                        },
+                                    ),
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: "SVG.text-rendering.attrib",
+                                        },
+                                    ),
+                                ],
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ),
+}

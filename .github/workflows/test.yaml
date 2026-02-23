@@ -18,12 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - uses: raviqqe/cargo-cache@v1
       - run: cargo test
   coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - run: tools/coverage.sh
       - uses: codecov/codecov-action@v5
         with:
