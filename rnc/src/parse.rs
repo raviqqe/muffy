@@ -472,8 +472,17 @@ fn name_class(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
-    let (input, classes) = separated_list1(symbol("|"), name_class_except).parse(input)?;
-    Ok((input, fold_name_classes(classes)))
+    map(separated_list1(symbol("|"), name_class_except), |classes| {
+        if classes.len() == 1 {
+            classes
+                .into_iter()
+                .next()
+                .expect("name class list must contain one item")
+        } else {
+            NameClass::Choice(classes)
+        }
+    })
+    .parse(input)
 }
 
 fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
@@ -752,17 +761,6 @@ fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Patter
             .expect("pattern list must contain one item")
     } else {
         constructor(patterns)
-    }
-}
-
-fn fold_name_classes(classes: Vec<NameClass>) -> NameClass {
-    if classes.len() == 1 {
-        classes
-            .into_iter()
-            .next()
-            .expect("name class list must contain one item")
-    } else {
-        NameClass::Choice(classes)
     }
 }
 
