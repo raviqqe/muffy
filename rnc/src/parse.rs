@@ -102,7 +102,12 @@ fn declaration(input: &str) -> ParserResult<'_, Declaration> {
 
 fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> {
     map(
-        (keyword("namespace"), identifier_token, symbol("="), string_literal_token),
+        (
+            keyword("namespace"),
+            identifier_token,
+            symbol("="),
+            string_literal_token,
+        ),
         |(_, prefix, _, uri)| NamespaceDeclaration { prefix, uri },
     )
     .parse(input)
@@ -351,7 +356,11 @@ fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn element_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (keyword("element"), name_class, delimited(symbol("{"), pattern, symbol("}"))),
+        (
+            keyword("element"),
+            name_class,
+            delimited(symbol("{"), pattern, symbol("}")),
+        ),
         |(_, name_class, pattern)| Pattern::Element {
             name_class,
             pattern: Box::new(pattern),
@@ -377,7 +386,10 @@ fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (keyword("list"), delimited(symbol("{"), pattern, symbol("}"))),
+        (
+            keyword("list"),
+            delimited(symbol("{"), pattern, symbol("}")),
+        ),
         |(_, pattern)| Pattern::List(Box::new(pattern)),
     )
     .parse(input)
@@ -385,7 +397,10 @@ fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        (keyword("grammar"), delimited(symbol("{"), grammar, symbol("}"))),
+        (
+            keyword("grammar"),
+            delimited(symbol("{"), grammar, symbol("}")),
+        ),
         |(_, grammar)| Pattern::Grammar(grammar),
     )
     .parse(input)
