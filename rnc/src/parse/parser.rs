@@ -10,7 +10,7 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{char, multispace1, satisfy},
-    combinator::{all_consuming, eof, map, not, opt, peek, recognize, value},
+    combinator::{all_consuming, map, not, opt, peek, recognize, value},
     error::{Error, ErrorKind},
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
@@ -21,14 +21,7 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        (
-            many0(declaration),
-            whitespace0,
-            alt((
-                map(eof, |_| SchemaBody::Grammar(Grammar { items: Vec::new() })),
-                schema_body,
-            )),
-        ),
+        (many0(declaration), whitespace0, schema_body),
         |(declarations, _, body)| Schema { declarations, body },
     )
     .parse(input)
@@ -38,7 +31,7 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     preceded(
         skip_annotation_blocks,
         alt((
-            map(all_consuming(many1(grammar_item)), |items| {
+            map(all_consuming(many0(grammar_item)), |items| {
                 SchemaBody::Grammar(Grammar { items })
             }),
             map(pattern, SchemaBody::Pattern),
