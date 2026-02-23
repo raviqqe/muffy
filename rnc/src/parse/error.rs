@@ -21,7 +21,7 @@ impl<'a> From<nom::Err<nom::error::Error<&'a str>>> for ParseError {
     fn from(error: nom::Err<nom::error::Error<&'a str>>) -> Self {
         Self {
             message: match error {
-                nom::Err::Incomplete(_) => "incomplete input".to_string(),
+                nom::Err::Incomplete(_) => "incomplete input".into(),
                 nom::Err::Error(error) | nom::Err::Failure(error) => error.to_string(),
             },
         }
