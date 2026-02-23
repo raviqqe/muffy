@@ -10,7 +10,7 @@ use nom::{
     character::complete::{char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::{Error, ErrorKind},
-    multi::{many0, many1, separated_list0, separated_list1},
+    multi::{fold_many0, many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -93,28 +93,18 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    let mut remaining_input = input;
-    let mut items = Vec::new();
-
-    loop {
-        let (after_annotations, _) = skip_annotation_blocks(remaining_input)?;
-        if after_annotations != remaining_input {
-            remaining_input = after_annotations;
-        }
-
-        match grammar_item(remaining_input) {
-            Ok((next_input, item)) => {
-                if next_input.len() == remaining_input.len() {
-                    break;
-                }
+    map(
+        fold_many0(
+            preceded(skip_annotation_blocks, grammar_item),
+            Vec::new,
+            |mut items, item| {
                 items.push(item);
-                remaining_input = next_input;
-            }
-            Err(_) => break,
-        }
-    }
-
-    Ok((remaining_input, Grammar { items }))
+                items
+            },
+        ),
+        |items| Grammar { items },
+    )
+    .parse(input)
 }
 
 fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
