@@ -15,6 +15,7 @@ use nom::{
 };
 
 type ParserError<'input> = Error<&'input str>;
+
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
