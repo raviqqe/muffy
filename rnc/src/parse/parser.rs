@@ -19,7 +19,7 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        (many0(declaration), blank0, schema_body),
+        delimited(blank0, (many0(declaration), blank0, schema_body), blank0),
         |(declarations, _, body)| Schema { declarations, body },
     )
     .parse(input)
@@ -643,7 +643,7 @@ fn symbol(symbol: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
     move |input| delimited(blank0, tag(symbol), blank0).parse(input)
 }
 
-pub(super) fn blank0(input: &str) -> ParserResult<'_, ()> {
+fn blank0(input: &str) -> ParserResult<'_, ()> {
     map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 

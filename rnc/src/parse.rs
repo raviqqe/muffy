@@ -4,15 +4,13 @@ mod error;
 mod parser;
 
 pub use self::error::ParseError;
-use self::parser::{blank0, schema};
+use self::parser::schema;
 use crate::ast::Schema;
-use nom::{Parser, combinator::all_consuming, sequence::delimited};
+use nom::{Parser, combinator::all_consuming};
 
 /// Parses a schema.
 pub fn parse_schema(input: &str) -> Result<Schema, ParseError> {
-    Ok(all_consuming(delimited(blank0, schema, blank0))
-        .parse(input)?
-        .1)
+    Ok(all_consuming(schema).parse(input)?.1)
 }
 
 #[cfg(test)]
