@@ -30,6 +30,7 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     preceded(
         many0(annotation_block),
         alt((
+            // TODO Remove the all consuming combinator.
             map(all_consuming(many0(grammar_item)), |items| {
                 SchemaBody::Grammar(Grammar { items })
             }),
@@ -52,7 +53,7 @@ fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> 
     map(
         (
             keyword("namespace"),
-            identifier_token,
+            identifier,
             symbol("="),
             string_literal,
         ),
@@ -66,7 +67,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
         (
             keyword("default"),
             keyword("namespace"),
-            opt(identifier_token),
+            opt(identifier),
             symbol("="),
             string_literal,
         ),
@@ -79,7 +80,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
     map(
         (
             keyword("datatypes"),
-            opt(identifier_token),
+            opt(identifier),
             symbol("="),
             string_literal,
         ),
@@ -123,7 +124,7 @@ fn start_item(input: &str) -> ParserResult<'_, GrammarItem> {
 
 fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
     map(
-        (identifier_token, assignment_operator, pattern),
+        (identifier, assignment_operator, pattern),
         |(name, combine, pattern)| {
             GrammarItem::Definition(Definition {
                 name,
@@ -205,7 +206,7 @@ fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
     map(
-        (keyword("inherit"), preceded(symbol("="), identifier_token)),
+        (keyword("inherit"), preceded(symbol("="), identifier)),
         |(_, prefix)| Inherit::Prefix(prefix),
     )
     .parse(input)
@@ -413,7 +414,7 @@ fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
 fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
     blanked(alt((
         value(NameClass::AnyName, tag("*")),
-        map((identifier, char(':'), char('*')), |(prefix, _, _)| {
+        map((raw_identifier, char(':'), char('*')), |(prefix, _, _)| {
             NameClass::NamespaceName(Some(prefix))
         }),
         map(name, NameClass::Name),
@@ -504,13 +505,13 @@ fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     .parse(input)
 }
 
-fn identifier_token(input: &str) -> ParserResult<'_, String> {
-    blanked(identifier).parse(input)
+fn identifier(input: &str) -> ParserResult<'_, String> {
+    blanked(raw_identifier).parse(input)
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
-        blanked((identifier, opt(preceded(char(':'), identifier)))),
+        blanked((raw_identifier, opt(preceded(char(':'), raw_identifier)))),
         |(first, rest)| {
             let (prefix, local) = match rest {
                 Some(local) => (Some(first), local),
@@ -598,7 +599,7 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
     .parse(input)
 }
 
-fn identifier(input: &str) -> ParserResult<'_, String> {
+fn raw_identifier(input: &str) -> ParserResult<'_, String> {
     map(
         preceded(
             opt(char::<&str, _>('\\')),
