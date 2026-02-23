@@ -606,12 +606,9 @@ fn string_literal_token(input: &str) -> ParserResult<'_, String> {
     spaced(string_literal).parse(input)
 }
 
-fn spaced<'input, Output, ParserType>(
-    parser: ParserType,
-) -> impl Parser<&'input str, Output = Output, Error = ParserError<'input>>
-where
-    ParserType: Parser<&'input str, Output = Output, Error = ParserError<'input>>,
-{
+fn spaced<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
     delimited(blank0, parser, blank0)
 }
 
