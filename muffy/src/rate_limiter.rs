@@ -5,6 +5,7 @@ use core::{
 use tokio::time::{Instant, sleep};
 
 // TODO Use `Timer`?
+// TODO Optimize the ordering.
 
 /// A token bucket rate limiter.
 pub struct RateLimiter {
