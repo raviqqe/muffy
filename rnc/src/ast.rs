@@ -176,9 +176,9 @@ pub enum Pattern {
     Text,
     /// A value.
     Value {
-        /// The datatype name, if specified.
+        /// A name.
         name: Option<Name>,
-        /// The literal value.
+        /// A value.
         value: String,
     },
 }
