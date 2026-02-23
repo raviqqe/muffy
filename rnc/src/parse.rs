@@ -59,8 +59,7 @@ type ParserError<'input> = Error<&'input str>;
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
 fn schema(input: &str) -> ParserResult<'_, Schema> {
-    let (input, declarations) = many0(declaration).parse(input)?;
-    let (input, _) = whitespace0(input)?;
+    let (input, (declarations, _)) = (many0(declaration), whitespace0).parse(input)?;
     if input.is_empty() {
         return Ok((
             input,
@@ -166,22 +165,24 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 }
 
 fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
-    let (input, item) = delimited(
-        whitespace0,
-        alt((
-            start_item,
-            map(annotation_element, GrammarItem::Annotation),
-            define_item,
-            div_item,
-            include_item,
-        )),
-        whitespace0,
+    map(
+        (
+            delimited(
+                whitespace0,
+                alt((
+                    start_item,
+                    map(annotation_element, GrammarItem::Annotation),
+                    define_item,
+                    div_item,
+                    include_item,
+                )),
+                whitespace0,
+            ),
+            many0(annotation_block_after),
+        ),
+        |(item, _)| item,
     )
-    .parse(input)?;
-
-    let (input, _) = many0(annotation_block_after).parse(input)?;
-
-    Ok((input, item))
+    .parse(input)
 }
 
 fn start_item(input: &str) -> ParserResult<'_, GrammarItem> {
@@ -294,18 +295,26 @@ fn pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn choice_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, patterns) = separated_list1(symbol("|"), interleave_pattern).parse(input)?;
-    Ok((input, fold_patterns(patterns, Pattern::Choice)))
+    map(
+        separated_list1(symbol("|"), interleave_pattern),
+        |patterns| fold_patterns(patterns, Pattern::Choice),
+    )
+    .parse(input)
 }
 
 fn interleave_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, patterns) = separated_list1(symbol("&"), group_pattern).parse(input)?;
-    Ok((input, fold_patterns(patterns, Pattern::Interleave)))
+    map(separated_list1(symbol("&"), group_pattern), |patterns| {
+        fold_patterns(patterns, Pattern::Interleave)
+    })
+    .parse(input)
 }
 
 fn group_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, patterns) = separated_list1(symbol(","), quantified_pattern).parse(input)?;
-    Ok((input, fold_patterns(patterns, Pattern::Group)))
+    map(
+        separated_list1(symbol(","), quantified_pattern),
+        |patterns| fold_patterns(patterns, Pattern::Group),
+    )
+    .parse(input)
 }
 
 fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -414,18 +423,15 @@ fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn text_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("text").parse(input)?;
-    Ok((input, Pattern::Text))
+    map(keyword("text"), |_| Pattern::Text).parse(input)
 }
 
 fn empty_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("empty").parse(input)?;
-    Ok((input, Pattern::Empty))
+    map(keyword("empty"), |_| Pattern::Empty).parse(input)
 }
 
 fn not_allowed_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    let (input, _) = keyword("notAllowed").parse(input)?;
-    Ok((input, Pattern::NotAllowed))
+    map(keyword("notAllowed"), |_| Pattern::NotAllowed).parse(input)
 }
 
 fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -435,9 +441,12 @@ fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     let starting_input = input;
-    let (input, name) = name_token(input)?;
-    let (input, parameters) = opt(parameters).parse(input)?;
-    let (input, except_pattern) = opt(preceded(symbol("-"), pattern)).parse(input)?;
+    let (input, (name, parameters, except_pattern)) = (
+        name_token,
+        opt(parameters),
+        opt(preceded(symbol("-"), pattern)),
+    )
+        .parse(input)?;
 
     if parameters.is_none() && except_pattern.is_none() {
         return Err(nom::Err::Error(Error::new(starting_input, ErrorKind::Tag)));
@@ -486,8 +495,11 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
-    let (input, base) = name_class_primary(input)?;
-    let (input, except) = opt(preceded(symbol("-"), name_class_primary)).parse(input)?;
+    let (input, (base, except)) = (
+        name_class_primary,
+        opt(preceded(symbol("-"), name_class_primary)),
+    )
+        .parse(input)?;
 
     match except {
         Some(except) => Ok((
@@ -602,9 +614,14 @@ fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute
 }
 
 fn annotation_separator(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = peek(preceded(whitespace1, annotation_attribute)).parse(input)?;
-    let (input, _) = whitespace1(input)?;
-    Ok((input, ()))
+    map(
+        (
+            peek(preceded(whitespace1, annotation_attribute)),
+            whitespace1,
+        ),
+        |_| (),
+    )
+    .parse(input)
 }
 
 fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
@@ -617,8 +634,7 @@ fn annotation_block_after(input: &str) -> ParserResult<'_, Vec<AnnotationAttribu
 }
 
 fn skip_annotation_blocks(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = many0(annotation_block_after).parse(input)?;
-    Ok((input, ()))
+    map(many0(annotation_block_after), |_| ()).parse(input)
 }
 
 fn open_bracket(input: &str) -> ParserResult<'_, &str> {
@@ -630,11 +646,11 @@ fn close_bracket(input: &str) -> ParserResult<'_, &str> {
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
-    let (input, name) = name_token(input)?;
-    let (input, _) = symbol("=").parse(input)?;
-    let (input, value) = string_literal(input)?;
-
-    Ok((input, AnnotationAttribute { name, value }))
+    map(
+        (name_token, preceded(symbol("="), string_literal)),
+        |(name, value)| AnnotationAttribute { name, value },
+    )
+    .parse(input)
 }
 
 fn identifier_token(input: &str) -> ParserResult<'_, String> {
@@ -678,24 +694,26 @@ fn symbol(symbol: &'static str) -> impl FnMut(&str) -> ParserResult<'_, &str> {
 }
 
 fn whitespace0(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = many0(alt((value((), multispace1), comment))).parse(input)?;
-    Ok((input, ()))
+    map(many0(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
 fn whitespace1(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = many1(alt((value((), multispace1), comment))).parse(input)?;
-    Ok((input, ()))
+    map(many1(alt((value((), multispace1), comment))), |_| ()).parse(input)
 }
 
 fn comment(input: &str) -> ParserResult<'_, ()> {
-    let (input, _) = preceded(tag("#"), take_till(|character| character == '\n')).parse(input)?;
-    let (input, _) = opt(char('\n')).parse(input)?;
-    Ok((input, ()))
+    map(
+        (
+            preceded(tag("#"), take_till(|character| character == '\n')),
+            opt(char('\n')),
+        ),
+        |_| (),
+    )
+    .parse(input)
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
-    let (input, first) = identifier(input)?;
-    let (input, rest) = opt(preceded(char(':'), identifier)).parse(input)?;
+    let (input, (first, rest)) = (identifier, opt(preceded(char(':'), identifier))).parse(input)?;
 
     let (prefix, local) = match rest {
         Some(local) => (Some(first), local),
@@ -706,14 +724,17 @@ fn name(input: &str) -> ParserResult<'_, Name> {
 }
 
 fn identifier(input: &str) -> ParserResult<'_, String> {
-    let (input, _) = opt(char('\\')).parse(input)?;
-    let (input, value) = recognize((
-        satisfy(is_identifier_start),
-        many0(satisfy(is_identifier_char)),
-    ))
-    .parse(input)?;
-
-    Ok((input, value.to_string()))
+    map(
+        preceded(
+            opt(char::<&str, _>('\\')),
+            recognize((
+                satisfy(is_identifier_start),
+                many0(satisfy(is_identifier_char)),
+            )),
+        ),
+        |value| value.to_string(),
+    )
+    .parse(input)
 }
 
 const fn is_identifier_start(character: char) -> bool {
