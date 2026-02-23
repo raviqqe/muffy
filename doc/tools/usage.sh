@@ -16,6 +16,6 @@ set -e
 
 (
   echo '```text'
-  cargo run -- run --help
+  cargo run -- check --help
   echo '```'
-) >src/components/RunHelp.md
+) >src/components/CheckHelp.md
