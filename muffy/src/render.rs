@@ -5,9 +5,8 @@ mod options;
 mod response;
 mod result;
 
-use self::document_output::RenderedDocumentOutput;
 pub use self::options::{RenderFormat, RenderOptions};
-use self::result::RenderedResult;
+use self::{document_output::RenderedDocumentOutput, result::RenderedResult};
 use crate::{DocumentOutput, error::Error};
 use colored::Colorize;
 use core::pin::pin;
