@@ -78,12 +78,12 @@ Schema {
                                 base: AnyName,
                                 except: Choice(
                                     [
-                                        NsName(
+                                        NamespaceName(
                                             Some(
                                                 "local",
                                             ),
                                         ),
-                                        NsName(
+                                        NamespaceName(
                                             Some(
                                                 "m",
                                             ),
@@ -629,7 +629,7 @@ Schema {
                         pattern: Element {
                             name_class: Except {
                                 base: AnyName,
-                                except: NsName(
+                                except: NamespaceName(
                                     Some(
                                         "m",
                                     ),
