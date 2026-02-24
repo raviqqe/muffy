@@ -1,6 +1,6 @@
 use crate::ast::{
     Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
-    Grammar, GrammarItem, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
+    Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
 };
 use nom::{
@@ -31,7 +31,7 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
         many0(annotation_block),
         alt((
             // TODO Remove the all consuming combinator.
-            map(all_consuming(many0(grammar_item)), |items| {
+            map(all_consuming(many0(grammar_content)), |items| {
                 SchemaBody::Grammar(Grammar { items })
             }),
             map(pattern, SchemaBody::Pattern),
@@ -91,18 +91,18 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
     map(
-        many0(preceded(many0(annotation_block), grammar_item)),
+        many0(preceded(many0(annotation_block), grammar_content)),
         |items| Grammar { items },
     )
     .parse(input)
 }
 
-fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             blanked(alt((
                 start_item,
-                map(annotation, GrammarItem::Annotation),
+                map(annotation, GrammarContent::Annotation),
                 define_item,
                 div,
                 include,
@@ -114,19 +114,19 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn start_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn start_item(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (keyword("start"), assignment_operator, pattern),
-        |(_, combine, pattern)| GrammarItem::Start { combine, pattern },
+        |(_, combine, pattern)| GrammarContent::Start { combine, pattern },
     )
     .parse(input)
 }
 
-fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn define_item(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (identifier, assignment_operator, pattern),
         |(name, combine, pattern)| {
-            GrammarItem::Definition(Definition {
+            GrammarContent::Definition(Definition {
                 name,
                 combine,
                 pattern,
@@ -136,14 +136,14 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn div(input: &str) -> ParserResult<'_, GrammarItem> {
+fn div(input: &str) -> ParserResult<'_, GrammarContent> {
     map((keyword("div"), braced(grammar)), |(_, grammar)| {
-        GrammarItem::Div(grammar)
+        GrammarContent::Div(grammar)
     })
     .parse(input)
 }
 
-fn include(input: &str) -> ParserResult<'_, GrammarItem> {
+fn include(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             keyword("include"),
@@ -152,7 +152,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarItem> {
             opt(raw_grammar_block),
         ),
         |(_, uri, inherit, grammar)| {
-            GrammarItem::Include(Include {
+            GrammarContent::Include(Include {
                 uri,
                 inherit,
                 grammar,
@@ -659,7 +659,7 @@ mod tests {
         Schema {
             declarations: Vec::new(),
             body: SchemaBody::Grammar(Grammar {
-                items: vec![GrammarItem::Include(Include {
+                items: vec![GrammarContent::Include(Include {
                     uri: uri.to_string(),
                     inherit: None,
                     grammar: Some(Grammar { items: Vec::new() }),
@@ -712,7 +712,7 @@ mod tests {
                 })],
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarItem::Annotation(Annotation {
+                        GrammarContent::Annotation(Annotation {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
@@ -725,14 +725,14 @@ mod tests {
                                 },
                             ],
                         }),
-                        GrammarItem::Start {
+                        GrammarContent::Start {
                             combine: None,
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(local_name("html")),
                                 pattern: Box::new(Pattern::Empty),
                             },
                         },
-                        GrammarItem::Definition(Definition {
+                        GrammarContent::Definition(Definition {
                             name: "common".to_string(),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Element {
@@ -818,10 +818,10 @@ mod tests {
             )
         );
         assert_eq!(
-            grammar_item(input).unwrap(),
+            grammar_content(input).unwrap(),
             (
                 "",
-                GrammarItem::Annotation(Annotation {
+                GrammarContent::Annotation(Annotation {
                     name: prefixed_name("sch", "ns"),
                     attributes: vec![
                         AnnotationAttribute {
@@ -843,10 +843,10 @@ mod tests {
         let input = "table = element table { table.attlist, caption?, tr+ }";
 
         assert_eq!(
-            grammar_item(input).unwrap(),
+            grammar_content(input).unwrap(),
             (
                 "",
-                GrammarItem::Definition(Definition {
+                GrammarContent::Definition(Definition {
                     name: "table".to_string(),
                     combine: None,
                     pattern: Pattern::Element {
@@ -889,10 +889,10 @@ mod tests {
         "#};
 
         assert_eq!(
-            grammar_item(input).unwrap(),
+            grammar_content(input).unwrap(),
             (
                 "",
-                GrammarItem::Definition(Definition {
+                GrammarContent::Definition(Definition {
                     name: "xml.space.attrib".to_string(),
                     combine: None,
                     pattern: Pattern::Optional(Box::new(Pattern::Attribute {
@@ -915,7 +915,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).unwrap();
+        let (remaining_input, _) = grammar_content(input).unwrap();
 
         assert!(remaining_input.trim_start().starts_with("class.attrib"));
     }
@@ -1148,7 +1148,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_include_block_as_grammar_item() {
+    fn parse_include_block_as_grammar_content() {
         let input = indoc! {r#"
             include "basic-form.rnc" {
                 [
@@ -1164,7 +1164,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).unwrap();
+        let (remaining_input, _) = grammar_content(input).unwrap();
 
         assert!(remaining_input.trim_start().starts_with("form.attlist"));
     }
@@ -1215,7 +1215,7 @@ mod tests {
                 declarations: Vec::new(),
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarItem::Annotation(Annotation {
+                        GrammarContent::Annotation(Annotation {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
@@ -1228,12 +1228,12 @@ mod tests {
                                 },
                             ],
                         }),
-                        GrammarItem::Include(Include {
+                        GrammarContent::Include(Include {
                             uri: "basic-form.rnc".to_string(),
                             inherit: None,
                             grammar: Some(Grammar { items: Vec::new() }),
                         }),
-                        GrammarItem::Definition(Definition {
+                        GrammarContent::Definition(Definition {
                             name: "form.attlist".to_string(),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Optional(Box::new(Pattern::Attribute {
@@ -1299,10 +1299,10 @@ mod tests {
         "#};
 
         assert_eq!(
-            grammar_item(input).unwrap(),
+            grammar_content(input).unwrap(),
             (
                 "",
-                GrammarItem::Definition(Definition {
+                GrammarContent::Definition(Definition {
                     name: "InputType.class".to_string(),
                     combine: Some(Combine::Choice),
                     pattern: Pattern::Choice(vec![

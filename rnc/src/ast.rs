@@ -20,7 +20,7 @@ pub enum SchemaBody {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grammar {
     /// Items.
-    pub items: Vec<GrammarItem>,
+    pub items: Vec<GrammarContent>,
 }
 
 /// A declaration.
@@ -52,14 +52,14 @@ pub struct DatatypesDeclaration {
     pub uri: String,
 }
 
-/// A grammar item.
+/// A grammar content.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GrammarItem {
+pub enum GrammarContent {
     /// An annotation.
     Annotation(Annotation),
     /// A definition.
     Definition(Definition),
-    /// A div block containing nested grammar items.
+    /// A div block containing nested grammar contents.
     Div(Grammar),
     /// An include block.
     Include(Include),
