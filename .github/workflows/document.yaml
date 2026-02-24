@@ -70,7 +70,7 @@ jobs:
       - run: node --run preview &
         working-directory: doc
       - id: version
-        run: echo version=$(cargo run -- --version | grep -o '[0-9.]\+') >> $GITHUB_OUTPUT
+        run: tools/github/version.sh
       - uses: docker/build-push-action@v6
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
