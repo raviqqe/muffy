@@ -658,12 +658,12 @@ mod tests {
 
     fn include_schema(uri: &str) -> Schema {
         Schema {
-            declarations: Vec::new(),
+            declarations: vec![],
             body: SchemaBody::Grammar(Grammar {
                 items: vec![GrammarContent::Include(Include {
-                    uri: uri.to_string(),
+                    uri: uri.into(),
                     inherit: None,
-                    grammar: Some(Grammar { items: Vec::new() }),
+                    grammar: Some(Grammar { items: vec![] }),
                 })],
             }),
         }
