@@ -1093,7 +1093,9 @@ mod tests {
 
     #[test]
     fn parse_grammar_with_leading_annotation_block() {
-        let input = "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
+        let input = indoc! {r#"
+            [ sch:pattern [ name = "select.multiple" ] ] select = element select { select.attlist, (option | optgroup)+ }
+        "#};
 
         let (remaining_input, _) = grammar(input).unwrap();
 
