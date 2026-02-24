@@ -60,6 +60,24 @@ jobs:
           --accept-status 429
           --verbose
           http://localhost:4321/muffy/
+  web_docker_test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: doc
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup
+      - run: node --run build -- --site http://localhost:4321
+      - run: node --run preview &
+      - run: cargo run check --verbose ../muffy.local.toml
+      - run: >
+          cargo run check-site
+          --accept-status 200
+          --accept-status 403
+          --accept-status 429
+          --verbose
+          http://localhost:4321/muffy/
   document:
     needs:
       - rust_build
