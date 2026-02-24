@@ -1,6 +1,6 @@
 use crate::ast::{
     Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
-    Grammar, GrammarItem, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
+    Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
 };
 use nom::{
@@ -31,9 +31,10 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
         many0(annotation_block),
         alt((
             // TODO Remove the all consuming combinator.
-            map(all_consuming(many0(grammar_item)), |items| {
+            map(all_consuming(many0(grammar_content)), |items| {
                 SchemaBody::Grammar(Grammar { items })
             }),
+            // TODO Allow many patterns.
             map(pattern, SchemaBody::Pattern),
         )),
     )
@@ -91,18 +92,18 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
     map(
-        many0(preceded(many0(annotation_block), grammar_item)),
+        many0(preceded(many0(annotation_block), grammar_content)),
         |items| Grammar { items },
     )
     .parse(input)
 }
 
-fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             blanked(alt((
                 start_item,
-                map(annotation, GrammarItem::Annotation),
+                map(annotation, GrammarContent::Annotation),
                 define_item,
                 div,
                 include,
@@ -114,19 +115,19 @@ fn grammar_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn start_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn start_item(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (keyword("start"), assignment_operator, pattern),
-        |(_, combine, pattern)| GrammarItem::Start { combine, pattern },
+        |(_, combine, pattern)| GrammarContent::Start { combine, pattern },
     )
     .parse(input)
 }
 
-fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
+fn define_item(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (identifier, assignment_operator, pattern),
         |(name, combine, pattern)| {
-            GrammarItem::Definition(Definition {
+            GrammarContent::Definition(Definition {
                 name,
                 combine,
                 pattern,
@@ -136,14 +137,14 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarItem> {
     .parse(input)
 }
 
-fn div(input: &str) -> ParserResult<'_, GrammarItem> {
+fn div(input: &str) -> ParserResult<'_, GrammarContent> {
     map((keyword("div"), braced(grammar)), |(_, grammar)| {
-        GrammarItem::Div(grammar)
+        GrammarContent::Div(grammar)
     })
     .parse(input)
 }
 
-fn include(input: &str) -> ParserResult<'_, GrammarItem> {
+fn include(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             keyword("include"),
@@ -152,7 +153,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarItem> {
             opt(raw_grammar_block),
         ),
         |(_, uri, inherit, grammar)| {
-            GrammarItem::Include(Include {
+            GrammarContent::Include(Include {
                 uri,
                 inherit,
                 grammar,
@@ -380,13 +381,18 @@ fn name_class(input: &str) -> ParserResult<'_, NameClass> {
 }
 
 fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
-    map(separated_list1(symbol("|"), name_class_except), |classes| {
-        if classes.len() == 1 {
-            classes.into_iter().next().unwrap()
-        } else {
-            NameClass::Choice(classes)
-        }
-    })
+    map(
+        separated_list1(symbol("|"), name_class_except),
+        |mut classes| {
+            if classes.len() == 1
+                && let Some(class) = classes.pop()
+            {
+                class
+            } else {
+                NameClass::Choice(classes)
+            }
+        },
+    )
     .parse(input)
 }
 
@@ -444,10 +450,9 @@ fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
 }
 
 fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(
-        bracketed((many0(annotation_attribute), blank)),
-        |(attributes, _)| attributes,
-    )
+    map(bracketed(many0(annotation_attribute)), |attributes| {
+        attributes
+    })
     .parse(input)
 }
 
@@ -508,12 +513,15 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
         blanked((raw_identifier, opt(preceded(char(':'), raw_identifier)))),
-        |(first, rest)| {
-            let (prefix, local) = match rest {
-                Some(local) => (Some(first), local),
-                None => (None, first),
-            };
-            Name { prefix, local }
+        |(name, rest)| match rest {
+            Some(local) => Name {
+                prefix: Some(name),
+                local,
+            },
+            None => Name {
+                prefix: None,
+                local: name,
+            },
         },
     )
     .parse(input)
@@ -543,11 +551,10 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
 
 fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
-        delimited(
-            blank,
-            terminated(tag(keyword), not(peek(satisfy(is_identifier_char)))),
-            blank,
-        )
+        blanked(terminated(
+            tag(keyword),
+            not(peek(satisfy(is_identifier_char))),
+        ))
         .parse(input)
     }
 }
@@ -623,9 +630,11 @@ fn string_escape(input: &str) -> ParserResult<'_, &str> {
     .parse(input)
 }
 
-fn fold_patterns(patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
-    if patterns.len() == 1 {
-        patterns.into_iter().next().unwrap()
+fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
+    if patterns.len() == 1
+        && let Some(pattern) = patterns.pop()
+    {
+        pattern
     } else {
         constructor(patterns)
     }
@@ -647,6 +656,19 @@ mod tests {
         Name {
             prefix: Some(prefix.to_string()),
             local: value.to_string(),
+        }
+    }
+
+    fn include_schema(uri: &str) -> Schema {
+        Schema {
+            declarations: vec![],
+            body: SchemaBody::Grammar(Grammar {
+                items: vec![GrammarContent::Include(Include {
+                    uri: uri.into(),
+                    inherit: None,
+                    grammar: Some(Grammar { items: vec![] }),
+                })],
+            }),
         }
     }
 
@@ -694,7 +716,7 @@ mod tests {
                 })],
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarItem::Annotation(Annotation {
+                        GrammarContent::Annotation(Annotation {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
@@ -707,14 +729,14 @@ mod tests {
                                 },
                             ],
                         }),
-                        GrammarItem::Start {
+                        GrammarContent::Start {
                             combine: None,
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(local_name("html")),
                                 pattern: Box::new(Pattern::Empty),
                             },
                         },
-                        GrammarItem::Definition(Definition {
+                        GrammarContent::Definition(Definition {
                             name: "common".to_string(),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Element {
@@ -780,32 +802,87 @@ mod tests {
     fn parse_annotation_item() {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
-        let annotation_result = annotation(input);
-        assert!(
-            annotation_result.is_ok(),
-            "annotation element parse failed: {annotation_result:?}"
+        assert_eq!(
+            annotation(input).unwrap(),
+            (
+                "",
+                Annotation {
+                    name: prefixed_name("sch", "ns"),
+                    attributes: vec![
+                        AnnotationAttribute {
+                            name: local_name("prefix"),
+                            value: "html".to_string(),
+                        },
+                        AnnotationAttribute {
+                            name: local_name("uri"),
+                            value: "http://example.com/ns".to_string(),
+                        },
+                    ],
+                }
+            )
         );
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_content(input).unwrap(),
+            (
+                "",
+                GrammarContent::Annotation(Annotation {
+                    name: prefixed_name("sch", "ns"),
+                    attributes: vec![
+                        AnnotationAttribute {
+                            name: local_name("prefix"),
+                            value: "html".to_string(),
+                        },
+                        AnnotationAttribute {
+                            name: local_name("uri"),
+                            value: "http://example.com/ns".to_string(),
+                        },
+                    ],
+                })
+            )
+        );
     }
 
     #[test]
     fn parse_basic_table_definition() {
         let input = "table = element table { table.attlist, caption?, tr+ }";
 
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_content(input).unwrap(),
+            (
+                "",
+                GrammarContent::Definition(Definition {
+                    name: "table".to_string(),
+                    combine: None,
+                    pattern: Pattern::Element {
+                        name_class: NameClass::Name(local_name("table")),
+                        pattern: Box::new(Pattern::Group(vec![
+                            Pattern::Name(local_name("table.attlist")),
+                            Pattern::Optional(Box::new(Pattern::Name(local_name("caption")))),
+                            Pattern::Many1(Box::new(Pattern::Name(local_name("tr")))),
+                        ])),
+                    },
+                })
+            )
+        );
     }
 
     #[test]
     fn parse_prefixed_attribute_pattern() {
         let input = "attribute xml:space { string \"preserve\" }?";
 
-        let result = pattern(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            pattern(input).unwrap(),
+            (
+                "",
+                Pattern::Optional(Box::new(Pattern::Attribute {
+                    name_class: NameClass::Name(prefixed_name("xml", "space")),
+                    pattern: Box::new(Pattern::Value {
+                        name: Some(local_name("string")),
+                        value: "preserve".to_string(),
+                    }),
+                }))
+            )
+        );
     }
 
     #[test]
@@ -815,9 +892,23 @@ mod tests {
                 attribute xml:space { string "preserve" }?
         "#};
 
-        let result = grammar_item(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            grammar_content(input).unwrap(),
+            (
+                "",
+                GrammarContent::Definition(Definition {
+                    name: "xml.space.attrib".to_string(),
+                    combine: None,
+                    pattern: Pattern::Optional(Box::new(Pattern::Attribute {
+                        name_class: NameClass::Name(prefixed_name("xml", "space")),
+                        pattern: Box::new(Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "preserve".to_string(),
+                        }),
+                    })),
+                })
+            )
+        );
     }
 
     #[test]
@@ -828,7 +919,7 @@ mod tests {
             class.attrib = attribute class { text }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).unwrap();
+        let (remaining_input, _) = grammar_content(input).unwrap();
 
         assert!(remaining_input.trim_start().starts_with("class.attrib"));
     }
@@ -837,9 +928,13 @@ mod tests {
     fn parse_prefixed_name_class() {
         let input = "xml:space { string \"preserve\" }";
 
-        let result = name_class(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            name_class(input).unwrap(),
+            (
+                "{ string \"preserve\" }",
+                NameClass::Name(prefixed_name("xml", "space"))
+            )
+        );
     }
 
     #[test]
@@ -874,27 +969,50 @@ mod tests {
             element svg { empty }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: vec![Declaration::DefaultNamespace(
+                    "http://example.com".to_string()
+                )],
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("svg")),
+                    pattern: Box::new(Pattern::Empty),
+                }),
+            }
+        );
     }
 
     #[test]
     fn parse_empty_schema() {
         let input = "# comment only";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Grammar(Grammar { items: Vec::new() }),
+            }
+        );
     }
 
     #[test]
     fn parse_annotation_attachment() {
         let input = "element pre { pre.attlist >> sch:pattern [ name = \"pre\" ] , Inline.model }";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("pre")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("pre.attlist")),
+                        Pattern::Name(local_name("Inline.model")),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -906,18 +1024,29 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(parse_schema(input).unwrap(), include_schema("base.rnc"));
     }
 
     #[test]
     fn parse_element_with_parenthesized_choice() {
         let input = "element select { select.attlist, (option | optgroup)+ }";
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("select")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("select.attlist")),
+                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                            Pattern::Name(local_name("option")),
+                            Pattern::Name(local_name("optgroup")),
+                        ]))),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
@@ -934,9 +1063,10 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
@@ -950,14 +1080,27 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Pattern(Pattern::Element {
+                    name_class: NameClass::Name(local_name("button")),
+                    pattern: Box::new(Pattern::Group(vec![
+                        Pattern::Name(local_name("button.attlist")),
+                        Pattern::Name(local_name("Flow.model")),
+                    ])),
+                }),
+            }
+        );
     }
 
     #[test]
     fn parse_grammar_with_leading_annotation_block() {
-        let input = "[ sch:pattern [ name = \"select.multiple\" ] ] select = element select { select.attlist, (option | optgroup)+ }";
+        let input = indoc! {r#"
+            [ sch:pattern [ name = "select.multiple" ] ] select =
+                element select { select.attlist, (option | optgroup)+ }
+        "#};
 
         let (remaining_input, _) = grammar(input).unwrap();
 
@@ -980,9 +1123,10 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
@@ -1001,13 +1145,14 @@ mod tests {
             }
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            include_schema("basic-form.rnc")
+        );
     }
 
     #[test]
-    fn parse_include_block_as_grammar_item() {
+    fn parse_include_block_as_grammar_content() {
         let input = indoc! {r#"
             include "basic-form.rnc" {
                 [
@@ -1023,7 +1168,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = grammar_item(input).unwrap();
+        let (remaining_input, _) = grammar_content(input).unwrap();
 
         assert!(remaining_input.trim_start().starts_with("form.attlist"));
     }
@@ -1068,9 +1213,42 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let result = parse_schema(input);
-
-        assert!(result.is_ok());
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: Vec::new(),
+                body: SchemaBody::Grammar(Grammar {
+                    items: vec![
+                        GrammarContent::Annotation(Annotation {
+                            name: prefixed_name("sch", "ns"),
+                            attributes: vec![
+                                AnnotationAttribute {
+                                    name: local_name("prefix"),
+                                    value: "html".to_string(),
+                                },
+                                AnnotationAttribute {
+                                    name: local_name("uri"),
+                                    value: "http://www.w3.org/1999/xhtml".to_string(),
+                                },
+                            ],
+                        }),
+                        GrammarContent::Include(Include {
+                            uri: "basic-form.rnc".to_string(),
+                            inherit: None,
+                            grammar: Some(Grammar { items: Vec::new() }),
+                        }),
+                        GrammarContent::Definition(Definition {
+                            name: "form.attlist".to_string(),
+                            combine: Some(Combine::Interleave),
+                            pattern: Pattern::Optional(Box::new(Pattern::Attribute {
+                                name_class: NameClass::Name(local_name("accept-charset")),
+                                pattern: Box::new(Pattern::Name(local_name("charsets.datatype"))),
+                            })),
+                        }),
+                    ],
+                }),
+            }
+        );
     }
 
     #[test]
@@ -1124,6 +1302,29 @@ mod tests {
                   string "file"
         "#};
 
-        assert!(grammar_item(input).is_ok());
+        assert_eq!(
+            grammar_content(input).unwrap(),
+            (
+                "",
+                GrammarContent::Definition(Definition {
+                    name: "InputType.class".to_string(),
+                    combine: Some(Combine::Choice),
+                    pattern: Pattern::Choice(vec![
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "image".to_string(),
+                        },
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "button".to_string(),
+                        },
+                        Pattern::Value {
+                            name: Some(local_name("string")),
+                            value: "file".to_string(),
+                        },
+                    ]),
+                })
+            )
+        );
     }
 }
