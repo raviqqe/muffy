@@ -513,12 +513,15 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
         blanked((raw_identifier, opt(preceded(char(':'), raw_identifier)))),
-        |(first, rest)| {
-            let (prefix, local) = match rest {
-                Some(local) => (Some(first), local),
-                None => (None, first),
-            };
-            Name { prefix, local }
+        |(name, rest)| match rest {
+            Some(local) => Name {
+                prefix: Some(name),
+                local,
+            },
+            None => Name {
+                prefix: None,
+                local: name,
+            },
         },
     )
     .parse(input)
