@@ -127,7 +127,6 @@ pub enum Pattern {
         /// A name.
         name: Name,
         /// Parameters.
-        // TODO Should this be `Option<Parameter>`?
         parameters: Vec<Parameter>,
         /// An except pattern.
         except: Option<Box<Self>>,
