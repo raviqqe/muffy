@@ -141,7 +141,7 @@ pub enum Pattern {
     /// An empty pattern.
     Empty,
     /// An external reference.
-    ExternalRef(String),
+    External(String),
     /// A grammar.
     Grammar(Grammar),
     /// A group.
