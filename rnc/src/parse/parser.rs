@@ -90,23 +90,16 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    map(
-        many0(preceded(many0(annotation_block), grammar_content)),
-        |items| Grammar { items },
-    )
-    .parse(input)
+    map(many0(grammar_content), |items| Grammar { items }).parse(input)
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
-            blanked(alt((
-                start_item,
-                map(annotation, GrammarContent::Annotation),
-                define_item,
-                div,
-                include,
-            ))),
+            preceded(
+                many0(annotation_block),
+                blanked(alt((start_item, define_item, div, include))),
+            ),
             many0(annotation_block),
         ),
         |(item, _)| item,
