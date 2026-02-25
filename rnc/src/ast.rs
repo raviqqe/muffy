@@ -73,6 +73,8 @@ pub enum GrammarContent {
     },
 }
 
+// TODO Add `LocalGrammarContent`.
+
 /// A definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Definition {
