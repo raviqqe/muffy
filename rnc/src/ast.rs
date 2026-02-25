@@ -94,6 +94,7 @@ pub struct Include {
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
     /// A grammar.
+    // TODO Use `LocalGrammar`.
     pub grammar: Option<Grammar>,
 }
 
