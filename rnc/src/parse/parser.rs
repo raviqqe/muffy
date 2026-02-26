@@ -77,21 +77,21 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    map(many0(annotated(grammar_content)), |items| Grammar { items }).parse(input)
+    map(many0(grammar_content), |items| Grammar { items }).parse(input)
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     annotated(blanked(alt((
-        start_item,
         map(annotation_element, GrammarContent::Annotation),
-        define_item,
+        start,
+        definition,
         div,
         include,
     ))))
     .parse(input)
 }
 
-fn start_item(input: &str) -> ParserResult<'_, GrammarContent> {
+fn start(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (keyword("start"), assignment_operator, pattern),
         |(_, combine, pattern)| GrammarContent::Start { combine, pattern },
@@ -99,7 +99,7 @@ fn start_item(input: &str) -> ParserResult<'_, GrammarContent> {
     .parse(input)
 }
 
-fn define_item(input: &str) -> ParserResult<'_, GrammarContent> {
+fn definition(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (identifier, assignment_operator, pattern),
         |(name, combine, pattern)| {
@@ -114,9 +114,10 @@ fn define_item(input: &str) -> ParserResult<'_, GrammarContent> {
 }
 
 fn div(input: &str) -> ParserResult<'_, GrammarContent> {
-    map((keyword("div"), braced(grammar)), |(_, grammar)| {
-        GrammarContent::Div(grammar)
-    })
+    map(
+        preceded(keyword("div"), braced(grammar)),
+        GrammarContent::Div,
+    )
     .parse(input)
 }
 
