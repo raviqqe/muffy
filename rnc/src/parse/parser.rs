@@ -140,10 +140,12 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
     .parse(input)
 }
 
+// TODO Collect include contents.
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(braced(raw_grammar_body), |_| Grammar { items: Vec::new() }).parse(input)
+    map(braced(raw_grammar_body), |_| Grammar { items: vec![] }).parse(input)
 }
 
+// TODO Refactor this.
 fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
     map(
         many0(alt((
