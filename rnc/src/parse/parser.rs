@@ -455,7 +455,7 @@ fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAt
 }
 
 fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(bracketed(annotation_block_body), |_| Vec::new()).parse(input)
+    map(bracketed(annotation_block_body), |_| vec![]).parse(input)
 }
 
 fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
@@ -463,10 +463,7 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
         (),
         many0(alt((
             value((), string_literal),
-            value(
-                (),
-                delimited(symbol("["), annotation_block_body, symbol("]")),
-            ),
+            value((), bracketed(annotation_block_body)),
             value((), is_not("[]\"'")),
         ))),
     )
