@@ -437,9 +437,19 @@ fn parameter(input: &str) -> ParserResult<'_, Parameter> {
 }
 
 fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
-    map((name, annotation_block), |(name, attributes)| {
-        AnnotationElement { name, attributes }
-    })
+    map(
+        (
+            name,
+            bracketed((
+                many0(annotation_attribute),
+                many0(alt((
+                    value((), annotation_element),
+                    value((), string_literal),
+                ))),
+            )),
+        ),
+        |(name, (attributes, _))| AnnotationElement { name, attributes },
+    )
     .parse(input)
 }
 
