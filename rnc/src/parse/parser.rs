@@ -1,5 +1,5 @@
 use crate::ast::{
-    Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
+    AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration, Definition,
     Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
 };
@@ -18,7 +18,7 @@ type ParserError<'input> = Error<&'input str>;
 
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
-pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
+pub fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
         blanked((many0(declaration), schema_body)),
         |(declarations, body)| Schema { declarations, body },
@@ -27,17 +27,13 @@ pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
 }
 
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
-    preceded(
-        many0(annotation_block),
-        alt((
-            // TODO Remove the all consuming combinator.
-            map(all_consuming(many0(grammar_content)), |items| {
-                SchemaBody::Grammar(Grammar { items })
-            }),
-            // TODO Allow many patterns.
-            map(pattern, SchemaBody::Pattern),
-        )),
-    )
+    alt((
+        // TODO Remove the all consuming combinator.
+        map(all_consuming(many0(grammar_content)), |items| {
+            SchemaBody::Grammar(Grammar { items })
+        }),
+        map(pattern, SchemaBody::Pattern),
+    ))
     .parse(input)
 }
 
@@ -52,12 +48,7 @@ fn declaration(input: &str) -> ParserResult<'_, Declaration> {
 
 fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> {
     map(
-        (
-            keyword("namespace"),
-            identifier,
-            symbol("="),
-            string_literal,
-        ),
+        (keyword("namespace"), identifier, symbol("="), literal),
         |(_, prefix, _, uri)| NamespaceDeclaration { prefix, uri },
     )
     .parse(input)
@@ -70,7 +61,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
             keyword("namespace"),
             opt(identifier),
             symbol("="),
-            string_literal,
+            literal,
         ),
         |(_, _, _, _, uri)| uri,
     )
@@ -79,39 +70,24 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
 
 fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> {
     map(
-        (
-            keyword("datatypes"),
-            opt(identifier),
-            symbol("="),
-            string_literal,
-        ),
+        (keyword("datatypes"), opt(identifier), symbol("="), literal),
         |(_, prefix, _, uri)| DatatypesDeclaration { prefix, uri },
     )
     .parse(input)
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    map(
-        many0(preceded(many0(annotation_block), grammar_content)),
-        |items| Grammar { items },
-    )
-    .parse(input)
+    map(many0(annotated(grammar_content)), |items| Grammar { items }).parse(input)
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
-    map(
-        (
-            blanked(alt((
-                start_item,
-                map(annotation, GrammarContent::Annotation),
-                define_item,
-                div,
-                include,
-            ))),
-            many0(annotation_block),
-        ),
-        |(item, _)| item,
-    )
+    annotated(blanked(alt((
+        start_item,
+        map(annotation_element, GrammarContent::Annotation),
+        define_item,
+        div,
+        include,
+    ))))
     .parse(input)
 }
 
@@ -148,7 +124,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             keyword("include"),
-            string_literal,
+            literal,
             opt(inherit),
             opt(raw_grammar_block),
         ),
@@ -249,7 +225,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
             primary_pattern,
-            many0(annotation_attachment),
+            many0(follow_annotation),
             opt(alt((
                 value("?", symbol("?")),
                 value("*", symbol("*")),
@@ -267,28 +243,21 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     .parse(input)
 }
 
-fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
-    value((), (symbol(">>"), annotation)).parse(input)
-}
-
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    preceded(
-        many0(annotation_block),
-        alt((
-            element_pattern,
-            attribute_pattern,
-            list_pattern,
-            grammar_pattern,
-            external_pattern,
-            text_pattern,
-            empty_pattern,
-            not_allowed_pattern,
-            value_pattern,
-            data_pattern,
-            name_pattern,
-            parenthesized(pattern),
-        )),
-    )
+    annotated(alt((
+        element_pattern,
+        attribute_pattern,
+        list_pattern,
+        grammar_pattern,
+        external_pattern,
+        text_pattern,
+        empty_pattern,
+        not_allowed_pattern,
+        value_pattern,
+        data_pattern,
+        name_pattern,
+        parenthesized(pattern),
+    )))
     .parse(input)
 }
 
@@ -329,7 +298,7 @@ fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("external"), string_literal), |(_, uri)| {
+    map((keyword("external"), literal), |(_, uri)| {
         Pattern::External(uri)
     })
     .parse(input)
@@ -367,7 +336,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(name), string_literal), |(datatype_name, value)| {
+    map((opt(name), literal), |(datatype_name, value)| {
         Pattern::Value {
             name: datatype_name,
             value,
@@ -430,84 +399,45 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
+    map((name, preceded(symbol("="), literal)), |(name, value)| {
+        Parameter { name, value }
+    })
+    .parse(input)
+}
+
+fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
     map(
-        (name, preceded(symbol("="), string_literal)),
-        |(name, value)| Parameter { name, value },
+        (
+            name,
+            bracketed((
+                many0(annotation_attribute),
+                many0(alt((value((), annotation_element), value((), literal)))),
+            )),
+        ),
+        |(name, (attributes, _))| AnnotationElement { name, attributes },
     )
     .parse(input)
 }
 
-fn annotation(input: &str) -> ParserResult<'_, Annotation> {
-    map((name, annotation_block), |(name, attributes)| Annotation {
-        name,
-        attributes,
-    })
-    .parse(input)
-}
-
-fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    alt((annotation_block_attributes, annotation_block_raw)).parse(input)
-}
-
-fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(bracketed(many0(annotation_attribute)), |attributes| {
-        attributes
-    })
-    .parse(input)
-}
-
-fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(bracketed(annotation_block_body), |_| Vec::new()).parse(input)
-}
-
-fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
-    let mut depth = 0_u32;
-    let mut string_delimiter: Option<char> = None;
-    let mut escape_next = false;
-
-    for (offset_index, character) in input.char_indices() {
-        if let Some(active_delimiter) = string_delimiter {
-            if escape_next {
-                escape_next = false;
-                continue;
-            }
-            if character == '\\' {
-                escape_next = true;
-                continue;
-            }
-            if character == active_delimiter {
-                string_delimiter = None;
-            }
-            continue;
-        }
-
-        match character {
-            '"' | '\'' => string_delimiter = Some(character),
-            '[' => depth += 1,
-            ']' => {
-                if depth == 0 {
-                    let remaining_input = &input[offset_index..];
-                    return Ok((remaining_input, ()));
-                }
-                depth = depth.saturating_sub(1);
-            }
-            _ => {}
-        }
-    }
-
-    Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)))
+fn annotation(input: &str) -> ParserResult<'_, (Vec<AnnotationAttribute>, Vec<AnnotationElement>)> {
+    bracketed((many0(annotation_attribute), many0(annotation_element))).parse(input)
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
-    map(
-        (name, preceded(symbol("="), string_literal)),
-        |(name, value)| AnnotationAttribute { name, value },
-    )
+    map((name, preceded(symbol("="), literal)), |(name, value)| {
+        AnnotationAttribute { name, value }
+    })
     .parse(input)
 }
 
-fn identifier(input: &str) -> ParserResult<'_, String> {
-    blanked(raw_identifier).parse(input)
+fn annotated<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    preceded(many0(annotation), parser)
+}
+
+fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
+    value((), (symbol(">>"), annotation_element)).parse(input)
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
@@ -524,6 +454,28 @@ fn name(input: &str) -> ParserResult<'_, Name> {
             },
         },
     )
+    .parse(input)
+}
+
+fn identifier(input: &str) -> ParserResult<'_, String> {
+    blanked(raw_identifier).parse(input)
+}
+
+fn raw_identifier(input: &str) -> ParserResult<'_, String> {
+    map(
+        preceded(
+            opt(char::<&str, _>('\\')),
+            recognize((alpha1, many0(satisfy(is_identifier_char)))),
+        ),
+        Into::into,
+    )
+    .parse(input)
+}
+
+fn literal(input: &str) -> ParserResult<'_, String> {
+    map(separated_list1(symbol("~"), string_literal), |parts| {
+        parts.join("")
+    })
     .parse(input)
 }
 
@@ -602,17 +554,6 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
     .parse(input)
 }
 
-fn raw_identifier(input: &str) -> ParserResult<'_, String> {
-    map(
-        preceded(
-            opt(char::<&str, _>('\\')),
-            recognize((alpha1, many0(satisfy(is_identifier_char)))),
-        ),
-        Into::into,
-    )
-    .parse(input)
-}
-
 const fn is_identifier_char(character: char) -> bool {
     character.is_ascii_alphanumeric() || character == '_' || character == '-' || character == '.'
 }
@@ -644,6 +585,7 @@ fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pa
 mod tests {
     use super::{super::parse_schema, *};
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
 
     fn local_name(value: &str) -> Name {
         Name {
@@ -716,7 +658,7 @@ mod tests {
                 })],
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarContent::Annotation(Annotation {
+                        GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
@@ -803,10 +745,10 @@ mod tests {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
         assert_eq!(
-            annotation(input).unwrap(),
+            annotation_element(input).unwrap(),
             (
                 "",
-                Annotation {
+                AnnotationElement {
                     name: prefixed_name("sch", "ns"),
                     attributes: vec![
                         AnnotationAttribute {
@@ -825,7 +767,7 @@ mod tests {
             grammar_content(input).unwrap(),
             (
                 "",
-                GrammarContent::Annotation(Annotation {
+                GrammarContent::Annotation(AnnotationElement {
                     name: prefixed_name("sch", "ns"),
                     attributes: vec![
                         AnnotationAttribute {
@@ -1219,7 +1161,7 @@ mod tests {
                 declarations: Vec::new(),
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarContent::Annotation(Annotation {
+                        GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
