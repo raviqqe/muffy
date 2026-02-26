@@ -29,9 +29,7 @@ pub fn schema(input: &str) -> ParserResult<'_, Schema> {
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     alt((
         // TODO Remove the all consuming combinator.
-        map(all_consuming(many0(grammar_content)), |items| {
-            SchemaBody::Grammar(Grammar { contents: items })
-        }),
+        map(all_consuming(grammar), SchemaBody::Grammar),
         map(pattern, SchemaBody::Pattern),
     ))
     .parse(input)
