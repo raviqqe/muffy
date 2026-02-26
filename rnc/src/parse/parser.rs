@@ -237,7 +237,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
             Some("?") => Pattern::Optional(pattern.into()),
             Some("*") => Pattern::Many0(pattern.into()),
             Some("+") => Pattern::Many1(pattern.into()),
-            // TODO Return an error on an invalid quantifier.
+            // TODO Prevent an invalid quantifier.
             Some(_) | None => pattern,
         },
     )
