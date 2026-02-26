@@ -429,31 +429,8 @@ fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
     .parse(input)
 }
 
-fn annotation(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    alt((annotation_block_attributes, annotation_block_raw)).parse(input)
-}
-
-fn annotation_block_attributes(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(bracketed(many0(annotation_attribute)), |attributes| {
-        attributes
-    })
-    .parse(input)
-}
-
-fn annotation_block_raw(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
-    map(bracketed(annotation_block_body), |_| vec![]).parse(input)
-}
-
-fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
-    value(
-        (),
-        many0(alt((
-            value((), literal),
-            value((), bracketed(annotation_block_body)),
-            value((), is_not("[]\"'")),
-        ))),
-    )
-    .parse(input)
+fn annotation(input: &str) -> ParserResult<'_, (Vec<AnnotationAttribute>, Vec<AnnotationElement>)> {
+    bracketed((many0(annotation_attribute), many0(annotation_element))).parse(input)
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
