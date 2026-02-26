@@ -30,7 +30,7 @@ fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
     alt((
         // TODO Remove the all consuming combinator.
         map(all_consuming(many0(grammar_content)), |items| {
-            SchemaBody::Grammar(Grammar { items })
+            SchemaBody::Grammar(Grammar { contents: items })
         }),
         map(pattern, SchemaBody::Pattern),
     ))
@@ -77,7 +77,7 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    map(many0(grammar_content), |items| Grammar { items }).parse(input)
+    map(many0(grammar_content), |items| Grammar { contents: items }).parse(input)
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
@@ -143,7 +143,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
 // TODO Collect include contents.
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
     map(braced(many0(grammar_content)), |contents| Grammar {
-        items: contents,
+        contents,
     })
     .parse(input)
 }
@@ -568,10 +568,10 @@ mod tests {
         Schema {
             declarations: vec![],
             body: SchemaBody::Grammar(Grammar {
-                items: vec![GrammarContent::Include(Include {
+                contents: vec![GrammarContent::Include(Include {
                     uri: uri.into(),
                     inherit: None,
-                    grammar: Some(Grammar { items: vec![] }),
+                    grammar: Some(Grammar { contents: vec![] }),
                 })],
             }),
         }
@@ -620,7 +620,7 @@ mod tests {
                     uri: "http://example.com/sch".to_string(),
                 })],
                 body: SchemaBody::Grammar(Grammar {
-                    items: vec![
+                    contents: vec![
                         GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
@@ -896,7 +896,9 @@ mod tests {
             parse_schema(input).unwrap(),
             Schema {
                 declarations: Vec::new(),
-                body: SchemaBody::Grammar(Grammar { items: Vec::new() }),
+                body: SchemaBody::Grammar(Grammar {
+                    contents: Vec::new()
+                }),
             }
         );
     }
@@ -1123,7 +1125,7 @@ mod tests {
             Schema {
                 declarations: Vec::new(),
                 body: SchemaBody::Grammar(Grammar {
-                    items: vec![
+                    contents: vec![
                         GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
@@ -1140,7 +1142,9 @@ mod tests {
                         GrammarContent::Include(Include {
                             uri: "basic-form.rnc".to_string(),
                             inherit: None,
-                            grammar: Some(Grammar { items: Vec::new() }),
+                            grammar: Some(Grammar {
+                                contents: Vec::new()
+                            }),
                         }),
                         GrammarContent::Definition(Definition {
                             name: "form.attlist".to_string(),

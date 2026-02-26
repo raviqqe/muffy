@@ -20,7 +20,7 @@ pub enum SchemaBody {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Grammar {
     /// Contents.
-    pub items: Vec<GrammarContent>,
+    pub contents: Vec<GrammarContent>,
 }
 
 /// A declaration.
