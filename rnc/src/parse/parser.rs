@@ -531,6 +531,14 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
     .parse(input)
 }
 
+fn literal(input: &str) -> ParserResult<'_, String> {
+    map(
+        separated_list1(symbol("~"), string_literal),
+        |parts| parts.join(""),
+    )
+    .parse(input)
+}
+
 fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
     move |input| {
         blanked(terminated(
@@ -1351,6 +1359,7 @@ mod tests {
 
     mod annotation {
         use super::*;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_annotation_after_grammar() {
