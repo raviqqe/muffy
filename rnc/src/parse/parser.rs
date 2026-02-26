@@ -27,16 +27,13 @@ pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
 }
 
 fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
-    preceded(
-        many0(annotation_block),
-        alt((
-            // TODO Remove the all consuming combinator.
-            map(all_consuming(many0(grammar_content)), |items| {
-                SchemaBody::Grammar(Grammar { items })
-            }),
-            map(pattern, SchemaBody::Pattern),
-        )),
-    )
+    alt((
+        // TODO Remove the all consuming combinator.
+        map(all_consuming(many0(grammar_content)), |items| {
+            SchemaBody::Grammar(Grammar { items })
+        }),
+        map(pattern, SchemaBody::Pattern),
+    ))
     .parse(input)
 }
 
@@ -80,27 +77,17 @@ fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> 
 }
 
 fn grammar(input: &str) -> ParserResult<'_, Grammar> {
-    map(
-        many0(preceded(many0(annotation_block), grammar_content)),
-        |items| Grammar { items },
-    )
-    .parse(input)
+    map(many0(annotated(grammar_content)), |items| Grammar { items }).parse(input)
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
-    map(
-        (
-            blanked(alt((
-                start_item,
-                map(annotation_element, GrammarContent::Annotation),
-                define_item,
-                div,
-                include,
-            ))),
-            many0(annotation_block),
-        ),
-        |(item, _)| item,
-    )
+    annotated(blanked(alt((
+        start_item,
+        map(annotation_element, GrammarContent::Annotation),
+        define_item,
+        div,
+        include,
+    ))))
     .parse(input)
 }
 
@@ -256,28 +243,31 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     .parse(input)
 }
 
+fn annotated<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    preceded(many0(annotation), parser)
+}
+
 fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
     value((), (symbol(">>"), annotation_element)).parse(input)
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    preceded(
-        many0(annotation_block),
-        alt((
-            element_pattern,
-            attribute_pattern,
-            list_pattern,
-            grammar_pattern,
-            external_pattern,
-            text_pattern,
-            empty_pattern,
-            not_allowed_pattern,
-            value_pattern,
-            data_pattern,
-            name_pattern,
-            parenthesized(pattern),
-        )),
-    )
+    annotated(alt((
+        element_pattern,
+        attribute_pattern,
+        list_pattern,
+        grammar_pattern,
+        external_pattern,
+        text_pattern,
+        empty_pattern,
+        not_allowed_pattern,
+        value_pattern,
+        data_pattern,
+        name_pattern,
+        parenthesized(pattern),
+    )))
     .parse(input)
 }
 
@@ -439,7 +429,7 @@ fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
     .parse(input)
 }
 
-fn annotation_block(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
+fn annotation(input: &str) -> ParserResult<'_, Vec<AnnotationAttribute>> {
     alt((annotation_block_attributes, annotation_block_raw)).parse(input)
 }
 
