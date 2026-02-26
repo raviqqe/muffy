@@ -213,7 +213,7 @@ pub struct Parameter {
     pub value: String,
 }
 
-/// An annotation.
+/// An annotation element.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnnotationElement {
     /// A name.
