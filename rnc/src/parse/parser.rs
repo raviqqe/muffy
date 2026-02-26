@@ -9,7 +9,7 @@ use nom::{
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{alpha1, char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
-    error::{Error, ErrorKind},
+    error::Error,
     multi::{many0, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
@@ -145,41 +145,18 @@ fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
 }
 
 fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
-    let mut depth = 0_u32;
-    let mut string_delimiter: Option<char> = None;
-    let mut escape_next = false;
-
-    for (offset_index, character) in input.char_indices() {
-        if let Some(active_delimiter) = string_delimiter {
-            if escape_next {
-                escape_next = false;
-                continue;
-            }
-            if character == '\\' {
-                escape_next = true;
-                continue;
-            }
-            if character == active_delimiter {
-                string_delimiter = None;
-            }
-            continue;
-        }
-
-        match character {
-            '"' | '\'' => string_delimiter = Some(character),
-            '{' => depth += 1,
-            '}' => {
-                if depth == 0 {
-                    let remaining_input = &input[offset_index..];
-                    return Ok((remaining_input, ()));
-                }
-                depth = depth.saturating_sub(1);
-            }
-            _ => {}
-        }
-    }
-
-    Err(nom::Err::Error(Error::new(input, ErrorKind::Tag)))
+    map(
+        many0(alt((
+            value((), multispace1),
+            comment,
+            value((), quoted('"', "\\\"")),
+            value((), quoted('\'', "\\'")),
+            value((), braced(raw_grammar_body)),
+            value((), recognize(is_not("{}\"'# \t\r\n"))),
+        ))),
+        |_| (),
+    )
+    .parse(input)
 }
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
