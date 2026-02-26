@@ -464,7 +464,11 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
         (),
         many0(alt((
             value((), string_literal),
-            value((), delimited(char('['), annotation_block_body, char(']'))),
+            value(
+                (),
+                delimited(symbol("["), annotation_block_body, symbol("]")),
+            ),
+            value((), is_not("[]\"'")),
         ))),
     )
     .parse(input)
