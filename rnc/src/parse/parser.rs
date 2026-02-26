@@ -81,13 +81,13 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 }
 
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
-    annotated(blanked(alt((
+    annotated(alt((
         map(annotation_element, GrammarContent::Annotation),
         start,
         definition,
         div,
         include,
-    ))))
+    )))
     .parse(input)
 }
 
