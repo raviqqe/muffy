@@ -329,7 +329,7 @@ fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map((keyword("external"), string_literal), |(_, uri)| {
-        Pattern::ExternalRef(uri)
+        Pattern::External(uri)
     })
     .parse(input)
 }

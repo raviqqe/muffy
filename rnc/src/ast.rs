@@ -56,6 +56,7 @@ pub struct DatatypesDeclaration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrammarContent {
     /// An annotation.
+    // TODO Remove annotations from grammar content and attach them to each construct.
     Annotation(Annotation),
     /// A definition.
     Definition(Definition),
@@ -71,6 +72,8 @@ pub enum GrammarContent {
         pattern: Pattern,
     },
 }
+
+// TODO Add `LocalGrammarContent`.
 
 /// A definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -91,6 +94,7 @@ pub struct Include {
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
     /// A grammar.
+    // TODO Use `LocalGrammar`.
     pub grammar: Option<Grammar>,
 }
 
@@ -141,7 +145,7 @@ pub enum Pattern {
     /// An empty pattern.
     Empty,
     /// An external reference.
-    ExternalRef(String),
+    External(String),
     /// A grammar.
     Grammar(Grammar),
     /// A group.
