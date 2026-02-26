@@ -18,7 +18,7 @@ type ParserError<'input> = Error<&'input str>;
 
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
-pub(super) fn schema(input: &str) -> ParserResult<'_, Schema> {
+pub fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
         blanked((many0(declaration), schema_body)),
         |(declarations, body)| Schema { declarations, body },
