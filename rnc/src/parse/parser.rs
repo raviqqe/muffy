@@ -125,7 +125,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
             keyword("include"),
             literal,
             opt(inherit),
-            opt(raw_grammar_block),
+            opt(braced(grammar)),
         ),
         |(_, uri, inherit, grammar)| {
             GrammarContent::Include(Include {
@@ -136,11 +136,6 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
         },
     )
     .parse(input)
-}
-
-// TODO Collect include contents.
-fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    braced(grammar).parse(input)
 }
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
@@ -559,19 +554,6 @@ mod tests {
         }
     }
 
-    fn include_schema(uri: &str) -> Schema {
-        Schema {
-            declarations: vec![],
-            body: SchemaBody::Grammar(Grammar {
-                contents: vec![GrammarContent::Include(Include {
-                    uri: uri.into(),
-                    inherit: None,
-                    grammar: Some(Grammar { contents: vec![] }),
-                })],
-            }),
-        }
-    }
-
     #[test]
     fn parse_pattern_schema() {
         let input = "element foo { (text | empty)+, attribute id { text }? }";
@@ -926,7 +908,24 @@ mod tests {
             }
         "#};
 
-        assert_eq!(parse_schema(input).unwrap(), include_schema("base.rnc"));
+        assert_eq!(
+            parse_schema(input).unwrap(),
+            Schema {
+                declarations: vec![],
+                body: SchemaBody::Grammar(Grammar {
+                    contents: vec![GrammarContent::Include(Include {
+                        uri: "base.rnc".to_string(),
+                        inherit: None,
+                        grammar: Some(Grammar {
+                            contents: vec![GrammarContent::Start {
+                                combine: None,
+                                pattern: Pattern::Empty,
+                            }],
+                        }),
+                    })],
+                }),
+            }
+        );
     }
 
     #[test]
@@ -967,7 +966,31 @@ mod tests {
 
         assert_eq!(
             parse_schema(input).unwrap(),
-            include_schema("basic-form.rnc")
+            Schema {
+                declarations: vec![],
+                body: SchemaBody::Grammar(Grammar {
+                    contents: vec![GrammarContent::Include(Include {
+                        uri: "basic-form.rnc".to_string(),
+                        inherit: None,
+                        grammar: Some(Grammar {
+                            contents: vec![GrammarContent::Definition(Definition {
+                                name: "select".to_string(),
+                                combine: None,
+                                pattern: Pattern::Element {
+                                    name_class: NameClass::Name(local_name("select")),
+                                    pattern: Box::new(Pattern::Group(vec![
+                                        Pattern::Name(local_name("select.attlist")),
+                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                                            Pattern::Name(local_name("option")),
+                                            Pattern::Name(local_name("optgroup")),
+                                        ]))),
+                                    ])),
+                                },
+                            }),],
+                        }),
+                    })],
+                }),
+            }
         );
     }
 
@@ -1027,7 +1050,31 @@ mod tests {
 
         assert_eq!(
             parse_schema(input).unwrap(),
-            include_schema("basic-form.rnc")
+            Schema {
+                declarations: vec![],
+                body: SchemaBody::Grammar(Grammar {
+                    contents: vec![GrammarContent::Include(Include {
+                        uri: "basic-form.rnc".to_string(),
+                        inherit: None,
+                        grammar: Some(Grammar {
+                            contents: vec![GrammarContent::Definition(Definition {
+                                name: "select".to_string(),
+                                combine: None,
+                                pattern: Pattern::Element {
+                                    name_class: NameClass::Name(local_name("select")),
+                                    pattern: Box::new(Pattern::Group(vec![
+                                        Pattern::Name(local_name("select.attlist")),
+                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                                            Pattern::Name(local_name("option")),
+                                            Pattern::Name(local_name("optgroup")),
+                                        ]))),
+                                    ])),
+                                },
+                            }),],
+                        }),
+                    })],
+                }),
+            }
         );
     }
 
@@ -1049,7 +1096,31 @@ mod tests {
 
         assert_eq!(
             parse_schema(input).unwrap(),
-            include_schema("basic-form.rnc")
+            Schema {
+                declarations: vec![],
+                body: SchemaBody::Grammar(Grammar {
+                    contents: vec![GrammarContent::Include(Include {
+                        uri: "basic-form.rnc".to_string(),
+                        inherit: None,
+                        grammar: Some(Grammar {
+                            contents: vec![GrammarContent::Definition(Definition {
+                                name: "select".to_string(),
+                                combine: None,
+                                pattern: Pattern::Element {
+                                    name_class: NameClass::Name(local_name("select")),
+                                    pattern: Box::new(Pattern::Group(vec![
+                                        Pattern::Name(local_name("select.attlist")),
+                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
+                                            Pattern::Name(local_name("option")),
+                                            Pattern::Name(local_name("optgroup")),
+                                        ]))),
+                                    ])),
+                                },
+                            }),],
+                        }),
+                    })],
+                }),
+            }
         );
     }
 
@@ -1092,7 +1163,7 @@ mod tests {
             form.attlist &= attribute accept-charset { charsets.datatype }?
         "#};
 
-        let (remaining_input, _) = raw_grammar_block(input).unwrap();
+        let (remaining_input, _) = braced(grammar).parse(input).unwrap();
 
         assert!(remaining_input.trim_start().starts_with("form.attlist"));
     }
@@ -1138,7 +1209,20 @@ mod tests {
                             uri: "basic-form.rnc".to_string(),
                             inherit: None,
                             grammar: Some(Grammar {
-                                contents: Vec::new()
+                                contents: vec![GrammarContent::Definition(Definition {
+                                    name: "select".to_string(),
+                                    combine: None,
+                                    pattern: Pattern::Element {
+                                        name_class: NameClass::Name(local_name("select")),
+                                        pattern: Box::new(Pattern::Group(vec![
+                                            Pattern::Name(local_name("select.attlist")),
+                                            Pattern::Many1(Box::new(Pattern::Choice(vec![
+                                                Pattern::Name(local_name("option")),
+                                                Pattern::Name(local_name("optgroup")),
+                                            ]))),
+                                        ])),
+                                    },
+                                }),],
                             }),
                         }),
                         GrammarContent::Definition(Definition {
@@ -1188,7 +1272,8 @@ mod tests {
         "#};
 
         assert!(
-            raw_grammar_block(input)
+            braced(grammar)
+                .parse(input)
                 .unwrap()
                 .0
                 .trim_start()
