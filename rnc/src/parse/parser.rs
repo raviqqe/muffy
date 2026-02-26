@@ -626,6 +626,7 @@ fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pa
 mod tests {
     use super::{super::parse_schema, *};
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
 
     fn local_name(value: &str) -> Name {
         Name {
@@ -1313,6 +1314,8 @@ mod tests {
     #[test]
     fn parse_annotated_grammar_after_namespace() {
         let input = indoc! {r#"
+                default namespace = "http://example.com"
+                namespace foo = "http://example.com/foo"
                 [ lang = "en" ]
                 grammar {
                     foo = bar
