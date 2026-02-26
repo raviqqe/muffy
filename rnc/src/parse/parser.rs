@@ -51,12 +51,7 @@ fn declaration(input: &str) -> ParserResult<'_, Declaration> {
 
 fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> {
     map(
-        (
-            keyword("namespace"),
-            identifier,
-            symbol("="),
-            string_literal,
-        ),
+        (keyword("namespace"), identifier, symbol("="), literal),
         |(_, prefix, _, uri)| NamespaceDeclaration { prefix, uri },
     )
     .parse(input)
@@ -69,7 +64,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
             keyword("namespace"),
             opt(identifier),
             symbol("="),
-            string_literal,
+            literal,
         ),
         |(_, _, _, _, uri)| uri,
     )
@@ -78,12 +73,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
 
 fn datatypes_declaration(input: &str) -> ParserResult<'_, DatatypesDeclaration> {
     map(
-        (
-            keyword("datatypes"),
-            opt(identifier),
-            symbol("="),
-            string_literal,
-        ),
+        (keyword("datatypes"), opt(identifier), symbol("="), literal),
         |(_, prefix, _, uri)| DatatypesDeclaration { prefix, uri },
     )
     .parse(input)
@@ -147,7 +137,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
     map(
         (
             keyword("include"),
-            string_literal,
+            literal,
             opt(inherit),
             opt(raw_grammar_block),
         ),
@@ -328,7 +318,7 @@ fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("external"), string_literal), |(_, uri)| {
+    map((keyword("external"), literal), |(_, uri)| {
         Pattern::External(uri)
     })
     .parse(input)
@@ -366,7 +356,7 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(name), string_literal), |(datatype_name, value)| {
+    map((opt(name), literal), |(datatype_name, value)| {
         Pattern::Value {
             name: datatype_name,
             value,
@@ -429,10 +419,9 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
-    map(
-        (name, preceded(symbol("="), string_literal)),
-        |(name, value)| Parameter { name, value },
-    )
+    map((name, preceded(symbol("="), literal)), |(name, value)| {
+        Parameter { name, value }
+    })
     .parse(input)
 }
 
@@ -442,10 +431,7 @@ fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
             name,
             bracketed((
                 many0(annotation_attribute),
-                many0(alt((
-                    value((), annotation_element),
-                    value((), string_literal),
-                ))),
+                many0(alt((value((), annotation_element), value((), literal)))),
             )),
         ),
         |(name, (attributes, _))| AnnotationElement { name, attributes },
@@ -472,7 +458,7 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
     value(
         (),
         many0(alt((
-            value((), string_literal),
+            value((), literal),
             value((), bracketed(annotation_block_body)),
             value((), is_not("[]\"'")),
         ))),
@@ -481,10 +467,9 @@ fn annotation_block_body(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
-    map(
-        (name, preceded(symbol("="), string_literal)),
-        |(name, value)| AnnotationAttribute { name, value },
-    )
+    map((name, preceded(symbol("="), literal)), |(name, value)| {
+        AnnotationAttribute { name, value }
+    })
     .parse(input)
 }
 
@@ -509,6 +494,13 @@ fn name(input: &str) -> ParserResult<'_, Name> {
     .parse(input)
 }
 
+fn literal(input: &str) -> ParserResult<'_, String> {
+    map(separated_list1(symbol("~"), string_literal), |parts| {
+        parts.join("")
+    })
+    .parse(input)
+}
+
 fn string_literal(input: &str) -> ParserResult<'_, String> {
     blanked(alt((
         map(
@@ -528,14 +520,6 @@ fn string_literal(input: &str) -> ParserResult<'_, String> {
             |value| value.unwrap_or_default(),
         ),
     )))
-    .parse(input)
-}
-
-fn literal(input: &str) -> ParserResult<'_, String> {
-    map(
-        separated_list1(symbol("~"), string_literal),
-        |parts| parts.join(""),
-    )
     .parse(input)
 }
 
