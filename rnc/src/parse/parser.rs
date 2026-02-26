@@ -440,10 +440,6 @@ fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
     .parse(input)
 }
 
-fn identifier(input: &str) -> ParserResult<'_, String> {
-    blanked(raw_identifier).parse(input)
-}
-
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
         blanked((raw_identifier, opt(preceded(char(':'), raw_identifier)))),
@@ -457,6 +453,21 @@ fn name(input: &str) -> ParserResult<'_, Name> {
                 local: name,
             },
         },
+    )
+    .parse(input)
+}
+
+fn identifier(input: &str) -> ParserResult<'_, String> {
+    blanked(raw_identifier).parse(input)
+}
+
+fn raw_identifier(input: &str) -> ParserResult<'_, String> {
+    map(
+        preceded(
+            opt(char::<&str, _>('\\')),
+            recognize((alpha1, many0(satisfy(is_identifier_char)))),
+        ),
+        Into::into,
     )
     .parse(input)
 }
@@ -539,17 +550,6 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
             preceded(tag("#"), take_till(|character| character == '\n')),
             opt(char('\n')),
         ),
-    )
-    .parse(input)
-}
-
-fn raw_identifier(input: &str) -> ParserResult<'_, String> {
-    map(
-        preceded(
-            opt(char::<&str, _>('\\')),
-            recognize((alpha1, many0(satisfy(is_identifier_char)))),
-        ),
-        Into::into,
     )
     .parse(input)
 }
