@@ -102,7 +102,7 @@ fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
         (
             blanked(alt((
                 start_item,
-                map(annotation, GrammarContent::Annotation),
+                map(annotation_element, GrammarContent::Annotation),
                 define_item,
                 div,
                 include,
@@ -267,7 +267,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
-    value((), (symbol(">>"), annotation)).parse(input)
+    value((), (symbol(">>"), annotation_element)).parse(input)
 }
 
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -436,7 +436,7 @@ fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     .parse(input)
 }
 
-fn annotation(input: &str) -> ParserResult<'_, Annotation> {
+fn annotation_element(input: &str) -> ParserResult<'_, Annotation> {
     map((name, annotation_block), |(name, attributes)| Annotation {
         name,
         attributes,
@@ -779,7 +779,7 @@ mod tests {
         let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
 
         assert_eq!(
-            annotation(input).unwrap(),
+            annotation_element(input).unwrap(),
             (
                 "",
                 Annotation {
