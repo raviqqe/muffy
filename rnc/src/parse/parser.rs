@@ -241,36 +241,34 @@ fn attribute_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn list_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("list"), braced(pattern)), |(_, pattern)| {
+    map(preceded(keyword("list"), braced(pattern)), |pattern| {
         Pattern::List(pattern.into())
     })
     .parse(input)
 }
 
 fn grammar_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("grammar"), braced(grammar)), |(_, grammar)| {
-        Pattern::Grammar(grammar)
-    })
+    map(
+        preceded(keyword("grammar"), braced(grammar)),
+        Pattern::Grammar,
+    )
     .parse(input)
 }
 
 fn external_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((keyword("external"), literal), |(_, uri)| {
-        Pattern::External(uri)
-    })
-    .parse(input)
+    map(preceded(keyword("external"), literal), Pattern::External).parse(input)
 }
 
 fn text_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(keyword("text"), |_| Pattern::Text).parse(input)
+    value(Pattern::Text, keyword("text")).parse(input)
 }
 
 fn empty_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(keyword("empty"), |_| Pattern::Empty).parse(input)
+    value(Pattern::Empty, keyword("empty")).parse(input)
 }
 
 fn not_allowed_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map(keyword("notAllowed"), |_| Pattern::NotAllowed).parse(input)
+    value(Pattern::NotAllowed, keyword("notAllowed")).parse(input)
 }
 
 fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
@@ -293,22 +291,16 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(name), literal), |(datatype_name, value)| {
-        Pattern::Value {
-            name: datatype_name,
-            value,
-        }
+    map((opt(name), literal), |(name, value)| Pattern::Value {
+        name,
+        value,
     })
     .parse(input)
 }
 
 fn name_class(input: &str) -> ParserResult<'_, NameClass> {
-    name_class_choice(input)
-}
-
-fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
     map(
-        separated_list1(symbol("|"), name_class_except),
+        separated_list1(symbol("|"), name_class_choice),
         |mut classes| {
             if classes.len() == 1
                 && let Some(class) = classes.pop()
@@ -322,7 +314,7 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
     .parse(input)
 }
 
-fn name_class_except(input: &str) -> ParserResult<'_, NameClass> {
+fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
     map(
         (
             primary_name_class,
@@ -356,8 +348,9 @@ fn parameters(input: &str) -> ParserResult<'_, Vec<Parameter>> {
 }
 
 fn parameter(input: &str) -> ParserResult<'_, Parameter> {
-    map((name, preceded(symbol("="), literal)), |(name, value)| {
-        Parameter { name, value }
+    map((name, symbol("="), literal), |(name, _, value)| Parameter {
+        name,
+        value,
     })
     .parse(input)
 }
@@ -381,7 +374,7 @@ fn annotation(input: &str) -> ParserResult<'_, (Vec<AnnotationAttribute>, Vec<An
 }
 
 fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
-    map((name, preceded(symbol("="), literal)), |(name, value)| {
+    map((name, symbol("="), literal), |(name, _, value)| {
         AnnotationAttribute { name, value }
     })
     .parse(input)
@@ -399,17 +392,8 @@ fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
 
 fn name(input: &str) -> ParserResult<'_, Name> {
     map(
-        blanked((raw_identifier, opt(preceded(char(':'), raw_identifier)))),
-        |(name, rest)| match rest {
-            Some(local) => Name {
-                prefix: Some(name),
-                local,
-            },
-            None => Name {
-                prefix: None,
-                local: name,
-            },
-        },
+        blanked((opt(terminated(raw_identifier, char(':'))), raw_identifier)),
+        |(prefix, local)| Name { prefix, local },
     )
     .parse(input)
 }
@@ -421,7 +405,7 @@ fn identifier(input: &str) -> ParserResult<'_, String> {
 fn raw_identifier(input: &str) -> ParserResult<'_, String> {
     map(
         preceded(
-            opt(char::<&str, _>('\\')),
+            opt(char('\\')),
             recognize((alpha1, many0(satisfy(is_identifier_char)))),
         ),
         Into::into,
@@ -430,13 +414,13 @@ fn raw_identifier(input: &str) -> ParserResult<'_, String> {
 }
 
 fn literal(input: &str) -> ParserResult<'_, String> {
-    map(separated_list1(symbol("~"), string_literal), |parts| {
-        parts.join("")
+    map(separated_list1(symbol("~"), literal_segment), |segments| {
+        segments.join("")
     })
     .parse(input)
 }
 
-fn string_literal(input: &str) -> ParserResult<'_, String> {
+fn literal_segment(input: &str) -> ParserResult<'_, String> {
     blanked(alt((quoted('"', "\\\""), quoted('\'', "\\'")))).parse(input)
 }
 
