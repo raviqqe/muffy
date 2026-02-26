@@ -1310,6 +1310,42 @@ mod tests {
         );
     }
 
+    #[test]
+    fn parse_annotated_grammar_after_namespace() {
+        let input = indoc! {r#"
+                [ lang = "en" ]
+                grammar {
+                    foo = bar
+                }
+            "#};
+
+        assert_eq!(
+            schema(input).unwrap(),
+            (
+                "",
+                Schema {
+                    declarations: Vec::new(),
+                    body: SchemaBody::Grammar(Grammar {
+                        items: vec![
+                            GrammarContent::Annotation(AnnotationElement {
+                                name: local_name(""),
+                                attributes: vec![AnnotationAttribute {
+                                    name: local_name("lang"),
+                                    value: "en".to_string(),
+                                }],
+                            }),
+                            GrammarContent::Definition(Definition {
+                                name: "foo".to_string(),
+                                combine: None,
+                                pattern: Pattern::Name(local_name("bar")),
+                            }),
+                        ],
+                    }),
+                }
+            )
+        );
+    }
+
     mod annotation {
         use super::*;
 
