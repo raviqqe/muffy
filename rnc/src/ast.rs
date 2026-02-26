@@ -56,7 +56,6 @@ pub struct DatatypesDeclaration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrammarContent {
     /// An annotation.
-    // TODO Remove annotations from grammar content and attach them to each construct.
     Annotation(AnnotationElement),
     /// A definition.
     Definition(Definition),
