@@ -1309,4 +1309,32 @@ mod tests {
             )
         );
     }
+
+    mod annotation {
+        use super::*;
+
+        #[test]
+        fn parse_annotation_after_grammar() {
+            let input = indoc! {r#"
+                [ lang = "en" ]
+                grammar {
+                    foo = bar
+                }
+            "#};
+
+            assert_eq!(
+                annotation_element(input).unwrap(),
+                (
+                    "grammar {\n    foo = bar\n}\n",
+                    AnnotationElement {
+                        name: local_name(""),
+                        attributes: vec![AnnotationAttribute {
+                            name: local_name("lang"),
+                            value: "en".to_string(),
+                        }],
+                    }
+                )
+            );
+        }
+    }
 }
