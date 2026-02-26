@@ -480,21 +480,20 @@ fn literal(input: &str) -> ParserResult<'_, String> {
 }
 
 fn string_literal(input: &str) -> ParserResult<'_, String> {
-    map(
-        blanked(alt((quoted('"', "\\\""), quoted('\'', "\\'")))),
-        |string| string.unwrap_or_default(),
-    )
-    .parse(input)
+    blanked(alt((quoted('"', "\\\""), quoted('\'', "\\'")))).parse(input)
 }
 
 fn quoted<'a>(
     delimiter: char,
     not: &'static str,
-) -> impl Parser<&'a str, Output = Option<String>, Error = ParserError<'a>> {
-    delimited(
-        char(delimiter),
-        opt(escaped_transform(is_not(not), '\\', string_escape)),
-        char(delimiter),
+) -> impl Parser<&'a str, Output = String, Error = ParserError<'a>> {
+    map(
+        delimited(
+            char(delimiter),
+            opt(escaped_transform(is_not(not), '\\', string_escape)),
+            char(delimiter),
+        ),
+        |string| string.unwrap_or_default(),
     )
 }
 
