@@ -1,5 +1,5 @@
 use crate::ast::{
-    Annotation, AnnotationAttribute, Combine, DatatypesDeclaration, Declaration, Definition,
+    AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration, Definition,
     Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
     Pattern, Schema, SchemaBody,
 };
@@ -436,10 +436,9 @@ fn parameter(input: &str) -> ParserResult<'_, Parameter> {
     .parse(input)
 }
 
-fn annotation_element(input: &str) -> ParserResult<'_, Annotation> {
-    map((name, annotation_block), |(name, attributes)| Annotation {
-        name,
-        attributes,
+fn annotation_element(input: &str) -> ParserResult<'_, AnnotationElement> {
+    map((name, annotation_block), |(name, attributes)| {
+        AnnotationElement { name, attributes }
     })
     .parse(input)
 }
@@ -692,7 +691,7 @@ mod tests {
                 })],
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarContent::Annotation(Annotation {
+                        GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {
@@ -782,7 +781,7 @@ mod tests {
             annotation_element(input).unwrap(),
             (
                 "",
-                Annotation {
+                AnnotationElement {
                     name: prefixed_name("sch", "ns"),
                     attributes: vec![
                         AnnotationAttribute {
@@ -801,7 +800,7 @@ mod tests {
             grammar_content(input).unwrap(),
             (
                 "",
-                GrammarContent::Annotation(Annotation {
+                GrammarContent::Annotation(AnnotationElement {
                     name: prefixed_name("sch", "ns"),
                     attributes: vec![
                         AnnotationAttribute {
@@ -1195,7 +1194,7 @@ mod tests {
                 declarations: Vec::new(),
                 body: SchemaBody::Grammar(Grammar {
                     items: vec![
-                        GrammarContent::Annotation(Annotation {
+                        GrammarContent::Annotation(AnnotationElement {
                             name: prefixed_name("sch", "ns"),
                             attributes: vec![
                                 AnnotationAttribute {

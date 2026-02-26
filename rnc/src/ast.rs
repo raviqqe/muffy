@@ -57,7 +57,7 @@ pub struct DatatypesDeclaration {
 pub enum GrammarContent {
     /// An annotation.
     // TODO Remove annotations from grammar content and attach them to each construct.
-    Annotation(Annotation),
+    Annotation(AnnotationElement),
     /// A definition.
     Definition(Definition),
     /// A div block containing nested grammar contents.
@@ -215,7 +215,7 @@ pub struct Parameter {
 
 /// An annotation.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Annotation {
+pub struct AnnotationElement {
     /// A name.
     pub name: Name,
     /// Attributes.
