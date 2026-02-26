@@ -17,14 +17,31 @@ Schema {
     body: Pattern(
         Grammar(
             Grammar {
-                items: [
+                contents: [
                     Include(
                         Include {
                             uri: "svg-basic-font.rnc",
                             inherit: None,
                             grammar: Some(
                                 Grammar {
-                                    items: [],
+                                    contents: [
+                                        Definition(
+                                            Definition {
+                                                name: "SVG.font-face.extra.class",
+                                                combine: Some(
+                                                    Interleave,
+                                                ),
+                                                pattern: Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "definition-src",
+                                                        },
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ],
                                 },
                             ),
                         },

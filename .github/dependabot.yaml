@@ -1,9 +1,5 @@
 version: 2
 updates:
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: daily
   - package-ecosystem: cargo
     directory: /
     schedule:
@@ -13,11 +9,19 @@ updates:
         patterns:
           - html5ever
           - markup5ever_rcdom
-  - package-ecosystem: npm
-    directory: /doc
-    schedule:
-      interval: daily
   - package-ecosystem: docker
     directory: /
+    schedule:
+      interval: daily
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+  - package-ecosystem: gitsubmodule
+    directory: /
+    schedule:
+      interval: daily
+  - package-ecosystem: npm
+    directory: /doc
     schedule:
       interval: daily
