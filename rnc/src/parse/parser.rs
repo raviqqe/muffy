@@ -238,7 +238,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
             primary_pattern,
-            many0(annotation_attachment),
+            many0(follow_annotation),
             opt(alt((
                 value("?", symbol("?")),
                 value("*", symbol("*")),
@@ -256,7 +256,7 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     .parse(input)
 }
 
-fn annotation_attachment(input: &str) -> ParserResult<'_, ()> {
+fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
     value((), (symbol(">>"), annotation_element)).parse(input)
 }
 
