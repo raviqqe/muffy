@@ -438,18 +438,19 @@ fn quoted<'a>(
     )
 }
 
-fn keyword(keyword: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
-    move |input| {
-        blanked(terminated(
-            tag(keyword),
-            not(peek(satisfy(is_identifier_char))),
-        ))
-        .parse(input)
-    }
+fn keyword<'a>(
+    keyword: &'static str,
+) -> impl Parser<&'a str, Output = &'a str, Error = ParserError<'a>> {
+    blanked(terminated(
+        tag(keyword),
+        not(peek(satisfy(is_identifier_char))),
+    ))
 }
 
-fn symbol(symbol: &'static str) -> impl Fn(&str) -> ParserResult<'_, &str> {
-    move |input| blanked(tag(symbol)).parse(input)
+fn symbol<'a>(
+    symbol: &'static str,
+) -> impl Parser<&'a str, Output = &'a str, Error = ParserError<'a>> {
+    blanked(tag(symbol))
 }
 
 fn parenthesized<'a, T>(
