@@ -140,10 +140,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
 
 // TODO Collect include contents.
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(braced(many0(grammar_content)), |contents| Grammar {
-        contents,
-    })
-    .parse(input)
+    braced(grammar).parse(input)
 }
 
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
