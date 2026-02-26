@@ -492,10 +492,6 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
     .parse(input)
 }
 
-const fn is_identifier_char(character: char) -> bool {
-    character.is_ascii_alphanumeric() || character == '_' || character == '-' || character == '.'
-}
-
 fn string_escape(input: &str) -> ParserResult<'_, &str> {
     alt((
         value("\\", tag("\\")),
@@ -507,6 +503,10 @@ fn string_escape(input: &str) -> ParserResult<'_, &str> {
         take(1usize),
     ))
     .parse(input)
+}
+
+const fn is_identifier_char(character: char) -> bool {
+    character.is_ascii_alphanumeric() || character == '_' || character == '-'
 }
 
 fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
