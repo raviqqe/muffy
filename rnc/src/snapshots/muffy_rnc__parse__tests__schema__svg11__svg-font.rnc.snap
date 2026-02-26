@@ -24,7 +24,24 @@ Schema {
                             inherit: None,
                             grammar: Some(
                                 Grammar {
-                                    items: [],
+                                    items: [
+                                        Definition(
+                                            Definition {
+                                                name: "SVG.font-face.extra.class",
+                                                combine: Some(
+                                                    Interleave,
+                                                ),
+                                                pattern: Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "definition-src",
+                                                        },
+                                                    ),
+                                                ),
+                                            },
+                                        ),
+                                    ],
                                 },
                             ),
                         },

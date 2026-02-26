@@ -142,22 +142,9 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
 
 // TODO Collect include contents.
 fn raw_grammar_block(input: &str) -> ParserResult<'_, Grammar> {
-    map(braced(raw_grammar_body), |_| Grammar { items: vec![] }).parse(input)
-}
-
-// TODO Refactor this.
-fn raw_grammar_body(input: &str) -> ParserResult<'_, ()> {
-    map(
-        many0(alt((
-            value((), multispace1),
-            comment,
-            value((), quoted('"', "\\\"")),
-            value((), quoted('\'', "\\'")),
-            value((), braced(raw_grammar_body)),
-            value((), recognize(is_not("{}\"'# \t\r\n"))),
-        ))),
-        |_| (),
-    )
+    map(braced(many0(grammar_content)), |contents| Grammar {
+        items: contents,
+    })
     .parse(input)
 }
 

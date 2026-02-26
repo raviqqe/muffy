@@ -17,7 +17,29 @@ Schema {
                         inherit: None,
                         grammar: Some(
                             Grammar {
-                                items: [],
+                                items: [
+                                    Definition(
+                                        Definition {
+                                            name: "XMLonly",
+                                            combine: None,
+                                            pattern: Empty,
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "HTMLonly",
+                                            combine: None,
+                                            pattern: NotAllowed,
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "v5only",
+                                            combine: None,
+                                            pattern: Empty,
+                                        },
+                                    ),
+                                ],
                             },
                         ),
                     },

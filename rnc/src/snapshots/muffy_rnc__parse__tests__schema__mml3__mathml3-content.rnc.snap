@@ -13,7 +13,364 @@ Schema {
                         inherit: None,
                         grammar: Some(
                             Grammar {
-                                items: [],
+                                items: [
+                                    Definition(
+                                        Definition {
+                                            name: "cn.content",
+                                            combine: None,
+                                            pattern: Many0(
+                                                Choice(
+                                                    [
+                                                        Text,
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "mglyph",
+                                                            },
+                                                        ),
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "sep",
+                                                            },
+                                                        ),
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "PresentationExpression",
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "cn.attributes",
+                                            combine: None,
+                                            pattern: Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "CommonAtt",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "DefEncAtt",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Attribute {
+                                                            name_class: Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "type",
+                                                                },
+                                                            ),
+                                                            pattern: Text,
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "math-base",
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "ci.attributes",
+                                            combine: None,
+                                            pattern: Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "CommonAtt",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "DefEncAtt",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "ci.type",
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "ci.type",
+                                            combine: None,
+                                            pattern: Attribute {
+                                                name_class: Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "type",
+                                                    },
+                                                ),
+                                                pattern: Text,
+                                            },
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "ci.content",
+                                            combine: None,
+                                            pattern: Many0(
+                                                Choice(
+                                                    [
+                                                        Text,
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "mglyph",
+                                                            },
+                                                        ),
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "PresentationExpression",
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "csymbol.attributes",
+                                            combine: None,
+                                            pattern: Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "CommonAtt",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "DefEncAtt",
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Attribute {
+                                                            name_class: Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "type",
+                                                                },
+                                                            ),
+                                                            pattern: Text,
+                                                        },
+                                                    ),
+                                                    Optional(
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "cd",
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "csymbol.content",
+                                            combine: None,
+                                            pattern: Many0(
+                                                Choice(
+                                                    [
+                                                        Text,
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "mglyph",
+                                                            },
+                                                        ),
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "PresentationExpression",
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "bvar",
+                                            combine: None,
+                                            pattern: Element {
+                                                name_class: Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: "bvar",
+                                                    },
+                                                ),
+                                                pattern: Interleave(
+                                                    [
+                                                        Choice(
+                                                            [
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "ci",
+                                                                    },
+                                                                ),
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "semantics-ci",
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        ),
+                                                        Optional(
+                                                            Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "degree",
+                                                                },
+                                                            ),
+                                                        ),
+                                                    ],
+                                                ),
+                                            },
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "cbytes.attributes",
+                                            combine: None,
+                                            pattern: Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "CommonAtt",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "DefEncAtt",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "cs.attributes",
+                                            combine: None,
+                                            pattern: Group(
+                                                [
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "CommonAtt",
+                                                        },
+                                                    ),
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: "DefEncAtt",
+                                                        },
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "apply.content",
+                                            combine: None,
+                                            pattern: Choice(
+                                                [
+                                                    Many1(
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: "ContExp",
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Group(
+                                                        [
+                                                            Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "ContExp",
+                                                                },
+                                                            ),
+                                                            Name(
+                                                                Name {
+                                                                    prefix: None,
+                                                                    local: "BvarQ",
+                                                                },
+                                                            ),
+                                                            Many0(
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "Qualifier",
+                                                                    },
+                                                                ),
+                                                            ),
+                                                            Many0(
+                                                                Name(
+                                                                    Name {
+                                                                        prefix: None,
+                                                                        local: "ContExp",
+                                                                    },
+                                                                ),
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ],
+                                            ),
+                                        },
+                                    ),
+                                    Definition(
+                                        Definition {
+                                            name: "bind.content",
+                                            combine: None,
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: "apply.content",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                ],
                             },
                         ),
                     },
