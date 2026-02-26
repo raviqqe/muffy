@@ -243,16 +243,6 @@ fn quantified_pattern(input: &str) -> ParserResult<'_, Pattern> {
     .parse(input)
 }
 
-fn annotated<'a, T>(
-    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
-) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
-    preceded(many0(annotation), parser)
-}
-
-fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
-    value((), (symbol(">>"), annotation_element)).parse(input)
-}
-
 fn primary_pattern(input: &str) -> ParserResult<'_, Pattern> {
     annotated(alt((
         element_pattern,
@@ -438,6 +428,16 @@ fn annotation_attribute(input: &str) -> ParserResult<'_, AnnotationAttribute> {
         AnnotationAttribute { name, value }
     })
     .parse(input)
+}
+
+fn annotated<'a, T>(
+    parser: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    preceded(many0(annotation), parser)
+}
+
+fn follow_annotation(input: &str) -> ParserResult<'_, ()> {
+    value((), (symbol(">>"), annotation_element)).parse(input)
 }
 
 fn name(input: &str) -> ParserResult<'_, Name> {
