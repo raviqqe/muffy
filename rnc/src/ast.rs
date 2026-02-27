@@ -180,7 +180,7 @@ pub struct Name {
     /// A prefix.
     pub prefix: Option<String>,
     /// A local name.
-    pub local: String,
+    pub local: Identifier,
 }
 
 /// A name class.
@@ -228,4 +228,11 @@ pub struct AnnotationAttribute {
     pub name: Name,
     /// A value.
     pub value: String,
+}
+
+/// An identifier.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Identifier {
+    /// Components.
+    pub components: Vec<String>,
 }
