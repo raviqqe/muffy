@@ -921,7 +921,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::CName(Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -954,7 +954,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::CName(Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1391,7 +1391,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::CName(Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1424,7 +1424,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::CName(Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1451,7 +1451,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::CName(Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -2092,7 +2092,7 @@ mod tests {
                 datatype_name("xsd:integer"),
                 Ok((
                     "",
-                    DatatypeName::CName(Name {
+                    DatatypeName::Name(Name {
                         prefix: Some(Identifier {
                             component: "xsd".into(),
                             sub_components: vec![],
