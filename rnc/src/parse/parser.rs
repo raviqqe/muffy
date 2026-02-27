@@ -2,7 +2,7 @@ use crate::{
     Identifier,
     ast::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration,
-        Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
+        Definition, DatatypeName, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
         NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
     },
 };
@@ -278,15 +278,10 @@ fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        verify(
-            (name, opt(parameters), opt(preceded(symbol("-"), pattern))),
-            |(name, parameters, except_pattern)| {
-                name.prefix.is_some()
-                    || parameters.is_some()
-                    || except_pattern.is_some()
-                    || (name.local.component == "string" && name.local.sub_components.is_empty())
-                    || (name.local.component == "token" && name.local.sub_components.is_empty())
-            },
+        (
+            datatype_name,
+            opt(parameters),
+            opt(preceded(symbol("-"), pattern)),
         ),
         |(name, parameters, except_pattern)| Pattern::Data {
             name,
@@ -298,10 +293,24 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(name), literal), |(name, value)| Pattern::Value {
+    map((opt(datatype_name), literal), |(name, value)| Pattern::Value {
         name,
         value,
     })
+    .parse(input)
+}
+
+fn datatype_name(input: &str) -> ParserResult<'_, DatatypeName> {
+    alt((
+        value(DatatypeName::String, keyword("string")),
+        value(DatatypeName::Token, keyword("token")),
+        map(
+            verify(name, |name| {
+                name.prefix.is_some()
+            }),
+            DatatypeName::Name,
+        ),
+    ))
     .parse(input)
 }
 
@@ -912,7 +921,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::CName(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -921,7 +930,7 @@ mod tests {
                                 component: "integer".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![Parameter {
                             name: Name {
                                 prefix: None,
@@ -945,7 +954,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::CName(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -954,7 +963,7 @@ mod tests {
                                 component: "integer".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![],
                         except: None,
                     }
@@ -969,13 +978,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "string".into(),
-                                sub_components: vec![],
-                            },
-                        },
+                        name: DatatypeName::String,
                         parameters: vec![],
                         except: None,
                     }
@@ -1007,13 +1010,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Value {
-                        name: Some(Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "string".into(),
-                                sub_components: vec![],
-                            },
-                        }),
+                        name: Some(DatatypeName::String),
                         value: "auto".into(),
                     }
                 ))
@@ -1394,7 +1391,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::CName(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1403,7 +1400,7 @@ mod tests {
                                 component: "string".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![Parameter {
                             name: Name {
                                 prefix: None,
@@ -1427,7 +1424,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::CName(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1436,7 +1433,7 @@ mod tests {
                                 component: "string".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![],
                         except: Some(Box::new(Pattern::Value {
                             name: None,
@@ -1454,7 +1451,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::CName(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1463,7 +1460,7 @@ mod tests {
                                 component: "string".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![],
                         except: None,
                     }
@@ -1478,13 +1475,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "token".into(),
-                                sub_components: vec![],
-                            },
-                        },
+                        name: DatatypeName::Token,
                         parameters: vec![],
                         except: None,
                     }
@@ -2078,6 +2069,46 @@ mod tests {
                     }]
                 ))
             );
+        }
+    }
+
+    mod datatype_name {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_string() {
+            assert_eq!(datatype_name("string"), Ok(("", DatatypeName::String)));
+        }
+
+        #[test]
+        fn parse_token() {
+            assert_eq!(datatype_name("token"), Ok(("", DatatypeName::Token)));
+        }
+
+        #[test]
+        fn parse_cname() {
+            assert_eq!(
+                datatype_name("xsd:integer"),
+                Ok((
+                    "",
+                    DatatypeName::CName(Name {
+                        prefix: Some(Identifier {
+                            component: "xsd".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "integer".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_unprefixed_name() {
+            assert!(datatype_name("foo").is_err());
         }
     }
 
