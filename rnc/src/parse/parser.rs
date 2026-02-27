@@ -23,18 +23,16 @@ type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'in
 
 pub fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        blanked((many0(declaration), schema_body)),
+        blanked((
+            many0(declaration),
+            alt((
+                // TODO Remove the all consuming combinator.
+                map(all_consuming(grammar), SchemaBody::Grammar),
+                map(pattern, SchemaBody::Pattern),
+            )),
+        )),
         |(declarations, body)| Schema { declarations, body },
     )
-    .parse(input)
-}
-
-fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
-    alt((
-        // TODO Remove the all consuming combinator.
-        map(all_consuming(grammar), SchemaBody::Grammar),
-        map(pattern, SchemaBody::Pattern),
-    ))
     .parse(input)
 }
 
