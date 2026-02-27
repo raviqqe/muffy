@@ -6,7 +6,10 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,20 +20,34 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.opacity.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "opacity",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "opacity",
+                                            local: Identifier {
+                                                component: "opacity",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "OpacityValue.datatype",
+                                            local: Identifier {
+                                                component: "OpacityValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -39,20 +56,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.fill-opacity.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "fill-opacity",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "fill-opacity",
+                                            local: Identifier {
+                                                component: "fill-opacity",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "OpacityValue.datatype",
+                                            local: Identifier {
+                                                component: "OpacityValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -61,20 +92,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-opacity.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-opacity",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-opacity",
+                                            local: Identifier {
+                                                component: "stroke-opacity",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "OpacityValue.datatype",
+                                            local: Identifier {
+                                                component: "OpacityValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -83,14 +128,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Opacity.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Opacity",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Opacity.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Opacity",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -99,25 +157,50 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.opacity.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "opacity",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.fill-opacity.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "fill-opacity",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-opacity.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-opacity",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Opacity.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Opacity",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

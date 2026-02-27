@@ -6,7 +6,10 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,90 +20,159 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "Paint.datatype",
+                            name: Identifier {
+                                component: "Paint",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "StrokeDashArrayValue.datatype",
+                            name: Identifier {
+                                component: "StrokeDashArrayValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "StrokeDashOffsetValue.datatype",
+                            name: Identifier {
+                                component: "StrokeDashOffsetValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "StrokeMiterLimitValue.datatype",
+                            name: Identifier {
+                                component: "StrokeMiterLimitValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "StrokeWidthValue.datatype",
+                            name: Identifier {
+                                component: "StrokeWidthValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.fill.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "fill",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "fill",
+                                            local: Identifier {
+                                                component: "fill",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Paint.datatype",
+                                            local: Identifier {
+                                                component: "Paint",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -109,20 +181,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.fill-rule.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "fill-rule",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "fill-rule",
+                                            local: Identifier {
+                                                component: "fill-rule",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "ClipFillRule.datatype",
+                                            local: Identifier {
+                                                component: "ClipFillRule",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -131,14 +217,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.paint-order.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "paint-order",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "paint-order",
+                                            local: Identifier {
+                                                component: "paint-order",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -167,7 +262,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "normal",
@@ -180,20 +278,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke",
+                                            local: Identifier {
+                                                component: "stroke",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Paint.datatype",
+                                            local: Identifier {
+                                                component: "Paint",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -202,20 +314,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-dasharray.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-dasharray",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-dasharray",
+                                            local: Identifier {
+                                                component: "stroke-dasharray",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "StrokeDashArrayValue.datatype",
+                                            local: Identifier {
+                                                component: "StrokeDashArrayValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -224,20 +350,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-dashoffset.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-dashoffset",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-dashoffset",
+                                            local: Identifier {
+                                                component: "stroke-dashoffset",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "StrokeDashOffsetValue.datatype",
+                                            local: Identifier {
+                                                component: "StrokeDashOffsetValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -246,14 +386,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-linecap.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-linecap",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-linecap",
+                                            local: Identifier {
+                                                component: "stroke-linecap",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -282,14 +431,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-linejoin.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-linejoin",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-linejoin",
+                                            local: Identifier {
+                                                component: "stroke-linejoin",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -318,20 +476,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-miterlimit.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-miterlimit",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-miterlimit",
+                                            local: Identifier {
+                                                component: "stroke-miterlimit",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "StrokeMiterLimitValue.datatype",
+                                            local: Identifier {
+                                                component: "StrokeMiterLimitValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -340,20 +512,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.stroke-width.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "stroke-width",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "stroke-width",
+                                            local: Identifier {
+                                                component: "stroke-width",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "StrokeWidthValue.datatype",
+                                            local: Identifier {
+                                                component: "StrokeWidthValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -362,14 +548,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Paint.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Paint",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Paint.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Paint",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -378,67 +577,134 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.fill.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "fill",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.fill-rule.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "fill-rule",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.paint-order.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "paint-order",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-dasharray.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-dasharray",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-dashoffset.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-dashoffset",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-linecap.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-linecap",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-linejoin.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-linejoin",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-miterlimit.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-miterlimit",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.stroke-width.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "stroke-width",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Paint.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Paint",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -447,20 +713,34 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.color.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "color",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "color",
+                                            local: Identifier {
+                                                component: "color",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Color.datatype",
+                                            local: Identifier {
+                                                component: "Color",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -469,14 +749,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.color-interpolation.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "color-interpolation",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "color-interpolation",
+                                            local: Identifier {
+                                                component: "color-interpolation",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -505,14 +794,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.color-rendering.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "color-rendering",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "color-rendering",
+                                            local: Identifier {
+                                                component: "color-rendering",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -541,14 +839,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Color.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Color",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Color.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Color",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -557,25 +868,50 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.color.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "color",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.color-interpolation.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "color-interpolation",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.color-rendering.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "color-rendering",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Color.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Color",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

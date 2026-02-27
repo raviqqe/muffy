@@ -1,7 +1,10 @@
-use crate::ast::{
-    AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration, Definition,
-    Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
-    Pattern, Schema, SchemaBody,
+use crate::{
+    Identifier,
+    ast::{
+        AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration,
+        Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
+        NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+    },
 };
 use nom::{
     IResult, Parser,
@@ -398,17 +401,23 @@ fn name(input: &str) -> ParserResult<'_, Name> {
     .parse(input)
 }
 
-fn identifier(input: &str) -> ParserResult<'_, String> {
+fn identifier(input: &str) -> ParserResult<'_, Identifier> {
     blanked(raw_identifier).parse(input)
 }
 
-fn raw_identifier(input: &str) -> ParserResult<'_, String> {
+fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
     map(
         preceded(
             opt(char('\\')),
-            recognize((alpha1, many0(satisfy(is_identifier_char)))),
+            separated_list1(
+                char('.'),
+                recognize((alpha1, many0(satisfy(is_identifier_char)))),
+            ),
         ),
-        Into::into,
+        |mut parts: Vec<&str>| Identifier {
+            component: parts.remove(0).to_owned(),
+            sub_components: parts.into_iter().map(ToOwned::to_owned).collect(),
+        },
     )
     .parse(input)
 }
@@ -492,10 +501,6 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
     .parse(input)
 }
 
-const fn is_identifier_char(character: char) -> bool {
-    character.is_ascii_alphanumeric() || character == '_' || character == '-' || character == '.'
-}
-
 fn string_escape(input: &str) -> ParserResult<'_, &str> {
     alt((
         value("\\", tag("\\")),
@@ -507,6 +512,10 @@ fn string_escape(input: &str) -> ParserResult<'_, &str> {
         take(1usize),
     ))
     .parse(input)
+}
+
+const fn is_identifier_char(character: char) -> bool {
+    character.is_ascii_alphanumeric() || character == '_' || character == '-'
 }
 
 fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pattern) -> Pattern {
@@ -528,14 +537,23 @@ mod tests {
     fn local_name(value: &str) -> Name {
         Name {
             prefix: None,
-            local: value.to_string(),
+            local: identifier(value),
         }
     }
 
     fn prefixed_name(prefix: &str, value: &str) -> Name {
         Name {
-            prefix: Some(prefix.to_string()),
-            local: value.to_string(),
+            prefix: Some(identifier(prefix)),
+            local: identifier(value),
+        }
+    }
+
+    fn identifier(name: &str) -> Identifier {
+        let mut components: Vec<_> = name.split('.').map(ToOwned::to_owned).collect();
+
+        Identifier {
+            component: components.remove(0),
+            sub_components: components,
         }
     }
 
@@ -578,7 +596,7 @@ mod tests {
             parse_schema(input).unwrap(),
             Schema {
                 declarations: vec![Declaration::Namespace(NamespaceDeclaration {
-                    prefix: "sch".to_string(),
+                    prefix: identifier("sch"),
                     uri: "http://example.com/sch".to_string(),
                 })],
                 body: SchemaBody::Grammar(Grammar {
@@ -604,7 +622,7 @@ mod tests {
                             },
                         },
                         GrammarContent::Definition(Definition {
-                            name: "common".to_string(),
+                            name: identifier("common"),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(local_name("div")),
@@ -718,7 +736,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "table".to_string(),
+                    name: identifier("table"),
                     combine: None,
                     pattern: Pattern::Element {
                         name_class: NameClass::Name(local_name("table")),
@@ -764,7 +782,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "xml.space.attrib".to_string(),
+                    name: identifier("xml.space.attrib"),
                     combine: None,
                     pattern: Pattern::Optional(Box::new(Pattern::Attribute {
                         name_class: NameClass::Name(prefixed_name("xml", "space")),
@@ -959,7 +977,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1043,7 +1061,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1089,7 +1107,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1195,7 +1213,7 @@ mod tests {
                             inherit: None,
                             grammar: Some(Grammar {
                                 contents: vec![GrammarContent::Definition(Definition {
-                                    name: "select".to_string(),
+                                    name: identifier("select"),
                                     combine: None,
                                     pattern: Pattern::Element {
                                         name_class: NameClass::Name(local_name("select")),
@@ -1211,7 +1229,7 @@ mod tests {
                             }),
                         }),
                         GrammarContent::Definition(Definition {
-                            name: "form.attlist".to_string(),
+                            name: identifier("form.attlist"),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Optional(Box::new(Pattern::Attribute {
                                 name_class: NameClass::Name(local_name("accept-charset")),
@@ -1281,7 +1299,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "InputType.class".to_string(),
+                    name: identifier("InputType.class"),
                     combine: Some(Combine::Choice),
                     pattern: Pattern::Choice(vec![
                         Pattern::Value {

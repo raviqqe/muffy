@@ -6,7 +6,10 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,34 +20,59 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "EnableBackgroundValue.datatype",
+                            name: Identifier {
+                                component: "EnableBackgroundValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.enable-background.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "enable-background",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "enable-background",
+                                            local: Identifier {
+                                                component: "enable-background",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "EnableBackgroundValue.datatype",
+                                            local: Identifier {
+                                                component: "EnableBackgroundValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -53,14 +81,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Container.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Container",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Container.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Container",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -69,13 +110,26 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.enable-background.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "enable-background",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Container.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Container",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

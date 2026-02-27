@@ -6,13 +6,19 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "svg",
+                prefix: Identifier {
+                    component: "svg",
+                    sub_components: [],
+                },
                 uri: "http://www.w3.org/2000/svg",
             },
         ),
@@ -26,7 +32,10 @@ Schema {
                             uri: "svg-basic-clip.rnc",
                             inherit: Some(
                                 Prefix(
-                                    "svg",
+                                    Identifier {
+                                        component: "svg",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             grammar: None,
@@ -34,7 +43,13 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.clipPath.class",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "clipPath",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -43,13 +58,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Shape.class",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Shape",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Text.class",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Text",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

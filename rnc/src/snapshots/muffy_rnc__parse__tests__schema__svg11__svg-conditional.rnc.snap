@@ -9,7 +9,10 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,28 +23,50 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "ExtensionList.datatype",
+                            name: Identifier {
+                                component: "ExtensionList",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "FeatureList.datatype",
+                            name: Identifier {
+                                component: "FeatureList",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
@@ -50,23 +75,42 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        component: "a",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    component: "documentation",
+                                    sub_components: [],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Conditional.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Conditional",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Conditional.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Conditional",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -77,13 +121,21 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "requiredFeatures",
+                                                    local: Identifier {
+                                                        component: "requiredFeatures",
+                                                        sub_components: [],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "FeatureList.datatype",
+                                                    local: Identifier {
+                                                        component: "FeatureList",
+                                                        sub_components: [
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -93,13 +145,21 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "requiredExtensions",
+                                                    local: Identifier {
+                                                        component: "requiredExtensions",
+                                                        sub_components: [],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ExtensionList.datatype",
+                                                    local: Identifier {
+                                                        component: "ExtensionList",
+                                                        sub_components: [
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -109,13 +169,21 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "systemLanguage",
+                                                    local: Identifier {
+                                                        component: "systemLanguage",
+                                                        sub_components: [],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "LanguageCodes.datatype",
+                                                    local: Identifier {
+                                                        component: "LanguageCodes",
+                                                        sub_components: [
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -123,7 +191,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Conditional.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Conditional",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -134,23 +209,42 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        component: "a",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    component: "documentation",
+                                    sub_components: [],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Conditional.extra.class",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Conditional",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Conditional.class",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Conditional",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -159,13 +253,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "switch",
+                                            local: Identifier {
+                                                component: "switch",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Conditional.extra.class",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Conditional",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -176,16 +280,28 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        component: "a",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    component: "documentation",
+                                    sub_components: [],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.switch.content",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "switch",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Group(
                                 [
@@ -193,7 +309,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    component: "SVG",
+                                                    sub_components: [
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -203,55 +325,97 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "svg",
+                                                        local: Identifier {
+                                                            component: "svg",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "g",
+                                                        local: Identifier {
+                                                            component: "g",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "use",
+                                                        local: Identifier {
+                                                            component: "use",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "text",
+                                                        local: Identifier {
+                                                            component: "text",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "SVG.Animation.class",
+                                                        local: Identifier {
+                                                            component: "SVG",
+                                                            sub_components: [
+                                                                "Animation",
+                                                                "class",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "SVG.Conditional.class",
+                                                        local: Identifier {
+                                                            component: "SVG",
+                                                            sub_components: [
+                                                                "Conditional",
+                                                                "class",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "SVG.Image.class",
+                                                        local: Identifier {
+                                                            component: "SVG",
+                                                            sub_components: [
+                                                                "Image",
+                                                                "class",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "SVG.Shape.class",
+                                                        local: Identifier {
+                                                            component: "SVG",
+                                                            sub_components: [
+                                                                "Shape",
+                                                                "class",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "SVG.Hyperlink.class",
+                                                        local: Identifier {
+                                                            component: "SVG",
+                                                            sub_components: [
+                                                                "Hyperlink",
+                                                                "class",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -263,13 +427,19 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "switch",
+                            name: Identifier {
+                                component: "switch",
+                                sub_components: [],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "switch",
+                                        local: Identifier {
+                                            component: "switch",
+                                            sub_components: [],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -277,13 +447,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.switch",
+                                                local: Identifier {
+                                                    component: "attlist",
+                                                    sub_components: [
+                                                        "switch",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.switch.content",
+                                                local: Identifier {
+                                                    component: "SVG",
+                                                    sub_components: [
+                                                        "switch",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -293,7 +474,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.switch",
+                            name: Identifier {
+                                component: "attlist",
+                                sub_components: [
+                                    "switch",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -302,37 +488,73 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Conditional.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Conditional",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Presentation.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Presentation",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.GraphicalEvents.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "GraphicalEvents",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "External",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -340,13 +562,21 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "transform",
+                                                    local: Identifier {
+                                                        component: "transform",
+                                                        sub_components: [],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "TransformList.datatype",
+                                                    local: Identifier {
+                                                        component: "TransformList",
+                                                        sub_components: [
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },

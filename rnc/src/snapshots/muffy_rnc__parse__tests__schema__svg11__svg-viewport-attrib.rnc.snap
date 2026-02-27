@@ -6,7 +6,10 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,34 +20,59 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "ClipValue.datatype",
+                            name: Identifier {
+                                component: "ClipValue",
+                                sub_components: [
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.clip.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "clip",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "clip",
+                                            local: Identifier {
+                                                component: "clip",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "ClipValue.datatype",
+                                            local: Identifier {
+                                                component: "ClipValue",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -53,14 +81,23 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.overflow.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "overflow",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "overflow",
+                                            local: Identifier {
+                                                component: "overflow",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -69,7 +106,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "visible",
@@ -78,7 +118,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "hidden",
@@ -87,7 +130,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "scroll",
@@ -96,7 +142,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "auto",
@@ -105,7 +154,10 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            component: "string",
+                                                            sub_components: [],
+                                                        },
                                                     },
                                                 ),
                                                 value: "inherit",
@@ -118,14 +170,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Viewport.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Viewport",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Viewport.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "Viewport",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -134,19 +199,38 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.clip.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "clip",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.overflow.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "overflow",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Viewport.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "Viewport",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

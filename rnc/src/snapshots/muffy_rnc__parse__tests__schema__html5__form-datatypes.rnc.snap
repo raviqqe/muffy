@@ -7,7 +7,10 @@ Schema {
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        component: "w",
+                        sub_components: [],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
@@ -18,166 +21,307 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "form.data.mimetypelist",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "mimetypelist",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "mime-type-list",
+                                local: Identifier {
+                                    component: "mime-type-list",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.pattern",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "pattern",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    component: "string",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.datetime-local",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "datetime-local",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "datetime-local",
+                                local: Identifier {
+                                    component: "datetime-local",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.date",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "date",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "date",
+                                local: Identifier {
+                                    component: "date",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.month",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "month",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "month",
+                                local: Identifier {
+                                    component: "month",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.week",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "week",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "week",
+                                local: Identifier {
+                                    component: "week",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.time",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "time",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "time",
+                                local: Identifier {
+                                    component: "time",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.emailaddress",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "emailaddress",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "email-address",
+                                local: Identifier {
+                                    component: "email-address",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.emailaddresslist",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "emailaddresslist",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "email-address-list",
+                                local: Identifier {
+                                    component: "email-address-list",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.color",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "color",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "simple-color",
+                                local: Identifier {
+                                    component: "simple-color",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.stringwithoutlinebreaks",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "stringwithoutlinebreaks",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "string-without-line-breaks",
+                                local: Identifier {
+                                    component: "string-without-line-breaks",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "form.data.nonemptystring",
+                        name: Identifier {
+                            component: "form",
+                            sub_components: [
+                                "data",
+                                "nonemptystring",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        component: "w",
+                                        sub_components: [],
+                                    },
                                 ),
-                                local: "non-empty-string",
+                                local: Identifier {
+                                    component: "non-empty-string",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },

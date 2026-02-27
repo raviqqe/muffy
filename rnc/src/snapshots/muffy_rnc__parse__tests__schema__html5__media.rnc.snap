@@ -7,7 +7,10 @@ Schema {
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        component: "w",
+                        sub_components: [],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
@@ -18,7 +21,12 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "media.attrs",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
@@ -26,7 +34,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "media.attrs.autoplay",
+                                            local: Identifier {
+                                                component: "media",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "autoplay",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -34,7 +48,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "media.attrs.preload",
+                                            local: Identifier {
+                                                component: "media",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "preload",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -42,7 +62,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "media.attrs.controls",
+                                            local: Identifier {
+                                                component: "media",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "controls",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -50,7 +76,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "media.attrs.loop",
+                                            local: Identifier {
+                                                component: "media",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "loop",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -58,7 +90,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "media.attrs.muted",
+                                            local: Identifier {
+                                                component: "media",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "muted",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -66,7 +104,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "embedded.content.attrs.crossorigin",
+                                            local: Identifier {
+                                                component: "embedded",
+                                                sub_components: [
+                                                    "content",
+                                                    "attrs",
+                                                    "crossorigin",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -76,13 +121,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.autoplay",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "autoplay",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "autoplay",
+                                    local: Identifier {
+                                        component: "autoplay",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -91,9 +145,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "autoplay",
@@ -102,9 +162,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -116,13 +182,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.preload",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "preload",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "preload",
+                                    local: Identifier {
+                                        component: "preload",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -131,9 +206,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "none",
@@ -142,9 +223,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "metadata",
@@ -153,9 +240,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "auto",
@@ -164,9 +257,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -178,13 +277,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.controls",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "controls",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "controls",
+                                    local: Identifier {
+                                        component: "controls",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -193,9 +301,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "controls",
@@ -204,9 +318,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -218,13 +338,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.loop",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "loop",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "loop",
+                                    local: Identifier {
+                                        component: "loop",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -233,9 +362,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "loop",
@@ -244,9 +379,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -258,13 +399,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.muted",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "muted",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "muted",
+                                    local: Identifier {
+                                        component: "muted",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -273,9 +423,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "muted",
@@ -284,9 +440,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -298,13 +460,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.elem",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "source",
+                                    local: Identifier {
+                                        component: "source",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -312,13 +482,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "source.inner",
+                                            local: Identifier {
+                                                component: "source",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "source.attrs",
+                                            local: Identifier {
+                                                component: "source",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -328,27 +508,49 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.attrs",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "source.attrs.src",
+                                        local: Identifier {
+                                            component: "source",
+                                            sub_components: [
+                                                "attrs",
+                                                "src",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "source.attrs.type",
+                                            local: Identifier {
+                                                component: "source",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "type",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -356,7 +558,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "source.attrs.media",
+                                            local: Identifier {
+                                                component: "source",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "media",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -366,19 +574,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.attrs.src",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "attrs",
+                                "src",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "src",
+                                    local: Identifier {
+                                        component: "src",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri.non-empty",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                            "non-empty",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -386,19 +610,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.attrs.type",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "attrs",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "type",
+                                    local: Identifier {
+                                        component: "type",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.mimetype",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "mimetype",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -406,19 +645,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.attrs.media",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "attrs",
+                                "media",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "media",
+                                    local: Identifier {
+                                        component: "media",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.mediaquery",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "mediaquery",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -426,28 +680,49 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "source.inner",
+                        name: Identifier {
+                            component: "source",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "media.source",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "source",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.attrs.src",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "attrs",
+                                                "src",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "source.elem",
+                                            local: Identifier {
+                                                component: "source",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -457,19 +732,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "media.attrs.src",
+                        name: Identifier {
+                            component: "media",
+                            sub_components: [
+                                "attrs",
+                                "src",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "src",
+                                    local: Identifier {
+                                        component: "src",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri.non-empty",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                            "non-empty",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -477,13 +768,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.elem.flow",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "video",
+                                    local: Identifier {
+                                        component: "video",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -491,13 +791,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.inner.flow",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "inner",
+                                                    "flow",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -507,13 +818,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.elem.phrasing",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "video",
+                                    local: Identifier {
+                                        component: "video",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -521,13 +841,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.inner.phrasing",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "inner",
+                                                    "phrasing",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -537,27 +868,48 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.attrs",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.attrs",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs.poster",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "poster",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -565,7 +917,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs.height",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "height",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -573,7 +931,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs.width",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "width",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -581,7 +945,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "video.attrs.playsinline",
+                                            local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "playsinline",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -589,7 +959,15 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria.role.application",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                    "role",
+                                                    "application",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -599,19 +977,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.attrs.poster",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                                "poster",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "poster",
+                                    local: Identifier {
+                                        component: "poster",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri.non-empty",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                            "non-empty",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -619,19 +1013,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.attrs.height",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                                "height",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "height",
+                                    local: Identifier {
+                                        component: "height",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.integer.non-negative",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "integer",
+                                            "non-negative",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -639,19 +1049,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.attrs.width",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                                "width",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "width",
+                                    local: Identifier {
+                                        component: "width",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.integer.non-negative",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "integer",
+                                            "non-negative",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -659,13 +1085,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.attrs.playsinline",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                                "playsinline",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "playsinline",
+                                    local: Identifier {
+                                        component: "playsinline",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -674,9 +1109,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "playsinline",
@@ -685,9 +1126,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -699,28 +1146,51 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.inner.flow",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "inner",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.source",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "source",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.elem",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.inner.transparent.flow",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "inner",
+                                                "transparent",
+                                                "flow",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -729,28 +1199,50 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "video.inner.phrasing",
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "inner",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.source",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "source",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.elem",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.inner.phrasing",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "inner",
+                                                "phrasing",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -759,41 +1251,74 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "video.elem.flow",
+                                local: Identifier {
+                                    component: "video",
+                                    sub_components: [
+                                        "elem",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "video.elem.phrasing",
+                                local: Identifier {
+                                    component: "video",
+                                    sub_components: [
+                                        "elem",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "audio.elem.flow",
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "audio",
+                                    local: Identifier {
+                                        component: "audio",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -801,13 +1326,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "audio.inner.flow",
+                                            local: Identifier {
+                                                component: "audio",
+                                                sub_components: [
+                                                    "inner",
+                                                    "flow",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "audio.attrs",
+                                            local: Identifier {
+                                                component: "audio",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -817,13 +1353,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "audio.elem.phrasing",
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "audio",
+                                    local: Identifier {
+                                        component: "audio",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -831,13 +1376,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "audio.inner.phrasing",
+                                            local: Identifier {
+                                                component: "audio",
+                                                sub_components: [
+                                                    "inner",
+                                                    "phrasing",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "audio.attrs",
+                                            local: Identifier {
+                                                component: "audio",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -847,27 +1403,50 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "audio.attrs",
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.attrs",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria.role.application",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                    "role",
+                                                    "application",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -877,28 +1456,51 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "audio.inner.flow",
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "inner",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.source",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "source",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.elem",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.inner.transparent.flow",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "inner",
+                                                "transparent",
+                                                "flow",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -907,28 +1509,50 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "audio.inner.phrasing",
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "inner",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "media.source",
+                                        local: Identifier {
+                                            component: "media",
+                                            sub_components: [
+                                                "source",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.elem",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.inner.phrasing",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "inner",
+                                                "phrasing",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -937,41 +1561,73 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "audio.elem.flow",
+                                local: Identifier {
+                                    component: "audio",
+                                    sub_components: [
+                                        "elem",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "audio.elem.phrasing",
+                                local: Identifier {
+                                    component: "audio",
+                                    sub_components: [
+                                        "elem",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "track.elem",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "track",
+                                    local: Identifier {
+                                        component: "track",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -979,13 +1635,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.inner",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.attrs",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -995,35 +1661,63 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.attrs.kind",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "kind",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "track.attrs.src",
+                                        local: Identifier {
+                                            component: "track",
+                                            sub_components: [
+                                                "attrs",
+                                                "src",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.attrs.srclang",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "srclang",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1031,7 +1725,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.attrs.label",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "label",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1039,7 +1739,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "track.attrs.default",
+                                            local: Identifier {
+                                                component: "track",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "default",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1049,13 +1755,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs.kind",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                                "kind",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "kind",
+                                    local: Identifier {
+                                        component: "kind",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -1064,9 +1779,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "subtitles",
@@ -1075,9 +1796,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "captions",
@@ -1086,9 +1813,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "descriptions",
@@ -1097,9 +1830,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "chapters",
@@ -1108,9 +1847,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "metadata",
@@ -1122,19 +1867,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs.src",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                                "src",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "src",
+                                    local: Identifier {
+                                        component: "src",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri.non-empty",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                            "non-empty",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -1142,19 +1903,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs.srclang",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                                "srclang",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "srclang",
+                                    local: Identifier {
+                                        component: "srclang",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.langcode",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "langcode",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -1162,19 +1938,31 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs.label",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                                "label",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "label",
+                                    local: Identifier {
+                                        component: "label",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
@@ -1182,13 +1970,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.attrs.default",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "attrs",
+                                "default",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "default",
+                                    local: Identifier {
+                                        component: "default",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -1197,9 +1994,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "default",
@@ -1208,9 +2011,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -1222,20 +2031,33 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "track.inner",
+                        name: Identifier {
+                            component: "track",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "figure.elem",
+                        name: Identifier {
+                            component: "figure",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "figure",
+                                    local: Identifier {
+                                        component: "figure",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -1243,13 +2065,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "figure.inner",
+                                            local: Identifier {
+                                                component: "figure",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "figure.attrs",
+                                            local: Identifier {
+                                                component: "figure",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -1259,14 +2091,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "figure.attrs",
+                        name: Identifier {
+                            component: "figure",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -1275,14 +2117,28 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.figure",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "figure",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Optional(
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.attrs.aria",
+                                                        local: Identifier {
+                                                            component: "common",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "aria",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ),
@@ -1295,7 +2151,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "figure.inner",
+                        name: Identifier {
+                            component: "figure",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -1305,14 +2166,25 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "figcaption.elem",
+                                                    local: Identifier {
+                                                        component: "figcaption",
+                                                        sub_components: [
+                                                            "elem",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "common.inner.flow",
+                                                local: Identifier {
+                                                    component: "common",
+                                                    sub_components: [
+                                                        "inner",
+                                                        "flow",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1322,14 +2194,25 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "common.inner.flow",
+                                                local: Identifier {
+                                                    component: "common",
+                                                    sub_components: [
+                                                        "inner",
+                                                        "flow",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Optional(
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "figcaption.elem",
+                                                    local: Identifier {
+                                                        component: "figcaption",
+                                                        sub_components: [
+                                                            "elem",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ),
@@ -1341,27 +2224,46 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "figure.elem",
+                                local: Identifier {
+                                    component: "figure",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "figcaption.elem",
+                        name: Identifier {
+                            component: "figcaption",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "figcaption",
+                                    local: Identifier {
+                                        component: "figcaption",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -1369,13 +2271,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "figcaption.inner",
+                                            local: Identifier {
+                                                component: "figcaption",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "figcaption.attrs",
+                                            local: Identifier {
+                                                component: "figcaption",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -1385,14 +2297,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "figcaption.attrs",
+                        name: Identifier {
+                            component: "figcaption",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -1401,13 +2323,29 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.group",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "group",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -1419,12 +2357,23 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "figcaption.inner",
+                        name: Identifier {
+                            component: "figcaption",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.flow",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },

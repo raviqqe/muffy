@@ -6,19 +6,28 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "inkscape",
+                prefix: Identifier {
+                    component: "inkscape",
+                    sub_components: [],
+                },
                 uri: "http://www.inkscape.org/namespaces/inkscape",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "sodipodi",
+                prefix: Identifier {
+                    component: "sodipodi",
+                    sub_components: [],
+                },
                 uri: "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "none",
+                prefix: Identifier {
+                    component: "none",
+                    sub_components: [],
+                },
                 uri: "",
             },
         ),
@@ -28,12 +37,21 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "sodipodi.anyempty.elem",
+                        name: Identifier {
+                            component: "sodipodi",
+                            sub_components: [
+                                "anyempty",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: NamespaceName(
                                 Some(
-                                    "sodipodi",
+                                    Identifier {
+                                        component: "sodipodi",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             pattern: Interleave(
@@ -41,13 +59,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.anyempty.inner",
+                                            local: Identifier {
+                                                component: "sodipodi",
+                                                sub_components: [
+                                                    "anyempty",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.anyempty.attrs",
+                                            local: Identifier {
+                                                component: "sodipodi",
+                                                sub_components: [
+                                                    "anyempty",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -57,21 +87,38 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "sodipodi.anyempty.attrs",
+                        name: Identifier {
+                            component: "sodipodi",
+                            sub_components: [
+                                "anyempty",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "inkscape.attrs",
+                                        local: Identifier {
+                                            component: "inkscape",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.nonamespace.anyattr",
+                                            local: Identifier {
+                                                component: "inkscape",
+                                                sub_components: [
+                                                    "nonamespace",
+                                                    "anyattr",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -81,19 +128,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "sodipodi.anyempty.inner",
+                        name: Identifier {
+                            component: "sodipodi",
+                            sub_components: [
+                                "anyempty",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.anyempty.elem",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "anyempty",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: NamespaceName(
                                 Some(
-                                    "inkscape",
+                                    Identifier {
+                                        component: "inkscape",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             pattern: Interleave(
@@ -101,13 +163,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.anyempty.inner",
+                                            local: Identifier {
+                                                component: "inkscape",
+                                                sub_components: [
+                                                    "anyempty",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.anyempty.attrs",
+                                            local: Identifier {
+                                                component: "inkscape",
+                                                sub_components: [
+                                                    "anyempty",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -117,21 +191,38 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.anyempty.attrs",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "anyempty",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "inkscape.attrs",
+                                        local: Identifier {
+                                            component: "inkscape",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkscape.nonamespace.anyattr",
+                                            local: Identifier {
+                                                component: "inkscape",
+                                                sub_components: [
+                                                    "nonamespace",
+                                                    "anyattr",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -141,27 +232,50 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.anyempty.inner",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "anyempty",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.elem",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "sodipodi.anyempty.elem",
+                                        local: Identifier {
+                                            component: "sodipodi",
+                                            sub_components: [
+                                                "anyempty",
+                                                "elem",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "inkscape.anyempty.elem",
+                                        local: Identifier {
+                                            component: "inkscape",
+                                            sub_components: [
+                                                "anyempty",
+                                                "elem",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -170,7 +284,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.attrs",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
@@ -178,7 +297,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "inkspace.anyattr",
+                                            local: Identifier {
+                                                component: "inkspace",
+                                                sub_components: [
+                                                    "anyattr",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -186,7 +310,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "sodipodi.anyattr",
+                                            local: Identifier {
+                                                component: "sodipodi",
+                                                sub_components: [
+                                                    "anyattr",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -196,18 +325,29 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "inkspace.anyattr",
+                        name: Identifier {
+                            component: "inkspace",
+                            sub_components: [
+                                "anyattr",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: NamespaceName(
                                 Some(
-                                    "inkscape",
+                                    Identifier {
+                                        component: "inkscape",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
@@ -215,18 +355,29 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "sodipodi.anyattr",
+                        name: Identifier {
+                            component: "sodipodi",
+                            sub_components: [
+                                "anyattr",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: NamespaceName(
                                 Some(
-                                    "sodipodi",
+                                    Identifier {
+                                        component: "sodipodi",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
@@ -234,18 +385,30 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "inkscape.nonamespace.anyattr",
+                        name: Identifier {
+                            component: "inkscape",
+                            sub_components: [
+                                "nonamespace",
+                                "anyattr",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: NamespaceName(
                                 Some(
-                                    "none",
+                                    Identifier {
+                                        component: "none",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "string",
+                                    local: Identifier {
+                                        component: "string",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                         },
@@ -253,21 +416,39 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "SVG.Core.extra.attrib",
+                        name: Identifier {
+                            component: "SVG",
+                            sub_components: [
+                                "Core",
+                                "extra",
+                                "attrib",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "inkscape.attrs",
+                                local: Identifier {
+                                    component: "inkscape",
+                                    sub_components: [
+                                        "attrs",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "SVG.defs.content",
+                        name: Identifier {
+                            component: "SVG",
+                            sub_components: [
+                                "defs",
+                                "content",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
@@ -275,7 +456,12 @@ Schema {
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "inkscape.elem",
+                                    local: Identifier {
+                                        component: "inkscape",
+                                        sub_components: [
+                                            "elem",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -283,7 +469,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "SVG.g.content",
+                        name: Identifier {
+                            component: "SVG",
+                            sub_components: [
+                                "g",
+                                "content",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
@@ -291,7 +483,12 @@ Schema {
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "inkscape.elem",
+                                    local: Identifier {
+                                        component: "inkscape",
+                                        sub_components: [
+                                            "elem",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -299,7 +496,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "SVG.svg.content",
+                        name: Identifier {
+                            component: "SVG",
+                            sub_components: [
+                                "svg",
+                                "content",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
@@ -307,7 +510,12 @@ Schema {
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "inkscape.elem",
+                                    local: Identifier {
+                                        component: "inkscape",
+                                        sub_components: [
+                                            "elem",
+                                        ],
+                                    },
                                 },
                             ),
                         ),

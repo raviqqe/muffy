@@ -6,13 +6,19 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "xlink",
+                prefix: Identifier {
+                    component: "xlink",
+                    sub_components: [],
+                },
                 uri: "http://www.w3.org/1999/xlink",
             },
         ),
@@ -22,14 +28,26 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "XLINK.xmlns.attrib",
+                        name: Identifier {
+                            component: "XLINK",
+                            sub_components: [
+                                "xmlns",
+                                "attrib",
+                            ],
+                        },
                         combine: None,
                         pattern: Empty,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "SVG.xmlns.attrib",
+                        name: Identifier {
+                            component: "SVG",
+                            sub_components: [
+                                "xmlns",
+                                "attrib",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
@@ -37,7 +55,13 @@ Schema {
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "XLINK.xmlns.attrib",
+                                        local: Identifier {
+                                            component: "XLINK",
+                                            sub_components: [
+                                                "xmlns",
+                                                "attrib",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],

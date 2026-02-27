@@ -6,19 +6,28 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "svg",
+                prefix: Identifier {
+                    component: "svg",
+                    sub_components: [],
+                },
                 uri: "http://www.w3.org/2000/svg",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "xlink",
+                prefix: Identifier {
+                    component: "xlink",
+                    sub_components: [],
+                },
                 uri: "http://www.w3.org/1999/xlink",
             },
         ),
@@ -32,7 +41,10 @@ Schema {
                             uri: "svg11-inc.rnc",
                             inherit: Some(
                                 Prefix(
-                                    "svg",
+                                    Identifier {
+                                        component: "svg",
+                                        sub_components: [],
+                                    },
                                 ),
                             ),
                             grammar: None,
@@ -43,7 +55,10 @@ Schema {
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "svg",
+                                local: Identifier {
+                                    component: "svg",
+                                    sub_components: [],
+                                },
                             },
                         ),
                     },

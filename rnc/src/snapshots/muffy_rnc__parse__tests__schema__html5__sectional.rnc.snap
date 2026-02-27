@@ -7,7 +7,10 @@ Schema {
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        component: "w",
+                        sub_components: [],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
@@ -18,13 +21,21 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "h1.elem",
+                        name: Identifier {
+                            component: "h1",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h1",
+                                    local: Identifier {
+                                        component: "h1",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -32,13 +43,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h1.inner",
+                                            local: Identifier {
+                                                component: "h1",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h1.attrs",
+                                            local: Identifier {
+                                                component: "h1",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -48,14 +69,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h1.attrs",
+                        name: Identifier {
+                            component: "h1",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -64,31 +95,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -100,39 +171,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h1.inner",
+                        name: Identifier {
+                            component: "h1",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h1.elem",
+                                local: Identifier {
+                                    component: "h1",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "h2.elem",
+                        name: Identifier {
+                            component: "h2",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h2",
+                                    local: Identifier {
+                                        component: "h2",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -140,13 +241,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h2.inner",
+                                            local: Identifier {
+                                                component: "h2",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h2.attrs",
+                                            local: Identifier {
+                                                component: "h2",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -156,14 +267,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h2.attrs",
+                        name: Identifier {
+                            component: "h2",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -172,31 +293,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -208,39 +369,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h2.inner",
+                        name: Identifier {
+                            component: "h2",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h2.elem",
+                                local: Identifier {
+                                    component: "h2",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "h3.elem",
+                        name: Identifier {
+                            component: "h3",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h3",
+                                    local: Identifier {
+                                        component: "h3",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -248,13 +439,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h3.inner",
+                                            local: Identifier {
+                                                component: "h3",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h3.attrs",
+                                            local: Identifier {
+                                                component: "h3",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -264,14 +465,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h3.attrs",
+                        name: Identifier {
+                            component: "h3",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -280,31 +491,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -316,39 +567,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h3.inner",
+                        name: Identifier {
+                            component: "h3",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h3.elem",
+                                local: Identifier {
+                                    component: "h3",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "h4.elem",
+                        name: Identifier {
+                            component: "h4",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h4",
+                                    local: Identifier {
+                                        component: "h4",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -356,13 +637,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h4.inner",
+                                            local: Identifier {
+                                                component: "h4",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h4.attrs",
+                                            local: Identifier {
+                                                component: "h4",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -372,14 +663,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h4.attrs",
+                        name: Identifier {
+                            component: "h4",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -388,31 +689,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -424,39 +765,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h4.inner",
+                        name: Identifier {
+                            component: "h4",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h4.elem",
+                                local: Identifier {
+                                    component: "h4",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "h5.elem",
+                        name: Identifier {
+                            component: "h5",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h5",
+                                    local: Identifier {
+                                        component: "h5",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -464,13 +835,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h5.inner",
+                                            local: Identifier {
+                                                component: "h5",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h5.attrs",
+                                            local: Identifier {
+                                                component: "h5",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -480,14 +861,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h5.attrs",
+                        name: Identifier {
+                            component: "h5",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -496,31 +887,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -532,39 +963,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h5.inner",
+                        name: Identifier {
+                            component: "h5",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h5.elem",
+                                local: Identifier {
+                                    component: "h5",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "h6.elem",
+                        name: Identifier {
+                            component: "h6",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "h6",
+                                    local: Identifier {
+                                        component: "h6",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -572,13 +1033,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h6.inner",
+                                            local: Identifier {
+                                                component: "h6",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "h6.attrs",
+                                            local: Identifier {
+                                                component: "h6",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -588,14 +1059,24 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h6.attrs",
+                        name: Identifier {
+                            component: "h6",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -604,31 +1085,71 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.implicit.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "implicit",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.heading",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "heading",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.tab",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "tab",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.presentation",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "presentation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "common.attrs.aria.role.doc-subtitle",
+                                                    local: Identifier {
+                                                        component: "common",
+                                                        sub_components: [
+                                                            "attrs",
+                                                            "aria",
+                                                            "role",
+                                                            "doc-subtitle",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -640,39 +1161,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "h6.inner",
+                        name: Identifier {
+                            component: "h6",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "h6.elem",
+                                local: Identifier {
+                                    component: "h6",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "hgroup.elem",
+                        name: Identifier {
+                            component: "hgroup",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "hgroup",
+                                    local: Identifier {
+                                        component: "hgroup",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -680,13 +1231,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "hgroup.inner",
+                                            local: Identifier {
+                                                component: "hgroup",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "hgroup.attrs",
+                                            local: Identifier {
+                                                component: "hgroup",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -696,21 +1257,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "hgroup.attrs",
+                        name: Identifier {
+                            component: "hgroup",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -720,7 +1297,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "hgroup.inner",
+                        name: Identifier {
+                            component: "hgroup",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
@@ -729,37 +1311,67 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h1.elem",
+                                                local: Identifier {
+                                                    component: "h1",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h2.elem",
+                                                local: Identifier {
+                                                    component: "h2",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h3.elem",
+                                                local: Identifier {
+                                                    component: "h3",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h4.elem",
+                                                local: Identifier {
+                                                    component: "h4",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h5.elem",
+                                                local: Identifier {
+                                                    component: "h5",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "h6.elem",
+                                                local: Identifier {
+                                                    component: "h6",
+                                                    sub_components: [
+                                                        "elem",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -768,7 +1380,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "p.elem",
+                                            local: Identifier {
+                                                component: "p",
+                                                sub_components: [
+                                                    "elem",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -776,7 +1393,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.elem.script-supporting",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "elem",
+                                                    "script-supporting",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -786,33 +1409,60 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "hgroup.elem",
+                                local: Identifier {
+                                    component: "hgroup",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.attrs.headingoffset",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "attrs",
+                                "headingoffset",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "headingoffset",
+                                    local: Identifier {
+                                        component: "headingoffset",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.integer.non-negative",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "integer",
+                                            "non-negative",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -820,13 +1470,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.attrs.headingreset",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "attrs",
+                                "headingreset",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "headingreset",
+                                    local: Identifier {
+                                        component: "headingreset",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -835,9 +1494,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "headingreset",
@@ -846,9 +1511,15 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
                                             },
                                         ),
                                         value: "",
@@ -860,7 +1531,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.attrs.other",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "attrs",
+                                "other",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
@@ -868,7 +1545,13 @@ Schema {
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.attrs.headingoffset",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "attrs",
+                                            "headingoffset",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -876,7 +1559,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.attrs.other",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "attrs",
+                                "other",
+                            ],
+                        },
                         combine: Some(
                             Interleave,
                         ),
@@ -884,7 +1573,13 @@ Schema {
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.attrs.headingreset",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "attrs",
+                                            "headingreset",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -892,13 +1587,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "address.elem",
+                        name: Identifier {
+                            component: "address",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "address",
+                                    local: Identifier {
+                                        component: "address",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -906,13 +1609,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "address.inner",
+                                            local: Identifier {
+                                                component: "address",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "address.attrs",
+                                            local: Identifier {
+                                                component: "address",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -922,21 +1635,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "address.attrs",
+                        name: Identifier {
+                            component: "address",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -946,39 +1675,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "address.inner",
+                        name: Identifier {
+                            component: "address",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.flow",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "address.elem",
+                                local: Identifier {
+                                    component: "address",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "blockquote.elem",
+                        name: Identifier {
+                            component: "blockquote",
+                            sub_components: [
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "blockquote",
+                                    local: Identifier {
+                                        component: "blockquote",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -986,13 +1745,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "blockquote.inner",
+                                            local: Identifier {
+                                                component: "blockquote",
+                                                sub_components: [
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "blockquote.attrs",
+                                            local: Identifier {
+                                                component: "blockquote",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -1002,21 +1771,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "blockquote.attrs",
+                        name: Identifier {
+                            component: "blockquote",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "blockquote.attrs.cite",
+                                            local: Identifier {
+                                                component: "blockquote",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "cite",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1024,7 +1809,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1034,19 +1825,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "blockquote.attrs.cite",
+                        name: Identifier {
+                            component: "blockquote",
+                            sub_components: [
+                                "attrs",
+                                "cite",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cite",
+                                    local: Identifier {
+                                        component: "cite",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -1054,26 +1860,48 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "blockquote.inner",
+                        name: Identifier {
+                            component: "blockquote",
+                            sub_components: [
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.flow",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "blockquote.elem",
+                                local: Identifier {
+                                    component: "blockquote",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },

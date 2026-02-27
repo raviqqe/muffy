@@ -6,7 +6,10 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    component: "a",
+                    sub_components: [],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,20 +20,34 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.externalResourcesRequired.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "externalResourcesRequired",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "externalResourcesRequired",
+                                            local: Identifier {
+                                                component: "externalResourcesRequired",
+                                                sub_components: [],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Boolean.datatype",
+                                            local: Identifier {
+                                                component: "Boolean",
+                                                sub_components: [
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -39,14 +56,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.External.extra.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "External",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.External.attrib",
+                            name: Identifier {
+                                component: "SVG",
+                                sub_components: [
+                                    "External",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -55,13 +85,26 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.externalResourcesRequired.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "externalResourcesRequired",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.extra.attrib",
+                                            local: Identifier {
+                                                component: "SVG",
+                                                sub_components: [
+                                                    "External",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

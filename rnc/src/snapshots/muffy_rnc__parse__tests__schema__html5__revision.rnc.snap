@@ -9,19 +9,34 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "edit.attrs.cite",
+                        name: Identifier {
+                            component: "edit",
+                            sub_components: [
+                                "attrs",
+                                "cite",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cite",
+                                    local: Identifier {
+                                        component: "cite",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "common.data.uri",
+                                    local: Identifier {
+                                        component: "common",
+                                        sub_components: [
+                                            "data",
+                                            "uri",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -29,13 +44,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "edit.attrs.datetime",
+                        name: Identifier {
+                            component: "edit",
+                            sub_components: [
+                                "attrs",
+                                "datetime",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "datetime",
+                                    local: Identifier {
+                                        component: "datetime",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -43,13 +67,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.data.datetime",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "data",
+                                                    "datetime",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.data.date",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "data",
+                                                    "date",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -59,13 +95,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ins.elem.flow",
+                        name: Identifier {
+                            component: "ins",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "ins",
+                                    local: Identifier {
+                                        component: "ins",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -73,13 +118,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ins.inner.flow",
+                                            local: Identifier {
+                                                component: "ins",
+                                                sub_components: [
+                                                    "inner",
+                                                    "flow",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ins.attrs",
+                                            local: Identifier {
+                                                component: "ins",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -89,13 +145,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ins.elem.phrasing",
+                        name: Identifier {
+                            component: "ins",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "ins",
+                                    local: Identifier {
+                                        component: "ins",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -103,13 +168,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ins.inner.phrasing",
+                                            local: Identifier {
+                                                component: "ins",
+                                                sub_components: [
+                                                    "inner",
+                                                    "phrasing",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ins.attrs",
+                                            local: Identifier {
+                                                component: "ins",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -119,21 +195,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ins.attrs",
+                        name: Identifier {
+                            component: "ins",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "edit.attrs.cite",
+                                            local: Identifier {
+                                                component: "edit",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "cite",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -141,7 +233,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "edit.attrs.datetime",
+                                            local: Identifier {
+                                                component: "edit",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "datetime",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -149,7 +247,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -159,65 +263,123 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ins.inner.flow",
+                        name: Identifier {
+                            component: "ins",
+                            sub_components: [
+                                "inner",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.transparent.flow",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "transparent",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "ins.inner.phrasing",
+                        name: Identifier {
+                            component: "ins",
+                            sub_components: [
+                                "inner",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "ins.elem.flow",
+                                local: Identifier {
+                                    component: "ins",
+                                    sub_components: [
+                                        "elem",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "ins.elem.phrasing",
+                                local: Identifier {
+                                    component: "ins",
+                                    sub_components: [
+                                        "elem",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "del.elem.flow",
+                        name: Identifier {
+                            component: "del",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "del",
+                                    local: Identifier {
+                                        component: "del",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -225,13 +387,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "del.inner.flow",
+                                            local: Identifier {
+                                                component: "del",
+                                                sub_components: [
+                                                    "inner",
+                                                    "flow",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "del.attrs",
+                                            local: Identifier {
+                                                component: "del",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -241,13 +414,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "del.elem.phrasing",
+                        name: Identifier {
+                            component: "del",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "del",
+                                    local: Identifier {
+                                        component: "del",
+                                        sub_components: [],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -255,13 +437,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "del.inner.phrasing",
+                                            local: Identifier {
+                                                component: "del",
+                                                sub_components: [
+                                                    "inner",
+                                                    "phrasing",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "del.attrs",
+                                            local: Identifier {
+                                                component: "del",
+                                                sub_components: [
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -271,21 +464,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "del.attrs",
+                        name: Identifier {
+                            component: "del",
+                            sub_components: [
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            component: "common",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "edit.attrs.cite",
+                                            local: Identifier {
+                                                component: "edit",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "cite",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -293,7 +502,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "edit.attrs.datetime",
+                                            local: Identifier {
+                                                component: "edit",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "datetime",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -301,7 +516,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                component: "common",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -311,52 +532,101 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "del.inner.flow",
+                        name: Identifier {
+                            component: "del",
+                            sub_components: [
+                                "inner",
+                                "flow",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.transparent.flow",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "transparent",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "del.inner.phrasing",
+                        name: Identifier {
+                            component: "del",
+                            sub_components: [
+                                "inner",
+                                "phrasing",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    component: "common",
+                                    sub_components: [
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.flow",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "flow",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "del.elem.flow",
+                                local: Identifier {
+                                    component: "del",
+                                    sub_components: [
+                                        "elem",
+                                        "flow",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: Identifier {
+                            component: "common",
+                            sub_components: [
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "del.elem.phrasing",
+                                local: Identifier {
+                                    component: "del",
+                                    sub_components: [
+                                        "elem",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
