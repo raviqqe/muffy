@@ -38,7 +38,7 @@ pub enum Declaration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NamespaceDeclaration {
     /// A prefix.
-    pub prefix: String,
+    pub prefix: Identifier,
     /// A URI.
     pub uri: String,
 }
@@ -47,7 +47,7 @@ pub struct NamespaceDeclaration {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DatatypesDeclaration {
     /// A prefix.
-    pub prefix: Option<String>,
+    pub prefix: Option<Identifier>,
     /// A URI.
     pub uri: String,
 }
@@ -78,7 +78,7 @@ pub enum GrammarContent {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Definition {
     /// A name.
-    pub name: String,
+    pub name: Identifier,
     /// A combine operator.
     pub combine: Option<Combine>,
     /// A pattern.
@@ -97,11 +97,12 @@ pub struct Include {
     pub grammar: Option<Grammar>,
 }
 
+// TODO Make this `struct`.
 /// An inherit modifier.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Inherit {
     /// Inherits a namespace.
-    Prefix(String),
+    Prefix(Identifier),
 }
 
 /// A combine operator.
@@ -178,7 +179,7 @@ pub enum Pattern {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Name {
     /// A prefix.
-    pub prefix: Option<String>,
+    pub prefix: Option<Identifier>,
     /// A local name.
     pub local: Identifier,
 }
@@ -200,7 +201,7 @@ pub enum NameClass {
     /// A name.
     Name(Name),
     /// A namespace wildcard for a prefix.
-    NamespaceName(Option<String>),
+    NamespaceName(Option<Identifier>),
 }
 
 /// A datatype parameter.

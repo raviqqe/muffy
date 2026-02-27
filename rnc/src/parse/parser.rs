@@ -405,13 +405,15 @@ fn identifier(input: &str) -> ParserResult<'_, Identifier> {
     blanked(raw_identifier).parse(input)
 }
 
-fn raw_identifier(input: &str) -> ParserResult<'_, String> {
+fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
     map(
         many1(preceded(
             opt(char('\\')),
             recognize((alpha1, many0(satisfy(is_identifier_char)))),
         )),
-        |parts| parts.into_iter().map(ToOwned::to_owned).collect(),
+        |parts| Identifier {
+            components: parts.into_iter().map(ToOwned::to_owned).collect(),
+        },
     )
     .parse(input)
 }
