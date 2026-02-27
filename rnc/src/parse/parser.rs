@@ -13,7 +13,7 @@ use nom::{
     character::complete::{alpha1, char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::Error,
-    multi::{many0, many1, separated_list0, separated_list1},
+    multi::{many0, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -536,14 +536,20 @@ mod tests {
     fn local_name(value: &str) -> Name {
         Name {
             prefix: None,
-            local: value.to_string(),
+            local: identifier(value),
         }
     }
 
     fn prefixed_name(prefix: &str, value: &str) -> Name {
         Name {
-            prefix: Some(prefix.to_string()),
-            local: value.to_string(),
+            prefix: Some(identifier(prefix)),
+            local: identifier(value),
+        }
+    }
+
+    fn identifier(name: &str) -> Identifier {
+        Identifier {
+            components: name.split('.').map(ToOwned::to_owned).collect(),
         }
     }
 
@@ -586,7 +592,7 @@ mod tests {
             parse_schema(input).unwrap(),
             Schema {
                 declarations: vec![Declaration::Namespace(NamespaceDeclaration {
-                    prefix: "sch".to_string(),
+                    prefix: identifier("sch"),
                     uri: "http://example.com/sch".to_string(),
                 })],
                 body: SchemaBody::Grammar(Grammar {
@@ -612,7 +618,7 @@ mod tests {
                             },
                         },
                         GrammarContent::Definition(Definition {
-                            name: "common".to_string(),
+                            name: identifier("common"),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(local_name("div")),
