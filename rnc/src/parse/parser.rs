@@ -732,7 +732,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "table".to_string(),
+                    name: identifier("table"),
                     combine: None,
                     pattern: Pattern::Element {
                         name_class: NameClass::Name(local_name("table")),
@@ -778,7 +778,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "xml.space.attrib".to_string(),
+                    name: identifier("xml.space.attrib"),
                     combine: None,
                     pattern: Pattern::Optional(Box::new(Pattern::Attribute {
                         name_class: NameClass::Name(prefixed_name("xml", "space")),
