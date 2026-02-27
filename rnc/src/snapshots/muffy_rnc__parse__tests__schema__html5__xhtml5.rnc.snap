@@ -21,9 +21,8 @@ Schema {
                                     Definition(
                                         Definition {
                                             name: Identifier {
-                                                components: [
-                                                    "XMLonly",
-                                                ],
+                                                component: "XMLonly",
+                                                sub_components: [],
                                             },
                                             combine: None,
                                             pattern: Empty,
@@ -32,9 +31,8 @@ Schema {
                                     Definition(
                                         Definition {
                                             name: Identifier {
-                                                components: [
-                                                    "HTMLonly",
-                                                ],
+                                                component: "HTMLonly",
+                                                sub_components: [],
                                             },
                                             combine: None,
                                             pattern: NotAllowed,
@@ -43,9 +41,8 @@ Schema {
                                     Definition(
                                         Definition {
                                             name: Identifier {
-                                                components: [
-                                                    "v5only",
-                                                ],
+                                                component: "v5only",
+                                                sub_components: [],
                                             },
                                             combine: None,
                                             pattern: Empty,
@@ -62,8 +59,8 @@ Schema {
                         Name {
                             prefix: None,
                             local: Identifier {
-                                components: [
-                                    "html",
+                                component: "html",
+                                sub_components: [
                                     "elem",
                                 ],
                             },

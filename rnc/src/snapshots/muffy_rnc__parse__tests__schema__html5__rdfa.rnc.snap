@@ -10,9 +10,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "nonRDFaLite",
-                            ],
+                            component: "nonRDFaLite",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Empty,
@@ -21,8 +20,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "data",
                                 "rdfa",
                                 "safecurie",
@@ -33,15 +32,13 @@ Schema {
                             name: Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "xsd",
-                                        ],
+                                        component: "xsd",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "string",
-                                    ],
+                                    component: "string",
+                                    sub_components: [],
                                 },
                             },
                             parameters: [
@@ -49,9 +46,8 @@ Schema {
                                     name: Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "pattern",
-                                            ],
+                                            component: "pattern",
+                                            sub_components: [],
                                         },
                                     },
                                     value: "[(([i-[:]][c-[:]]*)?:?)[^s]*]",
@@ -60,9 +56,8 @@ Schema {
                                     name: Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "minLength",
-                                            ],
+                                            component: "minLength",
+                                            sub_components: [],
                                         },
                                     },
                                     value: "2",
@@ -75,8 +70,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "data",
                                 "rdfa",
                                 "curie",
@@ -87,15 +82,13 @@ Schema {
                             name: Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "xsd",
-                                        ],
+                                        component: "xsd",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "string",
-                                    ],
+                                    component: "string",
+                                    sub_components: [],
                                 },
                             },
                             parameters: [
@@ -103,9 +96,8 @@ Schema {
                                     name: Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "pattern",
-                                            ],
+                                            component: "pattern",
+                                            sub_components: [],
                                         },
                                     },
                                     value: "(([i-[:]][c-[:]]*)?:)[^s]*",
@@ -114,9 +106,8 @@ Schema {
                                     name: Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "minLength",
-                                            ],
+                                            component: "minLength",
+                                            sub_components: [],
                                         },
                                     },
                                     value: "1",
@@ -129,8 +120,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "data",
                                 "rdfa",
                                 "term",
@@ -141,15 +132,13 @@ Schema {
                             name: Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "xsd",
-                                        ],
+                                        component: "xsd",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "string",
-                                    ],
+                                    component: "string",
+                                    sub_components: [],
                                 },
                             },
                             parameters: [
@@ -157,9 +146,8 @@ Schema {
                                     name: Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "pattern",
-                                            ],
+                                            component: "pattern",
+                                            sub_components: [],
                                         },
                                     },
                                     value: "[i-[:]][/c-[:]]*",
@@ -172,8 +160,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                             ],
@@ -188,8 +176,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -203,8 +191,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -218,8 +206,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "property",
@@ -233,8 +221,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -248,8 +236,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -263,8 +251,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "content",
@@ -278,8 +266,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -293,8 +281,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "rel",
@@ -308,8 +296,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "resource",
@@ -323,8 +311,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "rev",
@@ -338,8 +326,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -355,8 +343,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "prefix",
@@ -368,9 +356,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "prefix",
-                                        ],
+                                        component: "prefix",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -380,15 +367,13 @@ Schema {
                                         name: Name {
                                             prefix: Some(
                                                 Identifier {
-                                                    components: [
-                                                        "xsd",
-                                                    ],
+                                                    component: "xsd",
+                                                    sub_components: [],
                                                 },
                                             ),
                                             local: Identifier {
-                                                components: [
-                                                    "string",
-                                                ],
+                                                component: "string",
+                                                sub_components: [],
                                             },
                                         },
                                         parameters: [
@@ -396,9 +381,8 @@ Schema {
                                                 name: Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "pattern",
-                                                        ],
+                                                        component: "pattern",
+                                                        sub_components: [],
                                                     },
                                                 },
                                                 value: "s*([i-[:]][c-[:]]*: [^ ]+)(s+[i-[:]][c-[:]]*: [^ ]+)*s*",
@@ -411,9 +395,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "string",
-                                                    ],
+                                                    component: "string",
+                                                    sub_components: [],
                                                 },
                                             },
                                         ),
@@ -427,8 +410,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "property",
@@ -440,9 +423,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "property",
-                                        ],
+                                        component: "property",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -456,8 +438,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "rdfa",
                                                                     "term",
@@ -469,8 +451,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "rdfa",
                                                                     "curie",
@@ -482,8 +464,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "uri",
                                                                     "absolute",
@@ -500,9 +482,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "string",
-                                                    ],
+                                                    component: "string",
+                                                    sub_components: [],
                                                 },
                                             },
                                         ),
@@ -516,8 +497,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "resource",
@@ -529,9 +510,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "resource",
-                                        ],
+                                        component: "resource",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -541,8 +521,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "data",
                                                     "rdfa",
                                                     "safecurie",
@@ -554,8 +534,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "data",
                                                     "rdfa",
                                                     "curie",
@@ -567,8 +547,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "data",
                                                     "uri",
                                                 ],
@@ -583,8 +563,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "typeof",
@@ -596,9 +576,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "typeof",
-                                        ],
+                                        component: "typeof",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -612,8 +591,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "rdfa",
                                                                     "term",
@@ -625,8 +604,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "rdfa",
                                                                     "curie",
@@ -638,8 +617,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "data",
                                                                     "uri",
                                                                     "absolute",
@@ -656,9 +635,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "string",
-                                                    ],
+                                                    component: "string",
+                                                    sub_components: [],
                                                 },
                                             },
                                         ),
@@ -672,8 +650,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "vocab",
@@ -685,9 +663,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "vocab",
-                                        ],
+                                        component: "vocab",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -697,8 +674,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "data",
                                                     "uri",
                                                     "absolute",
@@ -711,9 +688,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "string",
-                                                    ],
+                                                    component: "string",
+                                                    sub_components: [],
                                                 },
                                             },
                                         ),
@@ -727,8 +703,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "about",
@@ -742,9 +718,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "about",
-                                                ],
+                                                component: "about",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -754,8 +729,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "rdfa",
                                                             "safecurie",
@@ -767,8 +742,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "rdfa",
                                                             "curie",
@@ -780,8 +755,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "uri",
                                                         ],
@@ -795,9 +770,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -808,8 +782,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "content",
@@ -823,9 +797,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "content",
-                                                ],
+                                                component: "content",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -833,9 +806,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "string",
-                                                ],
+                                                component: "string",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -844,9 +816,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -857,8 +828,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "datatype",
@@ -872,9 +843,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "datatype",
-                                                ],
+                                                component: "datatype",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -884,8 +854,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "rdfa",
                                                             "term",
@@ -897,8 +867,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "rdfa",
                                                             "curie",
@@ -910,8 +880,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "data",
                                                             "uri",
                                                             "absolute",
@@ -924,9 +894,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -939,9 +908,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -952,8 +920,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "rel",
@@ -967,9 +935,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "rel",
-                                                ],
+                                                component: "rel",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -983,8 +950,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "rdfa",
                                                                             "term",
@@ -996,8 +963,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "rdfa",
                                                                             "curie",
@@ -1009,8 +976,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "uri",
                                                                             "absolute",
@@ -1027,9 +994,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -1042,9 +1008,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -1055,8 +1020,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "rev",
@@ -1070,9 +1035,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "rev",
-                                                ],
+                                                component: "rev",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -1086,8 +1050,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "rdfa",
                                                                             "term",
@@ -1099,8 +1063,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "rdfa",
                                                                             "curie",
@@ -1112,8 +1076,8 @@ Schema {
                                                                 Name {
                                                                     prefix: None,
                                                                     local: Identifier {
-                                                                        components: [
-                                                                            "common",
+                                                                        component: "common",
+                                                                        sub_components: [
                                                                             "data",
                                                                             "uri",
                                                                             "absolute",
@@ -1130,9 +1094,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -1145,9 +1108,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -1158,8 +1120,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "inlist",
@@ -1173,9 +1135,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "inlist",
-                                                ],
+                                                component: "inlist",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -1183,9 +1144,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "string",
-                                                ],
+                                                component: "string",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -1194,9 +1154,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "nonRDFaLite",
-                                            ],
+                                            component: "nonRDFaLite",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -1207,8 +1166,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "no-rel",
@@ -1224,8 +1183,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -1239,8 +1198,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -1254,8 +1213,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "property",
@@ -1269,8 +1228,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -1284,8 +1243,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -1299,8 +1258,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "content",
@@ -1314,8 +1273,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -1329,8 +1288,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "resource",
@@ -1344,8 +1303,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "rev",
@@ -1359,8 +1318,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -1376,8 +1335,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "no-rel-rev",
@@ -1393,8 +1352,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -1408,8 +1367,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -1423,8 +1382,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "property",
@@ -1438,8 +1397,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -1453,8 +1412,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -1468,8 +1427,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "content",
@@ -1483,8 +1442,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -1498,8 +1457,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "resource",
@@ -1513,8 +1472,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -1530,8 +1489,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                                 "rdfa",
                                 "no-content-noproperty",
@@ -1547,8 +1506,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -1562,8 +1521,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -1577,8 +1536,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -1592,8 +1551,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -1607,8 +1566,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -1622,8 +1581,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "resource",
@@ -1637,8 +1596,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -1654,8 +1613,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "attrs",
                             ],
                         },
@@ -1666,8 +1625,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                     ],
@@ -1679,8 +1638,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "a",
+                            component: "a",
+                            sub_components: [
                                 "attrs",
                             ],
                         },
@@ -1691,8 +1650,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-rel-rev",
@@ -1705,8 +1664,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "area",
+                            component: "area",
+                            sub_components: [
                                 "attrs",
                             ],
                         },
@@ -1717,8 +1676,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-rel",
@@ -1731,8 +1690,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "base",
+                            component: "base",
+                            sub_components: [
                                 "attrs",
                             ],
                         },
@@ -1743,8 +1702,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-rel",
@@ -1757,8 +1716,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "link",
+                            component: "link",
+                            sub_components: [
                                 "rdfa",
                                 "elem",
                                 "metadata",
@@ -1770,9 +1729,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "link",
-                                        ],
+                                        component: "link",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -1782,8 +1740,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "inner",
                                                 ],
                                             },
@@ -1793,8 +1751,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "rdfa",
                                                     "attrs",
                                                     "metadata",
@@ -1810,8 +1768,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "link",
+                            component: "link",
+                            sub_components: [
                                 "rdfa",
                                 "elem",
                                 "phrasing",
@@ -1823,9 +1781,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "link",
-                                        ],
+                                        component: "link",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -1835,8 +1792,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "inner",
                                                 ],
                                             },
@@ -1846,8 +1803,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "rdfa",
                                                     "attrs",
                                                     "phrasing",
@@ -1863,8 +1820,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "link",
+                            component: "link",
+                            sub_components: [
                                 "rdfa",
                                 "attrs",
                                 "metadata",
@@ -1877,8 +1834,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "basic",
                                             ],
@@ -1889,8 +1846,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "i18n",
                                             ],
@@ -1901,8 +1858,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "present",
                                             ],
@@ -1913,8 +1870,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "other",
                                             ],
@@ -1929,8 +1886,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "common",
+                                                            component: "common",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "rdfa",
                                                                 "property",
@@ -1943,8 +1900,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "link",
+                                                                component: "link",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "rel",
                                                                 ],
@@ -1961,8 +1918,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "rdfa",
                                                                     "property",
@@ -1975,8 +1932,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "link",
+                                                            component: "link",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "rel",
                                                             ],
@@ -1992,8 +1949,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -2007,8 +1964,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -2022,8 +1979,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -2037,8 +1994,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -2052,8 +2009,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "content",
@@ -2067,8 +2024,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -2085,8 +2042,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "common",
+                                                            component: "common",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "rdfa",
                                                                 "resource",
@@ -2099,8 +2056,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "link",
+                                                                component: "link",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "href",
                                                                 ],
@@ -2117,8 +2074,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "rdfa",
                                                                     "resource",
@@ -2131,8 +2088,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "link",
+                                                            component: "link",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "href",
                                                             ],
@@ -2148,8 +2105,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "rev",
@@ -2163,8 +2120,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -2178,8 +2135,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "hreflang",
                                                 ],
@@ -2192,8 +2149,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "media",
                                                 ],
@@ -2206,8 +2163,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "type",
                                                 ],
@@ -2220,8 +2177,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "attrs",
                                                     "sizes",
                                                 ],
@@ -2234,8 +2191,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "attrs",
                                                     "as",
                                                 ],
@@ -2248,8 +2205,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "embedded",
+                                                component: "embedded",
+                                                sub_components: [
                                                     "content",
                                                     "attrs",
                                                     "crossorigin",
@@ -2265,8 +2222,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2279,8 +2236,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2293,8 +2250,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2313,8 +2270,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "link",
+                            component: "link",
+                            sub_components: [
                                 "rdfa",
                                 "attrs",
                                 "phrasing",
@@ -2327,8 +2284,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "basic",
                                             ],
@@ -2339,8 +2296,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "i18n",
                                             ],
@@ -2351,8 +2308,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "present",
                                             ],
@@ -2363,8 +2320,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "other",
                                             ],
@@ -2375,8 +2332,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "rdfa",
                                                 "property",
@@ -2389,8 +2346,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "attrs",
                                                     "rel",
                                                 ],
@@ -2406,8 +2363,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "common",
+                                                            component: "common",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "rdfa",
                                                                 "resource",
@@ -2420,8 +2377,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "link",
+                                                                component: "link",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "href",
                                                                 ],
@@ -2438,8 +2395,8 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                components: [
-                                                                    "common",
+                                                                component: "common",
+                                                                sub_components: [
                                                                     "attrs",
                                                                     "rdfa",
                                                                     "resource",
@@ -2452,8 +2409,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "link",
+                                                            component: "link",
+                                                            sub_components: [
                                                                 "attrs",
                                                                 "href",
                                                             ],
@@ -2469,8 +2426,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "about",
@@ -2484,8 +2441,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "prefix",
@@ -2499,8 +2456,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "typeof",
@@ -2514,8 +2471,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "vocab",
@@ -2529,8 +2486,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "content",
@@ -2544,8 +2501,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "datatype",
@@ -2559,8 +2516,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "rev",
@@ -2574,8 +2531,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "common",
+                                                component: "common",
+                                                sub_components: [
                                                     "attrs",
                                                     "rdfa",
                                                     "inlist",
@@ -2589,8 +2546,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "hreflang",
                                                 ],
@@ -2603,8 +2560,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "media",
                                                 ],
@@ -2617,8 +2574,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "shared-hyperlink",
+                                                component: "shared-hyperlink",
+                                                sub_components: [
                                                     "attrs",
                                                     "type",
                                                 ],
@@ -2631,8 +2588,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "link",
+                                                component: "link",
+                                                sub_components: [
                                                     "attrs",
                                                     "sizes",
                                                 ],
@@ -2645,8 +2602,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "embedded",
+                                                component: "embedded",
+                                                sub_components: [
                                                     "content",
                                                     "attrs",
                                                     "crossorigin",
@@ -2662,8 +2619,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2676,8 +2633,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2690,8 +2647,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -2710,8 +2667,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "elem",
                                 "metadata",
                             ],
@@ -2723,8 +2680,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "link",
+                                    component: "link",
+                                    sub_components: [
                                         "rdfa",
                                         "elem",
                                         "metadata",
@@ -2737,8 +2694,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "elem",
                                 "phrasing",
                             ],
@@ -2750,8 +2707,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "link",
+                                    component: "link",
+                                    sub_components: [
                                         "rdfa",
                                         "elem",
                                         "phrasing",
@@ -2764,8 +2721,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property",
                                 "elem",
                             ],
@@ -2776,9 +2733,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "meta",
-                                        ],
+                                        component: "meta",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -2788,8 +2744,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "meta",
+                                                component: "meta",
+                                                sub_components: [
                                                     "inner",
                                                 ],
                                             },
@@ -2799,8 +2755,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "meta",
+                                                component: "meta",
+                                                sub_components: [
                                                     "property",
                                                     "attrs",
                                                 ],
@@ -2815,8 +2771,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property",
                                 "attrs",
                             ],
@@ -2828,8 +2784,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "basic",
                                             ],
@@ -2840,8 +2796,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "i18n",
                                             ],
@@ -2852,8 +2808,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "present",
                                             ],
@@ -2864,8 +2820,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "other",
                                             ],
@@ -2877,8 +2833,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "meta",
+                                                component: "meta",
+                                                sub_components: [
                                                     "name",
                                                     "attrs",
                                                     "name",
@@ -2891,8 +2847,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "rdfa",
                                                 "property",
@@ -2904,8 +2860,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "meta",
+                                            component: "meta",
+                                            sub_components: [
                                                 "name",
                                                 "attrs",
                                                 "content",
@@ -2920,8 +2876,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "elem",
                                 "metadata",
                             ],
@@ -2933,8 +2889,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "meta",
+                                    component: "meta",
+                                    sub_components: [
                                         "property",
                                         "elem",
                                     ],
@@ -2946,8 +2902,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property-no-name",
                                 "elem",
                             ],
@@ -2958,9 +2914,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "meta",
-                                        ],
+                                        component: "meta",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -2970,8 +2925,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "meta",
+                                                component: "meta",
+                                                sub_components: [
                                                     "inner",
                                                 ],
                                             },
@@ -2981,8 +2936,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "meta",
+                                                component: "meta",
+                                                sub_components: [
                                                     "property-no-name",
                                                     "attrs",
                                                 ],
@@ -2997,8 +2952,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property-no-name",
                                 "attrs",
                             ],
@@ -3010,8 +2965,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "basic",
                                             ],
@@ -3022,8 +2977,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "i18n",
                                             ],
@@ -3034,8 +2989,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "present",
                                             ],
@@ -3046,8 +3001,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "other",
                                             ],
@@ -3058,8 +3013,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "common",
+                                            component: "common",
+                                            sub_components: [
                                                 "attrs",
                                                 "rdfa",
                                                 "property",
@@ -3071,8 +3026,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "meta",
+                                            component: "meta",
+                                            sub_components: [
                                                 "name",
                                                 "attrs",
                                                 "content",
@@ -3087,8 +3042,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -3101,8 +3056,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "common",
+                                                        component: "common",
+                                                        sub_components: [
                                                             "attrs",
                                                             "aria",
                                                             "role",
@@ -3121,8 +3076,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "common",
+                            component: "common",
+                            sub_components: [
                                 "elem",
                                 "phrasing",
                             ],
@@ -3134,8 +3089,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "meta",
+                                    component: "meta",
+                                    sub_components: [
                                         "property-no-name",
                                         "elem",
                                     ],
@@ -3147,8 +3102,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property",
                                 "attrs",
                             ],
@@ -3160,8 +3115,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-content-noproperty",
@@ -3174,8 +3129,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "property-no-name",
                                 "attrs",
                             ],
@@ -3187,8 +3142,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-content-noproperty",
@@ -3201,8 +3156,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "meta",
+                            component: "meta",
+                            sub_components: [
                                 "name",
                                 "attrs",
                             ],
@@ -3214,8 +3169,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "common",
+                                    component: "common",
+                                    sub_components: [
                                         "attrs",
                                         "rdfa",
                                         "no-content-noproperty",

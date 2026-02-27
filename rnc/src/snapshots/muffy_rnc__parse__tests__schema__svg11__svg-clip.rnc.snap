@@ -7,9 +7,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -17,9 +16,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "svg",
-                    ],
+                    component: "svg",
+                    sub_components: [],
                 },
                 uri: "http://www.w3.org/2000/svg",
             },
@@ -35,9 +33,8 @@ Schema {
                             inherit: Some(
                                 Prefix(
                                     Identifier {
-                                        components: [
-                                            "svg",
-                                        ],
+                                        component: "svg",
+                                        sub_components: [],
                                     },
                                 ),
                             ),
@@ -47,8 +44,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "clipPath",
                                     "class",
                                 ],
@@ -62,8 +59,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "Shape",
                                                     "class",
                                                 ],
@@ -74,8 +71,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "Text",
                                                     "class",
                                                 ],

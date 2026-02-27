@@ -14,9 +14,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "ContExp",
-                            ],
+                            component: "ContExp",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Choice(
@@ -25,9 +24,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "semantics-contexp",
-                                            ],
+                                            component: "semantics-contexp",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -35,9 +33,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "cn",
-                                            ],
+                                            component: "cn",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -45,9 +42,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "ci",
-                                            ],
+                                            component: "ci",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -55,9 +51,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "csymbol",
-                                            ],
+                                            component: "csymbol",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -65,9 +60,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "apply",
-                                            ],
+                                            component: "apply",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -75,9 +69,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "bind",
-                                            ],
+                                            component: "bind",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -85,9 +78,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "share",
-                                            ],
+                                            component: "share",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -95,9 +87,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "cerror",
-                                            ],
+                                            component: "cerror",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -105,9 +96,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "cbytes",
-                                            ],
+                                            component: "cbytes",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -115,9 +105,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "cs",
-                                            ],
+                                            component: "cs",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -128,9 +117,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cn",
-                            ],
+                            component: "cn",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -138,9 +126,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "cn",
-                                        ],
+                                        component: "cn",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -150,8 +137,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "cn",
+                                                component: "cn",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -161,8 +148,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "cn",
+                                                component: "cn",
+                                                sub_components: [
                                                     "content",
                                                 ],
                                             },
@@ -176,8 +163,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cn",
+                            component: "cn",
+                            sub_components: [
                                 "content",
                             ],
                         },
@@ -188,8 +175,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cn",
+                            component: "cn",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -199,9 +186,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "type",
-                                        ],
+                                        component: "type",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -231,9 +217,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "semantics-ci",
-                            ],
+                            component: "semantics-ci",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -241,9 +226,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "semantics",
-                                        ],
+                                        component: "semantics",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -253,8 +237,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "semantics",
+                                                component: "semantics",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -266,9 +250,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "ci",
-                                                        ],
+                                                        component: "ci",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),
@@ -276,9 +259,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "semantics-ci",
-                                                        ],
+                                                        component: "semantics-ci",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),
@@ -291,9 +273,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "annotation",
-                                                            ],
+                                                            component: "annotation",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -301,9 +282,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "annotation-xml",
-                                                            ],
+                                                            component: "annotation-xml",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -318,9 +298,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "semantics-contexp",
-                            ],
+                            component: "semantics-contexp",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -328,9 +307,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "semantics",
-                                        ],
+                                        component: "semantics",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -340,8 +318,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "semantics",
+                                                component: "semantics",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -351,9 +329,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ContExp",
-                                                ],
+                                                component: "ContExp",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -364,9 +341,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "annotation",
-                                                            ],
+                                                            component: "annotation",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -374,9 +350,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "annotation-xml",
-                                                            ],
+                                                            component: "annotation-xml",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -391,9 +366,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "ci",
-                            ],
+                            component: "ci",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -401,9 +375,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "ci",
-                                        ],
+                                        component: "ci",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -413,8 +386,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ci",
+                                                component: "ci",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -424,8 +397,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ci",
+                                                component: "ci",
+                                                sub_components: [
                                                     "content",
                                                 ],
                                             },
@@ -439,8 +412,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "ci",
+                            component: "ci",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -451,9 +424,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "CommonAtt",
-                                            ],
+                                            component: "CommonAtt",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -462,8 +434,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ci",
+                                                component: "ci",
+                                                sub_components: [
                                                     "type",
                                                 ],
                                             },
@@ -477,8 +449,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "ci",
+                            component: "ci",
+                            sub_components: [
                                 "type",
                             ],
                         },
@@ -488,9 +460,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "type",
-                                        ],
+                                        component: "type",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -552,8 +523,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "ci",
+                            component: "ci",
+                            sub_components: [
                                 "content",
                             ],
                         },
@@ -564,9 +535,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "csymbol",
-                            ],
+                            component: "csymbol",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -574,9 +544,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "csymbol",
-                                        ],
+                                        component: "csymbol",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -586,8 +555,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "csymbol",
+                                                component: "csymbol",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -597,8 +566,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "csymbol",
+                                                component: "csymbol",
+                                                sub_components: [
                                                     "content",
                                                 ],
                                             },
@@ -612,24 +581,21 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "SymbolName",
-                            ],
+                            component: "SymbolName",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "xsd",
-                                        ],
+                                        component: "xsd",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "NCName",
-                                    ],
+                                    component: "NCName",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -638,8 +604,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "csymbol",
+                            component: "csymbol",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -650,9 +616,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "CommonAtt",
-                                            ],
+                                            component: "CommonAtt",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -660,9 +625,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "cd",
-                                            ],
+                                            component: "cd",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -673,8 +637,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "csymbol",
+                            component: "csymbol",
+                            sub_components: [
                                 "content",
                             ],
                         },
@@ -683,9 +647,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "SymbolName",
-                                    ],
+                                    component: "SymbolName",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -694,9 +657,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "BvarQ",
-                            ],
+                            component: "BvarQ",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Many0(
@@ -704,9 +666,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "bvar",
-                                        ],
+                                        component: "bvar",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -716,9 +677,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "bvar",
-                            ],
+                            component: "bvar",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -726,9 +686,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "bvar",
-                                        ],
+                                        component: "bvar",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -738,9 +697,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ci",
-                                                ],
+                                                component: "ci",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -748,9 +706,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "semantics-ci",
-                                                ],
+                                                component: "semantics-ci",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -762,9 +719,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "apply",
-                            ],
+                            component: "apply",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -772,9 +728,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "apply",
-                                        ],
+                                        component: "apply",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -784,9 +739,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "CommonAtt",
-                                                ],
+                                                component: "CommonAtt",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -794,8 +748,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "apply",
+                                                component: "apply",
+                                                sub_components: [
                                                     "content",
                                                 ],
                                             },
@@ -809,8 +763,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "apply",
+                            component: "apply",
+                            sub_components: [
                                 "content",
                             ],
                         },
@@ -820,9 +774,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "ContExp",
-                                        ],
+                                        component: "ContExp",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -832,9 +785,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "bind",
-                            ],
+                            component: "bind",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -842,9 +794,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "bind",
-                                        ],
+                                        component: "bind",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -854,9 +805,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "CommonAtt",
-                                                ],
+                                                component: "CommonAtt",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -864,8 +814,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "bind",
+                                                component: "bind",
+                                                sub_components: [
                                                     "content",
                                                 ],
                                             },
@@ -879,8 +829,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "bind",
+                            component: "bind",
+                            sub_components: [
                                 "content",
                             ],
                         },
@@ -891,9 +841,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "ContExp",
-                                            ],
+                                            component: "ContExp",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -902,9 +851,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "bvar",
-                                                ],
+                                                component: "bvar",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -913,9 +861,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "ContExp",
-                                            ],
+                                            component: "ContExp",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -926,9 +873,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "share",
-                            ],
+                            component: "share",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -936,9 +882,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "share",
-                                        ],
+                                        component: "share",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -948,9 +893,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "CommonAtt",
-                                                ],
+                                                component: "CommonAtt",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -958,9 +902,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "src",
-                                                ],
+                                                component: "src",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -973,9 +916,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cerror",
-                            ],
+                            component: "cerror",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -983,9 +925,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "cerror",
-                                        ],
+                                        component: "cerror",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -995,8 +936,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "cerror",
+                                                component: "cerror",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -1006,9 +947,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "csymbol",
-                                                ],
+                                                component: "csymbol",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -1017,9 +957,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "ContExp",
-                                                    ],
+                                                    component: "ContExp",
+                                                    sub_components: [],
                                                 },
                                             },
                                         ),
@@ -1032,8 +971,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cerror",
+                            component: "cerror",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -1042,9 +981,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "CommonAtt",
-                                    ],
+                                    component: "CommonAtt",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -1053,9 +991,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cbytes",
-                            ],
+                            component: "cbytes",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -1063,9 +1000,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "cbytes",
-                                        ],
+                                        component: "cbytes",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -1075,8 +1011,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "cbytes",
+                                                component: "cbytes",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -1086,9 +1022,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "base64",
-                                                ],
+                                                component: "base64",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -1100,8 +1035,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cbytes",
+                            component: "cbytes",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -1110,9 +1045,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "CommonAtt",
-                                    ],
+                                    component: "CommonAtt",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -1121,24 +1055,21 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "base64",
-                            ],
+                            component: "base64",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "xsd",
-                                        ],
+                                        component: "xsd",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "base64Binary",
-                                    ],
+                                    component: "base64Binary",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -1147,9 +1078,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cs",
-                            ],
+                            component: "cs",
+                            sub_components: [],
                         },
                         combine: None,
                         pattern: Element {
@@ -1157,9 +1087,8 @@ Schema {
                                 Name {
                                     prefix: None,
                                     local: Identifier {
-                                        components: [
-                                            "cs",
-                                        ],
+                                        component: "cs",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -1169,8 +1098,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "cs",
+                                                component: "cs",
+                                                sub_components: [
                                                     "attributes",
                                                 ],
                                             },
@@ -1185,8 +1114,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "cs",
+                            component: "cs",
+                            sub_components: [
                                 "attributes",
                             ],
                         },
@@ -1195,9 +1124,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "CommonAtt",
-                                    ],
+                                    component: "CommonAtt",
+                                    sub_components: [],
                                 },
                             },
                         ),
@@ -1206,9 +1134,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "MathExpression",
-                            ],
+                            component: "MathExpression",
+                            sub_components: [],
                         },
                         combine: Some(
                             Choice,
@@ -1217,9 +1144,8 @@ Schema {
                             Name {
                                 prefix: None,
                                 local: Identifier {
-                                    components: [
-                                        "ContExp",
-                                    ],
+                                    component: "ContExp",
+                                    sub_components: [],
                                 },
                             },
                         ),

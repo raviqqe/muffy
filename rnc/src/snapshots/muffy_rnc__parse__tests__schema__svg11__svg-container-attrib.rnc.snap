@@ -7,9 +7,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -22,8 +21,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "EnableBackgroundValue",
+                                component: "EnableBackgroundValue",
+                                sub_components: [
                                     "datatype",
                                 ],
                             },
@@ -32,15 +31,13 @@ Schema {
                                 Name {
                                     prefix: Some(
                                         Identifier {
-                                            components: [
-                                                "xsd",
-                                            ],
+                                            component: "xsd",
+                                            sub_components: [],
                                         },
                                     ),
                                     local: Identifier {
-                                        components: [
-                                            "string",
-                                        ],
+                                        component: "string",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -49,8 +46,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "enable-background",
                                     "attrib",
                                 ],
@@ -62,9 +59,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "enable-background",
-                                                ],
+                                                component: "enable-background",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -72,8 +68,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "EnableBackgroundValue",
+                                                component: "EnableBackgroundValue",
+                                                sub_components: [
                                                     "datatype",
                                                 ],
                                             },
@@ -86,8 +82,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "Container",
                                     "extra",
                                     "attrib",
@@ -100,8 +96,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "Container",
                                     "attrib",
                                 ],
@@ -115,8 +111,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "enable-background",
                                                     "attrib",
                                                 ],
@@ -127,8 +123,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "Container",
                                                     "extra",
                                                     "attrib",

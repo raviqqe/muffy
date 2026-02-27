@@ -7,9 +7,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -22,8 +21,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "externalResourcesRequired",
                                     "attrib",
                                 ],
@@ -35,9 +34,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "externalResourcesRequired",
-                                                ],
+                                                component: "externalResourcesRequired",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -45,8 +43,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "Boolean",
+                                                component: "Boolean",
+                                                sub_components: [
                                                     "datatype",
                                                 ],
                                             },
@@ -59,8 +57,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "External",
                                     "extra",
                                     "attrib",
@@ -73,8 +71,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "External",
                                     "attrib",
                                 ],
@@ -88,8 +86,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "externalResourcesRequired",
                                                     "attrib",
                                                 ],
@@ -100,8 +98,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "External",
                                                     "extra",
                                                     "attrib",

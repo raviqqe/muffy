@@ -234,6 +234,8 @@ pub struct AnnotationAttribute {
 /// An identifier.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Identifier {
-    /// Components.
-    pub components: Vec<String>,
+    /// A component.
+    pub component: String,
+    /// Sub-components.
+    pub sub_components: Vec<String>,
 }

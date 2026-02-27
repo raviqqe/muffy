@@ -7,9 +7,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -17,9 +16,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "xlink",
-                    ],
+                    component: "xlink",
+                    sub_components: [],
                 },
                 uri: "http://www.w3.org/1999/xlink",
             },
@@ -31,8 +29,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "XLINK",
+                            component: "XLINK",
+                            sub_components: [
                                 "xmlns",
                                 "attrib",
                             ],
@@ -44,8 +42,8 @@ Schema {
                 Definition(
                     Definition {
                         name: Identifier {
-                            components: [
-                                "SVG",
+                            component: "SVG",
+                            sub_components: [
                                 "xmlns",
                                 "attrib",
                             ],
@@ -58,8 +56,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "XLINK",
+                                            component: "XLINK",
+                                            sub_components: [
                                                 "xmlns",
                                                 "attrib",
                                             ],

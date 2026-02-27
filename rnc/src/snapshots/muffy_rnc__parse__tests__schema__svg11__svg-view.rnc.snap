@@ -10,9 +10,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -25,8 +24,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "View",
                                     "extra",
                                     "class",
@@ -39,8 +38,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "View",
                                     "class",
                                 ],
@@ -54,9 +53,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "view",
-                                                ],
+                                                component: "view",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -64,8 +62,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "View",
                                                     "extra",
                                                     "class",
@@ -82,15 +80,13 @@ Schema {
                             name: Name {
                                 prefix: Some(
                                     Identifier {
-                                        components: [
-                                            "a",
-                                        ],
+                                        component: "a",
+                                        sub_components: [],
                                     },
                                 ),
                                 local: Identifier {
-                                    components: [
-                                        "documentation",
-                                    ],
+                                    component: "documentation",
+                                    sub_components: [],
                                 },
                             },
                             attributes: [],
@@ -99,8 +95,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "view",
                                     "content",
                                 ],
@@ -111,8 +107,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "SVG",
+                                            component: "SVG",
+                                            sub_components: [
                                                 "Description",
                                                 "class",
                                             ],
@@ -125,9 +121,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "view",
-                                ],
+                                component: "view",
+                                sub_components: [],
                             },
                             combine: None,
                             pattern: Element {
@@ -135,9 +130,8 @@ Schema {
                                     Name {
                                         prefix: None,
                                         local: Identifier {
-                                            components: [
-                                                "view",
-                                            ],
+                                            component: "view",
+                                            sub_components: [],
                                         },
                                     },
                                 ),
@@ -147,8 +141,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "attlist",
+                                                    component: "attlist",
+                                                    sub_components: [
                                                         "view",
                                                     ],
                                                 },
@@ -158,8 +152,8 @@ Schema {
                                             Name {
                                                 prefix: None,
                                                 local: Identifier {
-                                                    components: [
-                                                        "SVG",
+                                                    component: "SVG",
+                                                    sub_components: [
                                                         "view",
                                                         "content",
                                                     ],
@@ -174,8 +168,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "attlist",
+                                component: "attlist",
+                                sub_components: [
                                     "view",
                                 ],
                             },
@@ -188,8 +182,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "Core",
                                                     "attrib",
                                                 ],
@@ -200,8 +194,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "External",
                                                     "attrib",
                                                 ],
@@ -214,9 +208,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "viewBox",
-                                                        ],
+                                                        component: "viewBox",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),
@@ -224,8 +217,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "ViewBoxSpec",
+                                                        component: "ViewBoxSpec",
+                                                        sub_components: [
                                                             "datatype",
                                                         ],
                                                     },
@@ -239,9 +232,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "preserveAspectRatio",
-                                                        ],
+                                                        component: "preserveAspectRatio",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),
@@ -249,8 +241,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "PreserveAspectRatioSpec",
+                                                        component: "PreserveAspectRatioSpec",
+                                                        sub_components: [
                                                             "datatype",
                                                         ],
                                                     },
@@ -264,9 +256,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "zoomAndPan",
-                                                        ],
+                                                        component: "zoomAndPan",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),
@@ -290,9 +281,8 @@ Schema {
                                                 Name {
                                                     prefix: None,
                                                     local: Identifier {
-                                                        components: [
-                                                            "viewTarget",
-                                                        ],
+                                                        component: "viewTarget",
+                                                        sub_components: [],
                                                     },
                                                 },
                                             ),

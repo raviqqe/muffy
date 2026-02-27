@@ -414,8 +414,9 @@ fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
                 recognize((alpha1, many0(satisfy(is_identifier_char)))),
             ),
         ),
-        |parts| Identifier {
-            components: parts.into_iter().map(ToOwned::to_owned).collect(),
+        |mut parts: Vec<&str>| Identifier {
+            component: parts.remove(0).to_owned(),
+            sub_components: parts.into_iter().map(ToOwned::to_owned).collect(),
         },
     )
     .parse(input)
@@ -548,8 +549,11 @@ mod tests {
     }
 
     fn identifier(name: &str) -> Identifier {
+        let mut components: Vec<_> = name.split('.').map(ToOwned::to_owned).collect();
+
         Identifier {
-            components: name.split('.').map(ToOwned::to_owned).collect(),
+            component: components.remove(0),
+            sub_components: components,
         }
     }
 

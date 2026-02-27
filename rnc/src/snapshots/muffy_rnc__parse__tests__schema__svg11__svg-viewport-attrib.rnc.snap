@@ -7,9 +7,8 @@ Schema {
         Namespace(
             NamespaceDeclaration {
                 prefix: Identifier {
-                    components: [
-                        "a",
-                    ],
+                    component: "a",
+                    sub_components: [],
                 },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
@@ -22,8 +21,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "ClipValue",
+                                component: "ClipValue",
+                                sub_components: [
                                     "datatype",
                                 ],
                             },
@@ -32,15 +31,13 @@ Schema {
                                 Name {
                                     prefix: Some(
                                         Identifier {
-                                            components: [
-                                                "xsd",
-                                            ],
+                                            component: "xsd",
+                                            sub_components: [],
                                         },
                                     ),
                                     local: Identifier {
-                                        components: [
-                                            "string",
-                                        ],
+                                        component: "string",
+                                        sub_components: [],
                                     },
                                 },
                             ),
@@ -49,8 +46,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "clip",
                                     "attrib",
                                 ],
@@ -62,9 +59,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "clip",
-                                                ],
+                                                component: "clip",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -72,8 +68,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "ClipValue",
+                                                component: "ClipValue",
+                                                sub_components: [
                                                     "datatype",
                                                 ],
                                             },
@@ -86,8 +82,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "overflow",
                                     "attrib",
                                 ],
@@ -99,9 +95,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "overflow",
-                                                ],
+                                                component: "overflow",
+                                                sub_components: [],
                                             },
                                         },
                                     ),
@@ -112,9 +107,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -125,9 +119,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -138,9 +131,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -151,9 +143,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -164,9 +155,8 @@ Schema {
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            components: [
-                                                                "string",
-                                                            ],
+                                                            component: "string",
+                                                            sub_components: [],
                                                         },
                                                     },
                                                 ),
@@ -181,8 +171,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "Viewport",
                                     "extra",
                                     "attrib",
@@ -195,8 +185,8 @@ Schema {
                     Definition(
                         Definition {
                             name: Identifier {
-                                components: [
-                                    "SVG",
+                                component: "SVG",
+                                sub_components: [
                                     "Viewport",
                                     "attrib",
                                 ],
@@ -210,8 +200,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "clip",
                                                     "attrib",
                                                 ],
@@ -222,8 +212,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "overflow",
                                                     "attrib",
                                                 ],
@@ -234,8 +224,8 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
-                                                components: [
-                                                    "SVG",
+                                                component: "SVG",
+                                                sub_components: [
                                                     "Viewport",
                                                     "extra",
                                                     "attrib",
