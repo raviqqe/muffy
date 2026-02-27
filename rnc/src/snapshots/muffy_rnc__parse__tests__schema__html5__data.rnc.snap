@@ -453,15 +453,11 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "string",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
+                            pattern: Data {
+                                name: String,
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),

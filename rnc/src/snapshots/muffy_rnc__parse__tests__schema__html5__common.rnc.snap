@@ -732,25 +732,13 @@ Schema {
                                         [
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "preserve",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "default",
                                             },
@@ -852,52 +840,58 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "ltr",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "rtl",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "auto",
                                     },
@@ -1062,52 +1056,58 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "yes",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "no",
                                     },
@@ -1194,15 +1194,11 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "string",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
+                            pattern: Data {
+                                name: String,
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),
@@ -1358,35 +1354,39 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "autofocus",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "",
                                     },
@@ -1418,18 +1418,20 @@ Schema {
                             pattern: List(
                                 Value {
                                     name: Some(
-                                        Name {
-                                            prefix: Some(
-                                                Identifier {
-                                                    component: "w",
+                                        Name(
+                                            Name {
+                                                prefix: Some(
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
+                                                ),
+                                                local: Identifier {
+                                                    component: "string",
                                                     sub_components: [],
                                                 },
-                                            ),
-                                            local: Identifier {
-                                                component: "string",
-                                                sub_components: [],
                                             },
-                                        },
+                                        ),
                                     ),
                                     value: "render",
                                 },
@@ -1461,52 +1463,58 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "high",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "low",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "auto",
                                     },
@@ -1535,15 +1543,11 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "string",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
+                            pattern: Data {
+                                name: String,
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),
@@ -1571,35 +1575,39 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "inert",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "",
                                     },
@@ -1620,15 +1628,11 @@ Schema {
                         combine: None,
                         pattern: List(
                             Many0(
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: Identifier {
-                                            component: "token",
-                                            sub_components: [],
-                                        },
-                                    },
-                                ),
+                                Data {
+                                    name: Token,
+                                    parameters: [],
+                                    except: None,
+                                },
                             ),
                         ),
                     },
@@ -1643,20 +1647,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "browsing-context",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "browsing-context",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1669,20 +1677,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "browsing-context-or-keyword",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "browsing-context-or-keyword",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1695,20 +1707,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "ID",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "ID",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1721,20 +1737,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "IDREF",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "IDREF",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1747,20 +1767,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "IDREFS",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "IDREFS",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1773,20 +1797,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "ID",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "ID",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1799,20 +1827,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "hash-name",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "hash-name",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1825,20 +1857,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "integer",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "integer",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1852,20 +1888,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "integer-positive",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "integer-positive",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1879,20 +1919,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "integer-non-negative",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "integer-non-negative",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1905,20 +1949,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "float",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "float",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1932,20 +1980,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "float-positive",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "float-positive",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1959,20 +2011,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "float-non-negative",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "float-non-negative",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -1985,20 +2041,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "datetime-tz",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "datetime-tz",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2011,20 +2071,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "date",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "date",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2037,20 +2101,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "time-datetime",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "time-datetime",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2065,33 +2133,39 @@ Schema {
                         combine: None,
                         pattern: Choice(
                             [
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
-                                                sub_components: [],
-                                            },
-                                        ),
-                                        local: Identifier {
-                                            component: "iri-ref",
-                                            sub_components: [],
-                                        },
-                                    },
-                                ),
                                 Data {
-                                    name: Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "xsd",
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "w",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "iri-ref",
                                                 sub_components: [],
                                             },
-                                        ),
-                                        local: Identifier {
-                                            component: "string",
-                                            sub_components: [],
                                         },
-                                    },
+                                    ),
+                                    parameters: [],
+                                    except: None,
+                                },
+                                Data {
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "xsd",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "string",
+                                                sub_components: [],
+                                            },
+                                        },
+                                    ),
                                     parameters: [
                                         Parameter {
                                             name: Name {
@@ -2121,20 +2195,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "iri-ref",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "iri-ref",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2149,20 +2227,24 @@ Schema {
                         combine: None,
                         pattern: List(
                             Many0(
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
+                                Data {
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "w",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "iri-ref",
                                                 sub_components: [],
                                             },
-                                        ),
-                                        local: Identifier {
-                                            component: "iri-ref",
-                                            sub_components: [],
                                         },
-                                    },
-                                ),
+                                    ),
+                                    parameters: [],
+                                    except: None,
+                                },
                             ),
                         ),
                     },
@@ -2182,20 +2264,24 @@ Schema {
                         combine: None,
                         pattern: List(
                             Many0(
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
+                                Data {
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "w",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "iri-ref-http-or-https",
                                                 sub_components: [],
                                             },
-                                        ),
-                                        local: Identifier {
-                                            component: "iri-ref-http-or-https",
-                                            sub_components: [],
                                         },
-                                    },
-                                ),
+                                    ),
+                                    parameters: [],
+                                    except: None,
+                                },
                             ),
                         ),
                     },
@@ -2211,20 +2297,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "iri",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "iri",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2240,18 +2330,20 @@ Schema {
                         pattern: List(
                             Many1(
                                 Data {
-                                    name: Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "xsd",
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "xsd",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "string",
                                                 sub_components: [],
                                             },
-                                        ),
-                                        local: Identifier {
-                                            component: "string",
-                                            sub_components: [],
                                         },
-                                    },
+                                    ),
                                     parameters: [
                                         Parameter {
                                             name: Name {
@@ -2280,20 +2372,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "color",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "color",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2306,20 +2402,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "mime-type",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "mime-type",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2332,20 +2432,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "script-type",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "script-type",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2358,20 +2462,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "charset",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "charset",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2384,20 +2492,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "meta-charset",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "meta-charset",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2410,20 +2522,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "refresh",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "refresh",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2436,15 +2552,11 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "string",
-                                    sub_components: [],
-                                },
-                            },
-                        ),
+                        pattern: Data {
+                            name: String,
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2457,15 +2569,11 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "string",
-                                    sub_components: [],
-                                },
-                            },
-                        ),
+                        pattern: Data {
+                            name: String,
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2478,20 +2586,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "media-query",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "media-query",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2508,6 +2620,25 @@ Schema {
                             [
                                 Value {
                                     name: Some(
+                                        Name(
+                                            Name {
+                                                prefix: Some(
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
+                                                ),
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    value: "",
+                                },
+                                Data {
+                                    name: Name(
                                         Name {
                                             prefix: Some(
                                                 Identifier {
@@ -2516,27 +2647,14 @@ Schema {
                                                 },
                                             ),
                                             local: Identifier {
-                                                component: "string",
+                                                component: "language",
                                                 sub_components: [],
                                             },
                                         },
                                     ),
-                                    value: "",
+                                    parameters: [],
+                                    except: None,
                                 },
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
-                                                sub_components: [],
-                                            },
-                                        ),
-                                        local: Identifier {
-                                            component: "language",
-                                            sub_components: [],
-                                        },
-                                    },
-                                ),
                             ],
                         ),
                     },
@@ -2551,20 +2669,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "keylabellist",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "keylabellist",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2579,20 +2701,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "source-size-list",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "source-size-list",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2605,20 +2731,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "integrity-metadata",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "integrity-metadata",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2631,20 +2761,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "content-security-policy",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "content-security-policy",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2657,15 +2791,11 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "string",
-                                    sub_components: [],
-                                },
-                            },
-                        ),
+                        pattern: Data {
+                            name: String,
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2682,6 +2812,25 @@ Schema {
                             [
                                 Value {
                                     name: Some(
+                                        Name(
+                                            Name {
+                                                prefix: Some(
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
+                                                ),
+                                                local: Identifier {
+                                                    component: "string",
+                                                    sub_components: [],
+                                                },
+                                            },
+                                        ),
+                                    ),
+                                    value: "",
+                                },
+                                Data {
+                                    name: Name(
                                         Name {
                                             prefix: Some(
                                                 Identifier {
@@ -2690,27 +2839,14 @@ Schema {
                                                 },
                                             ),
                                             local: Identifier {
-                                                component: "string",
+                                                component: "sandbox-allow-list",
                                                 sub_components: [],
                                             },
                                         },
                                     ),
-                                    value: "",
+                                    parameters: [],
+                                    except: None,
                                 },
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
-                                                sub_components: [],
-                                            },
-                                        ),
-                                        local: Identifier {
-                                            component: "sandbox-allow-list",
-                                            sub_components: [],
-                                        },
-                                    },
-                                ),
                             ],
                         ),
                     },
@@ -2727,20 +2863,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "custom-element-name",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "custom-element-name",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2755,20 +2895,24 @@ Schema {
                         combine: None,
                         pattern: List(
                             Many1(
-                                Name(
-                                    Name {
-                                        prefix: Some(
-                                            Identifier {
-                                                component: "w",
+                                Data {
+                                    name: Name(
+                                        Name {
+                                            prefix: Some(
+                                                Identifier {
+                                                    component: "w",
+                                                    sub_components: [],
+                                                },
+                                            ),
+                                            local: Identifier {
+                                                component: "microdata-property",
                                                 sub_components: [],
                                             },
-                                        ),
-                                        local: Identifier {
-                                            component: "microdata-property",
-                                            sub_components: [],
                                         },
-                                    },
-                                ),
+                                    ),
+                                    parameters: [],
+                                    except: None,
+                                },
                             ),
                         ),
                     },
@@ -2783,20 +2927,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "zero",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "zero",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2809,15 +2957,11 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "string",
-                                    sub_components: [],
-                                },
-                            },
-                        ),
+                        pattern: Data {
+                            name: String,
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(
@@ -2831,20 +2975,24 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "w",
+                        pattern: Data {
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "w",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "autocomplete-any",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "autocomplete-any",
-                                    sub_components: [],
                                 },
-                            },
-                        ),
+                            ),
+                            parameters: [],
+                            except: None,
+                        },
                     },
                 ),
                 Definition(

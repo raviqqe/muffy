@@ -1,8 +1,8 @@
 use crate::{
     Identifier,
     ast::{
-        AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration,
-        Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
+        AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
+        Declaration, Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
         NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
     },
 };
@@ -11,9 +11,9 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{alpha1, char, multispace1, satisfy},
-    combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
+    combinator::{map, not, opt, peek, recognize, success, value, verify},
     error::Error,
-    multi::{many0, separated_list0, separated_list1},
+    multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -21,20 +21,22 @@ type ParserError<'input> = Error<&'input str>;
 
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
+const IDENTIFIER_COMPONENT_SEPARATOR: char = '.';
+
 pub fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
-        blanked((many0(declaration), schema_body)),
+        blanked((
+            many0(declaration),
+            alt((
+                map(many1(grammar_content), |contents| {
+                    SchemaBody::Grammar(Grammar { contents })
+                }),
+                map(pattern, SchemaBody::Pattern),
+                success(SchemaBody::Grammar(Grammar { contents: vec![] })),
+            )),
+        )),
         |(declarations, body)| Schema { declarations, body },
     )
-    .parse(input)
-}
-
-fn schema_body(input: &str) -> ParserResult<'_, SchemaBody> {
-    alt((
-        // TODO Remove the all consuming combinator.
-        map(all_consuming(grammar), SchemaBody::Grammar),
-        map(pattern, SchemaBody::Pattern),
-    ))
     .parse(input)
 }
 
@@ -280,9 +282,10 @@ fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
 
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
-        verify(
-            (name, opt(parameters), opt(preceded(symbol("-"), pattern))),
-            |(_, parameters, except_pattern)| parameters.is_some() || except_pattern.is_some(),
+        (
+            datatype_name,
+            opt(parameters),
+            opt(preceded(symbol("-"), pattern)),
         ),
         |(name, parameters, except_pattern)| Pattern::Data {
             name,
@@ -294,10 +297,21 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(name), literal), |(name, value)| Pattern::Value {
-        name,
-        value,
+    map((opt(datatype_name), literal), |(name, value)| {
+        Pattern::Value { name, value }
     })
+    .parse(input)
+}
+
+fn datatype_name(input: &str) -> ParserResult<'_, DatatypeName> {
+    alt((
+        value(DatatypeName::String, keyword("string")),
+        value(DatatypeName::Token, keyword("token")),
+        map(
+            verify(name, |name| name.prefix.is_some()),
+            DatatypeName::Name,
+        ),
+    ))
     .parse(input)
 }
 
@@ -410,7 +424,7 @@ fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
         preceded(
             opt(char('\\')),
             separated_list1(
-                char('.'),
+                char(IDENTIFIER_COMPONENT_SEPARATOR),
                 recognize((alpha1, many0(satisfy(is_identifier_char)))),
             ),
         ),
@@ -452,7 +466,9 @@ fn keyword<'a>(
 ) -> impl Parser<&'a str, Output = &'a str, Error = ParserError<'a>> {
     blanked(terminated(
         tag(keyword),
-        not(peek(satisfy(is_identifier_char))),
+        not(peek(satisfy(|character| {
+            is_identifier_char(character) || character == IDENTIFIER_COMPONENT_SEPARATOR
+        }))),
     ))
 }
 
@@ -908,7 +924,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -917,7 +933,7 @@ mod tests {
                                 component: "integer".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![Parameter {
                             name: Name {
                                 prefix: None,
@@ -935,18 +951,54 @@ mod tests {
         }
 
         #[test]
-        fn parse_name_pattern() {
+        fn parse_data_with_prefixed_name() {
             assert_eq!(
                 pattern("xsd:integer"),
                 Ok((
                     "",
-                    Pattern::Name(Name {
-                        prefix: Some(Identifier {
-                            component: "xsd".into(),
-                            sub_components: vec![],
+                    Pattern::Data {
+                        name: DatatypeName::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "integer".into(),
+                                sub_components: vec![],
+                            },
                         }),
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_data_with_primitive_type() {
+            assert_eq!(
+                pattern("string"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: DatatypeName::String,
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_name_pattern() {
+            assert_eq!(
+                pattern("foo"),
+                Ok((
+                    "",
+                    Pattern::Name(Name {
+                        prefix: None,
                         local: Identifier {
-                            component: "integer".into(),
+                            component: "foo".into(),
                             sub_components: vec![],
                         },
                     })
@@ -961,13 +1013,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Value {
-                        name: Some(Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "string".into(),
-                                sub_components: vec![],
-                            },
-                        }),
+                        name: Some(DatatypeName::String),
                         value: "auto".into(),
                     }
                 ))
@@ -1211,6 +1257,25 @@ mod tests {
         }
 
         #[test]
+        fn parse_grammar_schema_with_trailing_whitespace() {
+            assert_eq!(
+                schema("start = empty  "),
+                Ok((
+                    "",
+                    Schema {
+                        declarations: vec![],
+                        body: SchemaBody::Grammar(Grammar {
+                            contents: vec![GrammarContent::Start {
+                                combine: None,
+                                pattern: Pattern::Empty,
+                            }]
+                        })
+                    }
+                ))
+            );
+        }
+
+        #[test]
         fn parse_schema_with_declarations() {
             assert_eq!(
                 schema(indoc! {r#"
@@ -1348,7 +1413,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1357,7 +1422,7 @@ mod tests {
                                 component: "string".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![Parameter {
                             name: Name {
                                 prefix: None,
@@ -1381,7 +1446,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: Name {
+                        name: DatatypeName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1390,7 +1455,7 @@ mod tests {
                                 component: "string".into(),
                                 sub_components: vec![],
                             },
-                        },
+                        }),
                         parameters: vec![],
                         except: Some(Box::new(Pattern::Value {
                             name: None,
@@ -1402,8 +1467,47 @@ mod tests {
         }
 
         #[test]
-        fn fail_on_plain_name() {
-            assert!(data_pattern("xsd:string").is_err());
+        fn parse_plain_prefixed_name() {
+            assert_eq!(
+                data_pattern("xsd:string"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: DatatypeName::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_primitive_type() {
+            assert_eq!(
+                data_pattern("token"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: DatatypeName::Token,
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_plain_unprefixed_name() {
+            assert!(data_pattern("foo").is_err());
         }
     }
 
@@ -1700,6 +1804,65 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn parse_choice_definition() {
+            assert_eq!(
+                grammar("MathExpression |= PresentationExpression"),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Definition(Definition {
+                            name: Identifier {
+                                component: "MathExpression".into(),
+                                sub_components: vec![],
+                            },
+                            combine: Some(Combine::Choice),
+                            pattern: Pattern::Name(Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "PresentationExpression".into(),
+                                    sub_components: vec![],
+                                },
+                            }),
+                        })]
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_multiple_definitions() {
+            assert_eq!(
+                grammar(indoc! {r#"
+                    foo = text
+                    bar |= empty
+                "#}),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![
+                            GrammarContent::Definition(Definition {
+                                name: Identifier {
+                                    component: "foo".into(),
+                                    sub_components: vec![]
+                                },
+                                combine: None,
+                                pattern: Pattern::Text,
+                            }),
+                            GrammarContent::Definition(Definition {
+                                name: Identifier {
+                                    component: "bar".into(),
+                                    sub_components: vec![]
+                                },
+                                combine: Some(Combine::Choice),
+                                pattern: Pattern::Empty,
+                            }),
+                        ]
+                    }
+                ))
+            );
+        }
     }
 
     mod include {
@@ -1987,6 +2150,46 @@ mod tests {
                     }]
                 ))
             );
+        }
+    }
+
+    mod datatype_name {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_string() {
+            assert_eq!(datatype_name("string"), Ok(("", DatatypeName::String)));
+        }
+
+        #[test]
+        fn parse_token() {
+            assert_eq!(datatype_name("token"), Ok(("", DatatypeName::Token)));
+        }
+
+        #[test]
+        fn parse_cname() {
+            assert_eq!(
+                datatype_name("xsd:integer"),
+                Ok((
+                    "",
+                    DatatypeName::Name(Name {
+                        prefix: Some(Identifier {
+                            component: "xsd".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "integer".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_unprefixed_name() {
+            assert!(datatype_name("foo").is_err());
         }
     }
 

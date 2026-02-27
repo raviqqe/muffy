@@ -30,20 +30,24 @@ Schema {
                                 ],
                             },
                             combine: None,
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        Identifier {
-                                            component: "xsd",
+                            pattern: Data {
+                                name: Name(
+                                    Name {
+                                        prefix: Some(
+                                            Identifier {
+                                                component: "xsd",
+                                                sub_components: [],
+                                            },
+                                        ),
+                                        local: Identifier {
+                                            component: "NMTOKEN",
                                             sub_components: [],
                                         },
-                                    ),
-                                    local: Identifier {
-                                        component: "NMTOKEN",
-                                        sub_components: [],
                                     },
-                                },
-                            ),
+                                ),
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     ),
                     Annotation(
@@ -628,15 +632,11 @@ Schema {
                                                     },
                                                 },
                                             ),
-                                            pattern: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: Identifier {
-                                                        component: "string",
-                                                        sub_components: [],
-                                                    },
-                                                },
-                                            ),
+                                            pattern: Data {
+                                                name: String,
+                                                parameters: [],
+                                                except: None,
+                                            },
                                         },
                                     ),
                                 ],

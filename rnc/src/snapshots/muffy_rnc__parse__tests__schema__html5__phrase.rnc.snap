@@ -963,15 +963,11 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "string",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
+                            pattern: Data {
+                                name: String,
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),
@@ -1065,20 +1061,24 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: Some(
-                                        Identifier {
-                                            component: "w",
+                            pattern: Data {
+                                name: Name(
+                                    Name {
+                                        prefix: Some(
+                                            Identifier {
+                                                component: "w",
+                                                sub_components: [],
+                                            },
+                                        ),
+                                        local: Identifier {
+                                            component: "rel-value",
                                             sub_components: [],
                                         },
-                                    ),
-                                    local: Identifier {
-                                        component: "rel-value",
-                                        sub_components: [],
                                     },
-                                },
-                            ),
+                                ),
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),
@@ -1261,109 +1261,55 @@ Schema {
                                         [
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "no-referrer",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "no-referrer-when-downgrade",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "same-origin",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "origin",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "strict-origin",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "origin-when-cross-origin",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "strict-origin-when-cross-origin",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "unsafe-url",
                                             },

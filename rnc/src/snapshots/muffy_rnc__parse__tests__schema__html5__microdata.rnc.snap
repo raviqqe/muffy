@@ -207,35 +207,39 @@ Schema {
                                 [
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "itemscope",
                                     },
                                     Value {
                                         name: Some(
-                                            Name {
-                                                prefix: Some(
-                                                    Identifier {
-                                                        component: "w",
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
                                                         sub_components: [],
                                                     },
-                                                ),
-                                                local: Identifier {
-                                                    component: "string",
-                                                    sub_components: [],
                                                 },
-                                            },
+                                            ),
                                         ),
                                         value: "",
                                     },
@@ -1125,15 +1129,11 @@ Schema {
                                     },
                                 },
                             ),
-                            pattern: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "string",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
+                            pattern: Data {
+                                name: String,
+                                parameters: [],
+                                except: None,
+                            },
                         },
                     },
                 ),
