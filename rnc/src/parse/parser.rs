@@ -711,12 +711,12 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_any_name() {
+        fn parse_any_name() {
             assert_eq!(name_class("*"), Ok(("", NameClass::AnyName)));
         }
 
         #[test]
-        fn parses_ns_name() {
+        fn parse_ns_name() {
             assert_eq!(
                 name_class("html:*"),
                 Ok((
@@ -730,7 +730,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_name() {
+        fn parse_name() {
             assert_eq!(
                 name_class("svg:rect"),
                 Ok((
@@ -750,7 +750,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_choice() {
+        fn parse_choice() {
             assert_eq!(
                 name_class("html:div | html:span"),
                 Ok((
@@ -782,7 +782,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_except() {
+        fn parse_except() {
             assert_eq!(
                 name_class("html:* - html:script"),
                 Ok((
@@ -813,7 +813,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_element() {
+        fn parse_element() {
             assert_eq!(
                 pattern("element html { empty }"),
                 Ok((
@@ -833,7 +833,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_attribute() {
+        fn parse_attribute() {
             assert_eq!(
                 pattern("attribute id { text }"),
                 Ok((
@@ -853,7 +853,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_choice() {
+        fn parse_choice() {
             assert_eq!(
                 pattern("text | empty"),
                 Ok((
@@ -864,7 +864,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_interleave() {
+        fn parse_interleave() {
             assert_eq!(
                 pattern("text & empty"),
                 Ok((
@@ -875,7 +875,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_group() {
+        fn parse_group() {
             assert_eq!(
                 pattern("text , empty"),
                 Ok((
@@ -886,14 +886,14 @@ mod tests {
         }
 
         #[test]
-        fn parses_quantifiers() {
+        fn parse_quantifiers() {
             assert_eq!(pattern("text?"), Ok(("", Pattern::Optional(Box::new(Pattern::Text)))));
             assert_eq!(pattern("text*"), Ok(("", Pattern::Many0(Box::new(Pattern::Text)))));
             assert_eq!(pattern("text+"), Ok(("", Pattern::Many1(Box::new(Pattern::Text)))));
         }
 
         #[test]
-        fn parses_data() {
+        fn parse_data() {
             assert_eq!(
                 pattern("xsd:integer { minInclusive = \"1\" }"),
                 Ok((
@@ -926,7 +926,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_name_pattern() {
+        fn parse_name_pattern() {
             assert_eq!(
                 pattern("xsd:integer"),
                 Ok((
@@ -946,7 +946,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_value() {
+        fn parse_value() {
             assert_eq!(
                 pattern("string \"auto\""),
                 Ok((
@@ -966,7 +966,7 @@ mod tests {
         }
 
         #[test]
-        fn respects_precedence() {
+        fn respect_precedence() {
             // , > & > |
             assert_eq!(
                 pattern("a , b & c | d"),
@@ -992,7 +992,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_namespace_declaration() {
+        fn parse_namespace_declaration() {
             assert_eq!(
                 declaration("namespace html = \"http://www.w3.org/1999/xhtml\""),
                 Ok((
@@ -1009,7 +1009,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_default_namespace_declaration() {
+        fn parse_default_namespace_declaration() {
             assert_eq!(
                 declaration("default namespace = \"http://www.w3.org/1999/xhtml\""),
                 Ok((
@@ -1020,7 +1020,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_datatypes_declaration() {
+        fn parse_datatypes_declaration() {
             assert_eq!(
                 declaration("datatypes xsd = \"http://www.w3.org/2001/XMLSchema-datatypes\""),
                 Ok((
@@ -1042,7 +1042,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_start() {
+        fn parse_start() {
             assert_eq!(
                 grammar("start = element html { empty }"),
                 Ok((
@@ -1067,7 +1067,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_definition() {
+        fn parse_definition() {
             assert_eq!(
                 grammar("common.attrib = attribute class { text }"),
                 Ok((
@@ -1096,7 +1096,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_include() {
+        fn parse_include() {
             assert_eq!(
                 grammar("include \"common.rnc\""),
                 Ok((
@@ -1113,7 +1113,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_div() {
+        fn parse_div() {
             assert_eq!(
                 grammar("div { start = empty }"),
                 Ok((
@@ -1136,7 +1136,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_pattern_schema() {
+        fn parse_pattern_schema() {
             assert_eq!(
                 schema("element html { empty }"),
                 Ok((
@@ -1159,7 +1159,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_grammar_schema() {
+        fn parse_grammar_schema() {
             assert_eq!(
                 schema("start = empty"),
                 Ok((
@@ -1178,7 +1178,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_schema_with_declarations() {
+        fn parse_schema_with_declarations() {
             assert_eq!(
                 schema(indoc! {r#"
                     namespace html = "http://www.w3.org/1999/xhtml"
@@ -1223,7 +1223,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_annotation_attribute() {
+        fn parse_annotation_attribute() {
             assert_eq!(
                 annotation_attribute("a:b = \"c\""),
                 Ok((
@@ -1246,7 +1246,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_annotation_element() {
+        fn parse_annotation_element() {
             assert_eq!(
                 annotation_element("a:b [ c:d = \"e\" ]"),
                 Ok((
@@ -1286,17 +1286,17 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_assignment() {
+        fn parse_assignment() {
             assert_eq!(assignment_operator("="), Ok(("", None)));
         }
 
         #[test]
-        fn parses_choice_assignment() {
+        fn parse_choice_assignment() {
             assert_eq!(assignment_operator("|="), Ok(("", Some(Combine::Choice))));
         }
 
         #[test]
-        fn parses_interleave_assignment() {
+        fn parse_interleave_assignment() {
             assert_eq!(assignment_operator("&="), Ok(("", Some(Combine::Interleave))));
         }
     }
@@ -1306,7 +1306,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_data_with_parameters() {
+        fn parse_data_with_parameters() {
             assert_eq!(
                 data_pattern("xsd:string { minLength = \"1\" }"),
                 Ok((
@@ -1339,7 +1339,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_data_with_except() {
+        fn parse_data_with_except() {
             assert_eq!(
                 data_pattern("xsd:string - \"foo\""),
                 Ok((
@@ -1366,7 +1366,7 @@ mod tests {
         }
 
         #[test]
-        fn fails_on_plain_name() {
+        fn fail_on_plain_name() {
             assert!(data_pattern("xsd:string").is_err());
         }
     }
@@ -1376,7 +1376,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_inherit() {
+        fn parse_inherit() {
             assert_eq!(
                 inherit("inherit = xhtml"),
                 Ok((
@@ -1395,7 +1395,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_parameter() {
+        fn parse_parameter() {
             assert_eq!(
                 parameter("minLength = \"1\""),
                 Ok((
@@ -1421,7 +1421,7 @@ mod tests {
         use nom::Parser;
 
         #[test]
-        fn parses_keyword() {
+        fn parse_keyword() {
             assert_eq!(
                 keyword("element").parse("element "),
                 Ok(("", "element"))
@@ -1429,7 +1429,7 @@ mod tests {
         }
 
         #[test]
-        fn fails_if_followed_by_identifier_char() {
+        fn fail_if_followed_by_identifier_char() {
             assert!(keyword("element").parse("elemental").is_err());
         }
     }
