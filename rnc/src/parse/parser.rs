@@ -280,7 +280,13 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         verify(
             (name, opt(parameters), opt(preceded(symbol("-"), pattern))),
-            |(_, parameters, except_pattern)| parameters.is_some() || except_pattern.is_some(),
+            |(name, parameters, except_pattern)| {
+                name.prefix.is_some()
+                    || parameters.is_some()
+                    || except_pattern.is_some()
+                    || (name.local.component == "string" && name.local.sub_components.is_empty())
+                    || (name.local.component == "token" && name.local.sub_components.is_empty())
+            },
         ),
         |(name, parameters, except_pattern)| Pattern::Data {
             name,
@@ -933,18 +939,60 @@ mod tests {
         }
 
         #[test]
-        fn parse_name_pattern() {
+        fn parse_data_with_prefixed_name() {
             assert_eq!(
                 pattern("xsd:integer"),
                 Ok((
                     "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "integer".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_data_with_primitive_type() {
+            assert_eq!(
+                pattern("string"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_name_pattern() {
+            assert_eq!(
+                pattern("foo"),
+                Ok((
+                    "",
                     Pattern::Name(Name {
-                        prefix: Some(Identifier {
-                            component: "xsd".into(),
-                            sub_components: vec![],
-                        }),
+                        prefix: None,
                         local: Identifier {
-                            component: "integer".into(),
+                            component: "foo".into(),
                             sub_components: vec![],
                         },
                     })
@@ -1400,8 +1448,53 @@ mod tests {
         }
 
         #[test]
-        fn fail_on_plain_name() {
-            assert!(data_pattern("xsd:string").is_err());
+        fn parse_plain_prefixed_name() {
+            assert_eq!(
+                data_pattern("xsd:string"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_primitive_type() {
+            assert_eq!(
+                data_pattern("token"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "token".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        parameters: vec![],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_plain_unprefixed_name() {
+            assert!(data_pattern("foo").is_err());
         }
     }
 
