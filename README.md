@@ -13,7 +13,6 @@ The static website validator.
 ## References
 
 - [Muffet](https://github.com/raviqqe/muffet)
-- [The Nu HTML checker](https://github.com/validator/validator)
 
 ## License
 

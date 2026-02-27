@@ -32,9 +32,7 @@ pub fn schema(input: &str) -> ParserResult<'_, Schema> {
                     SchemaBody::Grammar(Grammar { contents })
                 }),
                 map(pattern, SchemaBody::Pattern),
-                map(many0(grammar_content), |contents| {
-                    SchemaBody::Grammar(Grammar { contents })
-                }),
+                value(SchemaBody::Grammar(Grammar { contents: vec![] }), blank),
             )),
         )),
         |(declarations, body)| Schema { declarations, body },
