@@ -1,7 +1,7 @@
 use crate::{
     Identifier,
     ast::{
-        AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
+        AnnotationAttribute, AnnotationElement, Combine, ColonName, DatatypesDeclaration,
         Declaration, Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
         NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
     },
@@ -283,7 +283,7 @@ fn name_pattern(input: &str) -> ParserResult<'_, Pattern> {
 fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
     map(
         (
-            datatype_name,
+            colon_name,
             opt(parameters),
             opt(preceded(symbol("-"), pattern)),
         ),
@@ -297,19 +297,19 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(datatype_name), literal), |(name, value)| {
+    map((opt(colon_name), literal), |(name, value)| {
         Pattern::Value { name, value }
     })
     .parse(input)
 }
 
-fn datatype_name(input: &str) -> ParserResult<'_, DatatypeName> {
+fn colon_name(input: &str) -> ParserResult<'_, ColonName> {
     alt((
-        value(DatatypeName::String, keyword("string")),
-        value(DatatypeName::Token, keyword("token")),
+        value(ColonName::String, keyword("string")),
+        value(ColonName::Token, keyword("token")),
         map(
             verify(name, |name| name.prefix.is_some()),
-            DatatypeName::Name,
+            ColonName::Name,
         ),
     ))
     .parse(input)
@@ -924,7 +924,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Name(Name {
+                        name: ColonName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -957,7 +957,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Name(Name {
+                        name: ColonName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -981,7 +981,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::String,
+                        name: ColonName::String,
                         parameters: vec![],
                         except: None,
                     }
@@ -1013,7 +1013,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Value {
-                        name: Some(DatatypeName::String),
+                        name: Some(ColonName::String),
                         value: "auto".into(),
                     }
                 ))
@@ -1413,7 +1413,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Name(Name {
+                        name: ColonName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1446,7 +1446,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Name(Name {
+                        name: ColonName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1473,7 +1473,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Name(Name {
+                        name: ColonName::Name(Name {
                             prefix: Some(Identifier {
                                 component: "xsd".into(),
                                 sub_components: vec![],
@@ -1497,7 +1497,7 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Data {
-                        name: DatatypeName::Token,
+                        name: ColonName::Token,
                         parameters: vec![],
                         except: None,
                     }
@@ -2153,27 +2153,27 @@ mod tests {
         }
     }
 
-    mod datatype_name {
+    mod colon_name {
         use super::*;
         use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_string() {
-            assert_eq!(datatype_name("string"), Ok(("", DatatypeName::String)));
+            assert_eq!(colon_name("string"), Ok(("", ColonName::String)));
         }
 
         #[test]
         fn parse_token() {
-            assert_eq!(datatype_name("token"), Ok(("", DatatypeName::Token)));
+            assert_eq!(colon_name("token"), Ok(("", ColonName::Token)));
         }
 
         #[test]
         fn parse_name() {
             assert_eq!(
-                datatype_name("xsd:integer"),
+                colon_name("xsd:integer"),
                 Ok((
                     "",
-                    DatatypeName::Name(Name {
+                    ColonName::Name(Name {
                         prefix: Some(Identifier {
                             component: "xsd".into(),
                             sub_components: vec![],
@@ -2189,7 +2189,7 @@ mod tests {
 
         #[test]
         fn fail_on_unprefixed_name() {
-            assert!(datatype_name("foo").is_err());
+            assert!(colon_name("foo").is_err());
         }
     }
 

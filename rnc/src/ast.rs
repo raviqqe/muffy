@@ -129,7 +129,7 @@ pub enum Pattern {
     /// Data.
     Data {
         /// A name.
-        name: DatatypeName,
+        name: ColonName,
         /// Parameters.
         parameters: Vec<Parameter>,
         /// An except pattern.
@@ -169,7 +169,7 @@ pub enum Pattern {
     /// A value.
     Value {
         /// A name.
-        name: Option<DatatypeName>,
+        name: Option<ColonName>,
         /// A value.
         value: String,
     },
@@ -184,9 +184,9 @@ pub struct Name {
     pub local: Identifier,
 }
 
-/// A datatype name.
+/// A colon name.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DatatypeName {
+pub enum ColonName {
     /// A constrained name.
     Name(Name),
     /// A string.
