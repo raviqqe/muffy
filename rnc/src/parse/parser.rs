@@ -2168,7 +2168,7 @@ mod tests {
         }
 
         #[test]
-        fn parse_cname() {
+        fn parse_colon_name() {
             assert_eq!(
                 datatype_name("xsd:integer"),
                 Ok((
