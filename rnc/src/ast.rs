@@ -187,7 +187,7 @@ pub struct Name {
 /// A datatype name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DatatypeName {
-    /// A name.
+    /// A colon name.
     Name(Name),
     /// A string.
     String,
