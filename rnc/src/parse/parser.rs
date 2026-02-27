@@ -1,7 +1,10 @@
-use crate::ast::{
-    AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration, Definition,
-    Grammar, GrammarContent, Include, Inherit, Name, NameClass, NamespaceDeclaration, Parameter,
-    Pattern, Schema, SchemaBody,
+use crate::{
+    Identifier,
+    ast::{
+        AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration,
+        Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
+        NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+    },
 };
 use nom::{
     IResult, Parser,
@@ -10,7 +13,7 @@ use nom::{
     character::complete::{alpha1, char, multispace1, satisfy},
     combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::Error,
-    multi::{many0, separated_list0, separated_list1},
+    multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -398,17 +401,17 @@ fn name(input: &str) -> ParserResult<'_, Name> {
     .parse(input)
 }
 
-fn identifier(input: &str) -> ParserResult<'_, String> {
+fn identifier(input: &str) -> ParserResult<'_, Identifier> {
     blanked(raw_identifier).parse(input)
 }
 
 fn raw_identifier(input: &str) -> ParserResult<'_, String> {
     map(
-        preceded(
+        many1(preceded(
             opt(char('\\')),
             recognize((alpha1, many0(satisfy(is_identifier_char)))),
-        ),
-        Into::into,
+        )),
+        |parts| parts.into_iter().map(ToOwned::to_owned).collect(),
     )
     .parse(input)
 }
