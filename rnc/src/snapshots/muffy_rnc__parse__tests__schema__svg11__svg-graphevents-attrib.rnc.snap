@@ -6,7 +6,11 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -17,20 +21,35 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.onfocusin.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onfocusin",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onfocusin",
+                                            local: Identifier {
+                                                components: [
+                                                    "onfocusin",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -39,20 +58,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onfocusout.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onfocusout",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onfocusout",
+                                            local: Identifier {
+                                                components: [
+                                                    "onfocusout",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -61,20 +95,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onactivate.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onactivate",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onactivate",
+                                            local: Identifier {
+                                                components: [
+                                                    "onactivate",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -83,20 +132,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onclick.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onclick",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onclick",
+                                            local: Identifier {
+                                                components: [
+                                                    "onclick",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -105,20 +169,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onmousedown.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onmousedown",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onmousedown",
+                                            local: Identifier {
+                                                components: [
+                                                    "onmousedown",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -127,20 +206,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onmouseup.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onmouseup",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onmouseup",
+                                            local: Identifier {
+                                                components: [
+                                                    "onmouseup",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -149,20 +243,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onmouseover.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onmouseover",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onmouseover",
+                                            local: Identifier {
+                                                components: [
+                                                    "onmouseover",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -171,20 +280,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onmousemove.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onmousemove",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onmousemove",
+                                            local: Identifier {
+                                                components: [
+                                                    "onmousemove",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -193,20 +317,35 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onmouseout.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onmouseout",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onmouseout",
+                                            local: Identifier {
+                                                components: [
+                                                    "onmouseout",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -215,7 +354,13 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.onload.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "onload",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -224,13 +369,22 @@ Schema {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "onload",
+                                            local: Identifier {
+                                                components: [
+                                                    "onload",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Name(
                                         Name {
                                             prefix: None,
-                                            local: "Script.datatype",
+                                            local: Identifier {
+                                                components: [
+                                                    "Script",
+                                                    "datatype",
+                                                ],
+                                            },
                                         },
                                     ),
                                 },
@@ -239,14 +393,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.GraphicalEvents.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "GraphicalEvents",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.GraphicalEvents.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "GraphicalEvents",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -255,67 +422,134 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onfocusin.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onfocusin",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onfocusout.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onfocusout",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onactivate.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onactivate",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onclick.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onclick",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmousedown.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onmousedown",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseup.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onmouseup",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseover.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onmouseover",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmousemove.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onmousemove",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onmouseout.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onmouseout",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.onload.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "onload",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.GraphicalEvents.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "GraphicalEvents",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

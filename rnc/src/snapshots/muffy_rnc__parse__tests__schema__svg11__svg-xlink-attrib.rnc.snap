@@ -6,13 +6,21 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "xlink",
+                prefix: Identifier {
+                    components: [
+                        "xlink",
+                    ],
+                },
                 uri: "http://www.w3.org/1999/xlink",
             },
         ),
@@ -23,14 +31,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.XLink.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLink",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLink.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLink",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -41,16 +62,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "type",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "type",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "simple",
@@ -64,15 +97,28 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: Some(
-                                                                "xlink",
+                                                                Identifier {
+                                                                    components: [
+                                                                        "xlink",
+                                                                    ],
+                                                                },
                                                             ),
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -82,13 +128,22 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -100,15 +155,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "role",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "role",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -118,15 +186,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "arcrole",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "arcrole",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -136,9 +217,17 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "title",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "title",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -149,16 +238,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "show",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "show",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "other",
@@ -170,16 +271,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "actuate",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "actuate",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "onLoad",
@@ -189,7 +302,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLink.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLink",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -198,14 +318,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkRequired.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkRequired",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkRequired.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkRequired",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -216,16 +349,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "type",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "type",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "simple",
@@ -239,15 +384,28 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: Some(
-                                                                "xlink",
+                                                                Identifier {
+                                                                    components: [
+                                                                        "xlink",
+                                                                    ],
+                                                                },
                                                             ),
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -257,13 +415,22 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -275,15 +442,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "role",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "role",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -293,15 +473,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "arcrole",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "arcrole",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -311,9 +504,17 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "title",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "title",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -324,16 +525,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "show",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "show",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "other",
@@ -345,16 +558,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "actuate",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "actuate",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "onLoad",
@@ -364,7 +589,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLinkRequired.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLinkRequired",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -373,14 +605,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkEmbed.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkEmbed",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkEmbed.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkEmbed",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -391,16 +636,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "type",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "type",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "simple",
@@ -414,15 +671,28 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: Some(
-                                                                "xlink",
+                                                                Identifier {
+                                                                    components: [
+                                                                        "xlink",
+                                                                    ],
+                                                                },
                                                             ),
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -432,13 +702,22 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -450,15 +729,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "role",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "role",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -468,15 +760,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "arcrole",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "arcrole",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -486,9 +791,17 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "title",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "title",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -499,16 +812,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "show",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "show",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "embed",
@@ -520,16 +845,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "actuate",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "actuate",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "onLoad",
@@ -539,7 +876,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLinkEmbed.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLinkEmbed",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -548,14 +892,27 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkReplace.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkReplace",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.XLinkReplace.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "XLinkReplace",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -566,16 +923,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "type",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "type",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "simple",
@@ -589,15 +958,28 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: Some(
-                                                                "xlink",
+                                                                Identifier {
+                                                                    components: [
+                                                                        "xlink",
+                                                                    ],
+                                                                },
                                                             ),
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -607,13 +989,22 @@ Schema {
                                                     name_class: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "href",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "href",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     pattern: Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "URI.datatype",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "URI",
+                                                                    "datatype",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                 },
@@ -625,15 +1016,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "role",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "role",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -643,15 +1047,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "arcrole",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "arcrole",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "URI.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "URI",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -661,9 +1078,17 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "title",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "title",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -674,9 +1099,17 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "show",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "show",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Choice(
@@ -685,7 +1118,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "new",
@@ -694,7 +1131,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "replace",
@@ -708,16 +1149,28 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: Some(
-                                                        "xlink",
+                                                        Identifier {
+                                                            components: [
+                                                                "xlink",
+                                                            ],
+                                                        },
                                                     ),
-                                                    local: "actuate",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "actuate",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Value {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "onRequest",
@@ -727,7 +1180,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLinkReplace.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLinkReplace",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

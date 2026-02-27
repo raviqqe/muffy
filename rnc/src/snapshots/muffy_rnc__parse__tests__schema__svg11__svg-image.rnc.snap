@@ -9,7 +9,11 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,14 +24,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.Image.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Image",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Image.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Image",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -36,13 +53,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "image",
+                                            local: Identifier {
+                                                components: [
+                                                    "image",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Image.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Image",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -53,16 +81,30 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.image.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "image",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Group(
                                 [
@@ -70,7 +112,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -78,7 +126,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Animation.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Animation",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -88,13 +142,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "image",
+                            name: Identifier {
+                                components: [
+                                    "image",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "image",
+                                        local: Identifier {
+                                            components: [
+                                                "image",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -102,13 +164,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.image",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "image",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.image.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "image",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -118,7 +191,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.image",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "image",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -127,91 +205,181 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Conditional.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Conditional",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Viewport.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Viewport",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Color.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Color",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Opacity.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Opacity",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Graphics.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Graphics",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Profile.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Profile",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Clip.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Clip",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Mask.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Mask",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Filter.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Filter",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.GraphicalEvents.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "GraphicalEvents",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Cursor.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Cursor",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLinkEmbed.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLinkEmbed",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "External",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -220,13 +388,27 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.attrs.aria.implicit.img",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "common",
+                                                                "attrs",
+                                                                "aria",
+                                                                "implicit",
+                                                                "img",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.attrs.aria",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "common",
+                                                                "attrs",
+                                                                "aria",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -237,13 +419,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "x",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Coordinate.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Coordinate",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -253,13 +444,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Coordinate.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Coordinate",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -269,13 +469,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "width",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "width",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Length.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Length",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -285,13 +494,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "height",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "height",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Length.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Length",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -301,13 +519,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "preserveAspectRatio",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "preserveAspectRatio",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "PreserveAspectRatioSpec.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "PreserveAspectRatioSpec",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -317,13 +544,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "transform",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "transform",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "TransformList.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "TransformList",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },

@@ -20,35 +20,55 @@ Schema {
                                 contents: [
                                     Definition(
                                         Definition {
-                                            name: "XMLonly",
+                                            name: Identifier {
+                                                components: [
+                                                    "XMLonly",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: NotAllowed,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "HTMLonly",
+                                            name: Identifier {
+                                                components: [
+                                                    "HTMLonly",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: Empty,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "v5only",
+                                            name: Identifier {
+                                                components: [
+                                                    "v5only",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: Empty,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "nonHTMLizable",
+                                            name: Identifier {
+                                                components: [
+                                                    "nonHTMLizable",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: NotAllowed,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "nonRoundtrippable",
+                                            name: Identifier {
+                                                components: [
+                                                    "nonRoundtrippable",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: NotAllowed,
                                         },
@@ -63,7 +83,12 @@ Schema {
                     pattern: Name(
                         Name {
                             prefix: None,
-                            local: "html.elem",
+                            local: Identifier {
+                                components: [
+                                    "html",
+                                    "elem",
+                                ],
+                            },
                         },
                     ),
                 },

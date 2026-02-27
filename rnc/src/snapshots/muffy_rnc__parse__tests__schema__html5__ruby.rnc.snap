@@ -7,14 +7,22 @@ Schema {
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        components: [
+                            "w",
+                        ],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "local",
+                prefix: Identifier {
+                    components: [
+                        "local",
+                    ],
+                },
                 uri: "",
             },
         ),
@@ -24,13 +32,22 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "ruby.elem",
+                        name: Identifier {
+                            components: [
+                                "ruby",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "ruby",
+                                    local: Identifier {
+                                        components: [
+                                            "ruby",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -38,13 +55,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ruby.inner",
+                                            local: Identifier {
+                                                components: [
+                                                    "ruby",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ruby.attrs",
+                                            local: Identifier {
+                                                components: [
+                                                    "ruby",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -54,21 +81,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ruby.attrs",
+                        name: Identifier {
+                            components: [
+                                "ruby",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            components: [
+                                                "common",
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                components: [
+                                                    "common",
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -78,7 +121,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ruby.inner",
+                        name: Identifier {
+                            components: [
+                                "ruby",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Many1(
                             Group(
@@ -89,13 +137,24 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.inner.phrasing",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "common",
+                                                                "inner",
+                                                                "phrasing",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "rb.elem",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "rb",
+                                                                "elem",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -107,7 +166,12 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "rt.elem",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "rt",
+                                                                "elem",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ),
@@ -116,7 +180,12 @@ Schema {
                                                     Name(
                                                         Name {
                                                             prefix: None,
-                                                            local: "rp.elem",
+                                                            local: Identifier {
+                                                                components: [
+                                                                    "rp",
+                                                                    "elem",
+                                                                ],
+                                                            },
                                                         },
                                                     ),
                                                     Many1(
@@ -125,13 +194,23 @@ Schema {
                                                                 Name(
                                                                     Name {
                                                                         prefix: None,
-                                                                        local: "rt.elem",
+                                                                        local: Identifier {
+                                                                            components: [
+                                                                                "rt",
+                                                                                "elem",
+                                                                            ],
+                                                                        },
                                                                     },
                                                                 ),
                                                                 Name(
                                                                     Name {
                                                                         prefix: None,
-                                                                        local: "rp.elem",
+                                                                        local: Identifier {
+                                                                            components: [
+                                                                                "rp",
+                                                                                "elem",
+                                                                            ],
+                                                                        },
                                                                     },
                                                                 ),
                                                             ],
@@ -148,27 +227,47 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "common.elem.phrasing",
+                        name: Identifier {
+                            components: [
+                                "common",
+                                "elem",
+                                "phrasing",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "ruby.elem",
+                                local: Identifier {
+                                    components: [
+                                        "ruby",
+                                        "elem",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "rt.elem",
+                        name: Identifier {
+                            components: [
+                                "rt",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "rt",
+                                    local: Identifier {
+                                        components: [
+                                            "rt",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -176,13 +275,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rt.inner",
+                                            local: Identifier {
+                                                components: [
+                                                    "rt",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rt.attrs",
+                                            local: Identifier {
+                                                components: [
+                                                    "rt",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -192,21 +301,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rt.attrs",
+                        name: Identifier {
+                            components: [
+                                "rt",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            components: [
+                                                "common",
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                components: [
+                                                    "common",
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -216,25 +341,45 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rt.inner",
+                        name: Identifier {
+                            components: [
+                                "rt",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    components: [
+                                        "common",
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "rp.elem",
+                        name: Identifier {
+                            components: [
+                                "rp",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "rp",
+                                    local: Identifier {
+                                        components: [
+                                            "rp",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -242,13 +387,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rp.inner",
+                                            local: Identifier {
+                                                components: [
+                                                    "rp",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rp.attrs",
+                                            local: Identifier {
+                                                components: [
+                                                    "rp",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -258,21 +413,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rp.attrs",
+                        name: Identifier {
+                            components: [
+                                "rp",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            components: [
+                                                "common",
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                components: [
+                                                    "common",
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -282,20 +453,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rp.inner",
+                        name: Identifier {
+                            components: [
+                                "rp",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Text,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "rb.elem",
+                        name: Identifier {
+                            components: [
+                                "rb",
+                                "elem",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "rb",
+                                    local: Identifier {
+                                        components: [
+                                            "rb",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -303,13 +488,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rb.inner",
+                                            local: Identifier {
+                                                components: [
+                                                    "rb",
+                                                    "inner",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rb.attrs",
+                                            local: Identifier {
+                                                components: [
+                                                    "rb",
+                                                    "attrs",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -319,21 +514,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rb.attrs",
+                        name: Identifier {
+                            components: [
+                                "rb",
+                                "attrs",
+                            ],
+                        },
                         combine: None,
                         pattern: Interleave(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "common.attrs",
+                                        local: Identifier {
+                                            components: [
+                                                "common",
+                                                "attrs",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "common.attrs.aria",
+                                            local: Identifier {
+                                                components: [
+                                                    "common",
+                                                    "attrs",
+                                                    "aria",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -343,12 +554,23 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "rb.inner",
+                        name: Identifier {
+                            components: [
+                                "rb",
+                                "inner",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "common.inner.phrasing",
+                                local: Identifier {
+                                    components: [
+                                        "common",
+                                        "inner",
+                                        "phrasing",
+                                    ],
+                                },
                             },
                         ),
                     },

@@ -9,7 +9,11 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,14 +24,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.Profile.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Profile",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Profile.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Profile",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -38,7 +55,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "color-profile",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "color-profile",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -47,7 +68,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Profile.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Profile",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -58,23 +86,44 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Profile.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Profile",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Profile.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Profile",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -83,13 +132,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "color-profile",
+                                            local: Identifier {
+                                                components: [
+                                                    "color-profile",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Profile.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Profile",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -100,22 +160,42 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.color-profile.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "color-profile",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Many0(
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "SVG.Description.class",
+                                        local: Identifier {
+                                            components: [
+                                                "SVG",
+                                                "Description",
+                                                "class",
+                                            ],
+                                        },
                                     },
                                 ),
                             ),
@@ -123,13 +203,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "color-profile",
+                            name: Identifier {
+                                components: [
+                                    "color-profile",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "color-profile",
+                                        local: Identifier {
+                                            components: [
+                                                "color-profile",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -137,13 +225,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.color-profile",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "color-profile",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.color-profile.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "color-profile",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -153,7 +252,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.color-profile",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "color-profile",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -162,13 +266,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLink.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLink",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -176,7 +292,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "local",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "local",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -186,7 +306,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "name",
+                                                local: Identifier {
+                                                    components: [
+                                                        "name",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Text,
@@ -196,7 +320,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "rendering-intent",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "rendering-intent",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Choice(
@@ -205,7 +333,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "auto",
@@ -214,7 +346,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "perceptual",
@@ -223,7 +359,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "relative-colorimetric",
@@ -232,7 +372,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "saturation",
@@ -241,7 +385,11 @@ Schema {
                                                         name: Some(
                                                             Name {
                                                                 prefix: None,
-                                                                local: "string",
+                                                                local: Identifier {
+                                                                    components: [
+                                                                        "string",
+                                                                    ],
+                                                                },
                                                             },
                                                         ),
                                                         value: "absolute-colorimetric",

@@ -13,68 +13,112 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "ContExp",
+                        name: Identifier {
+                            components: [
+                                "ContExp",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "semantics-contexp",
+                                        local: Identifier {
+                                            components: [
+                                                "semantics-contexp",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "cn",
+                                        local: Identifier {
+                                            components: [
+                                                "cn",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "ci",
+                                        local: Identifier {
+                                            components: [
+                                                "ci",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "csymbol",
+                                        local: Identifier {
+                                            components: [
+                                                "csymbol",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "apply",
+                                        local: Identifier {
+                                            components: [
+                                                "apply",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "bind",
+                                        local: Identifier {
+                                            components: [
+                                                "bind",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "share",
+                                        local: Identifier {
+                                            components: [
+                                                "share",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "cerror",
+                                        local: Identifier {
+                                            components: [
+                                                "cerror",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "cbytes",
+                                        local: Identifier {
+                                            components: [
+                                                "cbytes",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "cs",
+                                        local: Identifier {
+                                            components: [
+                                                "cs",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -83,13 +127,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cn",
+                        name: Identifier {
+                            components: [
+                                "cn",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cn",
+                                    local: Identifier {
+                                        components: [
+                                            "cn",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -97,13 +149,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cn.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "cn",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cn.content",
+                                            local: Identifier {
+                                                components: [
+                                                    "cn",
+                                                    "content",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -113,20 +175,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cn.content",
+                        name: Identifier {
+                            components: [
+                                "cn",
+                                "content",
+                            ],
+                        },
                         combine: None,
                         pattern: Text,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "cn.attributes",
+                        name: Identifier {
+                            components: [
+                                "cn",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "type",
+                                    local: Identifier {
+                                        components: [
+                                            "type",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -154,13 +230,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "semantics-ci",
+                        name: Identifier {
+                            components: [
+                                "semantics-ci",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "semantics",
+                                    local: Identifier {
+                                        components: [
+                                            "semantics",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -168,7 +252,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "semantics.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "semantics",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Choice(
@@ -176,13 +265,21 @@ Schema {
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ci",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ci",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "semantics-ci",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "semantics-ci",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         ],
@@ -193,13 +290,21 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation-xml",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation-xml",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -212,13 +317,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "semantics-contexp",
+                        name: Identifier {
+                            components: [
+                                "semantics-contexp",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "semantics",
+                                    local: Identifier {
+                                        components: [
+                                            "semantics",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -226,13 +339,22 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "semantics.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "semantics",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ContExp",
+                                            local: Identifier {
+                                                components: [
+                                                    "ContExp",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Many0(
@@ -241,13 +363,21 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation-xml",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation-xml",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -260,13 +390,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ci",
+                        name: Identifier {
+                            components: [
+                                "ci",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "ci",
+                                    local: Identifier {
+                                        components: [
+                                            "ci",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -274,13 +412,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ci.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "ci",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ci.content",
+                                            local: Identifier {
+                                                components: [
+                                                    "ci",
+                                                    "content",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -290,21 +438,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ci.attributes",
+                        name: Identifier {
+                            components: [
+                                "ci",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ci.type",
+                                            local: Identifier {
+                                                components: [
+                                                    "ci",
+                                                    "type",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -314,13 +476,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ci.type",
+                        name: Identifier {
+                            components: [
+                                "ci",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "type",
+                                    local: Identifier {
+                                        components: [
+                                            "type",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -380,20 +551,33 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "ci.content",
+                        name: Identifier {
+                            components: [
+                                "ci",
+                                "content",
+                            ],
+                        },
                         combine: None,
                         pattern: Text,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "csymbol",
+                        name: Identifier {
+                            components: [
+                                "csymbol",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "csymbol",
+                                    local: Identifier {
+                                        components: [
+                                            "csymbol",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -401,13 +585,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "csymbol.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "csymbol",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "csymbol.content",
+                                            local: Identifier {
+                                                components: [
+                                                    "csymbol",
+                                                    "content",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -417,34 +611,59 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "SymbolName",
+                        name: Identifier {
+                            components: [
+                                "SymbolName",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "NCName",
+                                local: Identifier {
+                                    components: [
+                                        "NCName",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "csymbol.attributes",
+                        name: Identifier {
+                            components: [
+                                "csymbol",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "cd",
+                                        local: Identifier {
+                                            components: [
+                                                "cd",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -453,25 +672,42 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "csymbol.content",
+                        name: Identifier {
+                            components: [
+                                "csymbol",
+                                "content",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "SymbolName",
+                                local: Identifier {
+                                    components: [
+                                        "SymbolName",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "BvarQ",
+                        name: Identifier {
+                            components: [
+                                "BvarQ",
+                            ],
+                        },
                         combine: None,
                         pattern: Many0(
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "bvar",
+                                    local: Identifier {
+                                        components: [
+                                            "bvar",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -479,13 +715,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "bvar",
+                        name: Identifier {
+                            components: [
+                                "bvar",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "bvar",
+                                    local: Identifier {
+                                        components: [
+                                            "bvar",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -493,13 +737,21 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "ci",
+                                            local: Identifier {
+                                                components: [
+                                                    "ci",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "semantics-ci",
+                                            local: Identifier {
+                                                components: [
+                                                    "semantics-ci",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -509,13 +761,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "apply",
+                        name: Identifier {
+                            components: [
+                                "apply",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "apply",
+                                    local: Identifier {
+                                        components: [
+                                            "apply",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -523,13 +783,22 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "CommonAtt",
+                                            local: Identifier {
+                                                components: [
+                                                    "CommonAtt",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "apply.content",
+                                            local: Identifier {
+                                                components: [
+                                                    "apply",
+                                                    "content",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -539,13 +808,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "apply.content",
+                        name: Identifier {
+                            components: [
+                                "apply",
+                                "content",
+                            ],
+                        },
                         combine: None,
                         pattern: Many1(
                             Name(
                                 Name {
                                     prefix: None,
-                                    local: "ContExp",
+                                    local: Identifier {
+                                        components: [
+                                            "ContExp",
+                                        ],
+                                    },
                                 },
                             ),
                         ),
@@ -553,13 +831,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "bind",
+                        name: Identifier {
+                            components: [
+                                "bind",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "bind",
+                                    local: Identifier {
+                                        components: [
+                                            "bind",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -567,13 +853,22 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "CommonAtt",
+                                            local: Identifier {
+                                                components: [
+                                                    "CommonAtt",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "bind.content",
+                                            local: Identifier {
+                                                components: [
+                                                    "bind",
+                                                    "content",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -583,28 +878,45 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "bind.content",
+                        name: Identifier {
+                            components: [
+                                "bind",
+                                "content",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "ContExp",
+                                        local: Identifier {
+                                            components: [
+                                                "ContExp",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "bvar",
+                                            local: Identifier {
+                                                components: [
+                                                    "bvar",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "ContExp",
+                                        local: Identifier {
+                                            components: [
+                                                "ContExp",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -613,13 +925,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "share",
+                        name: Identifier {
+                            components: [
+                                "share",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "share",
+                                    local: Identifier {
+                                        components: [
+                                            "share",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -627,13 +947,21 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "CommonAtt",
+                                            local: Identifier {
+                                                components: [
+                                                    "CommonAtt",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "src",
+                                            local: Identifier {
+                                                components: [
+                                                    "src",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Empty,
@@ -644,13 +972,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cerror",
+                        name: Identifier {
+                            components: [
+                                "cerror",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cerror",
+                                    local: Identifier {
+                                        components: [
+                                            "cerror",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -658,20 +994,33 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cerror.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "cerror",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "csymbol",
+                                            local: Identifier {
+                                                components: [
+                                                    "csymbol",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Many0(
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "ContExp",
+                                                local: Identifier {
+                                                    components: [
+                                                        "ContExp",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -682,25 +1031,42 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cerror.attributes",
+                        name: Identifier {
+                            components: [
+                                "cerror",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "CommonAtt",
+                                local: Identifier {
+                                    components: [
+                                        "CommonAtt",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "cbytes",
+                        name: Identifier {
+                            components: [
+                                "cbytes",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cbytes",
+                                    local: Identifier {
+                                        components: [
+                                            "cbytes",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -708,13 +1074,22 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cbytes.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "cbytes",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "base64",
+                                            local: Identifier {
+                                                components: [
+                                                    "base64",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -724,39 +1099,68 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cbytes.attributes",
+                        name: Identifier {
+                            components: [
+                                "cbytes",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "CommonAtt",
+                                local: Identifier {
+                                    components: [
+                                        "CommonAtt",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "base64",
+                        name: Identifier {
+                            components: [
+                                "base64",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "base64Binary",
+                                local: Identifier {
+                                    components: [
+                                        "base64Binary",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "cs",
+                        name: Identifier {
+                            components: [
+                                "cs",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cs",
+                                    local: Identifier {
+                                        components: [
+                                            "cs",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -764,7 +1168,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cs.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "cs",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Text,
@@ -775,26 +1184,43 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cs.attributes",
+                        name: Identifier {
+                            components: [
+                                "cs",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "CommonAtt",
+                                local: Identifier {
+                                    components: [
+                                        "CommonAtt",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "MathExpression",
+                        name: Identifier {
+                            components: [
+                                "MathExpression",
+                            ],
+                        },
                         combine: Some(
                             Choice,
                         ),
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "ContExp",
+                                local: Identifier {
+                                    components: [
+                                        "ContExp",
+                                    ],
+                                },
                             },
                         ),
                     },

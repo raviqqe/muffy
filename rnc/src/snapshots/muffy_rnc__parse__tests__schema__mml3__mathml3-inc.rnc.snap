@@ -6,13 +6,21 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "m",
+                prefix: Identifier {
+                    components: [
+                        "m",
+                    ],
+                },
                 uri: "http://www.w3.org/1998/Math/MathML",
             },
         ),
@@ -25,7 +33,11 @@ Schema {
                         uri: "mathml3-content.rnc",
                         inherit: Some(
                             Prefix(
-                                "m",
+                                Identifier {
+                                    components: [
+                                        "m",
+                                    ],
+                                },
                             ),
                         ),
                         grammar: None,
@@ -36,7 +48,11 @@ Schema {
                         uri: "mathml3-presentation.rnc",
                         inherit: Some(
                             Prefix(
-                                "m",
+                                Identifier {
+                                    components: [
+                                        "m",
+                                    ],
+                                },
                             ),
                         ),
                         grammar: None,
@@ -47,7 +63,11 @@ Schema {
                         uri: "mathml3-common.rnc",
                         inherit: Some(
                             Prefix(
-                                "m",
+                                Identifier {
+                                    components: [
+                                        "m",
+                                    ],
+                                },
                             ),
                         ),
                         grammar: None,

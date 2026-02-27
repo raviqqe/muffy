@@ -6,13 +6,21 @@ Schema {
     declarations: [
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "svg",
+                prefix: Identifier {
+                    components: [
+                        "svg",
+                    ],
+                },
                 uri: "http://www.w3.org/2000/svg",
             },
         ),
@@ -26,7 +34,11 @@ Schema {
                             uri: "svg-basic-graphics-attrib.rnc",
                             inherit: Some(
                                 Prefix(
-                                    "svg",
+                                    Identifier {
+                                        components: [
+                                            "svg",
+                                        ],
+                                    },
                                 ),
                             ),
                             grammar: None,
@@ -34,14 +46,24 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.image-rendering.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "image-rendering",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "image-rendering",
+                                            local: Identifier {
+                                                components: [
+                                                    "image-rendering",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -50,7 +72,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "auto",
@@ -59,7 +85,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "optimizeSpeed",
@@ -68,7 +98,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "optimizeQuality",
@@ -77,7 +111,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "inherit",
@@ -90,14 +128,24 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.pointer-events.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "pointer-events",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "pointer-events",
+                                            local: Identifier {
+                                                components: [
+                                                    "pointer-events",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -106,7 +154,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "visiblePainted",
@@ -115,7 +167,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "visibleFill",
@@ -124,7 +180,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "visibleStroke",
@@ -133,7 +193,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "visible",
@@ -142,7 +206,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "painted",
@@ -151,7 +219,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "fill",
@@ -160,7 +232,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "stroke",
@@ -169,7 +245,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "all",
@@ -178,7 +258,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "none",
@@ -187,7 +271,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "inherit",
@@ -200,14 +288,24 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.shape-rendering.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "shape-rendering",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "shape-rendering",
+                                            local: Identifier {
+                                                components: [
+                                                    "shape-rendering",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -216,7 +314,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "auto",
@@ -225,7 +327,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "optimizeSpeed",
@@ -234,7 +340,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "crispEdges",
@@ -243,7 +353,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "geometricPrecision",
@@ -252,7 +366,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "inherit",
@@ -265,14 +383,24 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.text-rendering.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "text-rendering",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Optional(
                                 Attribute {
                                     name_class: Name(
                                         Name {
                                             prefix: None,
-                                            local: "text-rendering",
+                                            local: Identifier {
+                                                components: [
+                                                    "text-rendering",
+                                                ],
+                                            },
                                         },
                                     ),
                                     pattern: Choice(
@@ -281,7 +409,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "auto",
@@ -290,7 +422,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "optimizeSpeed",
@@ -299,7 +435,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "optimizeLegibility",
@@ -308,7 +448,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "geometricPrecision",
@@ -317,7 +461,11 @@ Schema {
                                                 name: Some(
                                                     Name {
                                                         prefix: None,
-                                                        local: "string",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "string",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 value: "inherit",
@@ -330,7 +478,13 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Graphics.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Graphics",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -339,25 +493,49 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.image-rendering.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "image-rendering",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.pointer-events.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "pointer-events",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.shape-rendering.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "shape-rendering",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.text-rendering.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "text-rendering",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],

@@ -9,14 +9,22 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "local",
+                prefix: Identifier {
+                    components: [
+                        "local",
+                    ],
+                },
                 uri: "",
             },
         ),
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        components: [
+                            "w",
+                        ],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
@@ -27,13 +35,21 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "math",
+                        name: Identifier {
+                            components: [
+                                "math",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "math",
+                                    local: Identifier {
+                                        components: [
+                                            "math",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -41,14 +57,23 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "math.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "math",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Many0(
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "MathExpression",
+                                                local: Identifier {
+                                                    components: [
+                                                        "MathExpression",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -59,19 +84,31 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "MathExpression",
+                        name: Identifier {
+                            components: [
+                                "MathExpression",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "semantics",
+                                local: Identifier {
+                                    components: [
+                                        "semantics",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "NonMathMLAtt",
+                        name: Identifier {
+                            components: [
+                                "NonMathMLAtt",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Except {
@@ -80,12 +117,20 @@ Schema {
                                     [
                                         NamespaceName(
                                             Some(
-                                                "local",
+                                                Identifier {
+                                                    components: [
+                                                        "local",
+                                                    ],
+                                                },
                                             ),
                                         ),
                                         NamespaceName(
                                             Some(
-                                                "m",
+                                                Identifier {
+                                                    components: [
+                                                        "m",
+                                                    ],
+                                                },
                                             ),
                                         ),
                                     ],
@@ -94,9 +139,17 @@ Schema {
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            components: [
+                                                "xsd",
+                                            ],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        components: [
+                                            "string",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -104,14 +157,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "CommonDeprecatedAtt",
+                        name: Identifier {
+                            components: [
+                                "CommonDeprecatedAtt",
+                            ],
+                        },
                         combine: None,
                         pattern: Optional(
                             Attribute {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "other",
+                                        local: Identifier {
+                                            components: [
+                                                "other",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Text,
@@ -121,7 +182,11 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "CommonAtt",
+                        name: Identifier {
+                            components: [
+                                "CommonAtt",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
@@ -130,15 +195,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "id",
+                                                local: Identifier {
+                                                    components: [
+                                                        "id",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "w",
+                                                    Identifier {
+                                                        components: [
+                                                            "w",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "xml-name",
+                                                local: Identifier {
+                                                    components: [
+                                                        "xml-name",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -148,7 +225,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "xref",
+                                                local: Identifier {
+                                                    components: [
+                                                        "xref",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Text,
@@ -159,15 +240,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "NMTOKENS",
+                                                local: Identifier {
+                                                    components: [
+                                                        "NMTOKENS",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -177,15 +270,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "style",
+                                                local: Identifier {
+                                                    components: [
+                                                        "style",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -195,15 +300,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "href",
+                                                local: Identifier {
+                                                    components: [
+                                                        "href",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "anyURI",
+                                                local: Identifier {
+                                                    components: [
+                                                        "anyURI",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -211,14 +328,22 @@ Schema {
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonDeprecatedAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonDeprecatedAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Many0(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "NonMathMLAtt",
+                                            local: Identifier {
+                                                components: [
+                                                    "NonMathMLAtt",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -228,14 +353,23 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "math.attributes",
+                        name: Identifier {
+                            components: [
+                                "math",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
@@ -243,7 +377,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "display",
+                                                local: Identifier {
+                                                    components: [
+                                                        "display",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Choice(
@@ -265,13 +403,21 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "maxwidth",
+                                                local: Identifier {
+                                                    components: [
+                                                        "maxwidth",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "length",
+                                                local: Identifier {
+                                                    components: [
+                                                        "length",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -281,7 +427,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "overflow",
+                                                local: Identifier {
+                                                    components: [
+                                                        "overflow",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Choice(
@@ -315,15 +465,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "altimg",
+                                                local: Identifier {
+                                                    components: [
+                                                        "altimg",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "anyURI",
+                                                local: Identifier {
+                                                    components: [
+                                                        "anyURI",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -333,13 +495,21 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "altimg-width",
+                                                local: Identifier {
+                                                    components: [
+                                                        "altimg-width",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "length",
+                                                local: Identifier {
+                                                    components: [
+                                                        "length",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -349,13 +519,21 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "altimg-height",
+                                                local: Identifier {
+                                                    components: [
+                                                        "altimg-height",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "length",
+                                                local: Identifier {
+                                                    components: [
+                                                        "length",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -365,7 +543,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "altimg-valign",
+                                                local: Identifier {
+                                                    components: [
+                                                        "altimg-valign",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Choice(
@@ -373,7 +555,11 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "length",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "length",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Value {
@@ -397,7 +583,11 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "alttext",
+                                                local: Identifier {
+                                                    components: [
+                                                        "alttext",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Text,
@@ -408,15 +598,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "cdgroup",
+                                                local: Identifier {
+                                                    components: [
+                                                        "cdgroup",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "anyURI",
+                                                local: Identifier {
+                                                    components: [
+                                                        "anyURI",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -424,7 +626,12 @@ Schema {
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "math.deprecatedattributes",
+                                        local: Identifier {
+                                            components: [
+                                                "math",
+                                                "deprecatedattributes",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -433,7 +640,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "math.deprecatedattributes",
+                        name: Identifier {
+                            components: [
+                                "math",
+                                "deprecatedattributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
@@ -442,15 +654,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "mode",
+                                                local: Identifier {
+                                                    components: [
+                                                        "mode",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -460,15 +684,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "macros",
+                                                local: Identifier {
+                                                    components: [
+                                                        "macros",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -479,21 +715,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "name",
+                        name: Identifier {
+                            components: [
+                                "name",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "name",
+                                    local: Identifier {
+                                        components: [
+                                            "name",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            components: [
+                                                "xsd",
+                                            ],
+                                        },
                                     ),
-                                    local: "NCName",
+                                    local: Identifier {
+                                        components: [
+                                            "NCName",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -501,21 +753,37 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "cd",
+                        name: Identifier {
+                            components: [
+                                "cd",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "cd",
+                                    local: Identifier {
+                                        components: [
+                                            "cd",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            components: [
+                                                "xsd",
+                                            ],
+                                        },
                                     ),
-                                    local: "NCName",
+                                    local: Identifier {
+                                        components: [
+                                            "NCName",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -523,22 +791,38 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "src",
+                        name: Identifier {
+                            components: [
+                                "src",
+                            ],
+                        },
                         combine: None,
                         pattern: Optional(
                             Attribute {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "src",
+                                        local: Identifier {
+                                            components: [
+                                                "src",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Name(
                                     Name {
                                         prefix: Some(
-                                            "xsd",
+                                            Identifier {
+                                                components: [
+                                                    "xsd",
+                                                ],
+                                            },
                                         ),
-                                        local: "anyURI",
+                                        local: Identifier {
+                                            components: [
+                                                "anyURI",
+                                            ],
+                                        },
                                     },
                                 ),
                             },
@@ -547,13 +831,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation",
+                        name: Identifier {
+                            components: [
+                                "annotation",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "annotation",
+                                    local: Identifier {
+                                        components: [
+                                            "annotation",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -561,7 +853,12 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Text,
@@ -572,26 +869,45 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "annotation-xml.xhtml",
+                                        local: Identifier {
+                                            components: [
+                                                "annotation-xml",
+                                                "xhtml",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "annotation-xml.svg",
+                                        local: Identifier {
+                                            components: [
+                                                "annotation-xml",
+                                                "svg",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "annotation-xml.mathml",
+                                        local: Identifier {
+                                            components: [
+                                                "annotation-xml",
+                                                "mathml",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -600,7 +916,12 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.model",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "model",
+                            ],
+                        },
                         combine: None,
                         pattern: Many0(
                             Choice(
@@ -608,13 +929,21 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "MathExpression",
+                                            local: Identifier {
+                                                components: [
+                                                    "MathExpression",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "anyElement",
+                                            local: Identifier {
+                                                components: [
+                                                    "anyElement",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -624,14 +953,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "anyElement",
+                        name: Identifier {
+                            components: [
+                                "anyElement",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Except {
                                 base: AnyName,
                                 except: NamespaceName(
                                     Some(
-                                        "m",
+                                        Identifier {
+                                            components: [
+                                                "m",
+                                            ],
+                                        },
                                     ),
                                 ),
                             },
@@ -646,7 +983,11 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "anyElement",
+                                                local: Identifier {
+                                                    components: [
+                                                        "anyElement",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -657,13 +998,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.xhtml",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "xhtml",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "annotation-xml",
+                                    local: Identifier {
+                                        components: [
+                                            "annotation-xml",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -671,20 +1021,35 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.model",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "model",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "att-encoding.xhtml",
+                                                local: Identifier {
+                                                    components: [
+                                                        "att-encoding",
+                                                        "xhtml",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -695,20 +1060,35 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.model.xhtml",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "model",
+                                "xhtml",
+                            ],
+                        },
                         combine: None,
                         pattern: NotAllowed,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "att-encoding.xhtml",
+                        name: Identifier {
+                            components: [
+                                "att-encoding",
+                                "xhtml",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "encoding",
+                                    local: Identifier {
+                                        components: [
+                                            "encoding",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -717,7 +1097,11 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: None,
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         value: "application/xhtml+xml",
@@ -726,7 +1110,11 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: None,
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         value: "text/html",
@@ -738,13 +1126,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.svg",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "svg",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "annotation-xml",
+                                    local: Identifier {
+                                        components: [
+                                            "annotation-xml",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -752,20 +1149,35 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.model",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "model",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "att-encoding.svg",
+                                                local: Identifier {
+                                                    components: [
+                                                        "att-encoding",
+                                                        "svg",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -776,27 +1188,46 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.model.svg",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "model",
+                                "svg",
+                            ],
+                        },
                         combine: None,
                         pattern: NotAllowed,
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "att-encoding.svg",
+                        name: Identifier {
+                            components: [
+                                "att-encoding",
+                                "svg",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "encoding",
+                                    local: Identifier {
+                                        components: [
+                                            "encoding",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Value {
                                 name: Some(
                                     Name {
                                         prefix: None,
-                                        local: "string",
+                                        local: Identifier {
+                                            components: [
+                                                "string",
+                                            ],
+                                        },
                                     },
                                 ),
                                 value: "SVG1.1",
@@ -806,13 +1237,22 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.mathml",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "mathml",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "annotation-xml",
+                                    local: Identifier {
+                                        components: [
+                                            "annotation-xml",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -820,20 +1260,35 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.model",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "model",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "annotation-xml.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "annotation-xml",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "att-encoding.mathml",
+                                                local: Identifier {
+                                                    components: [
+                                                        "att-encoding",
+                                                        "mathml",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -844,25 +1299,44 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.model.mathml",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "model",
+                                "mathml",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "math",
+                                local: Identifier {
+                                    components: [
+                                        "math",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "att-encoding.mathml",
+                        name: Identifier {
+                            components: [
+                                "att-encoding",
+                                "mathml",
+                            ],
+                        },
                         combine: None,
                         pattern: Attribute {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "encoding",
+                                    local: Identifier {
+                                        components: [
+                                            "encoding",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Choice(
@@ -871,7 +1345,11 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: None,
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         value: "MathML",
@@ -880,7 +1358,11 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: None,
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         value: "MathML-Content",
@@ -889,7 +1371,11 @@ Schema {
                                         name: Some(
                                             Name {
                                                 prefix: None,
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         value: "MathML-Presentation",
@@ -901,21 +1387,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation.attributes",
+                        name: Identifier {
+                            components: [
+                                "annotation",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cd",
+                                            local: Identifier {
+                                                components: [
+                                                    "cd",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -923,21 +1422,33 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "name",
+                                            local: Identifier {
+                                                components: [
+                                                    "name",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "DefEncAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "DefEncAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "src",
+                                            local: Identifier {
+                                                components: [
+                                                    "src",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -947,21 +1458,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "annotation-xml.attributes",
+                        name: Identifier {
+                            components: [
+                                "annotation-xml",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cd",
+                                            local: Identifier {
+                                                components: [
+                                                    "cd",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -969,7 +1493,11 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "name",
+                                            local: Identifier {
+                                                components: [
+                                                    "name",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -977,7 +1505,11 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "src",
+                                            local: Identifier {
+                                                components: [
+                                                    "src",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -987,7 +1519,11 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "DefEncAtt",
+                        name: Identifier {
+                            components: [
+                                "DefEncAtt",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
@@ -996,15 +1532,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "encoding",
+                                                local: Identifier {
+                                                    components: [
+                                                        "encoding",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "string",
+                                                local: Identifier {
+                                                    components: [
+                                                        "string",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -1014,15 +1562,27 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "definitionURL",
+                                                local: Identifier {
+                                                    components: [
+                                                        "definitionURL",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: Some(
-                                                    "xsd",
+                                                    Identifier {
+                                                        components: [
+                                                            "xsd",
+                                                        ],
+                                                    },
                                                 ),
-                                                local: "anyURI",
+                                                local: Identifier {
+                                                    components: [
+                                                        "anyURI",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -1033,13 +1593,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "semantics",
+                        name: Identifier {
+                            components: [
+                                "semantics",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "semantics",
+                                    local: Identifier {
+                                        components: [
+                                            "semantics",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Group(
@@ -1047,13 +1615,22 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "semantics.attributes",
+                                            local: Identifier {
+                                                components: [
+                                                    "semantics",
+                                                    "attributes",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "MathExpression",
+                                            local: Identifier {
+                                                components: [
+                                                    "MathExpression",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Many0(
@@ -1062,13 +1639,21 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "annotation-xml",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "annotation-xml",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -1081,27 +1666,44 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "semantics.attributes",
+                        name: Identifier {
+                            components: [
+                                "semantics",
+                                "attributes",
+                            ],
+                        },
                         combine: None,
                         pattern: Group(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "CommonAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "CommonAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "DefEncAtt",
+                                        local: Identifier {
+                                            components: [
+                                                "DefEncAtt",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Optional(
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "cd",
+                                            local: Identifier {
+                                                components: [
+                                                    "cd",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1109,7 +1711,11 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "name",
+                                            local: Identifier {
+                                                components: [
+                                                    "name",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ),
@@ -1119,20 +1725,36 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "length",
+                        name: Identifier {
+                            components: [
+                                "length",
+                            ],
+                        },
                         combine: None,
                         pattern: Data {
                             name: Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                             parameters: [
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "pattern",
+                                        local: Identifier {
+                                            components: [
+                                                "pattern",
+                                            ],
+                                        },
                                     },
                                     value: "s*((-?[0-9]*(.[0-9]*)?(e[mx]|in|cm|mm|p[xtc]|%)?)|(negative)?((very){0,2}thi(n|ck)|medium)mathspace)s*",
                                 },

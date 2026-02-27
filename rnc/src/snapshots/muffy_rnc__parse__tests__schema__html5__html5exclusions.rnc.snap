@@ -16,13 +16,25 @@ Schema {
                     pattern: Name(
                         Name {
                             prefix: None,
-                            local: "normal.elem.all-inclusive",
+                            local: Identifier {
+                                components: [
+                                    "normal",
+                                    "elem",
+                                    "all-inclusive",
+                                ],
+                            },
                         },
                     ),
                 },
                 Definition(
                     Definition {
-                        name: "normal.attr.anything",
+                        name: Identifier {
+                            components: [
+                                "normal",
+                                "attr",
+                                "anything",
+                            ],
+                        },
                         combine: None,
                         pattern: Many0(
                             Attribute {
@@ -34,7 +46,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "normal.elem.all",
+                        name: Identifier {
+                            components: [
+                                "normal",
+                                "elem",
+                                "all",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Except {
@@ -42,14 +60,24 @@ Schema {
                                 except: Name(
                                     Name {
                                         prefix: None,
-                                        local: "dfn",
+                                        local: Identifier {
+                                            components: [
+                                                "dfn",
+                                            ],
+                                        },
                                     },
                                 ),
                             },
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "normal.elem.all-inclusive",
+                                    local: Identifier {
+                                        components: [
+                                            "normal",
+                                            "elem",
+                                            "all-inclusive",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -57,20 +85,38 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "normal.elem.all-inclusive",
+                        name: Identifier {
+                            components: [
+                                "normal",
+                                "elem",
+                                "all-inclusive",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "wildcard.elem.exclude-all",
+                                        local: Identifier {
+                                            components: [
+                                                "wildcard",
+                                                "elem",
+                                                "exclude-all",
+                                            ],
+                                        },
                                     },
                                 ),
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "dfn.elem.exclude-self",
+                                        local: Identifier {
+                                            components: [
+                                                "dfn",
+                                                "elem",
+                                                "exclude-self",
+                                            ],
+                                        },
                                     },
                                 ),
                             ],
@@ -79,7 +125,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "normal.elem.exclude-dfn",
+                        name: Identifier {
+                            components: [
+                                "normal",
+                                "elem",
+                                "exclude-dfn",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Except {
@@ -87,14 +139,24 @@ Schema {
                                 except: Name(
                                     Name {
                                         prefix: None,
-                                        local: "dfn",
+                                        local: Identifier {
+                                            components: [
+                                                "dfn",
+                                            ],
+                                        },
                                     },
                                 ),
                             },
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "normal.elem.exclude-dfn",
+                                    local: Identifier {
+                                        components: [
+                                            "normal",
+                                            "elem",
+                                            "exclude-dfn",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -102,13 +164,23 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "dfn.elem.exclude-self",
+                        name: Identifier {
+                            components: [
+                                "dfn",
+                                "elem",
+                                "exclude-self",
+                            ],
+                        },
                         combine: None,
                         pattern: Element {
                             name_class: Name(
                                 Name {
                                     prefix: None,
-                                    local: "dfn",
+                                    local: Identifier {
+                                        components: [
+                                            "dfn",
+                                        ],
+                                    },
                                 },
                             ),
                             pattern: Interleave(
@@ -116,13 +188,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "normal.attr.anything",
+                                            local: Identifier {
+                                                components: [
+                                                    "normal",
+                                                    "attr",
+                                                    "anything",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "normal.elem.exclude-dfn",
+                                            local: Identifier {
+                                                components: [
+                                                    "normal",
+                                                    "elem",
+                                                    "exclude-dfn",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -132,7 +216,13 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "wildcard.elem.exclude-all",
+                        name: Identifier {
+                            components: [
+                                "wildcard",
+                                "elem",
+                                "exclude-all",
+                            ],
+                        },
                         combine: None,
                         pattern: NotAllowed,
                     },

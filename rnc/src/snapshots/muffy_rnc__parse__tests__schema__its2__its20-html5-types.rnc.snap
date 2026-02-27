@@ -7,7 +7,11 @@ Schema {
         Datatypes(
             DatatypesDeclaration {
                 prefix: Some(
-                    "w",
+                    Identifier {
+                        components: [
+                            "w",
+                        ],
+                    },
                 ),
                 uri: "http://whattf.org/datatype-draft",
             },
@@ -18,27 +22,48 @@ Schema {
             contents: [
                 Definition(
                     Definition {
-                        name: "its-confidence.type",
+                        name: Identifier {
+                            components: [
+                                "its-confidence",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Data {
                             name: Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "double",
+                                local: Identifier {
+                                    components: [
+                                        "double",
+                                    ],
+                                },
                             },
                             parameters: [
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "minInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "minInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "0",
                                 },
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "maxInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "maxInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "1",
                                 },
@@ -49,19 +74,33 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locNote.type",
+                        name: Identifier {
+                            components: [
+                                "its-locNote",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locNoteType.type",
+                        name: Identifier {
+                            components: [
+                                "its-locNoteType",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -69,9 +108,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "alert",
@@ -80,9 +127,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "description",
@@ -93,35 +148,66 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locNoteRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-locNoteRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-termInfoRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-termInfoRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-term.type",
+                        name: Identifier {
+                            components: [
+                                "its-term",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -129,9 +215,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "yes",
@@ -140,9 +234,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "no",
@@ -153,19 +255,34 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-termConfidence.type",
+                        name: Identifier {
+                            components: [
+                                "its-termConfidence",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "its-confidence.type",
+                                local: Identifier {
+                                    components: [
+                                        "its-confidence",
+                                        "type",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-withinText.type",
+                        name: Identifier {
+                            components: [
+                                "its-withinText",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -173,9 +290,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "yes",
@@ -184,9 +309,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "no",
@@ -195,9 +328,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "nested",
@@ -208,95 +349,172 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-domainMapping.type",
+                        name: Identifier {
+                            components: [
+                                "its-domainMapping",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-taConfidence.type",
+                        name: Identifier {
+                            components: [
+                                "its-taConfidence",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "its-confidence.type",
+                                local: Identifier {
+                                    components: [
+                                        "its-confidence",
+                                        "type",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-taClassRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-taClassRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-taIdentRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-taIdentRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-taIdent.type",
+                        name: Identifier {
+                            components: [
+                                "its-taIdent",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-taSource.type",
+                        name: Identifier {
+                            components: [
+                                "its-taSource",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-localeFilterList.type",
+                        name: Identifier {
+                            components: [
+                                "its-localeFilterList",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-localeFilterType.type",
+                        name: Identifier {
+                            components: [
+                                "its-localeFilterType",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -304,9 +522,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "include",
@@ -315,9 +541,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "exclude",
@@ -328,172 +562,317 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-person.type",
+                        name: Identifier {
+                            components: [
+                                "its-person",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-personRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-personRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-org.type",
+                        name: Identifier {
+                            components: [
+                                "its-org",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-orgRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-orgRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-tool.type",
+                        name: Identifier {
+                            components: [
+                                "its-tool",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-toolRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-toolRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revPerson.type",
+                        name: Identifier {
+                            components: [
+                                "its-revPerson",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revPersonRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-revPersonRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revOrg.type",
+                        name: Identifier {
+                            components: [
+                                "its-revOrg",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revOrgRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-revOrgRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revTool.type",
+                        name: Identifier {
+                            components: [
+                                "its-revTool",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-revToolRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-revToolRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-provRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-provRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: List(
                             Many1(
                                 Name(
                                     Name {
                                         prefix: Some(
-                                            "w",
+                                            Identifier {
+                                                components: [
+                                                    "w",
+                                                ],
+                                            },
                                         ),
-                                        local: "iri-ref",
+                                        local: Identifier {
+                                            components: [
+                                                "iri-ref",
+                                            ],
+                                        },
                                     },
                                 ),
                             ),
@@ -502,33 +881,60 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-provenanceRecordsRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-provenanceRecordsRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-idValue.type",
+                        name: Identifier {
+                            components: [
+                                "its-idValue",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-space.type",
+                        name: Identifier {
+                            components: [
+                                "its-space",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -546,21 +952,39 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssuesRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssuesRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssueType.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssueType",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -568,9 +992,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "terminology",
@@ -579,9 +1011,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "mistranslation",
@@ -590,9 +1030,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "omission",
@@ -601,9 +1049,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "untranslated",
@@ -612,9 +1068,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "addition",
@@ -623,9 +1087,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "duplication",
@@ -634,9 +1106,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "inconsistency",
@@ -645,9 +1125,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "grammar",
@@ -656,9 +1144,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "legal",
@@ -667,9 +1163,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "register",
@@ -678,9 +1182,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "locale-specific-content",
@@ -689,9 +1201,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "locale-violation",
@@ -700,9 +1220,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "style",
@@ -711,9 +1239,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "characters",
@@ -722,9 +1258,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "misspelling",
@@ -733,9 +1277,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "typographical",
@@ -744,9 +1296,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "formatting",
@@ -755,9 +1315,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "inconsistent-entities",
@@ -766,9 +1334,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "numbers",
@@ -777,9 +1353,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "markup",
@@ -788,9 +1372,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "pattern-problem",
@@ -799,9 +1391,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "whitespace",
@@ -810,9 +1410,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "internationalization",
@@ -821,9 +1429,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "length",
@@ -832,9 +1448,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "non-conformance",
@@ -843,9 +1467,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "uncategorized",
@@ -854,9 +1486,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "other",
@@ -867,39 +1507,69 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssueComment.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssueComment",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssueSeverity.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssueSeverity",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Data {
                             name: Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "double",
+                                local: Identifier {
+                                    components: [
+                                        "double",
+                                    ],
+                                },
                             },
                             parameters: [
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "minInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "minInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "0",
                                 },
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "maxInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "maxInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "100",
                                 },
@@ -910,21 +1580,39 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssueProfileRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssueProfileRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityIssueEnabled.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityIssueEnabled",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -932,9 +1620,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "yes",
@@ -943,9 +1639,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "no",
@@ -956,27 +1660,48 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityRatingScore.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityRatingScore",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Data {
                             name: Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "double",
+                                local: Identifier {
+                                    components: [
+                                        "double",
+                                    ],
+                                },
                             },
                             parameters: [
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "minInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "minInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "0",
                                 },
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "maxInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "maxInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "100",
                                 },
@@ -987,41 +1712,75 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityRatingVote.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityRatingVote",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "integer",
+                                local: Identifier {
+                                    components: [
+                                        "integer",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityRatingScoreThreshold.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityRatingScoreThreshold",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Data {
                             name: Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "double",
+                                local: Identifier {
+                                    components: [
+                                        "double",
+                                    ],
+                                },
                             },
                             parameters: [
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "minInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "minInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "0",
                                 },
                                 Parameter {
                                     name: Name {
                                         prefix: None,
-                                        local: "maxInclusive",
+                                        local: Identifier {
+                                            components: [
+                                                "maxInclusive",
+                                            ],
+                                        },
                                     },
                                     value: "100",
                                 },
@@ -1032,85 +1791,157 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityRatingVoteThreshold.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityRatingVoteThreshold",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "integer",
+                                local: Identifier {
+                                    components: [
+                                        "integer",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-locQualityRatingProfileRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-locQualityRatingProfileRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "w",
+                                    Identifier {
+                                        components: [
+                                            "w",
+                                        ],
+                                    },
                                 ),
-                                local: "iri-ref",
+                                local: Identifier {
+                                    components: [
+                                        "iri-ref",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-mtConfidence.type",
+                        name: Identifier {
+                            components: [
+                                "its-mtConfidence",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "its-confidence.type",
+                                local: Identifier {
+                                    components: [
+                                        "its-confidence",
+                                        "type",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-allowedCharacters.type",
+                        name: Identifier {
+                            components: [
+                                "its-allowedCharacters",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-storageSize.type",
+                        name: Identifier {
+                            components: [
+                                "its-storageSize",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: Some(
-                                    "xsd",
+                                    Identifier {
+                                        components: [
+                                            "xsd",
+                                        ],
+                                    },
                                 ),
-                                local: "nonNegativeInteger",
+                                local: Identifier {
+                                    components: [
+                                        "nonNegativeInteger",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-storageEncoding.type",
+                        name: Identifier {
+                            components: [
+                                "its-storageEncoding",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },
                 ),
                 Definition(
                     Definition {
-                        name: "its-lineBreakType.type",
+                        name: Identifier {
+                            components: [
+                                "its-lineBreakType",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Choice(
                             [
@@ -1118,9 +1949,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "cr",
@@ -1129,9 +1968,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "lf",
@@ -1140,9 +1987,17 @@ Schema {
                                     name: Some(
                                         Name {
                                             prefix: Some(
-                                                "w",
+                                                Identifier {
+                                                    components: [
+                                                        "w",
+                                                    ],
+                                                },
                                             ),
-                                            local: "string",
+                                            local: Identifier {
+                                                components: [
+                                                    "string",
+                                                ],
+                                            },
                                         },
                                     ),
                                     value: "crlf",
@@ -1153,12 +2008,21 @@ Schema {
                 ),
                 Definition(
                     Definition {
-                        name: "its-annotatorsRef.type",
+                        name: Identifier {
+                            components: [
+                                "its-annotatorsRef",
+                                "type",
+                            ],
+                        },
                         combine: None,
                         pattern: Name(
                             Name {
                                 prefix: None,
-                                local: "string",
+                                local: Identifier {
+                                    components: [
+                                        "string",
+                                    ],
+                                },
                             },
                         ),
                     },

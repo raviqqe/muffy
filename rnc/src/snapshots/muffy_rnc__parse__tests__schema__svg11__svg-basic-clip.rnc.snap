@@ -9,7 +9,11 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,14 +24,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "ClipPathValue.datatype",
+                            name: Identifier {
+                                components: [
+                                    "ClipPathValue",
+                                    "datatype",
+                                ],
+                            },
                             combine: None,
                             pattern: Name(
                                 Name {
                                     prefix: Some(
-                                        "xsd",
+                                        Identifier {
+                                            components: [
+                                                "xsd",
+                                            ],
+                                        },
                                     ),
-                                    local: "string",
+                                    local: Identifier {
+                                        components: [
+                                            "string",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -36,23 +53,44 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Clip.extra.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Clip",
+                                    "extra",
+                                    "attrib",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Clip.attrib",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Clip",
+                                    "attrib",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -63,13 +101,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "clip-path",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "clip-path",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ClipPathValue.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ClipPathValue",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -79,13 +126,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "clip-rule",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "clip-rule",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ClipFillRule.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ClipFillRule",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -93,7 +149,14 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Clip.extra.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Clip",
+                                                    "extra",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -104,23 +167,44 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Clip.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Clip",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Clip.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Clip",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -129,13 +213,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "clipPath",
+                                            local: Identifier {
+                                                components: [
+                                                    "clipPath",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Clip.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Clip",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -146,35 +241,65 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.clipPath.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "clipPath",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: Choice(
                                 [
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "rect",
+                                            local: Identifier {
+                                                components: [
+                                                    "rect",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Animation.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Animation",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Use.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Use",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -183,7 +308,13 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.clipPath.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "clipPath",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Group(
                                 [
@@ -191,7 +322,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -199,7 +336,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.clipPath.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "clipPath",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -209,13 +352,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "clipPath",
+                            name: Identifier {
+                                components: [
+                                    "clipPath",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "clipPath",
+                                        local: Identifier {
+                                            components: [
+                                                "clipPath",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -223,13 +374,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.clipPath",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "clipPath",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.clipPath.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "clipPath",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -239,7 +401,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.clipPath",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "clipPath",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -248,91 +415,181 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Conditional.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Conditional",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Text.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Text",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.TextContent.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "TextContent",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Font.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Font",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Paint.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Paint",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Color.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Color",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Opacity.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Opacity",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Graphics.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Graphics",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Clip.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Clip",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Mask.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Mask",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Filter.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Filter",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Cursor.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Cursor",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "External",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -340,13 +597,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "transform",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "transform",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "TransformList.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "TransformList",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -356,7 +622,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "clipPathUnits",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "clipPathUnits",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Choice(

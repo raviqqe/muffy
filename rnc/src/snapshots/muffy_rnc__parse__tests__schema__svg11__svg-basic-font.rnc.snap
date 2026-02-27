@@ -9,7 +9,11 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,14 +24,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.Font.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Font",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.Font.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "Font",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -36,19 +53,34 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "font",
+                                            local: Identifier {
+                                                components: [
+                                                    "font",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "font-face",
+                                            local: Identifier {
+                                                components: [
+                                                    "font-face",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Font.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Font",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -59,16 +91,30 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Group(
                                 [
@@ -76,20 +122,34 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "font-face",
+                                            local: Identifier {
+                                                components: [
+                                                    "font-face",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "missing-glyph",
+                                            local: Identifier {
+                                                components: [
+                                                    "missing-glyph",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Many0(
@@ -98,19 +158,31 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "glyph",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "glyph",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "hkern",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "hkern",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "vkern",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "vkern",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -122,13 +194,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "font",
+                            name: Identifier {
+                                components: [
+                                    "font",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "font",
+                                        local: Identifier {
+                                            components: [
+                                                "font",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -136,13 +216,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.font",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "font",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.font.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "font",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -152,7 +243,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.font",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "font",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -161,25 +257,49 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Presentation.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Presentation",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "External",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -187,13 +307,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "horiz-origin-x",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "horiz-origin-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -203,13 +332,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "horiz-origin-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "horiz-origin-y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -218,13 +356,22 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "horiz-adv-x",
+                                                local: Identifier {
+                                                    components: [
+                                                        "horiz-adv-x",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "Number.datatype",
+                                                local: Identifier {
+                                                    components: [
+                                                        "Number",
+                                                        "datatype",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -233,13 +380,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-origin-x",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -249,13 +405,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-origin-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -265,13 +430,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-adv-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-adv-y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -284,23 +458,44 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font-face.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font-face",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font-face.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font-face",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Group(
                                 [
@@ -308,7 +503,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -316,14 +517,25 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "font-face-src",
+                                                local: Identifier {
+                                                    components: [
+                                                        "font-face-src",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.font-face.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "font-face",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -332,13 +544,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "font-face",
+                            name: Identifier {
+                                components: [
+                                    "font-face",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "font-face",
+                                        local: Identifier {
+                                            components: [
+                                                "font-face",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -346,13 +566,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.font-face",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "font-face",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.font-face.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "font-face",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -362,7 +593,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.font-face",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "font-face",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -371,7 +607,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -379,7 +621,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-family",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-family",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -390,7 +636,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-style",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-style",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -401,7 +651,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-variant",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-variant",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -412,7 +666,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-weight",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-weight",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -423,7 +681,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-stretch",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-stretch",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -434,7 +696,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "font-size",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "font-size",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -445,7 +711,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "unicode-range",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "unicode-range",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -456,13 +726,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "units-per-em",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "units-per-em",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -472,7 +751,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "panose-1",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "panose-1",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -483,13 +766,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "stemv",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "stemv",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -499,13 +791,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "stemh",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "stemh",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -515,13 +816,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "slope",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "slope",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -531,13 +841,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "cap-height",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "cap-height",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -547,13 +866,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "x-height",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "x-height",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -563,13 +891,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "accent-height",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "accent-height",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -579,13 +916,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ascent",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ascent",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -595,13 +941,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "descent",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "descent",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -611,7 +966,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "widths",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "widths",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -622,7 +981,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "bbox",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "bbox",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -633,13 +996,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ideographic",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ideographic",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -649,13 +1021,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "alphabetic",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "alphabetic",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -665,13 +1046,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "mathematical",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "mathematical",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -681,13 +1071,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "hanging",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "hanging",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -697,13 +1096,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "v-ideographic",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "v-ideographic",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -713,13 +1121,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "v-alphabetic",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "v-alphabetic",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -729,13 +1146,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "v-mathematical",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "v-mathematical",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -745,13 +1171,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "v-hanging",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "v-hanging",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -761,13 +1196,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "underline-position",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "underline-position",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -777,13 +1221,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "underline-thickness",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "underline-thickness",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -793,13 +1246,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "strikethrough-position",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "strikethrough-position",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -809,13 +1271,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "strikethrough-thickness",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "strikethrough-thickness",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -825,13 +1296,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "overline-position",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "overline-position",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -841,13 +1321,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "overline-thickness",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "overline-thickness",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -860,23 +1349,43 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.glyph.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "glyph",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.glyph.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "glyph",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Choice(
                                 [
@@ -884,7 +1393,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -892,7 +1407,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.glyph.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "glyph",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -902,13 +1423,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "glyph",
+                            name: Identifier {
+                                components: [
+                                    "glyph",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "glyph",
+                                        local: Identifier {
+                                            components: [
+                                                "glyph",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -916,13 +1445,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.glyph",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "glyph",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.glyph.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "glyph",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -932,7 +1472,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.glyph",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "glyph",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -941,19 +1486,37 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Presentation.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Presentation",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -962,13 +1525,27 @@ Schema {
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.attrs.aria.implicit.group",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "common",
+                                                                "attrs",
+                                                                "aria",
+                                                                "implicit",
+                                                                "group",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                                 Name(
                                                     Name {
                                                         prefix: None,
-                                                        local: "common.attrs.aria",
+                                                        local: Identifier {
+                                                            components: [
+                                                                "common",
+                                                                "attrs",
+                                                                "aria",
+                                                            ],
+                                                        },
                                                     },
                                                 ),
                                             ],
@@ -979,7 +1556,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "unicode",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "unicode",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -990,7 +1571,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "glyph-name",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "glyph-name",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1001,13 +1586,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "d",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "d",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "PathData.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "PathData",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1017,7 +1611,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "orientation",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "orientation",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1028,7 +1626,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "arabic-form",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "arabic-form",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1039,13 +1641,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "horiz-adv-x",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "horiz-adv-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1055,13 +1666,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-origin-x",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1071,13 +1691,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-origin-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1087,13 +1716,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-adv-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-adv-y",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1106,23 +1744,43 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.missing-glyph.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "missing-glyph",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.missing-glyph.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "missing-glyph",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Choice(
                                 [
@@ -1130,7 +1788,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.Description.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "Description",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -1138,7 +1802,13 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.missing-glyph.class",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "missing-glyph",
+                                                        "class",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ),
@@ -1148,13 +1818,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "missing-glyph",
+                            name: Identifier {
+                                components: [
+                                    "missing-glyph",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "missing-glyph",
+                                        local: Identifier {
+                                            components: [
+                                                "missing-glyph",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1162,13 +1840,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.missing-glyph",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "missing-glyph",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.missing-glyph.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "missing-glyph",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1178,7 +1867,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.missing-glyph",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "missing-glyph",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -1187,19 +1881,37 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Style.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Style",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Presentation.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Presentation",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -1207,45 +1919,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "d",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "d",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "PathData.datatype",
-                                                },
-                                            ),
-                                        },
-                                    ),
-                                    Optional(
-                                        Attribute {
-                                            name_class: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "horiz-adv-x",
-                                                },
-                                            ),
-                                            pattern: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "Number.datatype",
-                                                },
-                                            ),
-                                        },
-                                    ),
-                                    Optional(
-                                        Attribute {
-                                            name_class: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "vert-origin-x",
-                                                },
-                                            ),
-                                            pattern: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "PathData",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1255,13 +1944,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-origin-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "horiz-adv-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1271,13 +1969,72 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "vert-adv-y",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-x",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "Number.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-origin-y",
+                                                        ],
+                                                    },
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        components: [
+                                                            "vert-adv-y",
+                                                        ],
+                                                    },
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        components: [
+                                                            "Number",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -1290,29 +2047,51 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.hkern.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "hkern",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "hkern",
+                            name: Identifier {
+                                components: [
+                                    "hkern",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "hkern",
+                                        local: Identifier {
+                                            components: [
+                                                "hkern",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1320,13 +2099,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.hkern",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "hkern",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.hkern.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "hkern",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1336,7 +2126,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.hkern",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "hkern",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -1345,7 +2140,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -1353,7 +2154,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "u1",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "u1",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1364,7 +2169,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "g1",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "g1",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1375,7 +2184,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "u2",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "u2",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1386,7 +2199,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "g2",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "g2",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1396,13 +2213,22 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "k",
+                                                local: Identifier {
+                                                    components: [
+                                                        "k",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "Number.datatype",
+                                                local: Identifier {
+                                                    components: [
+                                                        "Number",
+                                                        "datatype",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -1414,29 +2240,51 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.vkern.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "vkern",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "vkern",
+                            name: Identifier {
+                                components: [
+                                    "vkern",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "vkern",
+                                        local: Identifier {
+                                            components: [
+                                                "vkern",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1444,13 +2292,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.vkern",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "vkern",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.vkern.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "vkern",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1460,7 +2319,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.vkern",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "vkern",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -1469,7 +2333,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -1477,7 +2347,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "u1",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "u1",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1488,7 +2362,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "g1",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "g1",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1499,7 +2377,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "u2",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "u2",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1510,7 +2392,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "g2",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "g2",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
@@ -1520,13 +2406,22 @@ Schema {
                                         name_class: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "k",
+                                                local: Identifier {
+                                                    components: [
+                                                        "k",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         pattern: Name(
                                             Name {
                                                 prefix: None,
-                                                local: "Number.datatype",
+                                                local: Identifier {
+                                                    components: [
+                                                        "Number",
+                                                        "datatype",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     },
@@ -1538,16 +2433,30 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font-face-src.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font-face-src",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Many1(
                                 Choice(
@@ -1555,13 +2464,21 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "font-face-uri",
+                                                local: Identifier {
+                                                    components: [
+                                                        "font-face-uri",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "font-face-name",
+                                                local: Identifier {
+                                                    components: [
+                                                        "font-face-name",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1571,13 +2488,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "font-face-src",
+                            name: Identifier {
+                                components: [
+                                    "font-face-src",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "font-face-src",
+                                        local: Identifier {
+                                            components: [
+                                                "font-face-src",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1585,13 +2510,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.font-face-src",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "font-face-src",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.font-face-src.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "font-face-src",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1601,14 +2537,25 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.font-face-src",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "font-face-src",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
                             pattern: Name(
                                 Name {
                                     prefix: None,
-                                    local: "SVG.Core.attrib",
+                                    local: Identifier {
+                                        components: [
+                                            "SVG",
+                                            "Core",
+                                            "attrib",
+                                        ],
+                                    },
                                 },
                             ),
                         },
@@ -1617,29 +2564,51 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font-face-uri.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font-face-uri",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "font-face-uri",
+                            name: Identifier {
+                                components: [
+                                    "font-face-uri",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "font-face-uri",
+                                        local: Identifier {
+                                            components: [
+                                                "font-face-uri",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1647,13 +2616,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.font-face-uri",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "font-face-uri",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.font-face-uri.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "font-face-uri",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1663,7 +2643,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.font-face-uri",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "font-face-uri",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -1672,13 +2657,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.XLinkRequired.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "XLinkRequired",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -1689,29 +2686,51 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.font-face-name.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "font-face-name",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Empty,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "font-face-name",
+                            name: Identifier {
+                                components: [
+                                    "font-face-name",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "font-face-name",
+                                        local: Identifier {
+                                            components: [
+                                                "font-face-name",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -1719,13 +2738,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.font-face-name",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "font-face-name",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.font-face-name.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "font-face-name",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -1735,7 +2765,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.font-face-name",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "font-face-name",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -1744,7 +2779,13 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -1752,7 +2793,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "name",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "name",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,

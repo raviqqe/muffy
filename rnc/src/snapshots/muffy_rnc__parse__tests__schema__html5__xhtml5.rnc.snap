@@ -20,21 +20,33 @@ Schema {
                                 contents: [
                                     Definition(
                                         Definition {
-                                            name: "XMLonly",
+                                            name: Identifier {
+                                                components: [
+                                                    "XMLonly",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: Empty,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "HTMLonly",
+                                            name: Identifier {
+                                                components: [
+                                                    "HTMLonly",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: NotAllowed,
                                         },
                                     ),
                                     Definition(
                                         Definition {
-                                            name: "v5only",
+                                            name: Identifier {
+                                                components: [
+                                                    "v5only",
+                                                ],
+                                            },
                                             combine: None,
                                             pattern: Empty,
                                         },
@@ -49,7 +61,12 @@ Schema {
                     pattern: Name(
                         Name {
                             prefix: None,
-                            local: "html.elem",
+                            local: Identifier {
+                                components: [
+                                    "html",
+                                    "elem",
+                                ],
+                            },
                         },
                     ),
                 },

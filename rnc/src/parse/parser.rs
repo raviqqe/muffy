@@ -973,7 +973,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1057,7 +1057,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1103,7 +1103,7 @@ mod tests {
                         inherit: None,
                         grammar: Some(Grammar {
                             contents: vec![GrammarContent::Definition(Definition {
-                                name: "select".to_string(),
+                                name: identifier("select"),
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(local_name("select")),
@@ -1209,7 +1209,7 @@ mod tests {
                             inherit: None,
                             grammar: Some(Grammar {
                                 contents: vec![GrammarContent::Definition(Definition {
-                                    name: "select".to_string(),
+                                    name: identifier("select"),
                                     combine: None,
                                     pattern: Pattern::Element {
                                         name_class: NameClass::Name(local_name("select")),
@@ -1225,7 +1225,7 @@ mod tests {
                             }),
                         }),
                         GrammarContent::Definition(Definition {
-                            name: "form.attlist".to_string(),
+                            name: identifier("form.attlist"),
                             combine: Some(Combine::Interleave),
                             pattern: Pattern::Optional(Box::new(Pattern::Attribute {
                                 name_class: NameClass::Name(local_name("accept-charset")),
@@ -1295,7 +1295,7 @@ mod tests {
             (
                 "",
                 GrammarContent::Definition(Definition {
-                    name: "InputType.class".to_string(),
+                    name: identifier("InputType.class"),
                     combine: Some(Combine::Choice),
                     pattern: Pattern::Choice(vec![
                         Pattern::Value {

@@ -9,7 +9,11 @@ Schema {
         ),
         Namespace(
             NamespaceDeclaration {
-                prefix: "a",
+                prefix: Identifier {
+                    components: [
+                        "a",
+                    ],
+                },
                 uri: "http://relaxng.org/ns/compatibility/annotations/1.0",
             },
         ),
@@ -20,14 +24,27 @@ Schema {
                 contents: [
                     Definition(
                         Definition {
-                            name: "SVG.View.extra.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "View",
+                                    "extra",
+                                    "class",
+                                ],
+                            },
                             combine: None,
                             pattern: NotAllowed,
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.View.class",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "View",
+                                    "class",
+                                ],
+                            },
                             combine: Some(
                                 Choice,
                             ),
@@ -36,13 +53,24 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "view",
+                                            local: Identifier {
+                                                components: [
+                                                    "view",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.View.extra.class",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "View",
+                                                    "extra",
+                                                    "class",
+                                                ],
+                                            },
                                         },
                                     ),
                                 ],
@@ -53,22 +81,42 @@ Schema {
                         AnnotationElement {
                             name: Name {
                                 prefix: Some(
-                                    "a",
+                                    Identifier {
+                                        components: [
+                                            "a",
+                                        ],
+                                    },
                                 ),
-                                local: "documentation",
+                                local: Identifier {
+                                    components: [
+                                        "documentation",
+                                    ],
+                                },
                             },
                             attributes: [],
                         },
                     ),
                     Definition(
                         Definition {
-                            name: "SVG.view.content",
+                            name: Identifier {
+                                components: [
+                                    "SVG",
+                                    "view",
+                                    "content",
+                                ],
+                            },
                             combine: None,
                             pattern: Many0(
                                 Name(
                                     Name {
                                         prefix: None,
-                                        local: "SVG.Description.class",
+                                        local: Identifier {
+                                            components: [
+                                                "SVG",
+                                                "Description",
+                                                "class",
+                                            ],
+                                        },
                                     },
                                 ),
                             ),
@@ -76,13 +124,21 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "view",
+                            name: Identifier {
+                                components: [
+                                    "view",
+                                ],
+                            },
                             combine: None,
                             pattern: Element {
                                 name_class: Name(
                                     Name {
                                         prefix: None,
-                                        local: "view",
+                                        local: Identifier {
+                                            components: [
+                                                "view",
+                                            ],
+                                        },
                                     },
                                 ),
                                 pattern: Group(
@@ -90,13 +146,24 @@ Schema {
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "attlist.view",
+                                                local: Identifier {
+                                                    components: [
+                                                        "attlist",
+                                                        "view",
+                                                    ],
+                                                },
                                             },
                                         ),
                                         Name(
                                             Name {
                                                 prefix: None,
-                                                local: "SVG.view.content",
+                                                local: Identifier {
+                                                    components: [
+                                                        "SVG",
+                                                        "view",
+                                                        "content",
+                                                    ],
+                                                },
                                             },
                                         ),
                                     ],
@@ -106,7 +173,12 @@ Schema {
                     ),
                     Definition(
                         Definition {
-                            name: "attlist.view",
+                            name: Identifier {
+                                components: [
+                                    "attlist",
+                                    "view",
+                                ],
+                            },
                             combine: Some(
                                 Interleave,
                             ),
@@ -115,13 +187,25 @@ Schema {
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.Core.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "Core",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Name(
                                         Name {
                                             prefix: None,
-                                            local: "SVG.External.attrib",
+                                            local: Identifier {
+                                                components: [
+                                                    "SVG",
+                                                    "External",
+                                                    "attrib",
+                                                ],
+                                            },
                                         },
                                     ),
                                     Optional(
@@ -129,13 +213,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "viewBox",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "viewBox",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "ViewBoxSpec.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "ViewBoxSpec",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -145,13 +238,22 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "preserveAspectRatio",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "preserveAspectRatio",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "PreserveAspectRatioSpec.datatype",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "PreserveAspectRatioSpec",
+                                                            "datatype",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                         },
@@ -161,7 +263,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "zoomAndPan",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "zoomAndPan",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Choice(
@@ -183,7 +289,11 @@ Schema {
                                             name_class: Name(
                                                 Name {
                                                     prefix: None,
-                                                    local: "viewTarget",
+                                                    local: Identifier {
+                                                        components: [
+                                                            "viewTarget",
+                                                        ],
+                                                    },
                                                 },
                                             ),
                                             pattern: Text,
