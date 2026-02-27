@@ -530,793 +530,1479 @@ fn fold_patterns(mut patterns: Vec<Pattern>, constructor: fn(Vec<Pattern>) -> Pa
 
 #[cfg(test)]
 mod tests {
-    use super::{super::parse_schema, *};
+    use super::*;
     use indoc::indoc;
-    use pretty_assertions::assert_eq;
 
-    fn local_name(value: &str) -> Name {
-        Name {
-            prefix: None,
-            local: identifier(value),
+    mod identifier {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_html() {
+            assert_eq!(
+                identifier("html"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "html".into(),
+                        sub_components: vec![],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_svg() {
+            assert_eq!(
+                identifier("svg"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "svg".into(),
+                        sub_components: vec![],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_common_attributes() {
+            assert_eq!(
+                identifier("common.attributes"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "common".into(),
+                        sub_components: vec!["attributes".into()],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_escaped_keyword() {
+            assert_eq!(
+                identifier("\\element"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "element".into(),
+                        sub_components: vec![],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_invalid_character() {
+            assert!(identifier("!invalid").is_err());
         }
     }
 
-    fn prefixed_name(prefix: &str, value: &str) -> Name {
-        Name {
-            prefix: Some(identifier(prefix)),
-            local: identifier(value),
+    mod literal {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_double_quoted_string() {
+            assert_eq!(
+                literal("\"http://www.w3.org/1999/xhtml\""),
+                Ok(("", "http://www.w3.org/1999/xhtml".into()))
+            );
+        }
+
+        #[test]
+        fn parse_single_quoted_string() {
+            assert_eq!(
+                literal("'http://www.w3.org/2000/svg'"),
+                Ok(("", "http://www.w3.org/2000/svg".into()))
+            );
+        }
+
+        #[test]
+        fn parse_concatenated_literals() {
+            assert_eq!(literal("\"foo\" ~ \"bar\""), Ok(("", "foobar".into())));
+        }
+
+        #[test]
+        fn parse_escaped_characters() {
+            assert_eq!(
+                literal("\"\\\"\\\\\\n\\r\\t\""),
+                Ok(("", "\"\\\n\r\t".into()))
+            );
         }
     }
 
-    fn identifier(name: &str) -> Identifier {
-        let mut components: Vec<_> = name.split('.').map(ToOwned::to_owned).collect();
+    mod name {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        Identifier {
-            component: components.remove(0),
-            sub_components: components,
+        #[test]
+        fn parse_unprefixed_name() {
+            assert_eq!(
+                name("div"),
+                Ok((
+                    "",
+                    Name {
+                        prefix: None,
+                        local: Identifier {
+                            component: "div".into(),
+                            sub_components: vec![],
+                        },
+                    }
+                ))
+            );
         }
-    }
 
-    #[test]
-    fn parse_pattern_schema() {
-        let input = "element foo { (text | empty)+, attribute id { text }? }";
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Name(local_name("foo")),
-                    pattern: Box::new(Pattern::Group(vec![
-                        Pattern::Many1(Box::new(Pattern::Choice(vec![
-                            Pattern::Text,
-                            Pattern::Empty,
-                        ]))),
-                        Pattern::Optional(Box::new(Pattern::Attribute {
-                            name_class: NameClass::Name(local_name("id")),
-                            pattern: Box::new(Pattern::Text),
-                        })),
-                    ])),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_grammar_schema_with_definitions() {
-        let input = indoc! {r#"
-            namespace sch = "http://example.com/sch"
-
-            sch:ns [ prefix = "html" uri = "http://example.com/ns" ]
-            start = element html { empty }
-            common &= element div { text }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![Declaration::Namespace(NamespaceDeclaration {
-                    prefix: identifier("sch"),
-                    uri: "http://example.com/sch".to_string(),
-                })],
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![
-                        GrammarContent::Annotation(AnnotationElement {
-                            name: prefixed_name("sch", "ns"),
-                            attributes: vec![
-                                AnnotationAttribute {
-                                    name: local_name("prefix"),
-                                    value: "html".to_string(),
-                                },
-                                AnnotationAttribute {
-                                    name: local_name("uri"),
-                                    value: "http://example.com/ns".to_string(),
-                                },
-                            ],
+        #[test]
+        fn parse_prefixed_name() {
+            assert_eq!(
+                name("html:div"),
+                Ok((
+                    "",
+                    Name {
+                        prefix: Some(Identifier {
+                            component: "html".into(),
+                            sub_components: vec![],
                         }),
-                        GrammarContent::Start {
+                        local: Identifier {
+                            component: "div".into(),
+                            sub_components: vec![],
+                        },
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_prefixed_name_with_dots() {
+            assert_eq!(
+                name("xsd:integer"),
+                Ok((
+                    "",
+                    Name {
+                        prefix: Some(Identifier {
+                            component: "xsd".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "integer".into(),
+                            sub_components: vec![],
+                        },
+                    }
+                ))
+            );
+        }
+    }
+
+    mod blank {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_whitespace() {
+            assert_eq!(blank("  \n\t  "), Ok(("", ())));
+        }
+
+        #[test]
+        fn parse_comments() {
+            assert_eq!(blank("# comment\n# another"), Ok(("", ())));
+        }
+
+        #[test]
+        fn parse_mixed_whitespace_and_comments() {
+            assert_eq!(blank("  # comment\n  "), Ok(("", ())));
+        }
+    }
+
+    mod name_class {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_any_name() {
+            assert_eq!(name_class("*"), Ok(("", NameClass::AnyName)));
+        }
+
+        #[test]
+        fn parse_ns_name() {
+            assert_eq!(
+                name_class("html:*"),
+                Ok((
+                    "",
+                    NameClass::NamespaceName(Some(Identifier {
+                        component: "html".into(),
+                        sub_components: vec![],
+                    }))
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_name() {
+            assert_eq!(
+                name_class("svg:rect"),
+                Ok((
+                    "",
+                    NameClass::Name(Name {
+                        prefix: Some(Identifier {
+                            component: "svg".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "rect".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_choice() {
+            assert_eq!(
+                name_class("html:div | html:span"),
+                Ok((
+                    "",
+                    NameClass::Choice(vec![
+                        NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "div".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "span".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                    ])
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_except() {
+            assert_eq!(
+                name_class("html:* - html:script"),
+                Ok((
+                    "",
+                    NameClass::Except {
+                        base: Box::new(NameClass::NamespaceName(Some(Identifier {
+                            component: "html".into(),
+                            sub_components: vec![],
+                        }))),
+                        except: Box::new(NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "script".into(),
+                                sub_components: vec![],
+                            },
+                        })),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_element() {
+            assert_eq!(
+                pattern("element html { empty }"),
+                Ok((
+                    "",
+                    Pattern::Element {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Empty),
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_attribute() {
+            assert_eq!(
+                pattern("attribute id { text }"),
+                Ok((
+                    "",
+                    Pattern::Attribute {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "id".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Text),
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_choice() {
+            assert_eq!(
+                pattern("text | empty"),
+                Ok(("", Pattern::Choice(vec![Pattern::Text, Pattern::Empty])))
+            );
+        }
+
+        #[test]
+        fn parse_interleave() {
+            assert_eq!(
+                pattern("text & empty"),
+                Ok(("", Pattern::Interleave(vec![Pattern::Text, Pattern::Empty])))
+            );
+        }
+
+        #[test]
+        fn parse_group() {
+            assert_eq!(
+                pattern("text , empty"),
+                Ok(("", Pattern::Group(vec![Pattern::Text, Pattern::Empty])))
+            );
+        }
+
+        #[test]
+        fn parse_quantifiers() {
+            assert_eq!(
+                pattern("text?"),
+                Ok(("", Pattern::Optional(Box::new(Pattern::Text))))
+            );
+            assert_eq!(
+                pattern("text*"),
+                Ok(("", Pattern::Many0(Box::new(Pattern::Text))))
+            );
+            assert_eq!(
+                pattern("text+"),
+                Ok(("", Pattern::Many1(Box::new(Pattern::Text))))
+            );
+        }
+
+        #[test]
+        fn parse_data() {
+            assert_eq!(
+                pattern("xsd:integer { minInclusive = \"1\" }"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "integer".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        parameters: vec![Parameter {
+                            name: Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "minInclusive".into(),
+                                    sub_components: vec![],
+                                },
+                            },
+                            value: "1".into(),
+                        }],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_name_pattern() {
+            assert_eq!(
+                pattern("xsd:integer"),
+                Ok((
+                    "",
+                    Pattern::Name(Name {
+                        prefix: Some(Identifier {
+                            component: "xsd".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "integer".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_value() {
+            assert_eq!(
+                pattern("string \"auto\""),
+                Ok((
+                    "",
+                    Pattern::Value {
+                        name: Some(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        value: "auto".into(),
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn respect_precedence() {
+            // , > & > |
+            assert_eq!(
+                pattern("a , b & c | d"),
+                Ok((
+                    "",
+                    Pattern::Choice(vec![
+                        Pattern::Interleave(vec![
+                            Pattern::Group(vec![
+                                Pattern::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "a".into(),
+                                        sub_components: vec![]
+                                    }
+                                }),
+                                Pattern::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "b".into(),
+                                        sub_components: vec![]
+                                    }
+                                }),
+                            ]),
+                            Pattern::Name(Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "c".into(),
+                                    sub_components: vec![]
+                                }
+                            }),
+                        ]),
+                        Pattern::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "d".into(),
+                                sub_components: vec![]
+                            }
+                        }),
+                    ])
+                ))
+            );
+        }
+    }
+
+    mod declaration {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_namespace_declaration() {
+            assert_eq!(
+                declaration("namespace html = \"http://www.w3.org/1999/xhtml\""),
+                Ok((
+                    "",
+                    Declaration::Namespace(NamespaceDeclaration {
+                        prefix: Identifier {
+                            component: "html".into(),
+                            sub_components: vec![],
+                        },
+                        uri: "http://www.w3.org/1999/xhtml".into(),
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_default_namespace_declaration() {
+            assert_eq!(
+                declaration("default namespace = \"http://www.w3.org/1999/xhtml\""),
+                Ok((
+                    "",
+                    Declaration::DefaultNamespace("http://www.w3.org/1999/xhtml".into())
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_datatypes_declaration() {
+            assert_eq!(
+                declaration("datatypes xsd = \"http://www.w3.org/2001/XMLSchema-datatypes\""),
+                Ok((
+                    "",
+                    Declaration::Datatypes(DatatypesDeclaration {
+                        prefix: Some(Identifier {
+                            component: "xsd".into(),
+                            sub_components: vec![],
+                        }),
+                        uri: "http://www.w3.org/2001/XMLSchema-datatypes".into(),
+                    })
+                ))
+            );
+        }
+    }
+
+    mod grammar {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_start() {
+            assert_eq!(
+                grammar("start = element html { empty }"),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Start {
                             combine: None,
                             pattern: Pattern::Element {
-                                name_class: NameClass::Name(local_name("html")),
+                                name_class: NameClass::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "html".into(),
+                                        sub_components: vec![],
+                                    },
+                                }),
                                 pattern: Box::new(Pattern::Empty),
+                            }
+                        }]
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_definition() {
+            assert_eq!(
+                grammar("common.attrib = attribute class { text }"),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Definition(Definition {
+                            name: Identifier {
+                                component: "common".into(),
+                                sub_components: vec!["attrib".into()],
                             },
-                        },
-                        GrammarContent::Definition(Definition {
-                            name: identifier("common"),
-                            combine: Some(Combine::Interleave),
-                            pattern: Pattern::Element {
-                                name_class: NameClass::Name(local_name("div")),
+                            combine: None,
+                            pattern: Pattern::Attribute {
+                                name_class: NameClass::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "class".into(),
+                                        sub_components: vec![],
+                                    },
+                                }),
                                 pattern: Box::new(Pattern::Text),
-                            },
-                        }),
-                    ],
-                }),
-            }
-        );
-    }
+                            }
+                        })]
+                    }
+                ))
+            );
+        }
 
-    #[test]
-    fn parse_data_and_value_patterns() {
-        let input = "attribute size { xsd:integer { minInclusive = \"1\" } - \"5\" }";
+        #[test]
+        fn parse_include() {
+            assert_eq!(
+                grammar("include \"common.rnc\""),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Include(Include {
+                            uri: "common.rnc".into(),
+                            inherit: None,
+                            grammar: None,
+                        })]
+                    }
+                ))
+            );
+        }
 
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Attribute {
-                    name_class: NameClass::Name(local_name("size")),
-                    pattern: Box::new(Pattern::Data {
-                        name: prefixed_name("xsd", "integer"),
-                        parameters: vec![Parameter {
-                            name: local_name("minInclusive"),
-                            value: "1".to_string(),
-                        }],
-                        except: Some(Box::new(Pattern::Value {
-                            name: None,
-                            value: "5".to_string(),
-                        })),
-                    }),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_name_class_except() {
-        let input = "element (* - (foo | bar)) { text }";
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Except {
-                        base: Box::new(NameClass::AnyName),
-                        except: Box::new(NameClass::Choice(vec![
-                            NameClass::Name(local_name("foo")),
-                            NameClass::Name(local_name("bar")),
-                        ])),
-                    },
-                    pattern: Box::new(Pattern::Text),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_annotation_item() {
-        let input = "sch:ns [ prefix = \"html\" uri = \"http://example.com/ns\" ]";
-
-        assert_eq!(
-            annotation_element(input).unwrap(),
-            (
-                "",
-                AnnotationElement {
-                    name: prefixed_name("sch", "ns"),
-                    attributes: vec![
-                        AnnotationAttribute {
-                            name: local_name("prefix"),
-                            value: "html".to_string(),
-                        },
-                        AnnotationAttribute {
-                            name: local_name("uri"),
-                            value: "http://example.com/ns".to_string(),
-                        },
-                    ],
-                }
-            )
-        );
-        assert_eq!(
-            grammar_content(input).unwrap(),
-            (
-                "",
-                GrammarContent::Annotation(AnnotationElement {
-                    name: prefixed_name("sch", "ns"),
-                    attributes: vec![
-                        AnnotationAttribute {
-                            name: local_name("prefix"),
-                            value: "html".to_string(),
-                        },
-                        AnnotationAttribute {
-                            name: local_name("uri"),
-                            value: "http://example.com/ns".to_string(),
-                        },
-                    ],
-                })
-            )
-        );
-    }
-
-    #[test]
-    fn parse_basic_table_definition() {
-        let input = "table = element table { table.attlist, caption?, tr+ }";
-
-        assert_eq!(
-            grammar_content(input).unwrap(),
-            (
-                "",
-                GrammarContent::Definition(Definition {
-                    name: identifier("table"),
-                    combine: None,
-                    pattern: Pattern::Element {
-                        name_class: NameClass::Name(local_name("table")),
-                        pattern: Box::new(Pattern::Group(vec![
-                            Pattern::Name(local_name("table.attlist")),
-                            Pattern::Optional(Box::new(Pattern::Name(local_name("caption")))),
-                            Pattern::Many1(Box::new(Pattern::Name(local_name("tr")))),
-                        ])),
-                    },
-                })
-            )
-        );
-    }
-
-    #[test]
-    fn parse_prefixed_attribute_pattern() {
-        let input = "attribute xml:space { string \"preserve\" }?";
-
-        assert_eq!(
-            pattern(input).unwrap(),
-            (
-                "",
-                Pattern::Optional(Box::new(Pattern::Attribute {
-                    name_class: NameClass::Name(prefixed_name("xml", "space")),
-                    pattern: Box::new(Pattern::Value {
-                        name: Some(local_name("string")),
-                        value: "preserve".to_string(),
-                    }),
-                }))
-            )
-        );
-    }
-
-    #[test]
-    fn parse_definition_with_inline_comment() {
-        let input = indoc! {r#"
-            xml.space.attrib = # added -- hsivonen
-                attribute xml:space { string "preserve" }?
-        "#};
-
-        assert_eq!(
-            grammar_content(input).unwrap(),
-            (
-                "",
-                GrammarContent::Definition(Definition {
-                    name: identifier("xml.space.attrib"),
-                    combine: None,
-                    pattern: Pattern::Optional(Box::new(Pattern::Attribute {
-                        name_class: NameClass::Name(prefixed_name("xml", "space")),
-                        pattern: Box::new(Pattern::Value {
-                            name: Some(local_name("string")),
-                            value: "preserve".to_string(),
-                        }),
-                    })),
-                })
-            )
-        );
-    }
-
-    #[test]
-    fn parse_definition_followed_by_next_item() {
-        let input = indoc! {r#"
-            xml.space.attrib = # added -- hsivonen
-                attribute xml:space { string "preserve" }?
-            class.attrib = attribute class { text }?
-        "#};
-
-        let (remaining_input, _) = grammar_content(input).unwrap();
-
-        assert!(remaining_input.trim_start().starts_with("class.attrib"));
-    }
-
-    #[test]
-    fn parse_prefixed_name_class() {
-        let input = "xml:space { string \"preserve\" }";
-
-        assert_eq!(
-            name_class(input).unwrap(),
-            (
-                "{ string \"preserve\" }",
-                NameClass::Name(prefixed_name("xml", "space"))
-            )
-        );
-    }
-
-    #[test]
-    fn parse_attribute_pattern_followed_by_next_item() {
-        let input = indoc! {r#"
-            attribute xml:space { string "preserve" }?
-            class.attrib = attribute class { text }?
-        "#};
-
-        let (remaining_input, _) = pattern(input).unwrap();
-
-        assert!(remaining_input.trim_start().starts_with("class.attrib"));
-    }
-
-    #[test]
-    fn parse_attribute_pattern_parser() {
-        let input = indoc! {r#"
-            attribute xml:space { string "preserve" }?
-            class.attrib = attribute class { text }?
-        "#};
-
-        let (remaining_input, _) = attribute_pattern(input).unwrap();
-
-        assert!(remaining_input.trim_start().starts_with("?"));
-    }
-
-    #[test]
-    fn parse_default_namespace_with_prefix() {
-        let input = indoc! {r#"
-            default namespace svg = "http://example.com"
-
-            element svg { empty }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![Declaration::DefaultNamespace(
-                    "http://example.com".to_string()
-                )],
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Name(local_name("svg")),
-                    pattern: Box::new(Pattern::Empty),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_empty_schema() {
-        let input = "# comment only";
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Grammar(Grammar {
-                    contents: Vec::new()
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_annotation_attachment() {
-        let input = "element pre { pre.attlist >> sch:pattern [ name = \"pre\" ] , Inline.model }";
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Name(local_name("pre")),
-                    pattern: Box::new(Pattern::Group(vec![
-                        Pattern::Name(local_name("pre.attlist")),
-                        Pattern::Name(local_name("Inline.model")),
-                    ])),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_include_with_annotation_block() {
-        let input = indoc! {r#"
-            include "base.rnc" {
-                [ sch:pattern [ name = "x" ] ]
-                start = empty
-            }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![],
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![GrammarContent::Include(Include {
-                        uri: "base.rnc".to_string(),
-                        inherit: None,
-                        grammar: Some(Grammar {
+        #[test]
+        fn parse_div() {
+            assert_eq!(
+                grammar("div { start = empty }"),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Div(Grammar {
                             contents: vec![GrammarContent::Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }],
-                        }),
-                    })],
-                }),
-            }
-        );
+                            }]
+                        })]
+                    }
+                ))
+            );
+        }
     }
 
-    #[test]
-    fn parse_element_with_parenthesized_choice() {
-        let input = "element select { select.attlist, (option | optgroup)+ }";
+    mod schema {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Name(local_name("select")),
-                    pattern: Box::new(Pattern::Group(vec![
-                        Pattern::Name(local_name("select.attlist")),
-                        Pattern::Many1(Box::new(Pattern::Choice(vec![
-                            Pattern::Name(local_name("option")),
-                            Pattern::Name(local_name("optgroup")),
-                        ]))),
-                    ])),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_include_with_nested_annotation_block() {
-        let input = indoc! {r#"
-            include "basic-form.rnc" {
-                [
-                    sch:pattern [
-                        name = "select.multiple"
-                        "\x{a}"
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![],
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![GrammarContent::Include(Include {
-                        uri: "basic-form.rnc".to_string(),
-                        inherit: None,
-                        grammar: Some(Grammar {
-                            contents: vec![GrammarContent::Definition(Definition {
-                                name: identifier("select"),
-                                combine: None,
-                                pattern: Pattern::Element {
-                                    name_class: NameClass::Name(local_name("select")),
-                                    pattern: Box::new(Pattern::Group(vec![
-                                        Pattern::Name(local_name("select.attlist")),
-                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
-                                            Pattern::Name(local_name("option")),
-                                            Pattern::Name(local_name("optgroup")),
-                                        ]))),
-                                    ])),
+        #[test]
+        fn parse_pattern_schema() {
+            assert_eq!(
+                schema("element html { empty }"),
+                Ok((
+                    "",
+                    Schema {
+                        declarations: vec![],
+                        body: SchemaBody::Pattern(Pattern::Element {
+                            name_class: NameClass::Name(Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "html".into(),
+                                    sub_components: vec![],
                                 },
-                            }),],
-                        }),
-                    })],
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_annotation_attachment_with_comment() {
-        let input = indoc! {r#"
-            element button {
-                button.attlist,
-                Flow.model
-                # comment
-                >> sch:pattern [ name = "button.content" ]
-            }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Pattern(Pattern::Element {
-                    name_class: NameClass::Name(local_name("button")),
-                    pattern: Box::new(Pattern::Group(vec![
-                        Pattern::Name(local_name("button.attlist")),
-                        Pattern::Name(local_name("Flow.model")),
-                    ])),
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_grammar_with_leading_annotation_block() {
-        let input = indoc! {r#"
-            [ sch:pattern [ name = "select.multiple" ] ] select =
-                element select { select.attlist, (option | optgroup)+ }
-        "#};
-
-        let (remaining_input, _) = grammar(input).unwrap();
-
-        assert!(remaining_input.trim_start().is_empty());
-    }
-
-    #[test]
-    fn parse_include_with_nested_annotation_and_brackets() {
-        let input = indoc! {r#"
-            include "basic-form.rnc" {
-                [
-                    sch:pattern [
-                        name = "select.multiple"
-                        sch:report [
-                            test = "html:option[@selected]"
-                        ]
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![],
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![GrammarContent::Include(Include {
-                        uri: "basic-form.rnc".to_string(),
-                        inherit: None,
-                        grammar: Some(Grammar {
-                            contents: vec![GrammarContent::Definition(Definition {
-                                name: identifier("select"),
-                                combine: None,
-                                pattern: Pattern::Element {
-                                    name_class: NameClass::Name(local_name("select")),
-                                    pattern: Box::new(Pattern::Group(vec![
-                                        Pattern::Name(local_name("select.attlist")),
-                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
-                                            Pattern::Name(local_name("option")),
-                                            Pattern::Name(local_name("optgroup")),
-                                        ]))),
-                                    ])),
-                                },
-                            }),],
-                        }),
-                    })],
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_include_with_schematron_block() {
-        let input = indoc! {r#"
-            include "basic-form.rnc" {
-                [
-                    sch:pattern [
-                        name = "select.multiple.selected.options"
-                        sch:report [
-                            test = "not(@multiple) and count(html:option[@selected]) > 1"
-                        ]
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: vec![],
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![GrammarContent::Include(Include {
-                        uri: "basic-form.rnc".to_string(),
-                        inherit: None,
-                        grammar: Some(Grammar {
-                            contents: vec![GrammarContent::Definition(Definition {
-                                name: identifier("select"),
-                                combine: None,
-                                pattern: Pattern::Element {
-                                    name_class: NameClass::Name(local_name("select")),
-                                    pattern: Box::new(Pattern::Group(vec![
-                                        Pattern::Name(local_name("select.attlist")),
-                                        Pattern::Many1(Box::new(Pattern::Choice(vec![
-                                            Pattern::Name(local_name("option")),
-                                            Pattern::Name(local_name("optgroup")),
-                                        ]))),
-                                    ])),
-                                },
-                            }),],
-                        }),
-                    })],
-                }),
-            }
-        );
-    }
-
-    #[test]
-    fn parse_include_block_as_grammar_content() {
-        let input = indoc! {r#"
-            include "basic-form.rnc" {
-                [
-                    sch:pattern [
-                        name = "select.multiple.selected.options"
-                        sch:report [
-                            test = "not(@multiple) and count(html:option[@selected]) > 1"
-                        ]
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-            form.attlist &= attribute accept-charset { charsets.datatype }?
-        "#};
-
-        let (remaining_input, _) = grammar_content(input).unwrap();
-
-        assert!(remaining_input.trim_start().starts_with("form.attlist"));
-    }
-
-    #[test]
-    fn parse_raw_include_block() {
-        let input = indoc! {r#"
-            {
-                [
-                    sch:pattern [
-                        name = "select.multiple.selected.options"
-                        sch:report [
-                            test = "not(@multiple) and count(html:option[@selected]) > 1"
-                        ]
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-            form.attlist &= attribute accept-charset { charsets.datatype }?
-        "#};
-
-        let (remaining_input, _) = braced(grammar).parse(input).unwrap();
-
-        assert!(remaining_input.trim_start().starts_with("form.attlist"));
-    }
-
-    #[test]
-    fn parse_annotation_before_include_block() {
-        let input = indoc! {r#"
-            sch:ns [ prefix = "html" uri = "http://www.w3.org/1999/xhtml" ]
-            include "basic-form.rnc" {
-                [
-                    sch:pattern [
-                        name = "select.multiple.selected.options"
-                        sch:report [
-                            test = "not(@multiple) and count(html:option[@selected]) > 1"
-                        ]
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-            form.attlist &= attribute accept-charset { charsets.datatype }?
-        "#};
-
-        assert_eq!(
-            parse_schema(input).unwrap(),
-            Schema {
-                declarations: Vec::new(),
-                body: SchemaBody::Grammar(Grammar {
-                    contents: vec![
-                        GrammarContent::Annotation(AnnotationElement {
-                            name: prefixed_name("sch", "ns"),
-                            attributes: vec![
-                                AnnotationAttribute {
-                                    name: local_name("prefix"),
-                                    value: "html".to_string(),
-                                },
-                                AnnotationAttribute {
-                                    name: local_name("uri"),
-                                    value: "http://www.w3.org/1999/xhtml".to_string(),
-                                },
-                            ],
-                        }),
-                        GrammarContent::Include(Include {
-                            uri: "basic-form.rnc".to_string(),
-                            inherit: None,
-                            grammar: Some(Grammar {
-                                contents: vec![GrammarContent::Definition(Definition {
-                                    name: identifier("select"),
-                                    combine: None,
-                                    pattern: Pattern::Element {
-                                        name_class: NameClass::Name(local_name("select")),
-                                        pattern: Box::new(Pattern::Group(vec![
-                                            Pattern::Name(local_name("select.attlist")),
-                                            Pattern::Many1(Box::new(Pattern::Choice(vec![
-                                                Pattern::Name(local_name("option")),
-                                                Pattern::Name(local_name("optgroup")),
-                                            ]))),
-                                        ])),
-                                    },
-                                }),],
                             }),
-                        }),
-                        GrammarContent::Definition(Definition {
-                            name: identifier("form.attlist"),
-                            combine: Some(Combine::Interleave),
-                            pattern: Pattern::Optional(Box::new(Pattern::Attribute {
-                                name_class: NameClass::Name(local_name("accept-charset")),
-                                pattern: Box::new(Pattern::Name(local_name("charsets.datatype"))),
-                            })),
-                        }),
-                    ],
-                }),
-            }
-        );
+                            pattern: Box::new(Pattern::Empty),
+                        })
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_grammar_schema() {
+            assert_eq!(
+                schema("start = empty"),
+                Ok((
+                    "",
+                    Schema {
+                        declarations: vec![],
+                        body: SchemaBody::Grammar(Grammar {
+                            contents: vec![GrammarContent::Start {
+                                combine: None,
+                                pattern: Pattern::Empty,
+                            }]
+                        })
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_schema_with_declarations() {
+            assert_eq!(
+                schema(indoc! {r#"
+                    namespace html = "http://www.w3.org/1999/xhtml"
+                    start = element html:html { empty }
+                "#}),
+                Ok((
+                    "",
+                    Schema {
+                        declarations: vec![Declaration::Namespace(NamespaceDeclaration {
+                            prefix: Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            },
+                            uri: "http://www.w3.org/1999/xhtml".into(),
+                        })],
+                        body: SchemaBody::Grammar(Grammar {
+                            contents: vec![GrammarContent::Start {
+                                combine: None,
+                                pattern: Pattern::Element {
+                                    name_class: NameClass::Name(Name {
+                                        prefix: Some(Identifier {
+                                            component: "html".into(),
+                                            sub_components: vec![],
+                                        }),
+                                        local: Identifier {
+                                            component: "html".into(),
+                                            sub_components: vec![],
+                                        },
+                                    }),
+                                    pattern: Box::new(Pattern::Empty),
+                                }
+                            }]
+                        })
+                    }
+                ))
+            );
+        }
     }
 
-    #[test]
-    fn parse_raw_include_block_with_escape_sequences() {
-        let input = indoc! {r#"
-            {
-                [
-                    sch:pattern [
-                        name = "select.multiple.selected.options"
-                        "\x{a}" ~
-                        "          "
-                        sch:rule [
-                            context = "html:select"
-                            "\x{a}" ~
-                            "              "
-                            sch:report [
-                                test =
-                                    "not(@multiple) and count(html:option[@selected]) > 1"
-                                "\x{a}" ~
-                                "                   Select elements which aren't marked as multiple may not have more then one selected option.\x{a}" ~
-                                "              "
-                            ]
-                            "\x{a}" ~
-                            "          "
-                        ]
-                        "\x{a}" ~
-                        "      "
-                    ]
-                ]
-                select = element select { select.attlist, (option | optgroup)+ }
-            }
-            form.attlist &= attribute accept-charset { charsets.datatype }?
-        "#};
+    mod annotation {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert!(
-            braced(grammar)
-                .parse(input)
-                .unwrap()
-                .0
-                .trim_start()
-                .starts_with("form.attlist")
-        );
+        #[test]
+        fn parse_annotation_attribute() {
+            assert_eq!(
+                annotation_attribute("a:b = \"c\""),
+                Ok((
+                    "",
+                    AnnotationAttribute {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "a".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "b".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        value: "c".into(),
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_annotation_element() {
+            assert_eq!(
+                annotation_element("a:b [ c:d = \"e\" ]"),
+                Ok((
+                    "",
+                    AnnotationElement {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "a".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "b".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        attributes: vec![AnnotationAttribute {
+                            name: Name {
+                                prefix: Some(Identifier {
+                                    component: "c".into(),
+                                    sub_components: vec![],
+                                }),
+                                local: Identifier {
+                                    component: "d".into(),
+                                    sub_components: vec![],
+                                },
+                            },
+                            value: "e".into(),
+                        }],
+                    }
+                ))
+            );
+        }
     }
 
-    #[test]
-    fn parse_choice_with_inline_comment() {
-        let input = indoc! {r#"
-            InputType.class |=
-                string "image"
-                | string "button"
-                | # bugfix
-                  string "file"
-        "#};
+    mod assignment_operator {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_eq!(
-            grammar_content(input).unwrap(),
-            (
-                "",
-                GrammarContent::Definition(Definition {
-                    name: identifier("InputType.class"),
-                    combine: Some(Combine::Choice),
-                    pattern: Pattern::Choice(vec![
-                        Pattern::Value {
-                            name: Some(local_name("string")),
-                            value: "image".to_string(),
+        #[test]
+        fn parse_assignment() {
+            assert_eq!(assignment_operator("="), Ok(("", None)));
+        }
+
+        #[test]
+        fn parse_choice_assignment() {
+            assert_eq!(assignment_operator("|="), Ok(("", Some(Combine::Choice))));
+        }
+
+        #[test]
+        fn parse_interleave_assignment() {
+            assert_eq!(
+                assignment_operator("&="),
+                Ok(("", Some(Combine::Interleave)))
+            );
+        }
+    }
+
+    mod data_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_data_with_parameters() {
+            assert_eq!(
+                data_pattern("xsd:string { minLength = \"1\" }"),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
                         },
-                        Pattern::Value {
-                            name: Some(local_name("string")),
-                            value: "button".to_string(),
+                        parameters: vec![Parameter {
+                            name: Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "minLength".into(),
+                                    sub_components: vec![],
+                                },
+                            },
+                            value: "1".into(),
+                        }],
+                        except: None,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_data_with_except() {
+            assert_eq!(
+                data_pattern("xsd:string - \"foo\""),
+                Ok((
+                    "",
+                    Pattern::Data {
+                        name: Name {
+                            prefix: Some(Identifier {
+                                component: "xsd".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "string".into(),
+                                sub_components: vec![],
+                            },
                         },
-                        Pattern::Value {
-                            name: Some(local_name("string")),
-                            value: "file".to_string(),
+                        parameters: vec![],
+                        except: Some(Box::new(Pattern::Value {
+                            name: None,
+                            value: "foo".into(),
+                        })),
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_on_plain_name() {
+            assert!(data_pattern("xsd:string").is_err());
+        }
+    }
+
+    mod inherit {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_inherit() {
+            assert_eq!(
+                inherit("inherit = xhtml"),
+                Ok((
+                    "",
+                    Inherit::Prefix(Identifier {
+                        component: "xhtml".into(),
+                        sub_components: vec![],
+                    })
+                ))
+            );
+        }
+    }
+
+    mod parameter {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_parameter() {
+            assert_eq!(
+                parameter("minLength = \"1\""),
+                Ok((
+                    "",
+                    Parameter {
+                        name: Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "minLength".into(),
+                                sub_components: vec![],
+                            },
                         },
-                    ]),
-                })
-            )
-        );
+                        value: "1".into(),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod element_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_element() {
+            assert_eq!(
+                element_pattern("element html { empty }"),
+                Ok((
+                    "",
+                    Pattern::Element {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Empty),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod attribute_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_attribute() {
+            assert_eq!(
+                attribute_pattern("attribute id { text }"),
+                Ok((
+                    "",
+                    Pattern::Attribute {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "id".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Text),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod list_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_list() {
+            assert_eq!(
+                list_pattern("list { text }"),
+                Ok(("", Pattern::List(Box::new(Pattern::Text))))
+            );
+        }
+    }
+
+    mod text_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_text() {
+            assert_eq!(text_pattern("text"), Ok(("", Pattern::Text)));
+        }
+    }
+
+    mod empty_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_empty() {
+            assert_eq!(empty_pattern("empty"), Ok(("", Pattern::Empty)));
+        }
+    }
+
+    mod not_allowed_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_not_allowed() {
+            assert_eq!(
+                not_allowed_pattern("notAllowed"),
+                Ok(("", Pattern::NotAllowed))
+            );
+        }
+    }
+
+    mod external_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_external() {
+            assert_eq!(
+                external_pattern("external \"common.rnc\""),
+                Ok(("", Pattern::External("common.rnc".into())))
+            );
+        }
+    }
+
+    mod grammar_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_grammar() {
+            assert_eq!(
+                grammar_pattern("grammar { start = empty }"),
+                Ok((
+                    "",
+                    Pattern::Grammar(Grammar {
+                        contents: vec![GrammarContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }]
+                    })
+                ))
+            );
+        }
+    }
+
+    mod primary_name_class {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_any_name() {
+            assert_eq!(primary_name_class("*"), Ok(("", NameClass::AnyName)));
+        }
+
+        #[test]
+        fn parse_ns_name() {
+            assert_eq!(
+                primary_name_class("html:*"),
+                Ok((
+                    "",
+                    NameClass::NamespaceName(Some(Identifier {
+                        component: "html".into(),
+                        sub_components: vec![],
+                    }))
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_parenthesized() {
+            assert_eq!(
+                primary_name_class("(html:div)"),
+                Ok((
+                    "",
+                    NameClass::Name(Name {
+                        prefix: Some(Identifier {
+                            component: "html".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "div".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+    }
+
+    mod start {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_start() {
+            assert_eq!(
+                start("start = empty"),
+                Ok((
+                    "",
+                    GrammarContent::Start {
+                        combine: None,
+                        pattern: Pattern::Empty,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_start_with_choice_assignment() {
+            assert_eq!(
+                start("start |= empty"),
+                Ok((
+                    "",
+                    GrammarContent::Start {
+                        combine: Some(Combine::Choice),
+                        pattern: Pattern::Empty,
+                    }
+                ))
+            );
+        }
+    }
+
+    mod definition {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_definition() {
+            assert_eq!(
+                definition("foo = text"),
+                Ok((
+                    "",
+                    GrammarContent::Definition(Definition {
+                        name: Identifier {
+                            component: "foo".into(),
+                            sub_components: vec![],
+                        },
+                        combine: None,
+                        pattern: Pattern::Text,
+                    })
+                ))
+            );
+        }
+    }
+
+    mod div {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_div() {
+            assert_eq!(
+                div("div { start = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Div(Grammar {
+                        contents: vec![GrammarContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }]
+                    })
+                ))
+            );
+        }
+    }
+
+    mod include {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_include() {
+            assert_eq!(
+                include("include \"foo.rnc\""),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        grammar: None,
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_inherit() {
+            assert_eq!(
+                include("include \"foo.rnc\" inherit = bar"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: Some(Inherit::Prefix(Identifier {
+                            component: "bar".into(),
+                            sub_components: vec![],
+                        })),
+                        grammar: None,
+                    })
+                ))
+            );
+        }
+    }
+
+    mod annotated {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_annotated_pattern() {
+            assert_eq!(
+                annotated(text_pattern).parse("[ a:b = \"c\" ] text"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod follow_annotation {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_follow_annotation() {
+            assert_eq!(follow_annotation(">> a:b [ ]"), Ok(("", ())));
+        }
+    }
+
+    mod symbol {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_symbol() {
+            assert_eq!(symbol("|").parse(" | "), Ok(("", "|")));
+        }
+    }
+
+    mod parenthesized {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_parenthesized() {
+            assert_eq!(
+                parenthesized(text_pattern).parse("( text )"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod braced {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_braced() {
+            assert_eq!(
+                braced(text_pattern).parse("{ text }"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod bracketed {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_bracketed() {
+            assert_eq!(
+                bracketed(text_pattern).parse("[ text ]"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod blanked {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_blanked() {
+            assert_eq!(
+                blanked(text_pattern).parse("  text  "),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod comment {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_comment() {
+            assert_eq!(comment("# foo\n"), Ok(("", ())));
+        }
+
+        #[test]
+        fn parse_comment_without_newline() {
+            assert_eq!(comment("# foo"), Ok(("", ())));
+        }
+    }
+
+    mod raw_identifier {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_raw_identifier() {
+            assert_eq!(
+                raw_identifier("foo.bar"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "foo".into(),
+                        sub_components: vec!["bar".into()],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_escaped_raw_identifier() {
+            assert_eq!(
+                raw_identifier("\\element"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "element".into(),
+                        sub_components: vec![],
+                    }
+                ))
+            );
+        }
+    }
+
+    mod literal_segment {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_quoted_segment() {
+            assert_eq!(literal_segment("\"foo\""), Ok(("", "foo".into())));
+        }
+    }
+
+    mod quoted {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_quoted_string() {
+            assert_eq!(quoted('"', "\\\"").parse("\"foo\""), Ok(("", "foo".into())));
+        }
+
+        #[test]
+        fn parse_empty_quoted_string() {
+            assert_eq!(quoted('"', "\\\"").parse("\"\""), Ok(("", "".into())));
+        }
+    }
+
+    mod string_escape {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_escapes() {
+            assert_eq!(string_escape("n"), Ok(("", "\n")));
+            assert_eq!(string_escape("r"), Ok(("", "\r")));
+            assert_eq!(string_escape("t"), Ok(("", "\t")));
+            assert_eq!(string_escape("\""), Ok(("", "\"")));
+            assert_eq!(string_escape("'"), Ok(("", "'")));
+            assert_eq!(string_escape("\\"), Ok(("", "\\")));
+        }
+
+        #[test]
+        fn parse_hex_escape() {
+            // hex escapes are just take(1) for now in the parser,
+            // but let's see how it works.
+            // actually string_escape is the part AFTER \
+            assert_eq!(string_escape("x{a}"), Ok(("{a}", "x")));
+        }
+    }
+
+    mod name_class_choice {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_choice() {
+            assert_eq!(
+                name_class_choice("html:div - html:span"),
+                Ok((
+                    "",
+                    NameClass::Except {
+                        base: Box::new(NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "div".into(),
+                                sub_components: vec![],
+                            },
+                        })),
+                        except: Box::new(NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "span".into(),
+                                sub_components: vec![],
+                            },
+                        })),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod parameters {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_parameters() {
+            assert_eq!(
+                parameters("{ minLength = \"1\" }"),
+                Ok((
+                    "",
+                    vec![Parameter {
+                        name: Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "minLength".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        value: "1".into(),
+                    }]
+                ))
+            );
+        }
+    }
+
+    mod keyword {
+        use super::*;
+        use nom::Parser;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_keyword() {
+            assert_eq!(keyword("element").parse("element "), Ok(("", "element")));
+        }
+
+        #[test]
+        fn fail_if_followed_by_identifier_char() {
+            assert!(keyword("element").parse("elemental").is_err());
+        }
     }
 }
