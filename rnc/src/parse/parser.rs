@@ -11,7 +11,7 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{alpha1, char, multispace1, satisfy},
-    combinator::{map, not, opt, peek, recognize, value, verify},
+    combinator::{map, not, opt, peek, recognize, success, value, verify},
     error::Error,
     multi::{many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
@@ -32,7 +32,7 @@ pub fn schema(input: &str) -> ParserResult<'_, Schema> {
                     SchemaBody::Grammar(Grammar { contents })
                 }),
                 map(pattern, SchemaBody::Pattern),
-                value(SchemaBody::Grammar(Grammar { contents: vec![] }), blank),
+                success(SchemaBody::Grammar(Grammar { contents: vec![] })),
             )),
         )),
         |(declarations, body)| Schema { declarations, body },
