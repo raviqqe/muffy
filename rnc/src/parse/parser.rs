@@ -605,12 +605,18 @@ mod tests {
 
         #[test]
         fn parse_double_quoted_string() {
-            assert_eq!(literal("\"http://www.w3.org/1999/xhtml\""), Ok(("", "http://www.w3.org/1999/xhtml".into())));
+            assert_eq!(
+                literal("\"http://www.w3.org/1999/xhtml\""),
+                Ok(("", "http://www.w3.org/1999/xhtml".into()))
+            );
         }
 
         #[test]
         fn parse_single_quoted_string() {
-            assert_eq!(literal("'http://www.w3.org/2000/svg'"), Ok(("", "http://www.w3.org/2000/svg".into())));
+            assert_eq!(
+                literal("'http://www.w3.org/2000/svg'"),
+                Ok(("", "http://www.w3.org/2000/svg".into()))
+            );
         }
 
         #[test]
@@ -620,7 +626,10 @@ mod tests {
 
         #[test]
         fn parse_escaped_characters() {
-            assert_eq!(literal("\"\\\"\\\\\\n\\r\\t\""), Ok(("", "\"\\\n\r\t".into())));
+            assert_eq!(
+                literal("\"\\\"\\\\\\n\\r\\t\""),
+                Ok(("", "\"\\\n\r\t".into()))
+            );
         }
     }
 
@@ -856,10 +865,7 @@ mod tests {
         fn parse_choice() {
             assert_eq!(
                 pattern("text | empty"),
-                Ok((
-                    "",
-                    Pattern::Choice(vec![Pattern::Text, Pattern::Empty])
-                ))
+                Ok(("", Pattern::Choice(vec![Pattern::Text, Pattern::Empty])))
             );
         }
 
@@ -867,10 +873,7 @@ mod tests {
         fn parse_interleave() {
             assert_eq!(
                 pattern("text & empty"),
-                Ok((
-                    "",
-                    Pattern::Interleave(vec![Pattern::Text, Pattern::Empty])
-                ))
+                Ok(("", Pattern::Interleave(vec![Pattern::Text, Pattern::Empty])))
             );
         }
 
@@ -878,18 +881,24 @@ mod tests {
         fn parse_group() {
             assert_eq!(
                 pattern("text , empty"),
-                Ok((
-                    "",
-                    Pattern::Group(vec![Pattern::Text, Pattern::Empty])
-                ))
+                Ok(("", Pattern::Group(vec![Pattern::Text, Pattern::Empty])))
             );
         }
 
         #[test]
         fn parse_quantifiers() {
-            assert_eq!(pattern("text?"), Ok(("", Pattern::Optional(Box::new(Pattern::Text)))));
-            assert_eq!(pattern("text*"), Ok(("", Pattern::Many0(Box::new(Pattern::Text)))));
-            assert_eq!(pattern("text+"), Ok(("", Pattern::Many1(Box::new(Pattern::Text)))));
+            assert_eq!(
+                pattern("text?"),
+                Ok(("", Pattern::Optional(Box::new(Pattern::Text))))
+            );
+            assert_eq!(
+                pattern("text*"),
+                Ok(("", Pattern::Many0(Box::new(Pattern::Text))))
+            );
+            assert_eq!(
+                pattern("text+"),
+                Ok(("", Pattern::Many1(Box::new(Pattern::Text))))
+            );
         }
 
         #[test]
@@ -975,12 +984,36 @@ mod tests {
                     Pattern::Choice(vec![
                         Pattern::Interleave(vec![
                             Pattern::Group(vec![
-                                Pattern::Name(Name { prefix: None, local: Identifier { component: "a".into(), sub_components: vec![] } }),
-                                Pattern::Name(Name { prefix: None, local: Identifier { component: "b".into(), sub_components: vec![] } }),
+                                Pattern::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "a".into(),
+                                        sub_components: vec![]
+                                    }
+                                }),
+                                Pattern::Name(Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "b".into(),
+                                        sub_components: vec![]
+                                    }
+                                }),
                             ]),
-                            Pattern::Name(Name { prefix: None, local: Identifier { component: "c".into(), sub_components: vec![] } }),
+                            Pattern::Name(Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "c".into(),
+                                    sub_components: vec![]
+                                }
+                            }),
                         ]),
-                        Pattern::Name(Name { prefix: None, local: Identifier { component: "d".into(), sub_components: vec![] } }),
+                        Pattern::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "d".into(),
+                                sub_components: vec![]
+                            }
+                        }),
                     ])
                 ))
             );
@@ -1297,7 +1330,10 @@ mod tests {
 
         #[test]
         fn parse_interleave_assignment() {
-            assert_eq!(assignment_operator("&="), Ok(("", Some(Combine::Interleave))));
+            assert_eq!(
+                assignment_operator("&="),
+                Ok(("", Some(Combine::Interleave)))
+            );
         }
     }
 
@@ -1504,7 +1540,10 @@ mod tests {
 
         #[test]
         fn parse_not_allowed() {
-            assert_eq!(not_allowed_pattern("notAllowed"), Ok(("", Pattern::NotAllowed)));
+            assert_eq!(
+                not_allowed_pattern("notAllowed"),
+                Ok(("", Pattern::NotAllowed))
+            );
         }
     }
 
@@ -1703,8 +1742,8 @@ mod tests {
 
     mod annotated {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_annotated_pattern() {
@@ -1721,17 +1760,14 @@ mod tests {
 
         #[test]
         fn parse_follow_annotation() {
-            assert_eq!(
-                follow_annotation(">> a:b [ ]"),
-                Ok(("", ()))
-            );
+            assert_eq!(follow_annotation(">> a:b [ ]"), Ok(("", ())));
         }
     }
 
     mod symbol {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_symbol() {
@@ -1741,8 +1777,8 @@ mod tests {
 
     mod parenthesized {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_parenthesized() {
@@ -1755,8 +1791,8 @@ mod tests {
 
     mod braced {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_braced() {
@@ -1769,8 +1805,8 @@ mod tests {
 
     mod bracketed {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_bracketed() {
@@ -1783,8 +1819,8 @@ mod tests {
 
     mod blanked {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_blanked() {
@@ -1855,8 +1891,8 @@ mod tests {
 
     mod quoted {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_quoted_string() {
@@ -1885,7 +1921,7 @@ mod tests {
 
         #[test]
         fn parse_hex_escape() {
-            // hex escapes are just take(1) for now in the parser, 
+            // hex escapes are just take(1) for now in the parser,
             // but let's see how it works.
             // actually string_escape is the part AFTER \
             assert_eq!(string_escape("x{a}"), Ok(("{a}", "x")));
@@ -1956,15 +1992,12 @@ mod tests {
 
     mod keyword {
         use super::*;
-        use pretty_assertions::assert_eq;
         use nom::Parser;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_keyword() {
-            assert_eq!(
-                keyword("element").parse("element "),
-                Ok(("", "element"))
-            );
+            assert_eq!(keyword("element").parse("element "), Ok(("", "element")));
         }
 
         #[test]
