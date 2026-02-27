@@ -51,18 +51,20 @@ Schema {
                                         },
                                     ),
                                     pattern: Data {
-                                        name: Name {
-                                            prefix: Some(
-                                                Identifier {
-                                                    component: "w",
+                                        name: Name(
+                                            Name {
+                                                prefix: Some(
+                                                    Identifier {
+                                                        component: "w",
+                                                        sub_components: [],
+                                                    },
+                                                ),
+                                                local: Identifier {
+                                                    component: "xml-name",
                                                     sub_components: [],
                                                 },
-                                            ),
-                                            local: Identifier {
-                                                component: "xml-name",
-                                                sub_components: [],
                                             },
-                                        },
+                                        ),
                                         parameters: [],
                                         except: None,
                                     },
@@ -208,25 +210,13 @@ Schema {
                                         [
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "default",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "preserve",
                                             },
@@ -297,25 +287,13 @@ Schema {
                                         [
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "true",
                                             },
                                             Value {
                                                 name: Some(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "string",
-                                                            sub_components: [],
-                                                        },
-                                                    },
+                                                    String,
                                                 ),
                                                 value: "false",
                                             },

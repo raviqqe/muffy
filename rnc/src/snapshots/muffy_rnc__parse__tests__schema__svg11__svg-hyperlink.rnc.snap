@@ -31,18 +31,20 @@ Schema {
                             },
                             combine: None,
                             pattern: Data {
-                                name: Name {
-                                    prefix: Some(
-                                        Identifier {
-                                            component: "xsd",
+                                name: Name(
+                                    Name {
+                                        prefix: Some(
+                                            Identifier {
+                                                component: "xsd",
+                                                sub_components: [],
+                                            },
+                                        ),
+                                        local: Identifier {
+                                            component: "NMTOKEN",
                                             sub_components: [],
                                         },
-                                    ),
-                                    local: Identifier {
-                                        component: "NMTOKEN",
-                                        sub_components: [],
                                     },
-                                },
+                                ),
                                 parameters: [],
                                 except: None,
                             },
@@ -631,13 +633,7 @@ Schema {
                                                 },
                                             ),
                                             pattern: Data {
-                                                name: Name {
-                                                    prefix: None,
-                                                    local: Identifier {
-                                                        component: "string",
-                                                        sub_components: [],
-                                                    },
-                                                },
+                                                name: String,
                                                 parameters: [],
                                                 except: None,
                                             },

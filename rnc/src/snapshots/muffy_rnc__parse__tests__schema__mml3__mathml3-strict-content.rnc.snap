@@ -586,18 +586,20 @@ Schema {
                         },
                         combine: None,
                         pattern: Data {
-                            name: Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "xsd",
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "NCName",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "NCName",
-                                    sub_components: [],
                                 },
-                            },
+                            ),
                             parameters: [],
                             except: None,
                         },
@@ -1062,18 +1064,20 @@ Schema {
                         },
                         combine: None,
                         pattern: Data {
-                            name: Name {
-                                prefix: Some(
-                                    Identifier {
-                                        component: "xsd",
+                            name: Name(
+                                Name {
+                                    prefix: Some(
+                                        Identifier {
+                                            component: "xsd",
+                                            sub_components: [],
+                                        },
+                                    ),
+                                    local: Identifier {
+                                        component: "base64Binary",
                                         sub_components: [],
                                     },
-                                ),
-                                local: Identifier {
-                                    component: "base64Binary",
-                                    sub_components: [],
                                 },
-                            },
+                            ),
                             parameters: [],
                             except: None,
                         },
