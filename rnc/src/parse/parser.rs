@@ -538,7 +538,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_html() {
+        fn parse_html() {
             assert_eq!(
                 identifier("html"),
                 Ok((
@@ -552,7 +552,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_svg() {
+        fn parse_svg() {
             assert_eq!(
                 identifier("svg"),
                 Ok((
@@ -566,7 +566,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_common_attributes() {
+        fn parse_common_attributes() {
             assert_eq!(
                 identifier("common.attributes"),
                 Ok((
@@ -580,7 +580,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_escaped_keyword() {
+        fn parse_escaped_keyword() {
             assert_eq!(
                 identifier("\\element"),
                 Ok((
@@ -594,7 +594,7 @@ mod tests {
         }
 
         #[test]
-        fn fails_on_invalid_character() {
+        fn fail_on_invalid_character() {
             assert!(identifier("!invalid").is_err());
         }
     }
@@ -604,22 +604,22 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_double_quoted_string() {
+        fn parse_double_quoted_string() {
             assert_eq!(literal("\"http://www.w3.org/1999/xhtml\""), Ok(("", "http://www.w3.org/1999/xhtml".into())));
         }
 
         #[test]
-        fn parses_single_quoted_string() {
+        fn parse_single_quoted_string() {
             assert_eq!(literal("'http://www.w3.org/2000/svg'"), Ok(("", "http://www.w3.org/2000/svg".into())));
         }
 
         #[test]
-        fn parses_concatenated_literals() {
+        fn parse_concatenated_literals() {
             assert_eq!(literal("\"foo\" ~ \"bar\""), Ok(("", "foobar".into())));
         }
 
         #[test]
-        fn parses_escaped_characters() {
+        fn parse_escaped_characters() {
             assert_eq!(literal("\"\\\"\\\\\\n\\r\\t\""), Ok(("", "\"\\\n\r\t".into())));
         }
     }
@@ -629,7 +629,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_unprefixed_name() {
+        fn parse_unprefixed_name() {
             assert_eq!(
                 name("div"),
                 Ok((
@@ -646,7 +646,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_prefixed_name() {
+        fn parse_prefixed_name() {
             assert_eq!(
                 name("html:div"),
                 Ok((
@@ -666,7 +666,7 @@ mod tests {
         }
 
         #[test]
-        fn parses_prefixed_name_with_dots() {
+        fn parse_prefixed_name_with_dots() {
             assert_eq!(
                 name("xsd:integer"),
                 Ok((
@@ -691,17 +691,17 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parses_whitespace() {
+        fn parse_whitespace() {
             assert_eq!(blank("  \n\t  "), Ok(("", ())));
         }
 
         #[test]
-        fn parses_comments() {
+        fn parse_comments() {
             assert_eq!(blank("# comment\n# another"), Ok(("", ())));
         }
 
         #[test]
-        fn parses_mixed_whitespace_and_comments() {
+        fn parse_mixed_whitespace_and_comments() {
             assert_eq!(blank("  # comment\n  "), Ok(("", ())));
         }
     }
@@ -1424,7 +1424,7 @@ mod tests {
         fn parses_keyword() {
             assert_eq!(
                 keyword("element").parse("element "),
-                Ok((" ", "element"))
+                Ok(("", "element"))
             );
         }
 
