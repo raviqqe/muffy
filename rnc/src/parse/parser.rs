@@ -1,8 +1,8 @@
 use crate::{
     Identifier,
     ast::{
-        AnnotationAttribute, AnnotationElement, Combine, DatatypesDeclaration, Declaration,
-        Definition, DatatypeName, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
+        AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
+        Declaration, Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
         NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
     },
 };
@@ -11,9 +11,9 @@ use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, is_not, tag, take, take_till},
     character::complete::{alpha1, char, multispace1, satisfy},
-    combinator::{map, not, opt, peek, recognize, value, verify},
+    combinator::{all_consuming, map, not, opt, peek, recognize, value, verify},
     error::Error,
-    multi::{many0, many1, separated_list0, separated_list1},
+    multi::{many0, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -21,16 +21,16 @@ type ParserError<'input> = Error<&'input str>;
 
 type ParserResult<'input, Output> = IResult<&'input str, Output, ParserError<'input>>;
 
+const IDENTIFIER_COMPONENT_SEPARATOR: char = '.';
+
 pub fn schema(input: &str) -> ParserResult<'_, Schema> {
     map(
         blanked((
             many0(declaration),
             alt((
-                map(many1(grammar_content), |contents| {
-                    SchemaBody::Grammar(Grammar { contents })
-                }),
+                // TODO Remove the all consuming combinator.
+                map(all_consuming(grammar), SchemaBody::Grammar),
                 map(pattern, SchemaBody::Pattern),
-                map(blank, |_| SchemaBody::Grammar(Grammar { contents: vec![] })),
             )),
         )),
         |(declarations, body)| Schema { declarations, body },
@@ -295,9 +295,8 @@ fn data_pattern(input: &str) -> ParserResult<'_, Pattern> {
 }
 
 fn value_pattern(input: &str) -> ParserResult<'_, Pattern> {
-    map((opt(datatype_name), literal), |(name, value)| Pattern::Value {
-        name,
-        value,
+    map((opt(datatype_name), literal), |(name, value)| {
+        Pattern::Value { name, value }
     })
     .parse(input)
 }
@@ -307,9 +306,7 @@ fn datatype_name(input: &str) -> ParserResult<'_, DatatypeName> {
         value(DatatypeName::String, keyword("string")),
         value(DatatypeName::Token, keyword("token")),
         map(
-            verify(name, |name| {
-                name.prefix.is_some()
-            }),
+            verify(name, |name| name.prefix.is_some()),
             DatatypeName::Name,
         ),
     ))
@@ -425,7 +422,7 @@ fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
         preceded(
             opt(char('\\')),
             separated_list1(
-                char('.'),
+                char(IDENTIFIER_COMPONENT_SEPARATOR),
                 recognize((alpha1, many0(satisfy(is_identifier_char)))),
             ),
         ),
@@ -467,7 +464,9 @@ fn keyword<'a>(
 ) -> impl Parser<&'a str, Output = &'a str, Error = ParserError<'a>> {
     blanked(terminated(
         tag(keyword),
-        not(peek(satisfy(is_identifier_char))),
+        not(peek(satisfy(|character| {
+            is_identifier_char(character) || character == IDENTIFIER_COMPONENT_SEPARATOR
+        }))),
     ))
 }
 
@@ -1800,6 +1799,65 @@ mod tests {
                             pattern: Pattern::Empty,
                         }]
                     })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_choice_definition() {
+            assert_eq!(
+                grammar("MathExpression |= PresentationExpression"),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![GrammarContent::Definition(Definition {
+                            name: Identifier {
+                                component: "MathExpression".into(),
+                                sub_components: vec![],
+                            },
+                            combine: Some(Combine::Choice),
+                            pattern: Pattern::Name(Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "PresentationExpression".into(),
+                                    sub_components: vec![],
+                                },
+                            }),
+                        })]
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_multiple_definitions() {
+            assert_eq!(
+                grammar(indoc! {r#"
+                    foo = text
+                    bar |= empty
+                "#}),
+                Ok((
+                    "",
+                    Grammar {
+                        contents: vec![
+                            GrammarContent::Definition(Definition {
+                                name: Identifier {
+                                    component: "foo".into(),
+                                    sub_components: vec![]
+                                },
+                                combine: None,
+                                pattern: Pattern::Text,
+                            }),
+                            GrammarContent::Definition(Definition {
+                                name: Identifier {
+                                    component: "bar".into(),
+                                    sub_components: vec![]
+                                },
+                                combine: Some(Combine::Choice),
+                                pattern: Pattern::Empty,
+                            }),
+                        ]
+                    }
                 ))
             );
         }
