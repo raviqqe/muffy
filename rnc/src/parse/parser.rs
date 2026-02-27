@@ -1415,6 +1415,545 @@ mod tests {
         }
     }
 
+    mod element_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_element() {
+            assert_eq!(
+                element_pattern("element html { empty }"),
+                Ok((
+                    "",
+                    Pattern::Element {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Empty),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod attribute_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_attribute() {
+            assert_eq!(
+                attribute_pattern("attribute id { text }"),
+                Ok((
+                    "",
+                    Pattern::Attribute {
+                        name_class: NameClass::Name(Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "id".into(),
+                                sub_components: vec![],
+                            },
+                        }),
+                        pattern: Box::new(Pattern::Text),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod list_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_list() {
+            assert_eq!(
+                list_pattern("list { text }"),
+                Ok(("", Pattern::List(Box::new(Pattern::Text))))
+            );
+        }
+    }
+
+    mod text_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_text() {
+            assert_eq!(text_pattern("text"), Ok(("", Pattern::Text)));
+        }
+    }
+
+    mod empty_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_empty() {
+            assert_eq!(empty_pattern("empty"), Ok(("", Pattern::Empty)));
+        }
+    }
+
+    mod not_allowed_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_not_allowed() {
+            assert_eq!(not_allowed_pattern("notAllowed"), Ok(("", Pattern::NotAllowed)));
+        }
+    }
+
+    mod external_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_external() {
+            assert_eq!(
+                external_pattern("external \"common.rnc\""),
+                Ok(("", Pattern::External("common.rnc".into())))
+            );
+        }
+    }
+
+    mod grammar_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_grammar() {
+            assert_eq!(
+                grammar_pattern("grammar { start = empty }"),
+                Ok((
+                    "",
+                    Pattern::Grammar(Grammar {
+                        contents: vec![GrammarContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }]
+                    })
+                ))
+            );
+        }
+    }
+
+    mod primary_name_class {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_any_name() {
+            assert_eq!(primary_name_class("*"), Ok(("", NameClass::AnyName)));
+        }
+
+        #[test]
+        fn parse_ns_name() {
+            assert_eq!(
+                primary_name_class("html:*"),
+                Ok((
+                    "",
+                    NameClass::NamespaceName(Some(Identifier {
+                        component: "html".into(),
+                        sub_components: vec![],
+                    }))
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_parenthesized() {
+            assert_eq!(
+                primary_name_class("(html:div)"),
+                Ok((
+                    "",
+                    NameClass::Name(Name {
+                        prefix: Some(Identifier {
+                            component: "html".into(),
+                            sub_components: vec![],
+                        }),
+                        local: Identifier {
+                            component: "div".into(),
+                            sub_components: vec![],
+                        },
+                    })
+                ))
+            );
+        }
+    }
+
+    mod start {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_start() {
+            assert_eq!(
+                start("start = empty"),
+                Ok((
+                    "",
+                    GrammarContent::Start {
+                        combine: None,
+                        pattern: Pattern::Empty,
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_start_with_choice_assignment() {
+            assert_eq!(
+                start("start |= empty"),
+                Ok((
+                    "",
+                    GrammarContent::Start {
+                        combine: Some(Combine::Choice),
+                        pattern: Pattern::Empty,
+                    }
+                ))
+            );
+        }
+    }
+
+    mod definition {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_definition() {
+            assert_eq!(
+                definition("foo = text"),
+                Ok((
+                    "",
+                    GrammarContent::Definition(Definition {
+                        name: Identifier {
+                            component: "foo".into(),
+                            sub_components: vec![],
+                        },
+                        combine: None,
+                        pattern: Pattern::Text,
+                    })
+                ))
+            );
+        }
+    }
+
+    mod div {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_div() {
+            assert_eq!(
+                div("div { start = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Div(Grammar {
+                        contents: vec![GrammarContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }]
+                    })
+                ))
+            );
+        }
+    }
+
+    mod include {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_include() {
+            assert_eq!(
+                include("include \"foo.rnc\""),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        grammar: None,
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_inherit() {
+            assert_eq!(
+                include("include \"foo.rnc\" inherit = bar"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: Some(Inherit::Prefix(Identifier {
+                            component: "bar".into(),
+                            sub_components: vec![],
+                        })),
+                        grammar: None,
+                    })
+                ))
+            );
+        }
+    }
+
+    mod annotated {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_annotated_pattern() {
+            assert_eq!(
+                annotated(text_pattern).parse("[ a:b = \"c\" ] text"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod follow_annotation {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_follow_annotation() {
+            assert_eq!(
+                follow_annotation(">> a:b [ ]"),
+                Ok(("", ()))
+            );
+        }
+    }
+
+    mod symbol {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_symbol() {
+            assert_eq!(symbol("|").parse(" | "), Ok(("", "|")));
+        }
+    }
+
+    mod parenthesized {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_parenthesized() {
+            assert_eq!(
+                parenthesized(text_pattern).parse("( text )"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod braced {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_braced() {
+            assert_eq!(
+                braced(text_pattern).parse("{ text }"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod bracketed {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_bracketed() {
+            assert_eq!(
+                bracketed(text_pattern).parse("[ text ]"),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod blanked {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_blanked() {
+            assert_eq!(
+                blanked(text_pattern).parse("  text  "),
+                Ok(("", Pattern::Text))
+            );
+        }
+    }
+
+    mod comment {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_comment() {
+            assert_eq!(comment("# foo\n"), Ok(("", ())));
+        }
+
+        #[test]
+        fn parse_comment_without_newline() {
+            assert_eq!(comment("# foo"), Ok(("", ())));
+        }
+    }
+
+    mod raw_identifier {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_raw_identifier() {
+            assert_eq!(
+                raw_identifier("foo.bar"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "foo".into(),
+                        sub_components: vec!["bar".into()],
+                    }
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_escaped_raw_identifier() {
+            assert_eq!(
+                raw_identifier("\\element"),
+                Ok((
+                    "",
+                    Identifier {
+                        component: "element".into(),
+                        sub_components: vec![],
+                    }
+                ))
+            );
+        }
+    }
+
+    mod literal_segment {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_quoted_segment() {
+            assert_eq!(literal_segment("\"foo\""), Ok(("", "foo".into())));
+        }
+    }
+
+    mod quoted {
+        use super::*;
+        use pretty_assertions::assert_eq;
+        use nom::Parser;
+
+        #[test]
+        fn parse_quoted_string() {
+            assert_eq!(quoted('"', "\\\"").parse("\"foo\""), Ok(("", "foo".into())));
+        }
+
+        #[test]
+        fn parse_empty_quoted_string() {
+            assert_eq!(quoted('"', "\\\"").parse("\"\""), Ok(("", "".into())));
+        }
+    }
+
+    mod string_escape {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_escapes() {
+            assert_eq!(string_escape("n"), Ok(("", "\n")));
+            assert_eq!(string_escape("r"), Ok(("", "\r")));
+            assert_eq!(string_escape("t"), Ok(("", "\t")));
+            assert_eq!(string_escape("\""), Ok(("", "\"")));
+            assert_eq!(string_escape("'"), Ok(("", "'")));
+            assert_eq!(string_escape("\\"), Ok(("", "\\")));
+        }
+
+        #[test]
+        fn parse_hex_escape() {
+            // hex escapes are just take(1) for now in the parser, 
+            // but let's see how it works.
+            // actually string_escape is the part AFTER \
+            assert_eq!(string_escape("x{a}"), Ok(("{a}", "x")));
+        }
+    }
+
+    mod name_class_choice {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_choice() {
+            assert_eq!(
+                name_class_choice("html:div - html:span"),
+                Ok((
+                    "",
+                    NameClass::Except {
+                        base: Box::new(NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "div".into(),
+                                sub_components: vec![],
+                            },
+                        })),
+                        except: Box::new(NameClass::Name(Name {
+                            prefix: Some(Identifier {
+                                component: "html".into(),
+                                sub_components: vec![],
+                            }),
+                            local: Identifier {
+                                component: "span".into(),
+                                sub_components: vec![],
+                            },
+                        })),
+                    }
+                ))
+            );
+        }
+    }
+
+    mod parameters {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_parameters() {
+            assert_eq!(
+                parameters("{ minLength = \"1\" }"),
+                Ok((
+                    "",
+                    vec![Parameter {
+                        name: Name {
+                            prefix: None,
+                            local: Identifier {
+                                component: "minLength".into(),
+                                sub_components: vec![],
+                            },
+                        },
+                        value: "1".into(),
+                    }]
+                ))
+            );
+        }
+    }
+
     mod keyword {
         use super::*;
         use pretty_assertions::assert_eq;
