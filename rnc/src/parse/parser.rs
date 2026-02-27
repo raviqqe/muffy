@@ -407,10 +407,13 @@ fn identifier(input: &str) -> ParserResult<'_, Identifier> {
 
 fn raw_identifier(input: &str) -> ParserResult<'_, Identifier> {
     map(
-        many1(preceded(
+        preceded(
             opt(char('\\')),
-            recognize((alpha1, many0(satisfy(is_identifier_char)))),
-        )),
+            separated_list1(
+                char('.'),
+                recognize((alpha1, many0(satisfy(is_identifier_char)))),
+            ),
+        ),
         |parts| Identifier {
             components: parts.into_iter().map(ToOwned::to_owned).collect(),
         },
