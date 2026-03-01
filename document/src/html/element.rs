@@ -2,6 +2,7 @@ use super::node::Node;
 use alloc::sync::Arc;
 use core::ops::Deref;
 
+/// An element.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Element {
     name: String,
@@ -10,6 +11,7 @@ pub struct Element {
 }
 
 impl Element {
+    /// Creates an element.
     pub const fn new(
         name: String,
         attributes: Vec<(String, String)>,
@@ -22,17 +24,19 @@ impl Element {
         }
     }
 
-    #[allow(clippy::missing_const_for_fn)]
+    /// Returns a name.
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Returns attributes.
     pub fn attributes(&self) -> impl Iterator<Item = (&str, &str)> {
         self.attributes
             .iter()
             .map(|(key, value)| (key.as_str(), value.as_str()))
     }
 
+    /// Returns children.
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
     }

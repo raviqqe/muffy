@@ -11,11 +11,12 @@ pub struct Document {
 }
 
 impl Document {
+    /// Creates a document.
     pub const fn new(children: Vec<Arc<Node>>) -> Self {
         Self { children }
     }
 
-    pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
+    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
         if matches!(node.data, NodeData::Document) {
             Self::new(
                 node.children
@@ -30,10 +31,12 @@ impl Document {
         }
     }
 
+    /// Returns children.
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
     }
 
+    /// Returns a base element.
     pub fn base(&self) -> Option<&str> {
         self.children()
             .find_map(|node| Self::find_base(node))
