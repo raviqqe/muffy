@@ -89,7 +89,7 @@ mod tests {
                 )))
                 .await
                 .unwrap(),
-            Arc::new(Document::new(vec![Arc::new(
+            Document::new(vec![Arc::new(
                 Element::new(
                     "html".into(),
                     vec![],
@@ -113,7 +113,8 @@ mod tests {
                     ]
                 )
                 .into()
-            )]))
+            )])
+            .into()
         );
     }
 
