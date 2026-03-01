@@ -152,11 +152,11 @@ fn load_grammar(
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
-            GrammarContent::Definition(def) => {
-                let name = format_identifier(&def.name);
-                let pattern = def.pattern.clone();
+            GrammarContent::Definition(definition) => {
+                let name = format_identifier(&definition.name);
+                let pattern = definition.pattern.clone();
 
-                if let Some(combine) = def.combine {
+                if let Some(combine) = definition.combine {
                     let existing = definitions.entry(name).or_insert(Pattern::NotAllowed);
 
                     match combine {
