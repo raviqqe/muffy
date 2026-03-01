@@ -129,8 +129,8 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
         SchemaBody::Grammar(grammar) => {
             load_grammar(
                 &grammar,
-                path.parent().ok_or(MacroError::NoParentDirectory)?,
                 definitions,
+                path.parent().ok_or(MacroError::NoParentDirectory)?,
             )?;
         }
         SchemaBody::Pattern(_) => {
@@ -143,8 +143,8 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
 
 fn load_grammar(
     grammar: &Grammar,
-    directory: &Path,
     definitions: &mut HashMap<String, Pattern>,
+    directory: &Path,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
@@ -193,7 +193,7 @@ fn load_grammar(
                 load_schema(&include_path, definitions)?;
             }
             GrammarContent::Div(grammar) => {
-                load_grammar(grammar, directory, definitions)?;
+                load_grammar(grammar, definitions, directory)?;
             }
             _ => {}
         }
