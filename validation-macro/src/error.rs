@@ -10,8 +10,8 @@ use std::io;
 pub enum MacroError {
     Io(io::Error),
     NoParentDirectory,
-    RncSyntax(&'static str),
     RncParse(ParseError),
+    RncSyntax(&'static str),
 }
 
 impl Display for MacroError {
