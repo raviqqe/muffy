@@ -135,6 +135,7 @@ fn load_grammar(
 
                 if let Some(combine) = def.combine {
                     let existing = definitions.entry(name).or_insert(Pattern::NotAllowed);
+
                     match combine {
                         Combine::Choice => {
                             if let Pattern::Choice(choices) = existing {
