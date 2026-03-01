@@ -5,7 +5,9 @@ use markup5ever_rcdom::NodeData;
 /// A node.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Node {
+    /// An element.
     Element(Element),
+    /// A text.
     Text(String),
 }
 
