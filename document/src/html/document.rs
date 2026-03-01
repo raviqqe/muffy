@@ -15,21 +15,6 @@ impl Document {
         Self { children }
     }
 
-    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
-        if matches!(node.data, NodeData::Document) {
-            Self::new(
-                node.children
-                    .borrow()
-                    .iter()
-                    .flat_map(|node| Node::from_markup5ever(node))
-                    .map(Arc::new)
-                    .collect(),
-            )
-        } else {
-            unreachable!()
-        }
-    }
-
     /// Returns children.
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
@@ -52,6 +37,21 @@ impl Document {
             Node::Element(element) if element.name() == "base" => Some(element),
             Node::Element(element) => element.children().find_map(|node| Self::find_base(node)),
             _ => None,
+        }
+    }
+
+    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
+        if matches!(node.data, NodeData::Document) {
+            Self::new(
+                node.children
+                    .borrow()
+                    .iter()
+                    .flat_map(|node| Node::from_markup5ever(node))
+                    .map(Arc::new)
+                    .collect(),
+            )
+        } else {
+            unreachable!()
         }
     }
 }
