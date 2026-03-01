@@ -10,6 +10,7 @@ use std::io;
 pub enum MacroError {
     Io(io::Error),
     NoParentDirectory,
+    RncSyntax(&'static str),
     RncParse(ParseError),
 }
 
@@ -18,6 +19,7 @@ impl Display for MacroError {
         match self {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::NoParentDirectory => write!(formatter, "no parent directory"),
+            Self::RncSyntax(error) => write!(formatter, "unexpected RNC syntax: {error}"),
             Self::RncParse(error) => write!(formatter, "{error}"),
         }
     }

@@ -134,7 +134,9 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
                 definitions,
             )?;
         }
-        SchemaBody::Pattern(_) => {}
+        SchemaBody::Pattern(_) => {
+            return Err(MacroError::RncSyntax("top-level pattern").into());
+        }
     }
 
     Ok(())
