@@ -10,8 +10,7 @@ use muffy_rnc::{
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use std::io;
-use std::{collections::HashMap, fs::read_to_string, path::Path};
+use std::{collections::HashMap, fs::read_to_string, io, path::Path};
 
 /// Generates HTML validation functions.
 #[proc_macro]
