@@ -89,7 +89,7 @@ mod tests {
                 vec![],
             )))],
         );
-        // In the HTML5 schema, `p` doesn't allow `div` as a child.
+
         assert_eq!(
             validate_element(&element),
             Err(ValidationError::InvalidChild("div".to_owned()))
