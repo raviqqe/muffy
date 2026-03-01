@@ -19,16 +19,20 @@ pub enum ValidationError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use muffy_document::html::Node;
+    use std::sync::Arc;
 
     #[test]
     fn validate_valid_html_element() {
         let element = Element::new("html".to_owned(), vec![], vec![]);
+
         assert_eq!(validate_element(&element), Ok(()));
     }
 
     #[test]
     fn validate_invalid_element_name() {
         let element = Element::new("invalid".to_owned(), vec![], vec![]);
+
         assert_eq!(
             validate_element(&element),
             Err(ValidationError::InvalidElement("invalid".to_owned()))
@@ -42,6 +46,7 @@ mod tests {
             vec![("id".to_owned(), "foo".to_owned())],
             vec![],
         );
+
         assert_eq!(validate_element(&element), Ok(()));
     }
 
@@ -52,6 +57,7 @@ mod tests {
             vec![("invalid".to_owned(), "bar".to_owned())],
             vec![],
         );
+
         assert_eq!(
             validate_element(&element),
             Err(ValidationError::InvalidAttribute("invalid".to_owned()))
@@ -60,9 +66,6 @@ mod tests {
 
     #[test]
     fn validate_valid_child() {
-        use muffy_document::html::Node;
-        use std::sync::Arc;
-
         let element = Element::new(
             "div".to_owned(),
             vec![],
@@ -72,14 +75,12 @@ mod tests {
                 vec![],
             )))],
         );
+
         assert_eq!(validate_element(&element), Ok(()));
     }
 
     #[test]
     fn validate_invalid_child() {
-        use muffy_document::html::Node;
-        use std::sync::Arc;
-
         let element = Element::new(
             "p".to_owned(),
             vec![],
