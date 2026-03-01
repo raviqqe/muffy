@@ -1,8 +1,6 @@
-use muffy_document::html::Node;
 mod context;
 
 use self::context::Context;
-
 use crate::{
     config::Config,
     document_output::DocumentOutput,
@@ -20,6 +18,7 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
+use muffy_document::html::Node;
 use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, sync::LazyLock};
