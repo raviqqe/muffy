@@ -1331,15 +1331,14 @@ dependencies = [
  "env_logger",
  "fjall",
  "futures",
- "html5ever",
  "http",
  "http-serde",
  "indoc",
  "insta",
  "itertools",
  "log",
- "markup5ever_rcdom",
  "moka",
+ "muffy-document",
  "petgraph",
  "pretty_assertions",
  "regex",
@@ -1362,6 +1361,11 @@ dependencies = [
 [[package]]
 name = "muffy-document"
 version = "0.3.4"
+dependencies = [
+ "html5ever",
+ "markup5ever_rcdom",
+ "pretty_assertions",
+]
 
 [[package]]
 name = "muffy-rnc"

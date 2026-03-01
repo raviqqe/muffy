@@ -8,7 +8,7 @@ use crate::{
     element::Element,
     element_output::ElementOutput,
     error::Error,
-    html_parser::{HtmlParser, Node},
+    html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
     request::Request,
@@ -18,6 +18,7 @@ use crate::{
 use alloc::sync::Arc;
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
+use muffy_document::html::Node;
 use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::{collections::HashMap, sync::LazyLock};
