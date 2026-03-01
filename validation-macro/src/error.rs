@@ -14,7 +14,7 @@ pub enum MacroError {
 }
 
 impl Display for MacroError {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::NoParentDirectory => write!(formatter, "no parent directory"),
