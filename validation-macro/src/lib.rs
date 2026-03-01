@@ -3,16 +3,22 @@
 extern crate alloc;
 
 use alloc::collections::BTreeMap;
+use core::error::Error;
 use muffy_rnc::{
     Combine, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
 use quote::quote;
+use std::io;
 use std::{collections::HashMap, fs::read_to_string, path::Path};
 
 /// Generates HTML validation functions.
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
+    generate_html().unwrap()
+}
+
+fn generate_html() -> Result<TokenStream, Box<dyn Error>> {
     let schema_directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
     let mut definitions = HashMap::new();
 
@@ -94,7 +100,7 @@ pub fn html(_input: TokenStream) -> TokenStream {
         });
     }
 
-    quote! {
+    Ok(quote! {
         /// Validates an element.
         pub fn validate_element(element: &Element) -> Result<(), ValidationError> {
             match element.name() {
@@ -105,11 +111,11 @@ pub fn html(_input: TokenStream) -> TokenStream {
 
         #(#functions)*
     }
-    .into()
+    .into())
 }
 
-fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) {
-    let content = read_to_string(path).unwrap();
+fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Result<(), io::Error> {
+    let content = read_to_string(path)?;
     let schema = parse_schema(&content).unwrap();
 
     // We do not use the declarations.
@@ -120,6 +126,8 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) {
         }
         SchemaBody::Pattern(_) => {}
     }
+
+    Ok(())
 }
 
 fn load_grammar(
