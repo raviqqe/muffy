@@ -2,29 +2,28 @@ use core::{
     error::Error,
     fmt::{self, Display, Formatter},
 };
-use
+use std::io;
 
 /// A macro error.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum MacroError {
     Io(io::Error),
-    NoParentDirectory
+    NoParentDirectory,
 }
 
 impl Display for MacroError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Io(error) => write!(formatter, "IO error: {error}"),
+            Self::NoParentDirectory => write!(formatter, "no parent directory"),
+        }
     }
 }
 
 impl Error for MacroError {}
 
-impl<'a> From<nom::Err<nom::error::Error<&'a str>>> for MacroError {
-    fn from(error: nom::Err<nom::error::Error<&'a str>>) -> Self {
-        Self {
-            message: match error {
-                nom::Err::Incomplete(_) => "incomplete input".into(),
-                nom::Err::Error(error) | nom::Err::Failure(error) => error.to_string(),
-            },
-        }
+impl From<io::Error> for MacroError {
+    fn from(error: io::Error) -> Self {
+        Self::Io(error)
     }
 }

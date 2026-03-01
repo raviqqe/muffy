@@ -2,15 +2,17 @@
 
 extern crate alloc;
 
+mod error;
+
+use self::error::MacroError;
 use alloc::collections::BTreeMap;
-use core::error::Error;
 use muffy_rnc::{
     Combine, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use std::{collections::HashMap, fs::read_to_string, io, path::Path};
+use std::{collections::HashMap, fs::read_to_string, path::Path};
 
 /// Generates HTML validation functions.
 #[proc_macro]
@@ -22,7 +24,7 @@ pub fn html(_input: TokenStream) -> TokenStream {
     })
 }
 
-fn generate_html() -> Result<TokenStream, Box<dyn Error>> {
+fn generate_html() -> Result<TokenStream, MacroError> {
     let schema_directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
     let mut definitions = HashMap::new();
 
@@ -118,15 +120,19 @@ fn generate_html() -> Result<TokenStream, Box<dyn Error>> {
     .into())
 }
 
-fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Result<(), io::Error> {
+fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Result<(), MacroError> {
     let content = read_to_string(path)?;
-    let schema = parse_schema(&content).unwrap();
+    let schema = parse_schema(&content)?;
 
     // We do not use the declarations.
 
     match schema.body {
         SchemaBody::Grammar(grammar) => {
-            load_grammar(&grammar, path.parent().unwrap(), definitions)?;
+            load_grammar(
+                &grammar,
+                path.parent().ok_or(MacroError::NoParentDirectory)?,
+                definitions,
+            )?;
         }
         SchemaBody::Pattern(_) => {}
     }
@@ -138,7 +144,7 @@ fn load_grammar(
     grammar: &muffy_rnc::Grammar,
     directory: &Path,
     definitions: &mut HashMap<String, Pattern>,
-) -> Result<(), io::Error> {
+) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(def) => {
