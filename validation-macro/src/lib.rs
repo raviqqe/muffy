@@ -22,7 +22,7 @@ fn generate_html() -> Result<TokenStream, Box<dyn Error>> {
     let schema_directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
     let mut definitions = HashMap::new();
 
-    load_schema(&schema_directory.join("html5.rnc"), &mut definitions);
+    load_schema(&schema_directory.join("html5.rnc"), &mut definitions)?;
 
     let mut element_groups = BTreeMap::<String, Vec<(String, Pattern)>>::new();
 
@@ -122,7 +122,7 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
 
     match schema.body {
         SchemaBody::Grammar(grammar) => {
-            load_grammar(&grammar, path.parent().unwrap(), definitions);
+            load_grammar(&grammar, path.parent().unwrap(), definitions)?;
         }
         SchemaBody::Pattern(_) => {}
     }
@@ -134,7 +134,7 @@ fn load_grammar(
     grammar: &muffy_rnc::Grammar,
     directory: &Path,
     definitions: &mut HashMap<String, Pattern>,
-) {
+) -> Result<(), io::Error> {
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(def) => {
@@ -179,14 +179,16 @@ fn load_grammar(
             GrammarContent::Include(include) => {
                 let include_path = directory.join(&include.uri);
                 // In a real implementation, we should handle overrides in include.grammar
-                load_schema(&include_path, definitions);
+                load_schema(&include_path, definitions)?;
             }
             GrammarContent::Div(grammar) => {
-                load_grammar(grammar, directory, definitions);
+                load_grammar(grammar, directory, definitions)?;
             }
             _ => {}
         }
     }
+
+    Ok(())
 }
 
 fn format_identifier(id: &Identifier) -> String {
