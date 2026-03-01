@@ -272,6 +272,7 @@ fn collect_children_recursive(
 
             if !visited.contains(&name) {
                 visited.push(name.clone());
+
                 if let Some(p) = definitions.get(&name) {
                     collect_children_recursive(p, definitions, children, visited);
                 }
