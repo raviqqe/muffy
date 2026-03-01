@@ -8,8 +8,10 @@ use std::io;
 
 /// Parses an HTML document.
 pub fn parse(source: &str) -> Result<Document, io::Error> {
+    let mut source = source;
+
     parse_document(RcDom::default(), Default::default())
         .from_utf8()
-        .process(FromStr::from_str(source))
+        .read_from(source)
         .map(|dom| Document::from_markup5ever(&dom.document).into())
 }
