@@ -15,9 +15,10 @@ pub fn parse(source: &str) -> Result<Document, io::Error> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::element::Element;
-    use super::super::node::Node;
-    use super::*;
+    use super::{
+        super::{element::Element, node::Node},
+        *,
+    };
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 
@@ -29,8 +30,16 @@ mod tests {
                 "html".to_string(),
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new("head".to_string(), vec![], vec![]))),
-                    Arc::new(Node::Element(Element::new("body".to_string(), vec![], vec![]))),
+                    Arc::new(Node::Element(Element::new(
+                        "head".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
+                    Arc::new(Node::Element(Element::new(
+                        "body".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
                 ],
             )))])
         );
@@ -44,7 +53,11 @@ mod tests {
                 "html".to_string(),
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new("head".to_string(), vec![], vec![]))),
+                    Arc::new(Node::Element(Element::new(
+                        "head".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
                     Arc::new(Node::Element(Element::new(
                         "body".to_string(),
                         vec![],
@@ -67,7 +80,11 @@ mod tests {
                 "html".to_string(),
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new("head".to_string(), vec![], vec![]))),
+                    Arc::new(Node::Element(Element::new(
+                        "head".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
                     Arc::new(Node::Element(Element::new(
                         "body".to_string(),
                         vec![],
@@ -90,7 +107,11 @@ mod tests {
                 "html".to_string(),
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new("head".to_string(), vec![], vec![]))),
+                    Arc::new(Node::Element(Element::new(
+                        "head".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
                     Arc::new(Node::Element(Element::new(
                         "body".to_string(),
                         vec![],

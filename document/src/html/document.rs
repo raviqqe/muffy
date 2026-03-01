@@ -1,5 +1,4 @@
-use super::element::Element;
-use super::node::Node;
+use super::{element::Element, node::Node};
 use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
