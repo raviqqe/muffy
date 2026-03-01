@@ -1,7 +1,5 @@
 //! HTML documents.
 
-#![allow(missing_docs)]
-
 mod document;
 mod element;
 mod node;
