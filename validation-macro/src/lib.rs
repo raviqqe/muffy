@@ -25,10 +25,10 @@ pub fn html(_input: TokenStream) -> TokenStream {
 }
 
 fn generate_html() -> Result<TokenStream, MacroError> {
-    let schema_directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
+    let directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
     let mut definitions = HashMap::new();
 
-    load_schema(&schema_directory.join("html5.rnc"), &mut definitions)?;
+    load_schema(&directory.join("html5.rnc"), &mut definitions)?;
 
     let mut element_groups = BTreeMap::<String, Vec<(String, Pattern)>>::new();
 
