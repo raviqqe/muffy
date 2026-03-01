@@ -1,16 +1,14 @@
 //! Macros for document validation.
 
+extern crate alloc;
+
 use muffy_rnc::{
     Combine, Declaration, GrammarContent, Identifier, NameClass, Pattern, SchemaBody,
     parse_schema,
 };
 use proc_macro::TokenStream;
 use quote::quote;
-use std::{
-    collections::{BTreeMap, HashMap},
-    fs::read_to_string,
-    path::Path,
-};
+use std::{collections::HashMap, fs::read_to_string, path::Path};
 
 /// Generates HTML validation functions.
 #[proc_macro]
@@ -21,23 +19,28 @@ pub fn html(_input: TokenStream) -> TokenStream {
     load_schema(&schema_dir.join("html5.rnc"), &mut definitions);
 
     // Group definitions by element name
-    let mut element_groups: BTreeMap<String, Vec<(String, Pattern)>> = BTreeMap::new();
+    let mut element_groups: alloc::collections::BTreeMap<String, Vec<(String, Pattern)>> =
+        alloc::collections::BTreeMap::new();
     for (name, pattern) in &definitions {
-        if let Pattern::Element { name_class, .. } = pattern {
-            if let Some(element_name) = get_name(name_class) {
-                element_groups
-                    .entry(element_name)
-                    .or_default()
-                    .push((name.clone(), pattern.clone()));
-            }
-        }
+        let Pattern::Element { name_class, .. } = pattern else {
+            continue;
+        };
+        let Some(element_name) = get_name(name_class) else {
+            continue;
+        };
+
+        element_groups
+            .entry(element_name)
+            .or_default()
+            .push((name.clone(), pattern.clone()));
     }
 
     let mut element_validators = Vec::new();
     let mut functions = Vec::new();
 
     for (element_name, defs) in element_groups {
-        let validator_name = quote::format_ident!("validate_{}_element", element_name.replace('-', "_"));
+        let validator_name =
+            quote::format_ident!("validate_{}_element", element_name.replace('-', "_"));
         let element_name_str = element_name.clone();
 
         element_validators.push(quote! {
@@ -48,10 +51,12 @@ pub fn html(_input: TokenStream) -> TokenStream {
         let mut allowed_children = Vec::new();
 
         for (_name, pattern) in defs {
-            if let Pattern::Element { pattern, .. } = pattern {
-                allowed_attributes.extend(collect_attributes(&pattern, &definitions));
-                allowed_children.extend(collect_children(&pattern, &definitions));
-            }
+            let Pattern::Element { pattern, .. } = pattern else {
+                continue;
+            };
+
+            allowed_attributes.extend(collect_attributes(&pattern, &definitions));
+            allowed_children.extend(collect_children(&pattern, &definitions));
         }
 
         allowed_attributes.sort();
