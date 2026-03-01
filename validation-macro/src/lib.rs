@@ -124,7 +124,7 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) {
 
 fn load_grammar(
     grammar: &muffy_rnc::Grammar,
-    dir: &Path,
+    directory: &Path,
     definitions: &mut HashMap<String, Pattern>,
 ) {
     for content in &grammar.contents {
@@ -168,12 +168,12 @@ fn load_grammar(
                 }
             }
             GrammarContent::Include(include) => {
-                let include_path = dir.join(&include.uri);
+                let include_path = directory.join(&include.uri);
                 // In a real implementation, we should handle overrides in include.grammar
                 load_schema(&include_path, definitions);
             }
             GrammarContent::Div(grammar) => {
-                load_grammar(grammar, dir, definitions);
+                load_grammar(grammar, directory, definitions);
             }
             _ => {}
         }
