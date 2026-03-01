@@ -1,3 +1,7 @@
+use super::html::Node;
+use alloc::sync::Arc;
+use core::ops::Deref;
+
 #[derive(Debug, Eq, PartialEq)]
 pub struct Element {
     name: String,

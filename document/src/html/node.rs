@@ -1,7 +1,9 @@
+use super::element::Element;
 use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
 
+/// A document.
 #[derive(Debug, Eq, PartialEq)]
 pub struct Document {
     children: Vec<Arc<Node>>,
@@ -54,6 +56,7 @@ impl Document {
     }
 }
 
+/// A node.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Node {
     Element(Element),
@@ -61,7 +64,7 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
+    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
         match &node.data {
             NodeData::Element { name, attrs, .. } => Some(Self::Element(Element::new(
                 name.local.to_string(),
