@@ -34,8 +34,8 @@ pub fn html(_input: TokenStream) -> TokenStream {
             .push((name.clone(), pattern.clone()));
     }
 
-    let mut element_validators = Vec::new();
-    let mut functions = Vec::new();
+    let mut element_validators = vec![];
+    let mut functions = vec![];
 
     for (element_name, defs) in element_groups {
         let validator_name =
