@@ -5,9 +5,14 @@ use std::io;
 
 /// Parses an HTML document.
 pub fn parse(source: &str) -> Result<Document, io::Error> {
+    parse_bytes(source.as_bytes())
+}
+
+/// Parses an HTML document from bytes.
+pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
     parse_document(RcDom::default(), Default::default())
         .from_utf8()
-        .read_from(&mut source.as_bytes())
+        .read_from(&mut source)
         .map(|dom| Document::from_markup5ever(&dom.document))
 }
 

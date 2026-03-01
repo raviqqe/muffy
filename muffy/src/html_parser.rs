@@ -1,6 +1,3 @@
-mod node;
-
-pub use self::node::Node;
 use crate::{
     cache::{Cache, CacheError},
     response::Response,
@@ -11,9 +8,7 @@ use core::{
     fmt,
     fmt::{Display, Formatter},
 };
-use html5ever::{parse_document, tendril::TendrilSink};
-use markup5ever_rcdom::RcDom;
-use node::Document;
+use muffy_document::html::{Document, parse_bytes};
 use std::io;
 
 /// An HTML parser.
@@ -37,11 +32,9 @@ impl HtmlParser {
             .get_with(
                 response.url().to_string(),
                 Box::new(async move {
-                    parse_document(RcDom::default(), Default::default())
-                        .from_utf8()
-                        .read_from(&mut response.body())
-                        .map(|dom| Document::from_markup5ever(&dom.document).into())
-                        .map_err(|error| HtmlError::Io(error.into()))
+                    parse_bytes(response.body())
+                        .map(Arc::new)
+                        .map_err(|error| HtmlError::Io(Arc::new(error)))
                 }),
             )
             .await?
@@ -74,9 +67,10 @@ impl From<CacheError> for HtmlError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{MemoryCache, html_parser::node::Element};
+    use crate::MemoryCache;
     use http::StatusCode;
     use indoc::indoc;
+    use muffy_document::html::Element;
     use pretty_assertions::assert_eq;
     use url::Url;
 
@@ -95,7 +89,7 @@ mod tests {
                 )))
                 .await
                 .unwrap(),
-            Document::new(vec![Arc::new(
+            Arc::new(Document::new(vec![Arc::new(
                 Element::new(
                     "html".into(),
                     vec![],
@@ -119,8 +113,7 @@ mod tests {
                     ]
                 )
                 .into()
-            )])
-            .into()
+            )]))
         );
     }
 

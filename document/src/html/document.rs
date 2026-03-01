@@ -40,7 +40,8 @@ impl Document {
         }
     }
 
-    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
+    /// Creates a document from a markup5ever node.
+    pub fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
         if matches!(node.data, NodeData::Document) {
             Self::new(
                 node.children

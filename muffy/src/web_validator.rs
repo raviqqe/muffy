@@ -1,6 +1,8 @@
+use muffy_document::html::Node;
 mod context;
 
 use self::context::Context;
+
 use crate::{
     config::Config,
     document_output::DocumentOutput,
@@ -8,7 +10,7 @@ use crate::{
     element::Element,
     element_output::ElementOutput,
     error::Error,
-    html_parser::{HtmlParser, Node},
+    html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
     request::Request,
