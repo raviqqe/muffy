@@ -268,10 +268,11 @@ fn collect_children_recursive(
             collect_children_recursive(p, definitions, children, visited);
         }
         Pattern::Name(name) => {
-            let def_name = format_identifier(&name.local);
-            if !visited.contains(&def_name) {
-                visited.push(def_name.clone());
-                if let Some(p) = definitions.get(&def_name) {
+            let name = format_identifier(&name.local);
+
+            if !visited.contains(&name) {
+                visited.push(name.clone());
+                if let Some(p) = definitions.get(&name) {
                     collect_children_recursive(p, definitions, children, visited);
                 }
             }
