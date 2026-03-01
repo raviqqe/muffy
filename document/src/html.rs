@@ -1,3 +1,5 @@
+//! HTML documents.
+
 mod document;
 mod element;
 mod node;
