@@ -10,6 +10,6 @@ use std::io;
 pub fn parse(source: &str) -> Result<Document, io::Error> {
     parse_document(RcDom::default(), Default::default())
         .from_utf8()
-        .read_from(source)
+        .process(FromStr::from_str(source))
         .map(|dom| Document::from_markup5ever(&dom.document).into())
 }
