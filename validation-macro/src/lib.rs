@@ -182,12 +182,14 @@ fn load_grammar(
 }
 
 fn format_identifier(id: &Identifier) -> String {
-    let mut s = id.component.clone();
-    for sub in &id.sub_components {
-        s.push('.');
-        s.push_str(sub);
+    let mut string = id.component.clone();
+
+    for component in &id.sub_components {
+        string.push('.');
+        string.push_str(component);
     }
-    s
+
+    string
 }
 
 fn get_name(name_class: &NameClass) -> Option<String> {
