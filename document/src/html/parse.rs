@@ -1,7 +1,7 @@
+use super::document::Document;
 pub use super::node::Node;
 use html5ever::{parse_document, tendril::TendrilSink};
 use markup5ever_rcdom::RcDom;
-use node::Document;
 use std::io;
 
 /// Parses an HTML document.

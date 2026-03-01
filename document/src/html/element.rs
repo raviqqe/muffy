@@ -1,4 +1,4 @@
-use super::html::Node;
+use super::node::Node;
 use alloc::sync::Arc;
 use core::ops::Deref;
 

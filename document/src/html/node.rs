@@ -47,10 +47,7 @@ impl Document {
     fn find_base(node: &Node) -> Option<&Element> {
         match node {
             Node::Element(element) if element.name() == "base" => Some(element),
-            Node::Element(element) => element
-                .children
-                .iter()
-                .find_map(|node| Self::find_base(node)),
+            Node::Element(element) => element.children().find_map(|node| Self::find_base(node)),
             _ => None,
         }
     }
