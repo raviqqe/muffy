@@ -12,7 +12,11 @@ use muffy_rnc::{
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use std::{collections::HashMap, fs::read_to_string, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    fs::read_to_string,
+    path::Path,
+};
 
 /// Generates HTML validation functions.
 #[proc_macro]
@@ -34,9 +38,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         &mut definitions,
     )?;
 
-    let mut element_groups = BTreeMap::<String, Vec<(String, Pattern)>>::new();
+    // element_name -> (allowed_attributes, allowed_children)
+    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
 
-    for (name, pattern) in &definitions {
+    for pattern in definitions.values() {
         let Pattern::Element { name_class, .. } = pattern else {
             continue;
         };
@@ -44,51 +49,34 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             continue;
         };
 
-        element_groups
+        let (allowed_attributes, allowed_children) = element_rules
             .entry(element_name)
-            .or_default()
-            .push((name.clone(), pattern.clone()));
+            .or_insert_with(|| (Vec::new(), Vec::new()));
+
+        if let Pattern::Element { pattern, .. } = pattern {
+            allowed_attributes.extend(collect_attributes(pattern, &definitions));
+            allowed_children.extend(collect_children(pattern, &definitions));
+        }
     }
 
-    let mut element_validators = vec![];
-    let mut functions = vec![];
+    let mut element_matches = vec![];
 
-    for (element_name, defs) in element_groups {
-        let validator_name =
-            quote::format_ident!("validate_{}_element", element_name.replace('-', "_"));
-        let element_name_str = element_name.clone();
+    for (element_name, (mut attributes, mut children)) in element_rules {
+        attributes.sort();
+        attributes.dedup();
+        children.sort();
+        children.dedup();
 
-        element_validators.push(quote! {
-            #element_name_str => #validator_name(element),
-        });
-
-        let mut allowed_attributes = Vec::new();
-        let mut allowed_children = Vec::new();
-
-        for (_name, pattern) in defs {
-            let Pattern::Element { pattern, .. } = pattern else {
-                continue;
-            };
-
-            allowed_attributes.extend(collect_attributes(&pattern, &definitions));
-            allowed_children.extend(collect_children(&pattern, &definitions));
-        }
-
-        allowed_attributes.sort();
-        allowed_attributes.dedup();
-        allowed_children.sort();
-        allowed_children.dedup();
-
-        let attribute_checks = allowed_attributes.iter().map(|attr| {
+        let attribute_checks = attributes.iter().map(|attr| {
             quote! { #attr }
         });
 
-        let child_checks = allowed_children.iter().map(|child| {
+        let child_checks = children.iter().map(|child| {
             quote! { #child }
         });
 
-        functions.push(quote! {
-            fn #validator_name(element: &Element) -> Result<(), ValidationError> {
+        element_matches.push(quote! {
+            #element_name => {
                 for (name, _) in element.attributes() {
                     match name {
                         #(#attribute_checks |)* "xmlns" => {}
@@ -114,17 +102,18 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         /// Validates an element.
         pub fn validate_element(element: &Element) -> Result<(), ValidationError> {
             match element.name() {
-                #(#element_validators)*
+                #(#element_matches)*
                 _ => Err(ValidationError::InvalidElement(element.name().to_string())),
             }
         }
-
-        #(#functions)*
     }
     .into())
 }
 
-fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Result<(), MacroError> {
+fn load_schema(
+    path: &Path,
+    definitions: &mut HashMap<Identifier, Pattern>,
+) -> Result<(), MacroError> {
     let schema = parse_schema(&read_to_string(path)?)?;
 
     // We do not use the declarations.
@@ -138,7 +127,7 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
             )?;
         }
         SchemaBody::Pattern(_) => {
-            return Err(MacroError::RncSyntax("top-level pattern").into());
+            return Err(MacroError::RncSyntax("top-level pattern"));
         }
     }
 
@@ -147,13 +136,13 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
 
 fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut HashMap<String, Pattern>,
+    definitions: &mut HashMap<Identifier, Pattern>,
     directory: &Path,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(definition) => {
-                let name = format_identifier(&definition.name);
+                let name = definition.name.clone();
                 let pattern = definition.pattern.clone();
 
                 if let Some(combine) = definition.combine {
@@ -206,17 +195,6 @@ fn load_grammar(
     Ok(())
 }
 
-fn format_identifier(id: &Identifier) -> String {
-    let mut string = id.component.clone();
-
-    for component in &id.sub_components {
-        string.push('.');
-        string.push_str(component);
-    }
-
-    string
-}
-
 fn get_name(name_class: &NameClass) -> Option<String> {
     match name_class {
         NameClass::Name(name) => Some(name.local.component.clone()),
@@ -225,9 +203,12 @@ fn get_name(name_class: &NameClass) -> Option<String> {
     }
 }
 
-fn collect_attributes(pattern: &Pattern, definitions: &HashMap<String, Pattern>) -> Vec<String> {
+fn collect_attributes(
+    pattern: &Pattern,
+    definitions: &HashMap<Identifier, Pattern>,
+) -> Vec<String> {
     let mut attributes = Vec::new();
-    collect_attributes_recursive(pattern, definitions, &mut attributes, &mut Vec::new());
+    collect_attributes_recursive(pattern, definitions, &mut attributes, &mut HashSet::new());
     attributes.sort();
     attributes.dedup();
     attributes
@@ -235,9 +216,9 @@ fn collect_attributes(pattern: &Pattern, definitions: &HashMap<String, Pattern>)
 
 fn collect_attributes_recursive(
     pattern: &Pattern,
-    definitions: &HashMap<String, Pattern>,
+    definitions: &HashMap<Identifier, Pattern>,
     attributes: &mut Vec<String>,
-    visited: &mut Vec<String>,
+    visited: &mut HashSet<Identifier>,
 ) {
     match pattern {
         Pattern::Attribute { name_class, .. } => {
@@ -254,10 +235,9 @@ fn collect_attributes_recursive(
             collect_attributes_recursive(p, definitions, attributes, visited);
         }
         Pattern::Name(name) => {
-            let def_name = format_identifier(&name.local);
-            if !visited.contains(&def_name) {
-                visited.push(def_name.clone());
-                if let Some(p) = definitions.get(&def_name) {
+            if !visited.contains(&name.local) {
+                visited.insert(name.local.clone());
+                if let Some(p) = definitions.get(&name.local) {
                     collect_attributes_recursive(p, definitions, attributes, visited);
                 }
             }
@@ -266,10 +246,10 @@ fn collect_attributes_recursive(
     }
 }
 
-fn collect_children(pattern: &Pattern, definitions: &HashMap<String, Pattern>) -> Vec<String> {
+fn collect_children(pattern: &Pattern, definitions: &HashMap<Identifier, Pattern>) -> Vec<String> {
     let mut children = vec![];
 
-    collect_children_recursive(pattern, definitions, &mut children, &mut Vec::new());
+    collect_children_recursive(pattern, definitions, &mut children, &mut HashSet::new());
 
     children.sort();
     children.dedup();
@@ -278,9 +258,9 @@ fn collect_children(pattern: &Pattern, definitions: &HashMap<String, Pattern>) -
 
 fn collect_children_recursive(
     pattern: &Pattern,
-    definitions: &HashMap<String, Pattern>,
+    definitions: &HashMap<Identifier, Pattern>,
     children: &mut Vec<String>,
-    visited: &mut Vec<String>,
+    visited: &mut HashSet<Identifier>,
 ) {
     match pattern {
         Pattern::Element { name_class, .. } => {
@@ -297,12 +277,10 @@ fn collect_children_recursive(
             collect_children_recursive(pattern, definitions, children, visited);
         }
         Pattern::Name(name) => {
-            let name = format_identifier(&name.local);
+            if !visited.contains(&name.local) {
+                visited.insert(name.local.clone());
 
-            if !visited.contains(&name) {
-                visited.push(name.clone());
-
-                if let Some(p) = definitions.get(&name) {
+                if let Some(p) = definitions.get(&name.local) {
                     collect_children_recursive(p, definitions, children, visited);
                 }
             }
