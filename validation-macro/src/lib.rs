@@ -260,12 +260,12 @@ fn collect_children_recursive(
             }
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for p in patterns {
-                collect_children_recursive(p, definitions, children, visited);
+            for pattern in patterns {
+                collect_children_recursive(pattern, definitions, children, visited);
             }
         }
-        Pattern::Optional(p) | Pattern::Many0(p) | Pattern::Many1(p) => {
-            collect_children_recursive(p, definitions, children, visited);
+        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
+            collect_children_recursive(pattern, definitions, children, visited);
         }
         Pattern::Name(name) => {
             let name = format_identifier(&name.local);
