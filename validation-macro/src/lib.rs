@@ -7,7 +7,7 @@ mod error;
 use self::error::MacroError;
 use alloc::collections::BTreeMap;
 use muffy_rnc::{
-    Combine, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
+    Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
 use proc_macro2::Span;
@@ -142,7 +142,7 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Resul
 }
 
 fn load_grammar(
-    grammar: &muffy_rnc::Grammar,
+    grammar: &Grammar,
     directory: &Path,
     definitions: &mut HashMap<String, Pattern>,
 ) -> Result<(), MacroError> {
