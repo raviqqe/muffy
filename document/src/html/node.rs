@@ -12,7 +12,6 @@ pub enum Node {
 }
 
 impl Node {
-    /// Creates a node from a markup5ever node.
     pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Option<Self> {
         match &node.data {
             NodeData::Element { name, attrs, .. } => Some(Self::Element(Element::new(
