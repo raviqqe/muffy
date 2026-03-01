@@ -8,6 +8,7 @@ use muffy_rnc::{
     Combine, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::quote;
 use std::io;
 use std::{collections::HashMap, fs::read_to_string, path::Path};
@@ -15,7 +16,11 @@ use std::{collections::HashMap, fs::read_to_string, path::Path};
 /// Generates HTML validation functions.
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
-    generate_html().unwrap()
+    generate_html().unwrap_or_else(|error| {
+        syn::Error::new(Span::call_site(), error)
+            .to_compile_error()
+            .into()
+    })
 }
 
 fn generate_html() -> Result<TokenStream, Box<dyn Error>> {
