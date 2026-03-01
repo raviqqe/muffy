@@ -127,7 +127,11 @@ mod tests {
 
         #[test]
         fn validate_valid_child() {
-            let element = create_element("head", vec![], vec![create_element("title", vec![], vec![])]);
+            let element = create_element(
+                "head",
+                vec![],
+                vec![create_element("title", vec![], vec![])],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
 
@@ -146,7 +150,8 @@ mod tests {
 
         #[test]
         fn validate_invalid_child() {
-            let element = create_element("title", vec![], vec![create_element("div", vec![], vec![])]);
+            let element =
+                create_element("title", vec![], vec![create_element("div", vec![], vec![])]);
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidChild("div".to_owned()))
@@ -178,13 +183,15 @@ mod tests {
 
         #[test]
         fn validate_valid_child() {
-            let element = create_element("table", vec![], vec![create_element("tr", vec![], vec![])]);
+            let element =
+                create_element("table", vec![], vec![create_element("tr", vec![], vec![])]);
             assert_eq!(validate_element(&element), Ok(()));
         }
 
         #[test]
         fn validate_invalid_child() {
-            let element = create_element("table", vec![], vec![create_element("p", vec![], vec![])]);
+            let element =
+                create_element("table", vec![], vec![create_element("p", vec![], vec![])]);
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidChild("p".to_owned()))
@@ -220,7 +227,11 @@ mod tests {
 
         #[test]
         fn validate_valid_child() {
-            let element = create_element("form", vec![], vec![create_element("input", vec![], vec![])]);
+            let element = create_element(
+                "form",
+                vec![],
+                vec![create_element("input", vec![], vec![])],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
     }
@@ -230,7 +241,11 @@ mod tests {
 
         #[test]
         fn validate_valid_attributes() {
-            let element = create_element("img", vec![("src", "img.png"), ("alt", "description")], vec![]);
+            let element = create_element(
+                "img",
+                vec![("src", "img.png"), ("alt", "description")],
+                vec![],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
     }
@@ -240,13 +255,18 @@ mod tests {
 
         #[test]
         fn validate_valid_attributes() {
-            let element = create_element("video", vec![("src", "vid.mp4"), ("controls", "")], vec![]);
+            let element =
+                create_element("video", vec![("src", "vid.mp4"), ("controls", "")], vec![]);
             assert_eq!(validate_element(&element), Ok(()));
         }
 
         #[test]
         fn validate_valid_child() {
-            let element = create_element("video", vec![], vec![create_element("track", vec![], vec![])]);
+            let element = create_element(
+                "video",
+                vec![],
+                vec![create_element("track", vec![], vec![])],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
     }
@@ -256,7 +276,11 @@ mod tests {
 
         #[test]
         fn validate_valid_name_content() {
-            let element = create_element("meta", vec![("name", "description"), ("content", "stuff")], vec![]);
+            let element = create_element(
+                "meta",
+                vec![("name", "description"), ("content", "stuff")],
+                vec![],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
 
@@ -272,7 +296,11 @@ mod tests {
 
         #[test]
         fn validate_valid_attributes() {
-            let element = create_element("link", vec![("rel", "stylesheet"), ("href", "style.css")], vec![]);
+            let element = create_element(
+                "link",
+                vec![("rel", "stylesheet"), ("href", "style.css")],
+                vec![],
+            );
             assert_eq!(validate_element(&element), Ok(()));
         }
     }
