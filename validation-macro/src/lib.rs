@@ -242,8 +242,10 @@ fn collect_attributes_recursive(
 }
 
 fn collect_children(pattern: &Pattern, definitions: &HashMap<String, Pattern>) -> Vec<String> {
-    let mut children = Vec::new();
+    let mut children = vec![];
+
     collect_children_recursive(pattern, definitions, &mut children, &mut Vec::new());
+
     children.sort();
     children.dedup();
     children
