@@ -2,9 +2,9 @@
 
 extern crate alloc;
 
+use alloc::collections::BTreeMap;
 use muffy_rnc::{
-    Combine, Declaration, GrammarContent, Identifier, NameClass, Pattern, SchemaBody,
-    parse_schema,
+    Combine, Declaration, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
 use quote::quote;
@@ -13,14 +13,13 @@ use std::{collections::HashMap, fs::read_to_string, path::Path};
 /// Generates HTML validation functions.
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
-    let schema_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
+    let schema_directory = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/schema/html5");
     let mut definitions = HashMap::new();
 
-    load_schema(&schema_dir.join("html5.rnc"), &mut definitions);
+    load_schema(&schema_directory.join("html5.rnc"), &mut definitions);
 
     // Group definitions by element name
-    let mut element_groups: alloc::collections::BTreeMap<String, Vec<(String, Pattern)>> =
-        alloc::collections::BTreeMap::new();
+    let mut element_groups = BTreeMap::<String, Vec<(String, Pattern)>>::new();
     for (name, pattern) in &definitions {
         let Pattern::Element { name_class, .. } = pattern else {
             continue;
