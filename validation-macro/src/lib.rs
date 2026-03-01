@@ -4,7 +4,7 @@ extern crate alloc;
 
 use alloc::collections::BTreeMap;
 use muffy_rnc::{
-    Combine, Declaration, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
+    Combine, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
 use proc_macro::TokenStream;
 use quote::quote;
@@ -112,22 +112,13 @@ fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) {
     let content = read_to_string(path).unwrap();
     let schema = parse_schema(&content).unwrap();
 
-    // Handle declarations (optional for this prototype)
-    for decl in &schema.declarations {
-        match decl {
-            Declaration::DefaultNamespace(_) => {}
-            Declaration::Namespace(_) => {}
-            Declaration::Datatypes(_) => {}
-        }
-    }
+    // We do not use the declarations.
 
     match schema.body {
         SchemaBody::Grammar(grammar) => {
             load_grammar(&grammar, path.parent().unwrap(), definitions);
         }
-        SchemaBody::Pattern(_) => {
-            // Root pattern, handle if needed
-        }
+        SchemaBody::Pattern(_) => {}
     }
 }
 
