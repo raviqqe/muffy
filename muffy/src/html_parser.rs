@@ -33,8 +33,8 @@ impl HtmlParser {
                 response.url().to_string(),
                 Box::new(async move {
                     parse_bytes(response.body())
-                        .map(Arc::new)
-                        .map_err(|error| HtmlError::Io(Arc::new(error)))
+                        .map(Into::into)
+                        .map_err(|error| HtmlError::Io(error.into()))
                 }),
             )
             .await?
