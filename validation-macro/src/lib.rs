@@ -18,8 +18,8 @@ pub fn html(_input: TokenStream) -> TokenStream {
 
     load_schema(&schema_directory.join("html5.rnc"), &mut definitions);
 
-    // Group definitions by element name
     let mut element_groups = BTreeMap::<String, Vec<(String, Pattern)>>::new();
+
     for (name, pattern) in &definitions {
         let Pattern::Element { name_class, .. } = pattern else {
             continue;
