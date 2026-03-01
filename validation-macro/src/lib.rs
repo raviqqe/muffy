@@ -121,8 +121,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 }
 
 fn load_schema(path: &Path, definitions: &mut HashMap<String, Pattern>) -> Result<(), MacroError> {
-    let content = read_to_string(path)?;
-    let schema = parse_schema(&content)?;
+    let schema = parse_schema(&read_to_string(path)?)?;
 
     // We do not use the declarations.
 
