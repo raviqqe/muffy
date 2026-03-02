@@ -208,31 +208,29 @@ fn get_name(name_class: &NameClass) -> Option<String> {
 fn collect_attributes(
     pattern: &Pattern,
     definitions: &HashMap<Identifier, Pattern>,
-) -> Vec<String> {
-    let mut attributes = vec![];
+) -> HashSet<String> {
+    let mut attributes = HashSet::new();
 
     collect_attributes_recursive(pattern, definitions, &mut attributes, &mut HashSet::new());
 
-    attributes.sort();
-    attributes.dedup();
     attributes
 }
 
 fn collect_attributes_recursive(
     pattern: &Pattern,
     definitions: &HashMap<Identifier, Pattern>,
-    attributes: &mut Vec<String>,
+    attributes: &mut HashSet<String>,
     visited: &mut HashSet<Identifier>,
 ) {
     match pattern {
         Pattern::Attribute { name_class, .. } => {
             if let Some(name) = get_name(name_class) {
-                attributes.push(name);
+                attributes.insert(name);
             }
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for p in patterns {
-                collect_attributes_recursive(p, definitions, attributes, visited);
+            for pattern in patterns {
+                collect_attributes_recursive(pattern, definitions, attributes, visited);
             }
         }
         Pattern::Optional(p) | Pattern::Many0(p) | Pattern::Many1(p) => {
@@ -250,26 +248,27 @@ fn collect_attributes_recursive(
     }
 }
 
-fn collect_children(pattern: &Pattern, definitions: &HashMap<Identifier, Pattern>) -> Vec<String> {
-    let mut children = vec![];
+fn collect_children(
+    pattern: &Pattern,
+    definitions: &HashMap<Identifier, Pattern>,
+) -> HashSet<String> {
+    let mut children = HashSet::new();
 
     collect_children_recursive(pattern, definitions, &mut children, &mut HashSet::new());
 
-    children.sort();
-    children.dedup();
     children
 }
 
 fn collect_children_recursive(
     pattern: &Pattern,
     definitions: &HashMap<Identifier, Pattern>,
-    children: &mut Vec<String>,
+    children: &mut HashSet<String>,
     visited: &mut HashSet<Identifier>,
 ) {
     match pattern {
         Pattern::Element { name_class, .. } => {
             if let Some(name) = get_name(name_class) {
-                children.push(name);
+                children.insert(name);
             }
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
@@ -284,8 +283,8 @@ fn collect_children_recursive(
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
 
-                if let Some(p) = definitions.get(&name.local) {
-                    collect_children_recursive(p, definitions, children, visited);
+                if let Some(pattern) = definitions.get(&name.local) {
+                    collect_children_recursive(pattern, definitions, children, visited);
                 }
             }
         }
