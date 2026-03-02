@@ -149,6 +149,7 @@ fn load_grammar(
                 if let Some(combine) = definition.combine {
                     let existing = definitions.entry(name).or_insert(Pattern::NotAllowed);
 
+                    // TODO Refactor.
                     match combine {
                         Combine::Choice => match existing {
                             Pattern::Choice(choices) => choices.push(pattern),
