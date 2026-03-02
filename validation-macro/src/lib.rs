@@ -180,6 +180,7 @@ fn load_grammar(
                     definitions.insert(name, pattern);
                 }
             }
+            GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory)?,
             GrammarContent::Include(include) => {
                 let include_path = directory.join(&include.uri);
 
@@ -188,9 +189,6 @@ fn load_grammar(
                 if let Some(grammar) = &include.grammar {
                     load_grammar(grammar, definitions, directory)?;
                 }
-            }
-            GrammarContent::Div(grammar) => {
-                load_grammar(grammar, definitions, directory)?;
             }
             GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
         }
