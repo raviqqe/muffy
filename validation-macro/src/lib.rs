@@ -5,7 +5,7 @@ extern crate alloc;
 mod error;
 
 use self::error::MacroError;
-use alloc::collections::BTreeMap;
+use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
 use muffy_rnc::{
     Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
@@ -13,11 +13,7 @@ use muffy_rnc::{
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use std::{
-    collections::{HashMap, HashSet},
-    fs::read_to_string,
-    path::Path,
-};
+use std::{fs::read_to_string, path::Path};
 
 /// Generates HTML validation functions.
 #[proc_macro]
@@ -30,7 +26,7 @@ pub fn html(_input: TokenStream) -> TokenStream {
 }
 
 fn generate_html() -> Result<TokenStream, MacroError> {
-    let mut definitions = HashMap::new();
+    let mut definitions = BTreeMap::new();
 
     load_schema(
         &Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -113,7 +109,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
 fn load_schema(
     path: &Path,
-    definitions: &mut HashMap<Identifier, Pattern>,
+    definitions: &mut BTreeMap<Identifier, Pattern>,
 ) -> Result<(), MacroError> {
     let schema = parse_schema(&read_to_string(path)?)?;
 
@@ -137,7 +133,7 @@ fn load_schema(
 
 fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut HashMap<Identifier, Pattern>,
+    definitions: &mut BTreeMap<Identifier, Pattern>,
     directory: &Path,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
@@ -207,20 +203,20 @@ fn get_name(name_class: &NameClass) -> Option<String> {
 
 fn collect_attributes(
     pattern: &Pattern,
-    definitions: &HashMap<Identifier, Pattern>,
-) -> HashSet<String> {
-    let mut attributes = HashSet::new();
+    definitions: &BTreeMap<Identifier, Pattern>,
+) -> BTreeSet<String> {
+    let mut attributes = BTreeSet::new();
 
-    collect_attributes_recursive(pattern, definitions, &mut attributes, &mut HashSet::new());
+    collect_attributes_recursive(pattern, definitions, &mut attributes, &mut BTreeSet::new());
 
     attributes
 }
 
 fn collect_attributes_recursive(
     pattern: &Pattern,
-    definitions: &HashMap<Identifier, Pattern>,
-    attributes: &mut HashSet<String>,
-    visited: &mut HashSet<Identifier>,
+    definitions: &BTreeMap<Identifier, Pattern>,
+    attributes: &mut BTreeSet<String>,
+    visited: &mut BTreeSet<Identifier>,
 ) {
     match pattern {
         Pattern::Attribute { name_class, .. } => {
@@ -250,20 +246,20 @@ fn collect_attributes_recursive(
 
 fn collect_children(
     pattern: &Pattern,
-    definitions: &HashMap<Identifier, Pattern>,
-) -> HashSet<String> {
-    let mut children = HashSet::new();
+    definitions: &BTreeMap<Identifier, Pattern>,
+) -> BTreeSet<String> {
+    let mut children = BTreeSet::new();
 
-    collect_children_recursive(pattern, definitions, &mut children, &mut HashSet::new());
+    collect_children_recursive(pattern, definitions, &mut children, &mut BTreeSet::new());
 
     children
 }
 
 fn collect_children_recursive(
     pattern: &Pattern,
-    definitions: &HashMap<Identifier, Pattern>,
-    children: &mut HashSet<String>,
-    visited: &mut HashSet<Identifier>,
+    definitions: &BTreeMap<Identifier, Pattern>,
+    children: &mut BTreeSet<String>,
+    visited: &mut BTreeSet<Identifier>,
 ) {
     match pattern {
         Pattern::Element { name_class, .. } => {
