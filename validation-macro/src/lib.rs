@@ -268,6 +268,7 @@ fn collect_nested_attributes(
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
+
                 if let Some(pattern) = definitions.get(&name.local) {
                     collect_nested_attributes(pattern, definitions, attributes, visited)?;
                 }
