@@ -257,13 +257,12 @@ fn collect_nested_attributes(
                 attributes.insert(name);
             }
         }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_attributes(pattern, definitions, attributes, visited)?;
+        Pattern::Grammar(grammar) => {
+            for content in &grammar.contents {
+                if let GrammarContent::Start { pattern, .. } = content {
+                    collect_nested_attributes(pattern, definitions, attributes, visited)?;
+                }
             }
-        }
-        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
-            collect_nested_attributes(pattern, definitions, attributes, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
@@ -274,11 +273,18 @@ fn collect_nested_attributes(
                 }
             }
         }
+        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
+            for pattern in patterns {
+                collect_nested_attributes(pattern, definitions, attributes, visited)?;
+            }
+        }
+        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
+            collect_nested_attributes(pattern, definitions, attributes, visited)?;
+        }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Data { .. }
         | Pattern::Element { .. }
         | Pattern::Empty
-        | Pattern::Grammar(_)
         | Pattern::List(_)
         | Pattern::NotAllowed
         | Pattern::Text
@@ -311,13 +317,12 @@ fn collect_nested_children(
                 children.insert(name);
             }
         }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_children(pattern, definitions, children, visited)?;
+        Pattern::Grammar(grammar) => {
+            for content in &grammar.contents {
+                if let GrammarContent::Start { pattern, .. } = content {
+                    collect_nested_children(pattern, definitions, children, visited)?;
+                }
             }
-        }
-        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
-            collect_nested_children(pattern, definitions, children, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
@@ -328,11 +333,18 @@ fn collect_nested_children(
                 }
             }
         }
+        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
+            for pattern in patterns {
+                collect_nested_children(pattern, definitions, children, visited)?;
+            }
+        }
+        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
+            collect_nested_children(pattern, definitions, children, visited)?;
+        }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Attribute { .. }
         | Pattern::Data { .. }
         | Pattern::Empty
-        | Pattern::Grammar(_)
         | Pattern::List(_)
         | Pattern::NotAllowed
         | Pattern::Text
