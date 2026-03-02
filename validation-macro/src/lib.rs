@@ -162,12 +162,10 @@ fn load_grammar(
                                 }
                             }
                         },
-                        Combine::Interleave => {
-                            if let Pattern::Interleave(patterns) = existing {
-                                patterns.push(pattern);
-                            } else if matches!(existing, Pattern::NotAllowed) {
-                                *existing = pattern;
-                            } else {
+                        Combine::Interleave => match existing {
+                            Pattern::Interleave(patterns) => patterns.push(pattern),
+                            Pattern::NotAllowed => *existing = pattern,
+                            _ => {
                                 let old = replace(existing, Pattern::Interleave(vec![]));
 
                                 if let Pattern::Interleave(patterns) = existing {
@@ -175,7 +173,7 @@ fn load_grammar(
                                     patterns.push(pattern);
                                 }
                             }
-                        }
+                        },
                     }
                 } else {
                     definitions.insert(name, pattern);
