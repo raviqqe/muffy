@@ -182,7 +182,8 @@ fn load_grammar(
             }
             GrammarContent::Include(include) => {
                 let include_path = directory.join(&include.uri);
-                // In a real implementation, we should handle overrides in include.grammar
+
+                // TODO Handle overrides in include.grammar.
                 load_schema(&include_path, definitions)?;
             }
             GrammarContent::Div(grammar) => {
