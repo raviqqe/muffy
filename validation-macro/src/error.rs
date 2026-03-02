@@ -11,6 +11,7 @@ pub enum MacroError {
     Io(io::Error),
     NoParentDirectory,
     RncParse(ParseError),
+    RncPattern(&'static str),
     RncSyntax(&'static str),
 }
 
@@ -19,8 +20,9 @@ impl Display for MacroError {
         match self {
             Self::Io(error) => write!(formatter, "{error}"),
             Self::NoParentDirectory => write!(formatter, "no parent directory"),
-            Self::RncSyntax(error) => write!(formatter, "unexpected RNC syntax: {error}"),
             Self::RncParse(error) => write!(formatter, "{error}"),
+            Self::RncPattern(name) => write!(formatter, "unexpected RNC pattern: {name}"),
+            Self::RncSyntax(name) => write!(formatter, "unexpected RNC syntax: {name}"),
         }
     }
 }

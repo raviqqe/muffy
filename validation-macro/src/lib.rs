@@ -274,10 +274,10 @@ fn collect_nested_attributes(
                 }
             }
         }
+        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Data { .. }
         | Pattern::Element { .. }
         | Pattern::Empty
-        | Pattern::External(_)
         | Pattern::Grammar(_)
         | Pattern::List(_)
         | Pattern::NotAllowed
@@ -328,10 +328,10 @@ fn collect_nested_children(
                 }
             }
         }
+        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Attribute { .. }
         | Pattern::Data { .. }
         | Pattern::Empty
-        | Pattern::External(_)
         | Pattern::Grammar(_)
         | Pattern::List(_)
         | Pattern::NotAllowed
