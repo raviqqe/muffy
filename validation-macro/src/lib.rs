@@ -282,13 +282,14 @@ fn collect_nested_attributes(
             collect_nested_attributes(pattern, definitions, attributes, visited)?;
         }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
         Pattern::Data { .. }
-        | Pattern::Element { .. }
         | Pattern::Empty
+        // TODO Make this an error?
+        | Pattern::Element { .. }
         | Pattern::List(_)
         | Pattern::NotAllowed
-        | Pattern::Text
-        | Pattern::Value { .. } => {}
+        | Pattern::Text => {}
     }
 
     Ok(())
