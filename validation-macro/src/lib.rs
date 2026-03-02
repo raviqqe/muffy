@@ -240,12 +240,12 @@ fn collect_attributes(
 ) -> Result<BTreeSet<String>, MacroError> {
     let mut attributes = BTreeSet::new();
 
-    collect_attributes_recursively(pattern, definitions, &mut attributes, &mut BTreeSet::new())?;
+    collect_nested_attributes(pattern, definitions, &mut attributes, &mut BTreeSet::new())?;
 
     Ok(attributes)
 }
 
-fn collect_attributes_recursively(
+fn collect_nested_attributes(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
     attributes: &mut BTreeSet<String>,
@@ -259,17 +259,17 @@ fn collect_attributes_recursively(
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             for pattern in patterns {
-                collect_attributes_recursively(pattern, definitions, attributes, visited)?;
+                collect_nested_attributes(pattern, definitions, attributes, visited)?;
             }
         }
         Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
-            collect_attributes_recursively(pattern, definitions, attributes, visited)?;
+            collect_nested_attributes(pattern, definitions, attributes, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
                 if let Some(pattern) = definitions.get(&name.local) {
-                    collect_attributes_recursively(pattern, definitions, attributes, visited)?;
+                    collect_nested_attributes(pattern, definitions, attributes, visited)?;
                 }
             }
         }
@@ -293,12 +293,12 @@ fn collect_children(
 ) -> Result<BTreeSet<String>, MacroError> {
     let mut children = BTreeSet::new();
 
-    collect_children_recursively(pattern, definitions, &mut children, &mut BTreeSet::new())?;
+    collect_nested_children(pattern, definitions, &mut children, &mut BTreeSet::new())?;
 
     Ok(children)
 }
 
-fn collect_children_recursively(
+fn collect_nested_children(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
     children: &mut BTreeSet<String>,
@@ -312,18 +312,18 @@ fn collect_children_recursively(
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             for pattern in patterns {
-                collect_children_recursively(pattern, definitions, children, visited)?;
+                collect_nested_children(pattern, definitions, children, visited)?;
             }
         }
         Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
-            collect_children_recursively(pattern, definitions, children, visited)?;
+            collect_nested_children(pattern, definitions, children, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
 
                 if let Some(pattern) = definitions.get(&name.local) {
-                    collect_children_recursively(pattern, definitions, children, visited)?;
+                    collect_nested_children(pattern, definitions, children, visited)?;
                 }
             }
         }
