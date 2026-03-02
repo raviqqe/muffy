@@ -6,6 +6,7 @@ mod error;
 
 use self::error::MacroError;
 use alloc::collections::BTreeMap;
+use core::mem::replace;
 use muffy_rnc::{
     Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
@@ -153,7 +154,7 @@ fn load_grammar(
                             Pattern::Choice(choices) => choices.push(pattern),
                             Pattern::NotAllowed => *existing = pattern,
                             _ => {
-                                let old = core::mem::replace(existing, Pattern::Choice(vec![]));
+                                let old = replace(existing, Pattern::Choice(vec![]));
 
                                 if let Pattern::Choice(choices) = existing {
                                     choices.push(old);
@@ -167,7 +168,8 @@ fn load_grammar(
                             } else if matches!(existing, Pattern::NotAllowed) {
                                 *existing = pattern;
                             } else {
-                                let old = core::mem::replace(existing, Pattern::Interleave(vec![]));
+                                let old = replace(existing, Pattern::Interleave(vec![]));
+
                                 if let Pattern::Interleave(patterns) = existing {
                                     patterns.push(old);
                                     patterns.push(pattern);
