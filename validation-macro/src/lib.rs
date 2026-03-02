@@ -188,7 +188,7 @@ fn load_grammar(
             GrammarContent::Div(grammar) => {
                 load_grammar(grammar, definitions, directory)?;
             }
-            _ => {}
+            GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
         }
     }
 
