@@ -262,14 +262,14 @@ fn collect_attributes_recursively(
                 collect_attributes_recursively(pattern, definitions, attributes, visited)?;
             }
         }
-        Pattern::Optional(p) | Pattern::Many0(p) | Pattern::Many1(p) => {
-            collect_attributes_recursively(p, definitions, attributes, visited)?;
+        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
+            collect_attributes_recursively(pattern, definitions, attributes, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
-                if let Some(p) = definitions.get(&name.local) {
-                    collect_attributes_recursively(p, definitions, attributes, visited)?;
+                if let Some(pattern) = definitions.get(&name.local) {
+                    collect_attributes_recursively(pattern, definitions, attributes, visited)?;
                 }
             }
         }
