@@ -52,7 +52,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         let (allowed_attributes, allowed_children) = element_rules
             .entry(element_name)
-            .or_insert_with(|| (Vec::new(), Vec::new()));
+            .or_insert_with(|| (vec![], vec![]));
 
         if let Pattern::Element { pattern, .. } = pattern {
             allowed_attributes.extend(collect_attributes(pattern, &definitions));
@@ -209,8 +209,10 @@ fn collect_attributes(
     pattern: &Pattern,
     definitions: &HashMap<Identifier, Pattern>,
 ) -> Vec<String> {
-    let mut attributes = Vec::new();
+    let mut attributes = vec![];
+
     collect_attributes_recursive(pattern, definitions, &mut attributes, &mut HashSet::new());
+
     attributes.sort();
     attributes.dedup();
     attributes
