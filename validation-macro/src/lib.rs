@@ -149,19 +149,18 @@ fn load_grammar(
                     let existing = definitions.entry(name).or_insert(Pattern::NotAllowed);
 
                     match combine {
-                        Combine::Choice => {
-                            if let Pattern::Choice(choices) = existing {
-                                choices.push(pattern);
-                            } else if matches!(existing, Pattern::NotAllowed) {
-                                *existing = pattern;
-                            } else {
+                        Combine::Choice => match existing {
+                            Pattern::Choice(choices) => choices.push(pattern),
+                            Pattern::NotAllowed => *existing = pattern,
+                            _ => {
                                 let old = core::mem::replace(existing, Pattern::Choice(vec![]));
+
                                 if let Pattern::Choice(choices) = existing {
                                     choices.push(old);
                                     choices.push(pattern);
                                 }
                             }
-                        }
+                        },
                         Combine::Interleave => {
                             if let Pattern::Interleave(patterns) = existing {
                                 patterns.push(pattern);
