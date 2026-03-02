@@ -51,8 +51,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             .or_insert_with(|| (vec![], vec![]));
 
         if let Pattern::Element { pattern, .. } = pattern {
-            allowed_attributes.extend(collect_attributes(pattern, &definitions));
-            allowed_children.extend(collect_children(pattern, &definitions));
+            allowed_attributes.extend(collect_attributes(pattern, &definitions)?);
+            allowed_children.extend(collect_children(pattern, &definitions)?);
         }
     }
 
@@ -230,29 +230,27 @@ fn get_name(name_class: &NameClass) -> Option<String> {
     match name_class {
         NameClass::Name(name) => Some(name.local.component.clone()),
         NameClass::Choice(choices) => choices.iter().find_map(get_name),
-        NameClass::AnyName
-        | NameClass::Except { .. }
-        | NameClass::NamespaceName(_) => None,
+        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => None,
     }
 }
 
 fn collect_attributes(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
-) -> BTreeSet<String> {
+) -> Result<BTreeSet<String>, MacroError> {
     let mut attributes = BTreeSet::new();
 
-    collect_attributes_recursive(pattern, definitions, &mut attributes, &mut BTreeSet::new());
+    collect_attributes_recursively(pattern, definitions, &mut attributes, &mut BTreeSet::new())?;
 
-    attributes
+    Ok(attributes)
 }
 
-fn collect_attributes_recursive(
+fn collect_attributes_recursively(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
     attributes: &mut BTreeSet<String>,
     visited: &mut BTreeSet<Identifier>,
-) {
+) -> Result<(), MacroError> {
     match pattern {
         Pattern::Attribute { name_class, .. } => {
             if let Some(name) = get_name(name_class) {
@@ -261,17 +259,17 @@ fn collect_attributes_recursive(
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             for pattern in patterns {
-                collect_attributes_recursive(pattern, definitions, attributes, visited);
+                collect_attributes_recursively(pattern, definitions, attributes, visited)?;
             }
         }
         Pattern::Optional(p) | Pattern::Many0(p) | Pattern::Many1(p) => {
-            collect_attributes_recursive(p, definitions, attributes, visited);
+            collect_attributes_recursively(p, definitions, attributes, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
                 if let Some(p) = definitions.get(&name.local) {
-                    collect_attributes_recursive(p, definitions, attributes, visited);
+                    collect_attributes_recursively(p, definitions, attributes, visited)?;
                 }
             }
         }
@@ -285,25 +283,27 @@ fn collect_attributes_recursive(
         | Pattern::Text
         | Pattern::Value { .. } => {}
     }
+
+    Ok(())
 }
 
 fn collect_children(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
-) -> BTreeSet<String> {
+) -> Result<BTreeSet<String>, MacroError> {
     let mut children = BTreeSet::new();
 
-    collect_children_recursive(pattern, definitions, &mut children, &mut BTreeSet::new());
+    collect_children_recursively(pattern, definitions, &mut children, &mut BTreeSet::new())?;
 
-    children
+    Ok(children)
 }
 
-fn collect_children_recursive(
+fn collect_children_recursively(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
     children: &mut BTreeSet<String>,
     visited: &mut BTreeSet<Identifier>,
-) {
+) -> Result<(), MacroError> {
     match pattern {
         Pattern::Element { name_class, .. } => {
             if let Some(name) = get_name(name_class) {
@@ -312,18 +312,18 @@ fn collect_children_recursive(
         }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             for pattern in patterns {
-                collect_children_recursive(pattern, definitions, children, visited);
+                collect_children_recursively(pattern, definitions, children, visited)?;
             }
         }
         Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
-            collect_children_recursive(pattern, definitions, children, visited);
+            collect_children_recursively(pattern, definitions, children, visited)?;
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
 
                 if let Some(pattern) = definitions.get(&name.local) {
-                    collect_children_recursive(pattern, definitions, children, visited);
+                    collect_children_recursively(pattern, definitions, children, visited)?;
                 }
             }
         }
@@ -337,4 +337,6 @@ fn collect_children_recursive(
         | Pattern::Text
         | Pattern::Value { .. } => {}
     }
+
+    Ok(())
 }
