@@ -143,35 +143,11 @@ fn load_grammar(
                 let pattern = definition.pattern.clone();
 
                 if let Some(combine) = definition.combine {
-                    let existing = definitions.entry(name).or_insert(Pattern::NotAllowed);
-
-                    // TODO Refactor.
-                    match combine {
-                        Combine::Choice => match existing {
-                            Pattern::Choice(choices) => choices.push(pattern),
-                            Pattern::NotAllowed => *existing = pattern,
-                            _ => {
-                                let old = replace(existing, Pattern::Choice(vec![]));
-
-                                if let Pattern::Choice(choices) = existing {
-                                    choices.push(old);
-                                    choices.push(pattern);
-                                }
-                            }
-                        },
-                        Combine::Interleave => match existing {
-                            Pattern::Interleave(patterns) => patterns.push(pattern),
-                            Pattern::NotAllowed => *existing = pattern,
-                            _ => {
-                                let old = replace(existing, Pattern::Interleave(vec![]));
-
-                                if let Pattern::Interleave(patterns) = existing {
-                                    patterns.push(old);
-                                    patterns.push(pattern);
-                                }
-                            }
-                        },
-                    }
+                    combine_patterns(
+                        definitions.entry(name).or_insert(Pattern::NotAllowed),
+                        pattern,
+                        combine,
+                    );
                 } else {
                     definitions.insert(name, pattern);
                 }
@@ -193,11 +169,70 @@ fn load_grammar(
     Ok(())
 }
 
+fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
+    match combine {
+        Combine::Choice => match existing {
+            Pattern::Choice(choices) => choices.push(new),
+            Pattern::NotAllowed => *existing = new,
+            Pattern::Attribute { .. }
+            | Pattern::Data { .. }
+            | Pattern::Element { .. }
+            | Pattern::Empty
+            | Pattern::External(_)
+            | Pattern::Grammar(_)
+            | Pattern::Group(_)
+            | Pattern::Interleave(_)
+            | Pattern::List(_)
+            | Pattern::Many0(_)
+            | Pattern::Many1(_)
+            | Pattern::Name(_)
+            | Pattern::Optional(_)
+            | Pattern::Text
+            | Pattern::Value { .. } => {
+                let old = replace(existing, Pattern::Choice(vec![]));
+
+                if let Pattern::Choice(choices) = existing {
+                    choices.push(old);
+                    choices.push(new);
+                }
+            }
+        },
+        Combine::Interleave => match existing {
+            Pattern::Interleave(patterns) => patterns.push(new),
+            Pattern::NotAllowed => *existing = new,
+            Pattern::Attribute { .. }
+            | Pattern::Choice(_)
+            | Pattern::Data { .. }
+            | Pattern::Element { .. }
+            | Pattern::Empty
+            | Pattern::External(_)
+            | Pattern::Grammar(_)
+            | Pattern::Group(_)
+            | Pattern::List(_)
+            | Pattern::Many0(_)
+            | Pattern::Many1(_)
+            | Pattern::Name(_)
+            | Pattern::Optional(_)
+            | Pattern::Text
+            | Pattern::Value { .. } => {
+                let old = replace(existing, Pattern::Interleave(vec![]));
+
+                if let Pattern::Interleave(patterns) = existing {
+                    patterns.push(old);
+                    patterns.push(new);
+                }
+            }
+        },
+    }
+}
+
 fn get_name(name_class: &NameClass) -> Option<String> {
     match name_class {
         NameClass::Name(name) => Some(name.local.component.clone()),
         NameClass::Choice(choices) => choices.iter().find_map(get_name),
-        _ => None,
+        NameClass::AnyName
+        | NameClass::Except { .. }
+        | NameClass::NamespaceName(_) => None,
     }
 }
 
@@ -240,7 +275,15 @@ fn collect_attributes_recursive(
                 }
             }
         }
-        _ => {}
+        Pattern::Data { .. }
+        | Pattern::Element { .. }
+        | Pattern::Empty
+        | Pattern::External(_)
+        | Pattern::Grammar(_)
+        | Pattern::List(_)
+        | Pattern::NotAllowed
+        | Pattern::Text
+        | Pattern::Value { .. } => {}
     }
 }
 
@@ -284,6 +327,14 @@ fn collect_children_recursive(
                 }
             }
         }
-        _ => {}
+        Pattern::Attribute { .. }
+        | Pattern::Data { .. }
+        | Pattern::Empty
+        | Pattern::External(_)
+        | Pattern::Grammar(_)
+        | Pattern::List(_)
+        | Pattern::NotAllowed
+        | Pattern::Text
+        | Pattern::Value { .. } => {}
     }
 }
