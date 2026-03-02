@@ -183,8 +183,11 @@ fn load_grammar(
             GrammarContent::Include(include) => {
                 let include_path = directory.join(&include.uri);
 
-                // TODO Handle overrides in include.grammar.
                 load_schema(&include_path, definitions)?;
+
+                if let Some(grammar) = &include.grammar {
+                    load_grammar(grammar, definitions, directory)?;
+                }
             }
             GrammarContent::Div(grammar) => {
                 load_grammar(grammar, definitions, directory)?;
