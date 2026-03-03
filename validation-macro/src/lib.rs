@@ -257,13 +257,6 @@ fn collect_nested_attributes(
                 attributes.insert(name);
             }
         }
-        Pattern::Grammar(grammar) => {
-            for content in &grammar.contents {
-                if let GrammarContent::Start { pattern, .. } = content {
-                    collect_nested_attributes(pattern, definitions, attributes, visited)?;
-                }
-            }
-        }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
@@ -282,6 +275,7 @@ fn collect_nested_attributes(
             collect_nested_attributes(pattern, definitions, attributes, visited)?;
         }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
         Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
         Pattern::Data { .. }
         | Pattern::Empty
@@ -318,13 +312,6 @@ fn collect_nested_children(
                 children.insert(name);
             }
         }
-        Pattern::Grammar(grammar) => {
-            for content in &grammar.contents {
-                if let GrammarContent::Start { pattern, .. } = content {
-                    collect_nested_children(pattern, definitions, children, visited)?;
-                }
-            }
-        }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
                 visited.insert(name.local.clone());
@@ -343,6 +330,7 @@ fn collect_nested_children(
             collect_nested_children(pattern, definitions, children, visited)?;
         }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
         Pattern::Attribute { .. }
         | Pattern::Data { .. }
         | Pattern::Empty
