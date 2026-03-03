@@ -329,15 +329,15 @@ fn collect_nested_children(
         Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
             collect_nested_children(pattern, definitions, children, visited)?;
         }
+        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
         Pattern::Attribute { .. }
-        | Pattern::Data { .. }
         | Pattern::Empty
         | Pattern::List(_)
         | Pattern::NotAllowed
-        | Pattern::Text
-        | Pattern::Value { .. } => {}
+        | Pattern::Text => {}
     }
 
     Ok(())
