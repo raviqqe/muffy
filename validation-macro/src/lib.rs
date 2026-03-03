@@ -277,10 +277,10 @@ fn collect_nested_attributes(
         Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
         Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
         Pattern::Empty
         | Pattern::Element { .. } // TODO Make this an error?
-        | Pattern::List(_)
         | Pattern::NotAllowed
         | Pattern::Text => {}
     }
@@ -331,12 +331,9 @@ fn collect_nested_children(
         Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
         Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Attribute { .. }
-        | Pattern::Empty
-        | Pattern::List(_)
-        | Pattern::NotAllowed
-        | Pattern::Text => {}
+        Pattern::Attribute { .. } | Pattern::Empty | Pattern::NotAllowed | Pattern::Text => {}
     }
 
     Ok(())
