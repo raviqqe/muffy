@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - uses: raviqqe/cargo-cache@v1
       - run: cargo +nightly doc --all-features
   web_build:
@@ -25,6 +27,8 @@ jobs:
         working-directory: doc
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - uses: actions/configure-pages@v5
       - uses: ./.github/actions/setup
       - run: node --run build
@@ -49,6 +53,8 @@ jobs:
         working-directory: doc
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &
@@ -64,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: true
       - uses: ./.github/actions/setup
       - run: node --run build -- --site http://localhost:4321
         working-directory: doc
