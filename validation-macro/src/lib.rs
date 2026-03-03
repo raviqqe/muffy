@@ -274,13 +274,12 @@ fn collect_nested_attributes(
         Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
             collect_nested_attributes(pattern, definitions, attributes, visited)?;
         }
+        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
         Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Data { .. }
-        | Pattern::Empty
-        // TODO Make this an error?
-        | Pattern::Element { .. }
+        Pattern::Empty
+        | Pattern::Element { .. } // TODO Make this an error?
         | Pattern::List(_)
         | Pattern::NotAllowed
         | Pattern::Text => {}
