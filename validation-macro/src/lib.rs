@@ -118,9 +118,7 @@ fn load_schema(
                 path.parent().ok_or(MacroError::NoParentDirectory)?,
             )?;
         }
-        SchemaBody::Pattern(_) => {
-            return Err(MacroError::RncSyntax("top-level pattern"));
-        }
+        SchemaBody::Pattern(_) => return Err(MacroError::RncSyntax("top-level pattern")),
     }
 
     Ok(())
