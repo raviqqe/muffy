@@ -71,7 +71,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             #element => {
                 for (name, _) in element.attributes() {
                     match name {
-                        #(#attributes |)* "xmlns" => {}
+                        #(#attributes |)* "_dummy_" => {}
                         _ => return Err(ValidationError::InvalidAttribute(name.to_string())),
                     }
                 }
@@ -79,7 +79,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
                         match child_element.name() {
-                            #(#children |)* "!--" => {} // Allow comments
+                            #(#children |)* "_dummy_" => {}
                             _ => return Err(ValidationError::InvalidChild(child_element.name().to_string())),
                         }
                     }
