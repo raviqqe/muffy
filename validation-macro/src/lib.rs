@@ -26,7 +26,7 @@ pub fn html(_input: TokenStream) -> TokenStream {
 }
 
 fn generate_html() -> Result<TokenStream, MacroError> {
-    let mut definitions = BTreeMap::new();
+    let mut definitions = Default::default();
 
     load_schema(
         &Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -238,9 +238,14 @@ fn collect_attributes(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
 ) -> Result<BTreeSet<String>, MacroError> {
-    let mut attributes = BTreeSet::new();
+    let mut attributes = Default::default();
 
-    collect_nested_attributes(pattern, definitions, &mut attributes, &mut BTreeSet::new())?;
+    collect_nested_attributes(
+        pattern,
+        definitions,
+        &mut attributes,
+        &mut Default::default(),
+    )?;
 
     Ok(attributes)
 }
@@ -289,9 +294,9 @@ fn collect_children(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
 ) -> Result<BTreeSet<String>, MacroError> {
-    let mut children = BTreeSet::new();
+    let mut children = Default::default();
 
-    collect_nested_children(pattern, definitions, &mut children, &mut BTreeSet::new())?;
+    collect_nested_children(pattern, definitions, &mut children, &mut Default::default())?;
 
     Ok(children)
 }
