@@ -35,7 +35,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         &mut definitions,
     )?;
 
-    // element_name -> (allowed_attributes, allowed_children)
+    // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
 
     for pattern in definitions.values() {
@@ -46,13 +46,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             continue;
         };
 
-        let (allowed_attributes, allowed_children) = element_rules
-            .entry(element_name)
-            .or_insert_with(|| (vec![], vec![]));
-
         if let Pattern::Element { pattern, .. } = pattern {
-            allowed_attributes.extend(collect_attributes(pattern, &definitions)?);
-            allowed_children.extend(collect_children(pattern, &definitions)?);
+            let (attributes, children) = element_rules
+                .entry(element_name)
+                .or_insert_with(|| (vec![], vec![]));
+
+            attributes.extend(collect_attributes(pattern, &definitions)?);
+            children.extend(collect_children(pattern, &definitions)?);
         }
     }
 
