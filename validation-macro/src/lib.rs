@@ -327,7 +327,7 @@ fn collect_nested_children(
                 collect_nested_children(pattern, definitions, children, visited)?;
             }
         }
-        Pattern::Optional(pattern) | Pattern::Many0(pattern) | Pattern::Many1(pattern) => {
+        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
             collect_nested_children(pattern, definitions, children, visited)?;
         }
         Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
