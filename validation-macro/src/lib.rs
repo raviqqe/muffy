@@ -250,11 +250,11 @@ fn collect_attributes(
     Ok(attributes)
 }
 
-fn collect_nested_attributes(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
+fn collect_nested_attributes<'a>(
+    pattern: &'a Pattern,
+    definitions: &'a BTreeMap<Identifier, Pattern>,
     attributes: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<Identifier>,
+    visited: &mut BTreeSet<&'a Identifier>,
 ) -> Result<(), MacroError> {
     match pattern {
         Pattern::Attribute { name_class, .. } => {
@@ -264,7 +264,7 @@ fn collect_nested_attributes(
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
-                visited.insert(name.local.clone());
+                visited.insert(&name.local);
 
                 if let Some(pattern) = definitions.get(&name.local) {
                     collect_nested_attributes(pattern, definitions, attributes, visited)?;
@@ -301,11 +301,11 @@ fn collect_children(
     Ok(children)
 }
 
-fn collect_nested_children(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
+fn collect_nested_children<'a>(
+    pattern: &'a Pattern,
+    definitions: &'a BTreeMap<Identifier, Pattern>,
     children: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<Identifier>,
+    visited: &mut BTreeSet<&'a Identifier>,
 ) -> Result<(), MacroError> {
     match pattern {
         Pattern::Element { name_class, .. } => {
@@ -315,7 +315,7 @@ fn collect_nested_children(
         }
         Pattern::Name(name) => {
             if !visited.contains(&name.local) {
-                visited.insert(name.local.clone());
+                visited.insert(&name.local);
 
                 if let Some(pattern) = definitions.get(&name.local) {
                     collect_nested_children(pattern, definitions, children, visited)?;
