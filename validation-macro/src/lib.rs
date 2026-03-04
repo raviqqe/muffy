@@ -279,10 +279,7 @@ fn collect_nested_attributes(
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
         Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
         Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Empty
-        | Pattern::Element { .. } // TODO Make this an error?
-        | Pattern::NotAllowed
-        | Pattern::Text => {}
+        Pattern::Empty | Pattern::Element { .. } | Pattern::NotAllowed | Pattern::Text => {}
     }
 
     Ok(())
