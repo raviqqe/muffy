@@ -42,13 +42,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         let Pattern::Element { name_class, .. } = pattern else {
             continue;
         };
-        let Some(element_name) = get_name(name_class) else {
+        let Some(element) = get_name(name_class) else {
             continue;
         };
 
         if let Pattern::Element { pattern, .. } = pattern {
             let (attributes, children) = element_rules
-                .entry(element_name)
+                .entry(element)
                 .or_insert_with(|| (vec![], vec![]));
 
             attributes.extend(collect_attributes(pattern, &definitions)?);
@@ -58,7 +58,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     let mut element_matches = vec![];
 
-    for (element_name, (mut attributes, mut children)) in element_rules {
+    for (element, (mut attributes, mut children)) in element_rules {
         attributes.sort();
         attributes.dedup();
         children.sort();
@@ -73,7 +73,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         });
 
         element_matches.push(quote! {
-            #element_name => {
+            #element => {
                 for (name, _) in element.attributes() {
                     match name {
                         #(#attribute_checks |)* "xmlns" => {}
