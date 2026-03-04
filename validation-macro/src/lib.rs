@@ -64,19 +64,14 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         children.sort();
         children.dedup();
 
-        let attribute_checks = attributes.iter().map(|attr| {
-            quote! { #attr }
-        });
-
-        let child_checks = children.iter().map(|child| {
-            quote! { #child }
-        });
+        let attributes = attributes.iter().map(|attr| quote!(#attr));
+        let children = children.iter().map(|child| quote!(#child));
 
         element_matches.push(quote! {
             #element => {
                 for (name, _) in element.attributes() {
                     match name {
-                        #(#attribute_checks |)* "xmlns" => {}
+                        #(#attributes |)* "xmlns" => {}
                         _ => return Err(ValidationError::InvalidAttribute(name.to_string())),
                     }
                 }
@@ -84,7 +79,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
                         match child_element.name() {
-                            #(#child_checks |)* "!--" => {} // Allow comments
+                            #(#children |)* "!--" => {} // Allow comments
                             _ => return Err(ValidationError::InvalidChild(child_element.name().to_string())),
                         }
                     }
