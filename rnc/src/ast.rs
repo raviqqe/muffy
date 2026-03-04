@@ -243,7 +243,7 @@ pub struct AnnotationAttribute {
 }
 
 /// An identifier.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Identifier {
     /// A component.
     pub component: String,

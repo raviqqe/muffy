@@ -1382,6 +1382,7 @@ dependencies = [
 name = "muffy-validation"
 version = "0.3.5"
 dependencies = [
+ "muffy-document",
  "muffy-validation-macro",
 ]
 
@@ -1389,7 +1390,10 @@ dependencies = [
 name = "muffy-validation-macro"
 version = "0.3.5"
 dependencies = [
+ "muffy-rnc",
+ "proc-macro2",
  "quote",
+ "syn",
 ]
 
 [[package]]
