@@ -78,9 +78,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     match attribute_name {
                         #(#attributes |)* "_DUMMY_" => {}
                         _ => {
-                            let attribute_name_string = attribute_name.to_string();
                             attributes
-                                .entry(attribute_name_string)
+                                .entry(attribute_name.into())
                                 .or_insert_with(Default::default)
                                 .insert(AttributeError::Invalid);
                         }
@@ -99,9 +98,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                         match child_name {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
-                                let child_name_string = child_name.to_string();
                                 children
-                                    .entry(child_name_string)
+                                    .entry(child_name.into())
                                     .or_insert_with(Default::default)
                                     .insert(ChildError::Invalid);
                             }
