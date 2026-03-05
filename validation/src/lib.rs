@@ -60,9 +60,7 @@ mod tests {
         )
     }
 
-    fn create_attributes(
-        attribute_names: Vec<&str>,
-    ) -> BTreeMap<String, BTreeSet<AttributeError>> {
+    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, BTreeSet<AttributeError>> {
         attribute_names
             .into_iter()
             .map(|attribute_name| {
