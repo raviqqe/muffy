@@ -64,28 +64,57 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         children.sort();
         children.dedup();
 
-        let attributes = attributes.iter().map(|attr| quote!(#attr));
+        let attributes = attributes.iter().map(|attribute| quote!(#attribute));
         let children = children.iter().map(|child| quote!(#child));
 
         element_matches.push(quote! {
             #element => {
-                for (name, _) in element.attributes() {
-                    match name {
-                        #(#attributes |)* "_DUMMY_" => {}
-                        _ => return Err(ValidationError::InvalidAttribute(name.to_string())),
-                    }
-                }
+                let mut attributes = ::alloc::collections::BTreeMap::<
+                    String,
+                    ::alloc::collections::BTreeSet<AttributeError>,
+                >::new();
 
-                for child in element.children() {
-                    if let muffy_document::html::Node::Element(child_element) = child {
-                        match child_element.name() {
-                            #(#children |)* "_DUMMY_" => {}
-                            _ => return Err(ValidationError::InvalidChild(child_element.name().to_string())),
+                for (attribute, _) in element.attributes() {
+                    match attribute {
+                        #(#attributes |)* "_DUMMY_" => {}
+                        _ => {
+                            attributes
+                                .entry(attribute.into())
+                                .or_insert_with(Default::default)
+                                .insert(AttributeError::Invalid);
                         }
                     }
                 }
 
-                Ok(())
+                let mut children = ::alloc::collections::BTreeMap::<
+                    String,
+                    ::alloc::collections::BTreeSet<ChildError>,
+                >::new();
+
+                for child in element.children() {
+                    if let muffy_document::html::Node::Element(child_element) = child {
+                        let child_name = child_element.name();
+
+                        match child_name {
+                            #(#children |)* "_DUMMY_" => {}
+                            _ => {
+                                children
+                                    .entry(child_name.into())
+                                    .or_insert_with(Default::default)
+                                    .insert(ChildError::Invalid);
+                            }
+                        }
+                    }
+                }
+
+                if attributes.is_empty() && children.is_empty() {
+                    Ok(())
+                } else {
+                    Err(ValidationError::InvalidElement {
+                        attributes,
+                        children,
+                    })
+                }
             }
         });
     }
@@ -95,7 +124,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         pub fn validate_element(element: &Element) -> Result<(), ValidationError> {
             match element.name() {
                 #(#element_matches)*
-                _ => Err(ValidationError::InvalidElement(element.name().to_string())),
+                _ => Err(ValidationError::InvalidTag(element.name().to_string())),
             }
         }
     }

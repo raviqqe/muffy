@@ -1,5 +1,8 @@
 //! Document validation.
 
+extern crate alloc;
+
+use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
@@ -8,12 +11,29 @@ html! {}
 /// A validation error.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ValidationError {
+    /// An invalid tag.
+    InvalidTag(String),
+    /// Invalid element.
+    InvalidElement {
+        /// Invalid attributes by name.
+        attributes: BTreeMap<String, BTreeSet<AttributeError>>,
+        /// Invalid children by name.
+        children: BTreeMap<String, BTreeSet<ChildError>>,
+    },
+}
+
+/// A validation attribute error.
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum AttributeError {
     /// An invalid attribute.
-    InvalidAttribute(String),
+    Invalid,
+}
+
+/// A validation child error.
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub enum ChildError {
     /// An invalid child.
-    InvalidChild(String),
-    /// An invalid element.
-    InvalidElement(String),
+    Invalid,
 }
 
 #[cfg(test)]
@@ -46,7 +66,7 @@ mod tests {
 
         assert_eq!(
             validate_element(&element),
-            Err(ValidationError::InvalidElement("invalid".to_owned()))
+            Err(ValidationError::InvalidTag("invalid".to_owned()))
         );
     }
 
@@ -73,7 +93,31 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidAttribute("invalid".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: [("invalid".into(), [AttributeError::Invalid].into())].into(),
+                    children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_multiple_invalid_attributes() {
+            let element = create_element(
+                "div",
+                vec![("invalid-one", "foo"), ("invalid-two", "bar")],
+                vec![],
+            );
+
+            assert_eq!(
+                validate_element(&element),
+                Err(ValidationError::InvalidElement {
+                    attributes: [
+                        ("invalid-one".into(), [AttributeError::Invalid].into()),
+                        ("invalid-two".into(), [AttributeError::Invalid].into()),
+                    ]
+                    .into(),
+                    children: Default::default(),
+                })
             );
         }
 
@@ -101,7 +145,34 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("div".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_multiple_invalid_children() {
+            let element = create_element(
+                "p",
+                vec![],
+                vec![
+                    create_element("div", vec![], vec![]),
+                    create_element("table", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(
+                validate_element(&element),
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [
+                        ("div".into(), [ChildError::Invalid].into()),
+                        ("table".into(), [ChildError::Invalid].into()),
+                    ]
+                    .into(),
+                })
             );
         }
     }
@@ -151,7 +222,10 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                })
             );
         }
     }
@@ -166,7 +240,10 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("div".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                })
             );
         }
     }
@@ -187,7 +264,10 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                })
             );
         }
     }
@@ -210,7 +290,10 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(ValidationError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                })
             );
         }
     }
