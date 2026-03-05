@@ -2,7 +2,7 @@
 
 extern crate alloc;
 
-use alloc::collections::BTreeMap;
+use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
@@ -16,21 +16,21 @@ pub enum ValidationError {
     /// Invalid element details.
     InvalidElementDetails {
         /// Invalid attributes by name.
-        attributes: BTreeMap<String, AttributeError>,
+        attributes: BTreeMap<String, BTreeSet<AttributeError>>,
         /// Invalid children by name.
-        children: BTreeMap<String, ChildError>,
+        children: BTreeMap<String, BTreeSet<ChildError>>,
     },
 }
 
 /// A validation attribute error.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
     /// An invalid attribute.
     Invalid,
 }
 
 /// A validation child error.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
     /// An invalid child.
     Invalid,
@@ -60,22 +60,30 @@ mod tests {
         )
     }
 
-    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, AttributeError> {
+    fn create_attributes(
+        attribute_names: Vec<&str>,
+    ) -> BTreeMap<String, BTreeSet<AttributeError>> {
         attribute_names
             .into_iter()
             .map(|attribute_name| {
                 let attribute_name_string = attribute_name.to_string();
-                (attribute_name_string.clone(), AttributeError::Invalid)
+                (
+                    attribute_name_string,
+                    core::iter::once(AttributeError::Invalid).collect(),
+                )
             })
             .collect()
     }
 
-    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, ChildError> {
+    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, BTreeSet<ChildError>> {
         child_names
             .into_iter()
             .map(|child_name| {
                 let child_name_string = child_name.to_string();
-                (child_name_string.clone(), ChildError::Invalid)
+                (
+                    child_name_string,
+                    core::iter::once(ChildError::Invalid).collect(),
+                )
             })
             .collect()
     }

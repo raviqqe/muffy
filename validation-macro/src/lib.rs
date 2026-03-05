@@ -76,10 +76,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                         #(#attributes |)* "_DUMMY_" => {}
                         _ => {
                             let attribute_name_string = attribute_name.to_string();
-                            attributes.insert(
-                                attribute_name_string.clone(),
-                                AttributeError::Invalid,
-                            );
+                            attributes
+                                .entry(attribute_name_string)
+                                .or_insert_with(::alloc::collections::BTreeSet::new)
+                                .insert(AttributeError::Invalid);
                         }
                     }
                 }
@@ -94,10 +94,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
                                 let child_name_string = child_name.to_string();
-                                children.insert(
-                                    child_name_string.clone(),
-                                    ChildError::Invalid,
-                                );
+                                children
+                                    .entry(child_name_string)
+                                    .or_insert_with(::alloc::collections::BTreeSet::new)
+                                    .insert(ChildError::Invalid);
                             }
                         }
                     }
