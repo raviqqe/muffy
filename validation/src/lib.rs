@@ -60,42 +60,6 @@ mod tests {
         )
     }
 
-    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, BTreeSet<AttributeError>> {
-        attribute_names
-            .into_iter()
-            .map(|attribute_name| {
-                let attribute_name_string = attribute_name.to_string();
-                (
-                    attribute_name_string,
-                    core::iter::once(AttributeError::Invalid).collect(),
-                )
-            })
-            .collect()
-    }
-
-    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, BTreeSet<ChildError>> {
-        child_names
-            .into_iter()
-            .map(|child_name| {
-                let child_name_string = child_name.to_string();
-                (
-                    child_name_string,
-                    core::iter::once(ChildError::Invalid).collect(),
-                )
-            })
-            .collect()
-    }
-
-    fn create_element_errors(
-        attribute_names: Vec<&str>,
-        child_names: Vec<&str>,
-    ) -> ValidationError {
-        ValidationError::InvalidElementDetails {
-            attributes: create_attributes(attribute_names),
-            children: create_children(child_names),
-        }
-    }
-
     #[test]
     fn validate_invalid_element_name() {
         let element = create_element("invalid", vec![], vec![]);
@@ -129,7 +93,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec!["invalid"], vec![]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::from_iter([(
+                        "invalid".to_string(),
+                        BTreeSet::from([AttributeError::Invalid]),
+                    )]),
+                    children: BTreeMap::new(),
+                })
             );
         }
 
@@ -143,10 +113,19 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(
-                    vec!["invalid-one", "invalid-two"],
-                    vec![],
-                ))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::from_iter([
+                        (
+                            "invalid-one".to_string(),
+                            BTreeSet::from([AttributeError::Invalid]),
+                        ),
+                        (
+                            "invalid-two".to_string(),
+                            BTreeSet::from([AttributeError::Invalid]),
+                        ),
+                    ]),
+                    children: BTreeMap::new(),
+                })
             );
         }
 
@@ -174,7 +153,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["div"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([(
+                        "div".to_string(),
+                        BTreeSet::from([ChildError::Invalid]),
+                    )]),
+                })
             );
         }
 
@@ -191,7 +176,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["div", "table"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([
+                        ("div".to_string(), BTreeSet::from([ChildError::Invalid])),
+                        ("table".to_string(), BTreeSet::from([ChildError::Invalid])),
+                    ]),
+                })
             );
         }
     }
@@ -241,7 +232,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["p"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([(
+                        "p".to_string(),
+                        BTreeSet::from([ChildError::Invalid]),
+                    )]),
+                })
             );
         }
     }
@@ -256,7 +253,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["div"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([(
+                        "div".to_string(),
+                        BTreeSet::from([ChildError::Invalid]),
+                    )]),
+                })
             );
         }
     }
@@ -277,7 +280,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["p"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([(
+                        "p".to_string(),
+                        BTreeSet::from([ChildError::Invalid]),
+                    )]),
+                })
             );
         }
     }
@@ -300,7 +309,13 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(create_element_errors(vec![], vec!["p"]))
+                Err(ValidationError::InvalidElementDetails {
+                    attributes: BTreeMap::new(),
+                    children: BTreeMap::from_iter([(
+                        "p".to_string(),
+                        BTreeSet::from([ChildError::Invalid]),
+                    )]),
+                })
             );
         }
     }
