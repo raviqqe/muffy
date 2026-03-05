@@ -1,5 +1,8 @@
 //! Document validation.
 
+extern crate alloc;
+
+use alloc::collections::BTreeMap;
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
@@ -14,6 +17,13 @@ pub enum ValidationError {
     InvalidChild(String),
     /// An invalid element.
     InvalidElement(String),
+    /// Invalid element details.
+    InvalidElementDetails {
+        /// Invalid attributes by name.
+        attribute_errors: BTreeMap<String, Self>,
+        /// Invalid children by name.
+        child_errors: BTreeMap<String, Self>,
+    },
 }
 
 #[cfg(test)]
@@ -38,6 +48,42 @@ mod tests {
                 .map(|e| Arc::new(Node::Element(e)))
                 .collect(),
         )
+    }
+
+    fn create_attribute_errors(attribute_names: Vec<&str>) -> BTreeMap<String, ValidationError> {
+        attribute_names
+            .into_iter()
+            .map(|attribute_name| {
+                let attribute_name_string = attribute_name.to_string();
+                (
+                    attribute_name_string.clone(),
+                    ValidationError::InvalidAttribute(attribute_name_string),
+                )
+            })
+            .collect()
+    }
+
+    fn create_child_errors(child_names: Vec<&str>) -> BTreeMap<String, ValidationError> {
+        child_names
+            .into_iter()
+            .map(|child_name| {
+                let child_name_string = child_name.to_string();
+                (
+                    child_name_string.clone(),
+                    ValidationError::InvalidChild(child_name_string),
+                )
+            })
+            .collect()
+    }
+
+    fn create_element_errors(
+        attribute_names: Vec<&str>,
+        child_names: Vec<&str>,
+    ) -> ValidationError {
+        ValidationError::InvalidElementDetails {
+            attribute_errors: create_attribute_errors(attribute_names),
+            child_errors: create_child_errors(child_names),
+        }
     }
 
     #[test]
@@ -73,7 +119,24 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidAttribute("invalid".to_owned()))
+                Err(create_element_errors(vec!["invalid"], vec![]))
+            );
+        }
+
+        #[test]
+        fn validate_multiple_invalid_attributes() {
+            let element = create_element(
+                "div",
+                vec![("invalid-one", "foo"), ("invalid-two", "bar")],
+                vec![],
+            );
+
+            assert_eq!(
+                validate_element(&element),
+                Err(create_element_errors(
+                    vec!["invalid-one", "invalid-two"],
+                    vec![],
+                ))
             );
         }
 
@@ -101,7 +164,24 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("div".to_owned()))
+                Err(create_element_errors(vec![], vec!["div"]))
+            );
+        }
+
+        #[test]
+        fn validate_multiple_invalid_children() {
+            let element = create_element(
+                "p",
+                vec![],
+                vec![
+                    create_element("div", vec![], vec![]),
+                    create_element("table", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(
+                validate_element(&element),
+                Err(create_element_errors(vec![], vec!["div", "table"]))
             );
         }
     }
@@ -151,7 +231,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(create_element_errors(vec![], vec!["p"]))
             );
         }
     }
@@ -166,7 +246,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("div".to_owned()))
+                Err(create_element_errors(vec![], vec!["div"]))
             );
         }
     }
@@ -187,7 +267,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(create_element_errors(vec![], vec!["p"]))
             );
         }
     }
@@ -210,7 +290,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidChild("p".to_owned()))
+                Err(create_element_errors(vec![], vec!["p"]))
             );
         }
     }

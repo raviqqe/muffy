@@ -69,23 +69,48 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #element => {
-                for (name, _) in element.attributes() {
-                    match name {
-                        #(#attributes |)* "_DUMMY_" => {}
-                        _ => return Err(ValidationError::InvalidAttribute(name.to_string())),
-                    }
-                }
+                let mut attribute_errors = ::alloc::collections::BTreeMap::new();
 
-                for child in element.children() {
-                    if let muffy_document::html::Node::Element(child_element) = child {
-                        match child_element.name() {
-                            #(#children |)* "_DUMMY_" => {}
-                            _ => return Err(ValidationError::InvalidChild(child_element.name().to_string())),
+                for (attribute_name, _) in element.attributes() {
+                    match attribute_name {
+                        #(#attributes |)* "_DUMMY_" => {}
+                        _ => {
+                            let attribute_name_string = attribute_name.to_string();
+                            attribute_errors.insert(
+                                attribute_name_string.clone(),
+                                ValidationError::InvalidAttribute(attribute_name_string),
+                            );
                         }
                     }
                 }
 
-                Ok(())
+                let mut child_errors = ::alloc::collections::BTreeMap::new();
+
+                for child in element.children() {
+                    if let muffy_document::html::Node::Element(child_element) = child {
+                        let child_name = child_element.name();
+
+                        match child_name {
+                            #(#children |)* "_DUMMY_" => {}
+                            _ => {
+                                let child_name_string = child_name.to_string();
+                                child_errors.insert(
+                                    child_name_string.clone(),
+                                    ValidationError::InvalidChild(child_name_string),
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if attribute_errors.is_empty() && child_errors.is_empty() {
+                    Ok(())
+                } else {
+                    Err(ValidationError::InvalidElementDetails {
+                        attribute_errors,
+                        child_errors,
+                    })
+                }
             }
         });
     }
