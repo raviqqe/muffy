@@ -65,10 +65,7 @@ mod tests {
             .into_iter()
             .map(|attribute_name| {
                 let attribute_name_string = attribute_name.to_string();
-                (
-                    attribute_name_string.clone(),
-                    AttributeError::Invalid,
-                )
+                (attribute_name_string.clone(), AttributeError::Invalid)
             })
             .collect()
     }
@@ -78,10 +75,7 @@ mod tests {
             .into_iter()
             .map(|child_name| {
                 let child_name_string = child_name.to_string();
-                (
-                    child_name_string.clone(),
-                    ChildError::Invalid,
-                )
+                (child_name_string.clone(), ChildError::Invalid)
             })
             .collect()
     }
