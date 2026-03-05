@@ -94,10 +94,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::from_iter([(
-                        "invalid".into(),
-                        [AttributeError::Invalid].into(),
-                    )]),
+                    attributes: [("invalid".into(), [AttributeError::Invalid].into())].into(),
                     children: Default::default(),
                 })
             );
