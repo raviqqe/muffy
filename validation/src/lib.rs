@@ -11,19 +11,24 @@ html! {}
 /// A validation error.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ValidationError {
-    /// An invalid attribute.
-    InvalidAttribute(String),
-    /// An invalid child.
-    InvalidChild(String),
     /// An invalid element.
     InvalidElement(String),
     /// Invalid element details.
     InvalidElementDetails {
         /// Invalid attributes by name.
-        attribute_errors: BTreeMap<String, Self>,
+        attribute_errors: BTreeMap<String, RuleError>,
         /// Invalid children by name.
-        child_errors: BTreeMap<String, Self>,
+        child_errors: BTreeMap<String, RuleError>,
     },
+}
+
+/// A validation rule error.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum RuleError {
+    /// An invalid attribute.
+    InvalidAttribute(String),
+    /// An invalid child.
+    InvalidChild(String),
 }
 
 #[cfg(test)]
@@ -50,27 +55,27 @@ mod tests {
         )
     }
 
-    fn create_attribute_errors(attribute_names: Vec<&str>) -> BTreeMap<String, ValidationError> {
+    fn create_attribute_errors(attribute_names: Vec<&str>) -> BTreeMap<String, RuleError> {
         attribute_names
             .into_iter()
             .map(|attribute_name| {
                 let attribute_name_string = attribute_name.to_string();
                 (
                     attribute_name_string.clone(),
-                    ValidationError::InvalidAttribute(attribute_name_string),
+                    RuleError::InvalidAttribute(attribute_name_string),
                 )
             })
             .collect()
     }
 
-    fn create_child_errors(child_names: Vec<&str>) -> BTreeMap<String, ValidationError> {
+    fn create_child_errors(child_names: Vec<&str>) -> BTreeMap<String, RuleError> {
         child_names
             .into_iter()
             .map(|child_name| {
                 let child_name_string = child_name.to_string();
                 (
                     child_name_string.clone(),
-                    ValidationError::InvalidChild(child_name_string),
+                    RuleError::InvalidChild(child_name_string),
                 )
             })
             .collect()
