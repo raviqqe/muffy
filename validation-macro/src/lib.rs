@@ -69,10 +69,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #element => {
-                let mut attributes: ::alloc::collections::BTreeMap<
-                    String,
-                    ::alloc::collections::BTreeSet<AttributeError>,
-                > = Default::default();
+                let mut attributes = ::alloc::collections::BTreeMap::default();
 
                 for (attribute_name, _) in element.attributes() {
                     match attribute_name {
@@ -87,10 +84,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     }
                 }
 
-                let mut children: ::alloc::collections::BTreeMap<
-                    String,
-                    ::alloc::collections::BTreeSet<ChildError>,
-                > = Default::default();
+                let mut children = ::alloc::collections::BTreeMap::default();
 
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
