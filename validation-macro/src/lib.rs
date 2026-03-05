@@ -64,7 +64,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         children.sort();
         children.dedup();
 
-        let attributes = attributes.iter().map(|attr| quote!(#attr));
+        let attributes = attributes.iter().map(|attribute| quote!(#attribute));
         let children = children.iter().map(|child| quote!(#child));
 
         element_matches.push(quote! {
