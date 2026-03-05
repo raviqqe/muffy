@@ -16,17 +16,22 @@ pub enum ValidationError {
     /// Invalid element details.
     InvalidElementDetails {
         /// Invalid attributes by name.
-        attributes: BTreeMap<String, RuleError>,
+        attributes: BTreeMap<String, AttributeError>,
         /// Invalid children by name.
-        children: BTreeMap<String, RuleError>,
+        children: BTreeMap<String, ChildError>,
     },
 }
 
-/// A validation rule error.
+/// A validation attribute error.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum RuleError {
+pub enum AttributeError {
     /// An invalid attribute.
     InvalidAttribute(String),
+}
+
+/// A validation child error.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ChildError {
     /// An invalid child.
     InvalidChild(String),
 }
@@ -55,27 +60,27 @@ mod tests {
         )
     }
 
-    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, RuleError> {
+    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, AttributeError> {
         attribute_names
             .into_iter()
             .map(|attribute_name| {
                 let attribute_name_string = attribute_name.to_string();
                 (
                     attribute_name_string.clone(),
-                    RuleError::InvalidAttribute(attribute_name_string),
+                    AttributeError::InvalidAttribute(attribute_name_string),
                 )
             })
             .collect()
     }
 
-    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, RuleError> {
+    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, ChildError> {
         child_names
             .into_iter()
             .map(|child_name| {
                 let child_name_string = child_name.to_string();
                 (
                     child_name_string.clone(),
-                    RuleError::InvalidChild(child_name_string),
+                    ChildError::InvalidChild(child_name_string),
                 )
             })
             .collect()
