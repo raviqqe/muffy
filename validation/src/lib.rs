@@ -26,14 +26,14 @@ pub enum ValidationError {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum AttributeError {
     /// An invalid attribute.
-    InvalidAttribute(String),
+    Invalid,
 }
 
 /// A validation child error.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ChildError {
     /// An invalid child.
-    InvalidChild(String),
+    Invalid,
 }
 
 #[cfg(test)]
@@ -67,7 +67,7 @@ mod tests {
                 let attribute_name_string = attribute_name.to_string();
                 (
                     attribute_name_string.clone(),
-                    AttributeError::InvalidAttribute(attribute_name_string),
+                    AttributeError::Invalid,
                 )
             })
             .collect()
@@ -80,7 +80,7 @@ mod tests {
                 let child_name_string = child_name.to_string();
                 (
                     child_name_string.clone(),
-                    ChildError::InvalidChild(child_name_string),
+                    ChildError::Invalid,
                 )
             })
             .collect()

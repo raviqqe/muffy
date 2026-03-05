@@ -78,7 +78,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                             let attribute_name_string = attribute_name.to_string();
                             attributes.insert(
                                 attribute_name_string.clone(),
-                                AttributeError::InvalidAttribute(attribute_name_string),
+                                AttributeError::Invalid,
                             );
                         }
                     }
@@ -96,7 +96,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                                 let child_name_string = child_name.to_string();
                                 children.insert(
                                     child_name_string.clone(),
-                                    ChildError::InvalidChild(child_name_string),
+                                    ChildError::Invalid,
                                 );
                             }
                         }
