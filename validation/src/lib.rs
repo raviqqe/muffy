@@ -14,7 +14,7 @@ pub enum ValidationError {
     /// An invalid element.
     InvalidTag(String),
     /// Invalid element details.
-    InvalidElementDetails {
+    InvalidElement {
         /// Invalid attributes by name.
         attributes: BTreeMap<String, BTreeSet<AttributeError>>,
         /// Invalid children by name.
@@ -93,7 +93,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: [("invalid".into(), [AttributeError::Invalid].into())].into(),
                     children: Default::default(),
                 })
@@ -110,7 +110,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: [
                         ("invalid-one".into(), [AttributeError::Invalid].into()),
                         ("invalid-two".into(), [AttributeError::Invalid].into()),
@@ -145,7 +145,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::Invalid].into())].into(),
                 })
@@ -165,7 +165,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [
                         ("div".into(), [ChildError::Invalid].into()),
@@ -222,7 +222,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::Invalid].into())].into(),
                 })
@@ -240,7 +240,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::Invalid].into())].into(),
                 })
@@ -264,7 +264,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::Invalid].into())].into(),
                 })
@@ -290,7 +290,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element),
-                Err(ValidationError::InvalidElementDetails {
+                Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::Invalid].into())].into(),
                 })

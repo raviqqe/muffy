@@ -110,7 +110,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 if attributes.is_empty() && children.is_empty() {
                     Ok(())
                 } else {
-                    Err(ValidationError::InvalidElementDetails {
+                    Err(ValidationError::InvalidElement {
                         attributes,
                         children,
                     })
