@@ -36,7 +36,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     )?;
 
     // element -> (attributes, children)
-    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::default();
+    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
 
     for pattern in definitions.values() {
         let Pattern::Element { name_class, .. } = pattern else {
