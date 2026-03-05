@@ -16,9 +16,9 @@ pub enum ValidationError {
     /// Invalid element details.
     InvalidElementDetails {
         /// Invalid attributes by name.
-        attribute_errors: BTreeMap<String, RuleError>,
+        attributes: BTreeMap<String, RuleError>,
         /// Invalid children by name.
-        child_errors: BTreeMap<String, RuleError>,
+        children: BTreeMap<String, RuleError>,
     },
 }
 
@@ -55,7 +55,7 @@ mod tests {
         )
     }
 
-    fn create_attribute_errors(attribute_names: Vec<&str>) -> BTreeMap<String, RuleError> {
+    fn create_attributes(attribute_names: Vec<&str>) -> BTreeMap<String, RuleError> {
         attribute_names
             .into_iter()
             .map(|attribute_name| {
@@ -68,7 +68,7 @@ mod tests {
             .collect()
     }
 
-    fn create_child_errors(child_names: Vec<&str>) -> BTreeMap<String, RuleError> {
+    fn create_children(child_names: Vec<&str>) -> BTreeMap<String, RuleError> {
         child_names
             .into_iter()
             .map(|child_name| {
@@ -86,8 +86,8 @@ mod tests {
         child_names: Vec<&str>,
     ) -> ValidationError {
         ValidationError::InvalidElementDetails {
-            attribute_errors: create_attribute_errors(attribute_names),
-            child_errors: create_child_errors(child_names),
+            attributes: create_attributes(attribute_names),
+            children: create_children(child_names),
         }
     }
 

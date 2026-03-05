@@ -69,14 +69,14 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #element => {
-                let mut attribute_errors = ::alloc::collections::BTreeMap::new();
+                let mut attributes = ::alloc::collections::BTreeMap::new();
 
                 for (attribute_name, _) in element.attributes() {
                     match attribute_name {
                         #(#attributes |)* "_DUMMY_" => {}
                         _ => {
                             let attribute_name_string = attribute_name.to_string();
-                            attribute_errors.insert(
+                            attributes.insert(
                                 attribute_name_string.clone(),
                                 RuleError::InvalidAttribute(attribute_name_string),
                             );
@@ -84,7 +84,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     }
                 }
 
-                let mut child_errors = ::alloc::collections::BTreeMap::new();
+                let mut children = ::alloc::collections::BTreeMap::new();
 
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
@@ -94,7 +94,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
                                 let child_name_string = child_name.to_string();
-                                child_errors.insert(
+                                children.insert(
                                     child_name_string.clone(),
                                     RuleError::InvalidChild(child_name_string),
                                 );
@@ -103,12 +103,12 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     }
                 }
 
-                if attribute_errors.is_empty() && child_errors.is_empty() {
+                if attributes.is_empty() && children.is_empty() {
                     Ok(())
                 } else {
                     Err(ValidationError::InvalidElementDetails {
-                        attribute_errors,
-                        child_errors,
+                        attributes,
+                        children,
                     })
                 }
             }
