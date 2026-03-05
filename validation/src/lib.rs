@@ -11,9 +11,9 @@ html! {}
 /// A validation error.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ValidationError {
-    /// An invalid element.
+    /// An invalid tag.
     InvalidTag(String),
-    /// Invalid element details.
+    /// Invalid element.
     InvalidElement {
         /// Invalid attributes by name.
         attributes: BTreeMap<String, BTreeSet<AttributeError>>,
