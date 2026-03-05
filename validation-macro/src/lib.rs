@@ -74,12 +74,12 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     ::alloc::collections::BTreeSet<AttributeError>,
                 >::new();
 
-                for (attribute_name, _) in element.attributes() {
-                    match attribute_name {
+                for (attribute, _) in element.attributes() {
+                    match attribute {
                         #(#attributes |)* "_DUMMY_" => {}
                         _ => {
                             attributes
-                                .entry(attribute_name.into())
+                                .entry(attribute.into())
                                 .or_insert_with(Default::default)
                                 .insert(AttributeError::Invalid);
                         }
