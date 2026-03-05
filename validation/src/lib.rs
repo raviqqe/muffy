@@ -12,7 +12,7 @@ html! {}
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ValidationError {
     /// An invalid element.
-    InvalidElement(String),
+    InvalidTag(String),
     /// Invalid element details.
     InvalidElementDetails {
         /// Invalid attributes by name.
@@ -96,7 +96,7 @@ mod tests {
 
         assert_eq!(
             validate_element(&element),
-            Err(ValidationError::InvalidElement("invalid".to_owned()))
+            Err(ValidationError::InvalidTag("invalid".to_owned()))
         );
     }
 

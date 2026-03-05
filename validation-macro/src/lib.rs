@@ -120,7 +120,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         pub fn validate_element(element: &Element) -> Result<(), ValidationError> {
             match element.name() {
                 #(#element_matches)*
-                _ => Err(ValidationError::InvalidElement(element.name().to_string())),
+                _ => Err(ValidationError::InvalidTag(element.name().to_string())),
             }
         }
     }
