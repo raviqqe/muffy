@@ -36,7 +36,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     )?;
 
     // element -> (attributes, children)
-    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
+    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::default();
 
     for pattern in definitions.values() {
         let Pattern::Element { name_class, .. } = pattern else {
@@ -69,7 +69,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #element => {
-                let mut attributes = ::alloc::collections::BTreeMap::new();
+                let mut attributes = ::alloc::collections::BTreeMap::default();
 
                 for (attribute_name, _) in element.attributes() {
                     match attribute_name {
@@ -78,13 +78,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                             let attribute_name_string = attribute_name.to_string();
                             attributes
                                 .entry(attribute_name_string)
-                                .or_insert_with(::alloc::collections::BTreeSet::new)
+                                .or_insert_with(Default::default)
                                 .insert(AttributeError::Invalid);
                         }
                     }
                 }
 
-                let mut children = ::alloc::collections::BTreeMap::new();
+                let mut children = ::alloc::collections::BTreeMap::default();
 
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
@@ -96,7 +96,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                                 let child_name_string = child_name.to_string();
                                 children
                                     .entry(child_name_string)
-                                    .or_insert_with(::alloc::collections::BTreeSet::new)
+                                    .or_insert_with(Default::default)
                                     .insert(ChildError::Invalid);
                             }
                         }

@@ -98,7 +98,7 @@ mod tests {
                         "invalid".to_string(),
                         BTreeSet::from([AttributeError::Invalid]),
                     )]),
-                    children: BTreeMap::new(),
+                    children: Default::default(),
                 })
             );
         }
@@ -124,7 +124,7 @@ mod tests {
                             BTreeSet::from([AttributeError::Invalid]),
                         ),
                     ]),
-                    children: BTreeMap::new(),
+                    children: Default::default(),
                 })
             );
         }
@@ -154,7 +154,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([(
                         "div".to_string(),
                         BTreeSet::from([ChildError::Invalid]),
@@ -177,7 +177,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([
                         ("div".to_string(), BTreeSet::from([ChildError::Invalid])),
                         ("table".to_string(), BTreeSet::from([ChildError::Invalid])),
@@ -233,7 +233,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([(
                         "p".to_string(),
                         BTreeSet::from([ChildError::Invalid]),
@@ -254,7 +254,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([(
                         "div".to_string(),
                         BTreeSet::from([ChildError::Invalid]),
@@ -281,7 +281,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([(
                         "p".to_string(),
                         BTreeSet::from([ChildError::Invalid]),
@@ -310,7 +310,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElementDetails {
-                    attributes: BTreeMap::new(),
+                    attributes: Default::default(),
                     children: BTreeMap::from_iter([(
                         "p".to_string(),
                         BTreeSet::from([ChildError::Invalid]),
