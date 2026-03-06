@@ -3,6 +3,7 @@
 extern crate alloc;
 
 use alloc::collections::{BTreeMap, BTreeSet};
+use core::fmt::{self, Display, Formatter};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
@@ -22,6 +23,68 @@ pub enum ValidationError {
     },
 }
 
+impl Display for ValidationError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidTag(tag) => write!(formatter, "invalid tag \"{tag}\""),
+            Self::InvalidElement {
+                attributes,
+                children,
+            } => {
+                if !attributes.is_empty() {
+                    write!(formatter, "invalid attributes: ")?;
+
+                    for (index, (name, errors)) in attributes.iter().enumerate() {
+                        if index > 0 {
+                            write!(formatter, ", ")?;
+                        }
+
+                        write!(formatter, "{name} (")?;
+
+                        for (index, error) in errors.iter().enumerate() {
+                            if index > 0 {
+                                write!(formatter, ", ")?;
+                            }
+
+                            write!(formatter, "{error}")?;
+                        }
+
+                        write!(formatter, ")")?;
+                    }
+                }
+
+                if !children.is_empty() {
+                    if !attributes.is_empty() {
+                        write!(formatter, ", ")?;
+                    }
+
+                    write!(formatter, "invalid children: ")?;
+
+                    for (index, (name, errors)) in children.iter().enumerate() {
+                        if index > 0 {
+                            write!(formatter, ", ")?;
+                        }
+
+                        write!(formatter, "{name} (")?;
+
+                        for (index, error) in errors.iter().enumerate() {
+                            if index > 0 {
+                                write!(formatter, ", ")?;
+                            }
+
+                            write!(formatter, "{error}")?;
+                        }
+
+                        write!(formatter, ")")?;
+                    }
+                }
+
+                Ok(())
+            }
+        }
+    }
+}
+
 /// A validation attribute error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
@@ -29,11 +92,27 @@ pub enum AttributeError {
     Invalid,
 }
 
+impl Display for AttributeError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Invalid => write!(formatter, "invalid"),
+        }
+    }
+}
+
 /// A validation child error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
     /// An invalid child.
     Invalid,
+}
+
+impl Display for ChildError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Invalid => write!(formatter, "invalid"),
+        }
+    }
 }
 
 #[cfg(test)]

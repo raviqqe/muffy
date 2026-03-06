@@ -21,7 +21,7 @@ use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
 use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::HashMap, sync::LazyLock};
+use std::{collections::{BTreeSet, HashMap}, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -281,7 +281,6 @@ impl WebValidator {
             let attributes = HashMap::<_, _>::from_iter(element.attributes());
 
             // TODO Allow skipping element or attribute validation conditionally.
-            // TODO Generalize element validation.
             let mut links = vec![];
 
             match element.name() {
@@ -332,32 +331,82 @@ impl WebValidator {
                 }
             }
 
-            if !links.is_empty() {
+            let validation_result = muffy_validation::validate_element(element);
+            let mut item_futures = links
+                .iter()
+                .flat_map(|(_, links)| {
+                    links.iter().map(|(link, document_type)| {
+                        spawn(self.cloned().validate_element_link(
+                            context.clone(),
+                            link.to_string(),
+                            base.clone(),
+                            *document_type,
+                        ))
+                    })
+                })
+                .collect::<Vec<_>>();
+
+            if let Err(error) = &validation_result {
+                match error {
+                    muffy_validation::ValidationError::InvalidTag(_) => {
+                        item_futures.push(spawn({
+                            let error = error.clone();
+                            async move { Err(Error::Validation(error)) }
+                        }));
+                    }
+                    muffy_validation::ValidationError::InvalidElement {
+                        attributes,
+                        children,
+                    } => {
+                        for (name, _) in attributes {
+                            item_futures.push(spawn({
+                                let error = muffy_validation::ValidationError::InvalidElement {
+                                    attributes: [(name.clone(), [muffy_validation::AttributeError::Invalid].into())].into(),
+                                    children: Default::default(),
+                                };
+                                async move { Err(Error::Validation(error)) }
+                            }));
+                        }
+
+                        for (name, _) in children {
+                            item_futures.push(spawn({
+                                let error = muffy_validation::ValidationError::InvalidElement {
+                                    attributes: Default::default(),
+                                    children: [(name.clone(), [muffy_validation::ChildError::Invalid].into())].into(),
+                                };
+                                async move { Err(Error::Validation(error)) }
+                            }));
+                        }
+                    }
+                }
+            }
+
+            if !item_futures.is_empty() {
+                let mut attribute_names = links
+                    .iter()
+                    .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
+                    .collect::<BTreeSet<_>>();
+
+                if let Err(muffy_validation::ValidationError::InvalidElement {
+                    attributes, ..
+                }) = &validation_result
+                {
+                    attribute_names.extend(attributes.keys().map(String::as_str));
+                }
+
                 futures.push((
                     Element::new(
                         element.name().into(),
-                        links
-                            .iter()
-                            .flat_map(|(attributes, _)| {
+                        attribute_names
+                            .into_iter()
+                            .filter_map(|name| {
                                 attributes
-                                    .iter()
-                                    .map(|(name, value)| (name.to_string(), value.to_string()))
+                                    .get(name)
+                                    .map(|value| (name.to_string(), value.to_string()))
                             })
                             .collect(),
                     ),
-                    links
-                        .iter()
-                        .flat_map(|(_, links)| {
-                            links.iter().map(|(link, document_type)| {
-                                spawn(self.cloned().validate_element_link(
-                                    context.clone(),
-                                    link.to_string(),
-                                    base.clone(),
-                                    *document_type,
-                                ))
-                            })
-                        })
-                        .collect(),
+                    item_futures,
                 ));
             }
 
