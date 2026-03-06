@@ -51,7 +51,9 @@ pub enum Error {
     /// A UTF-8 error.
     Utf8(Utf8Error),
     /// A validation failure.
-    Validation(muffy_validation::ValidationError),
+    Validation,
+    /// An HTML validation failure.
+    HtmlValidation(muffy_validation::ValidationError),
 }
 
 impl error::Error for Error {}
@@ -82,7 +84,8 @@ impl Display for Error {
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
-            Self::Validation(error) => write!(formatter, "{error}"),
+            Self::Validation => write!(formatter, "validation failed"),
+            Self::HtmlValidation(error) => write!(formatter, "{error}"),
         }
     }
 }

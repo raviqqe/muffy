@@ -351,7 +351,7 @@ impl WebValidator {
                     muffy_validation::ValidationError::InvalidTag(_) => {
                         item_futures.push(spawn({
                             let error = error.clone();
-                            async move { Err(Error::Validation(error)) }
+                            async move { Err(Error::HtmlValidation(error)) }
                         }));
                     }
                     muffy_validation::ValidationError::InvalidElement {
@@ -364,7 +364,7 @@ impl WebValidator {
                                     attributes: [(name.clone(), [muffy_validation::AttributeError::Invalid].into())].into(),
                                     children: Default::default(),
                                 };
-                                async move { Err(Error::Validation(error)) }
+                                async move { Err(Error::HtmlValidation(error)) }
                             }));
                         }
 
@@ -374,7 +374,7 @@ impl WebValidator {
                                     attributes: Default::default(),
                                     children: [(name.clone(), [muffy_validation::ChildError::Invalid].into())].into(),
                                 };
-                                async move { Err(Error::Validation(error)) }
+                                async move { Err(Error::HtmlValidation(error)) }
                             }));
                         }
                     }
