@@ -79,7 +79,7 @@ jobs:
         working-directory: doc
       - id: version
         run: tools/github/version.sh
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
