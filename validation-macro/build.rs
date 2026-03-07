@@ -9,6 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg("-s")
         .arg(
             Path::new("..")
+                .join("..")
                 .join("vendor")
                 .join("validator")
                 .join("schema"),
