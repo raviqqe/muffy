@@ -1,6 +1,6 @@
 //! A build script.
 
-use std::error::Error;
+use core::error::Error;
 use std::path::Path;
 use std::process::Command;
 
