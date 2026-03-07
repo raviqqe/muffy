@@ -83,7 +83,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=raw,value=${{ steps.version.outputs.version }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           platforms: |
             linux/amd64

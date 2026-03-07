@@ -30,7 +30,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     load_schema(
         &Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src/schema/html5")
+            .join("vendor")
+            .join("validator")
+            .join("schema")
+            .join("html5")
             .join("html5.rnc"),
         &mut definitions,
     )?;
