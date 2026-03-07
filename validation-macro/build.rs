@@ -1,7 +1,8 @@
 //! A build script.
 
 use std::error::Error;
-use std::fs::Path;
+use std::path::Path;
+use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
     Command::new("ln")
