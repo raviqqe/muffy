@@ -1,8 +1,7 @@
 //! A build script.
 
 use core::error::Error;
-use std::path::Path;
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 fn main() -> Result<(), Box<dyn Error>> {
     Command::new("ln")
