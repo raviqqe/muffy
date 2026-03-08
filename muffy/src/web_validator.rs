@@ -335,7 +335,7 @@ impl WebValidator {
                 Ok(())
             };
 
-            let mut item_futures = links
+            let mut items = links
                 .iter()
                 .flat_map(|(_, links)| {
                     links.iter().map(|(link, document_type)| {
@@ -352,7 +352,7 @@ impl WebValidator {
             if let Err(error) = &validation_result {
                 match error {
                     muffy_validation::ValidationError::UnknownTag(_) => {
-                        item_futures.push(spawn({
+                        items.push(spawn({
                             let error = error.clone();
                             async move { Err(Error::HtmlValidation(error)) }
                         }));
@@ -362,7 +362,7 @@ impl WebValidator {
                         children,
                     } => {
                         for name in attributes.keys() {
-                            item_futures.push(spawn({
+                            items.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: [(
                                         name.clone(),
@@ -376,7 +376,7 @@ impl WebValidator {
                         }
 
                         for name in children.keys() {
-                            item_futures.push(spawn({
+                            items.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: Default::default(),
                                     children: [(
@@ -392,7 +392,7 @@ impl WebValidator {
                 }
             }
 
-            if !item_futures.is_empty() {
+            if !items.is_empty() {
                 let mut attribute_names = links
                     .iter()
                     .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
@@ -417,7 +417,7 @@ impl WebValidator {
                             })
                             .collect(),
                     ),
-                    item_futures,
+                    items,
                 ));
             }
 
