@@ -76,12 +76,6 @@ impl Display for Error {
     }
 }
 
-impl Serialize for Error {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
 /// An element item error.
 #[derive(Debug)]
 pub enum ItemError {
@@ -134,16 +128,16 @@ impl From<url::ParseError> for ItemError {
 impl From<ItemError> for Error {
     fn from(error: ItemError) -> Self {
         match error {
-            ItemError::HtmlElementNotFound(name) => {
-                Self::HttpClient(HttpClientError::Http(format!("element #{name} not found").into()))
-            }
+            ItemError::HtmlElementNotFound(name) => Self::HttpClient(HttpClientError::Http(
+                format!("element #{name} not found").into(),
+            )),
             ItemError::HtmlValidation(error) => {
                 Self::HttpClient(HttpClientError::Http(error.to_string().into()))
             }
             ItemError::HttpClient(error) => Self::HttpClient(error),
-            ItemError::HttpStatus(status) => {
-                Self::HttpClient(HttpClientError::Http(format!("invalid status {status}").into()))
-            }
+            ItemError::HttpStatus(status) => Self::HttpClient(HttpClientError::Http(
+                format!("invalid status {status}").into(),
+            )),
             ItemError::InvalidScheme(scheme) => Self::HttpClient(HttpClientError::Http(
                 format!("invalid scheme \"{scheme}\"").into(),
             )),
@@ -232,7 +226,9 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ItemError::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
+                ItemError::HtmlValidation(muffy_validation::ValidationError::UnknownTag(
+                    "foo".into()
+                ))
             ),
             "unknown tag \"foo\""
         );
