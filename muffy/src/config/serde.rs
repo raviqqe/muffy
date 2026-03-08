@@ -245,6 +245,7 @@ impl ValidationConfig {
 #[serde(deny_unknown_fields)]
 struct MarkupConfig {
     ignored_attribute_prefixes: Option<Vec<String>>,
+    ignored_children_prefixes: Option<Vec<String>>,
 }
 
 impl MarkupConfig {
@@ -256,6 +257,16 @@ impl MarkupConfig {
                 prefixes.dedup();
             } else {
                 self.ignored_attribute_prefixes = Some(other);
+            }
+        }
+
+        if let Some(other) = other.ignored_children_prefixes {
+            if let Some(prefixes) = &mut self.ignored_children_prefixes {
+                prefixes.extend(other);
+                prefixes.sort();
+                prefixes.dedup();
+            } else {
+                self.ignored_children_prefixes = Some(other);
             }
         }
     }
@@ -566,8 +577,8 @@ fn compile_markup_config(
 ) -> Option<super::MarkupConfig> {
     config
         .map(|config| {
-            super::MarkupConfig::new(config.ignored_attribute_prefixes.clone().unwrap_or_else(
-                || {
+            super::MarkupConfig::new(
+                config.ignored_attribute_prefixes.clone().unwrap_or_else(|| {
                     parent
                         .map(|parent| {
                             parent
@@ -576,8 +587,18 @@ fn compile_markup_config(
                                 .collect()
                         })
                         .unwrap_or_default()
-                },
-            ))
+                }),
+                config.ignored_children_prefixes.clone().unwrap_or_else(|| {
+                    parent
+                        .map(|parent| {
+                            parent
+                                .ignored_children_prefixes()
+                                .map(ToOwned::to_owned)
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                }),
+            )
         })
         .or_else(|| parent.cloned())
 }
@@ -1558,6 +1579,7 @@ mod tests {
             let mut config = ValidationConfig {
                 html: Some(MarkupConfig {
                     ignored_attribute_prefixes: Some(vec!["a-".into()]),
+                    ignored_children_prefixes: Some(vec!["x-".into()]),
                 }),
                 ..Default::default()
             };
@@ -1565,14 +1587,19 @@ mod tests {
             config.merge(ValidationConfig {
                 html: Some(MarkupConfig {
                     ignored_attribute_prefixes: Some(vec!["b-".into()]),
+                    ignored_children_prefixes: Some(vec!["y-".into()]),
                 }),
                 svg: Some(MarkupConfig::default()),
                 ..Default::default()
             });
 
             assert_eq!(
-                config.html.unwrap().ignored_attribute_prefixes.unwrap(),
-                vec!["a-".to_string(), "b-".to_string()]
+                config.html.as_ref().unwrap().ignored_attribute_prefixes.as_ref().unwrap(),
+                &vec!["a-".to_string(), "b-".to_string()]
+            );
+            assert_eq!(
+                config.html.as_ref().unwrap().ignored_children_prefixes.as_ref().unwrap(),
+                &vec!["x-".to_string(), "y-".to_string()]
             );
             assert!(config.svg.is_some());
         }

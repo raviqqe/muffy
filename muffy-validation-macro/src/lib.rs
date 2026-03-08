@@ -103,6 +103,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     if let muffy_document::html::Node::Element(child_element) = child {
                         let child_name = child_element.name();
 
+                        if ignored_children_prefixes
+                            .iter()
+                            .any(|prefix| child_name.starts_with(prefix))
+                        {
+                            continue;
+                        }
+
                         match child_name {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
@@ -129,7 +136,11 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     Ok(quote! {
         /// Validates an element.
-        pub fn validate_element(element: &Element, ignored_attribute_prefixes: &[&str]) -> Result<(), MarkupError> {
+        pub fn validate_element(
+            element: &Element,
+            ignored_attribute_prefixes: &[&str],
+            ignored_children_prefixes: &[&str],
+        ) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
