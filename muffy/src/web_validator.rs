@@ -345,11 +345,7 @@ impl WebValidator {
             if let Some(config) = context.config().site(base).validation().html() {
                 muffy_validation::validate_element(
                     element,
-                    &config
-                        .ignored_attribute_prefixes()
-                        .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>(),
+                    &config.ignored_attribute_prefixes().collect::<Vec<_>>(),
                 )
             } else {
                 Ok(())

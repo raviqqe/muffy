@@ -395,8 +395,8 @@ impl MarkupConfig {
     }
 
     /// Returns ignored attribute prefixes.
-    pub fn ignored_attribute_prefixes(&self) -> &[String] {
-        &self.ignored_attribute_prefixes
+    pub fn ignored_attribute_prefixes(&self) -> impl Iterator<Item = &str> {
+        self.ignored_attribute_prefixes.iter().map(AsRef::as_ref)
     }
 }
 
