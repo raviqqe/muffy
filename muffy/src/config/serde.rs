@@ -245,7 +245,7 @@ impl ValidationConfig {
 #[serde(deny_unknown_fields)]
 struct MarkupConfig {
     ignored_attribute_prefixes: Option<Vec<String>>,
-    ignored_children_prefixes: Option<Vec<String>>,
+    ignored_element_prefixes: Option<Vec<String>>,
 }
 
 impl MarkupConfig {
@@ -260,13 +260,13 @@ impl MarkupConfig {
             }
         }
 
-        if let Some(other) = other.ignored_children_prefixes {
-            if let Some(prefixes) = &mut self.ignored_children_prefixes {
+        if let Some(other) = other.ignored_element_prefixes {
+            if let Some(prefixes) = &mut self.ignored_element_prefixes {
                 prefixes.extend(other);
                 prefixes.sort();
                 prefixes.dedup();
             } else {
-                self.ignored_children_prefixes = Some(other);
+                self.ignored_element_prefixes = Some(other);
             }
         }
     }
@@ -591,11 +591,11 @@ fn compile_markup_config(
                             })
                             .unwrap_or_default()
                     }),
-                config.ignored_children_prefixes.clone().unwrap_or_else(|| {
+                config.ignored_element_prefixes.clone().unwrap_or_else(|| {
                     parent
                         .map(|parent| {
                             parent
-                                .ignored_children_prefixes()
+                                .ignored_element_prefixes()
                                 .map(ToOwned::to_owned)
                                 .collect()
                         })
@@ -1582,7 +1582,7 @@ mod tests {
             let mut config = ValidationConfig {
                 html: Some(MarkupConfig {
                     ignored_attribute_prefixes: Some(vec!["a-".into()]),
-                    ignored_children_prefixes: Some(vec!["x-".into()]),
+                    ignored_element_prefixes: Some(vec!["x-".into()]),
                 }),
                 ..Default::default()
             };
@@ -1590,7 +1590,7 @@ mod tests {
             config.merge(ValidationConfig {
                 html: Some(MarkupConfig {
                     ignored_attribute_prefixes: Some(vec!["b-".into()]),
-                    ignored_children_prefixes: Some(vec!["y-".into()]),
+                    ignored_element_prefixes: Some(vec!["y-".into()]),
                 }),
                 svg: Some(MarkupConfig::default()),
                 ..Default::default()
@@ -1611,7 +1611,7 @@ mod tests {
                     .html
                     .as_ref()
                     .unwrap()
-                    .ignored_children_prefixes
+                    .ignored_element_prefixes
                     .as_ref()
                     .unwrap(),
                 &vec!["x-".to_string(), "y-".to_string()]

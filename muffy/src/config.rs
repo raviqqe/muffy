@@ -384,18 +384,18 @@ impl ValidationConfig {
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct MarkupConfig {
     ignored_attribute_prefixes: Vec<String>,
-    ignored_children_prefixes: Vec<String>,
+    ignored_element_prefixes: Vec<String>,
 }
 
 impl MarkupConfig {
     /// Creates a markup validation configuration.
     pub const fn new(
         ignored_attribute_prefixes: Vec<String>,
-        ignored_children_prefixes: Vec<String>,
+        ignored_element_prefixes: Vec<String>,
     ) -> Self {
         Self {
             ignored_attribute_prefixes,
-            ignored_children_prefixes,
+            ignored_element_prefixes,
         }
     }
 
@@ -404,9 +404,9 @@ impl MarkupConfig {
         self.ignored_attribute_prefixes.iter().map(AsRef::as_ref)
     }
 
-    /// Returns ignored children prefixes.
-    pub fn ignored_children_prefixes(&self) -> impl Iterator<Item = &str> {
-        self.ignored_children_prefixes.iter().map(AsRef::as_ref)
+    /// Returns ignored element prefixes.
+    pub fn ignored_element_prefixes(&self) -> impl Iterator<Item = &str> {
+        self.ignored_element_prefixes.iter().map(AsRef::as_ref)
     }
 }
 
