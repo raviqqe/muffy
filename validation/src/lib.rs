@@ -32,7 +32,7 @@ impl Display for ValidationError {
                 children,
             } => {
                 if !attributes.is_empty() {
-                    write!(formatter, "attributes not allowed: ")?;
+                    write!(formatter, "invalid attributes: ")?;
 
                     for (index, (name, errors)) in attributes.iter().enumerate() {
                         if index > 0 {
@@ -58,7 +58,7 @@ impl Display for ValidationError {
                         write!(formatter, ", ")?;
                     }
 
-                    write!(formatter, "children not allowed: ")?;
+                    write!(formatter, "invalid children: ")?;
 
                     for (index, (name, errors)) in children.iter().enumerate() {
                         if index > 0 {
@@ -526,7 +526,7 @@ mod tests {
                         children: Default::default(),
                     }
                 ),
-                "attributes not allowed: foo (not allowed)"
+                "invalid attributes: foo (not allowed)"
             );
         }
 
@@ -540,7 +540,7 @@ mod tests {
                         children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
                     }
                 ),
-                "children not allowed: foo (not allowed)"
+                "invalid children: foo (not allowed)"
             );
         }
 
@@ -554,7 +554,7 @@ mod tests {
                         children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
                     }
                 ),
-                "attributes not allowed: foo (not allowed), children not allowed: bar (not allowed)"
+                "invalid attributes: foo (not allowed), invalid children: bar (not allowed)"
             );
         }
     }

@@ -354,7 +354,7 @@ impl WebValidator {
 
             if let Err(error) = &validation_result {
                 match error {
-                    muffy_validation::ValidationError::InvalidTag(_) => {
+                    muffy_validation::ValidationError::UnknownTag(_) => {
                         item_futures.push(spawn({
                             let error = error.clone();
                             async move { Err(Error::HtmlValidation(error)) }
@@ -369,7 +369,7 @@ impl WebValidator {
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: [(
                                         name.clone(),
-                                        [muffy_validation::AttributeError::Invalid].into(),
+                                        [muffy_validation::AttributeError::NotAllowed].into(),
                                     )]
                                     .into(),
                                     children: Default::default(),
@@ -384,7 +384,7 @@ impl WebValidator {
                                     attributes: Default::default(),
                                     children: [(
                                         name.clone(),
-                                        [muffy_validation::ChildError::Invalid].into(),
+                                        [muffy_validation::ChildError::NotAllowed].into(),
                                     )]
                                     .into(),
                                 };
@@ -606,7 +606,7 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
-                        .set_validation(crate::ValidationConfig::default().set_enabled(true))
+                        .set_validation(crate::ValidationConfig::default().set_html(true))
                         .into(),
                 )]
                 .into(),
