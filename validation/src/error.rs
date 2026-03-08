@@ -77,7 +77,7 @@ impl Display for ValidationError {
     }
 }
 
-/// A validation attribute error.
+/// An attribute validation error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
     /// A not allowed attribute.
@@ -92,7 +92,7 @@ impl Display for AttributeError {
     }
 }
 
-/// A validation child error.
+/// A child validation error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
     /// A not allowed child.
