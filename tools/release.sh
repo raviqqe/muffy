@@ -6,7 +6,7 @@ set -ex
 
 # Build asset files ahead of release.
 cargo build
-git add -f validation-macro/src/schema
+git add -f muffy-validation-macro/src/schema
 
 git config user.email action@github.com
 git config user.name 'GitHub Action'
