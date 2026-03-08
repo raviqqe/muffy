@@ -576,32 +576,12 @@ fn compile_markup_config(
     parent: Option<&super::MarkupConfig>,
 ) -> Result<Option<super::MarkupConfig>, ConfigError> {
     Ok(if let Some(config) = config {
-        let compile_regexes = |regexes: &Option<Vec<String>>,
-                               parent_regexes: Option<&[Regex]>|
-         -> Result<Vec<Regex>, ConfigError> {
-            regexes
-                .clone()
-                .unwrap_or_else(|| {
-                    parent_regexes
-                        .map(|regexes| {
-                            regexes
-                                .iter()
-                                .map(|regex| regex.as_str().to_owned())
-                                .collect()
-                        })
-                        .unwrap_or_default()
-                })
-                .into_iter()
-                .map(|string| Ok(Regex::new(&format!("^(?:{string})$"))?))
-                .collect()
-        };
-
         Some(super::MarkupConfig::new(
-            compile_regexes(
+            compile_patterns(
                 &config.ignored_attributes,
                 parent.map(|parent| parent.ignored_attributes()),
             )?,
-            compile_regexes(
+            compile_patterns(
                 &config.ignored_elements,
                 parent.map(|parent| parent.ignored_elements()),
             )?,
@@ -609,6 +589,27 @@ fn compile_markup_config(
     } else {
         parent.cloned()
     })
+}
+
+fn compile_patterns(
+    patterns: &Option<Vec<String>>,
+    parent_patterns: Option<&[Regex]>,
+) -> Result<Vec<Regex>, ConfigError> {
+    patterns
+        .clone()
+        .unwrap_or_else(|| {
+            parent_patterns
+                .map(|patterns| {
+                    patterns
+                        .iter()
+                        .map(|pattern| pattern.as_str().to_owned())
+                        .collect()
+                })
+                .unwrap_or_default()
+        })
+        .into_iter()
+        .map(|string| Ok(Regex::new(&format!("^(?:{string})$"))?))
+        .collect()
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1602,11 +1603,23 @@ mod tests {
             });
 
             assert_eq!(
-                config.html.as_ref().unwrap().ignored_attributes.as_ref().unwrap(),
+                config
+                    .html
+                    .as_ref()
+                    .unwrap()
+                    .ignored_attributes
+                    .as_ref()
+                    .unwrap(),
                 &vec!["a-".to_string(), "b-".to_string()]
             );
             assert_eq!(
-                config.html.as_ref().unwrap().ignored_elements.as_ref().unwrap(),
+                config
+                    .html
+                    .as_ref()
+                    .unwrap()
+                    .ignored_elements
+                    .as_ref()
+                    .unwrap(),
                 &vec!["x-".to_string(), "y-".to_string()]
             );
             assert!(config.svg.is_some());
