@@ -97,7 +97,7 @@ mod tests {
         }
 
         #[test]
-        fn validate_ignored_attribute_prefix() {
+        fn validate_ignored_attribute_regex() {
             let element = create_element("div", vec![("data-foo", "bar")], vec![]);
 
             assert_eq!(
@@ -107,25 +107,25 @@ mod tests {
         }
 
         #[test]
-        fn validate_ignored_element_prefix() {
+        fn validate_ignored_element_regex() {
             let element = create_element(
                 "div",
                 vec![],
-                vec![create_element("sl-button", vec![], vec![])],
+                vec![create_element("custom-element-123", vec![], vec![])],
             );
 
             assert_eq!(
-                validate_element(&element, &[], &[Regex::new("^sl-.*$").unwrap()]),
+                validate_element(&element, &[], &[Regex::new("^custom-element-.*$").unwrap()]),
                 Ok(())
             );
         }
 
         #[test]
-        fn validate_ignored_unknown_tag_prefix() {
-            let element = create_element("sl-button", vec![], vec![]);
+        fn validate_ignored_unknown_tag_regex() {
+            let element = create_element("custom-element-456", vec![], vec![]);
 
             assert_eq!(
-                validate_element(&element, &[], &[Regex::new("^sl-.*$").unwrap()]),
+                validate_element(&element, &[], &[Regex::new("^custom-element-.*$").unwrap()]),
                 Ok(())
             );
         }

@@ -1619,5 +1619,55 @@ mod tests {
             );
             assert!(config.svg.is_some());
         }
+
+        #[test]
+        fn compile_markup_config_with_regex_wrapping() {
+            let config = MarkupConfig {
+                ignored_attributes: Some(vec!["data-.*".into(), "align".into()]),
+                ignored_elements: Some(vec!["sl-.*".into(), "div".into()]),
+            };
+
+            let compiled = super::compile_markup_config(Some(&config), None)
+                .unwrap()
+                .unwrap();
+
+            let attributes = compiled.ignored_attributes();
+            assert_eq!(attributes.len(), 2);
+            assert_eq!(attributes[0].as_str(), "^(?:data-.*)$");
+            assert_eq!(attributes[1].as_str(), "^(?:align)$");
+
+            let elements = compiled.ignored_elements();
+            assert_eq!(elements.len(), 2);
+            assert_eq!(elements[0].as_str(), "^(?:sl-.*)$");
+            assert_eq!(elements[1].as_str(), "^(?:div)$");
+        }
+
+        #[test]
+        fn compile_markup_config_with_inheritance() {
+            let parent = crate::config::MarkupConfig::new(
+                vec![Regex::new("^(?:parent-attr)$").unwrap()],
+                vec![Regex::new("^(?:parent-el)$").unwrap()],
+            );
+
+            // Inherit from parent
+            let compiled = super::compile_markup_config(Some(&MarkupConfig::default()), Some(&parent))
+                .unwrap()
+                .unwrap();
+
+            assert_eq!(compiled.ignored_attributes()[0].as_str(), "^(?:parent-attr)$");
+            assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:parent-el)$");
+
+            // Override parent
+            let config = MarkupConfig {
+                ignored_attributes: Some(vec!["child-attr".into()]),
+                ignored_elements: Some(vec!["child-el".into()]),
+            };
+            let compiled = super::compile_markup_config(Some(&config), Some(&parent))
+                .unwrap()
+                .unwrap();
+
+            assert_eq!(compiled.ignored_attributes()[0].as_str(), "^(?:child-attr)$");
+            assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:child-el)$");
+        }
     }
 }
