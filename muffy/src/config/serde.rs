@@ -1475,7 +1475,10 @@ mod tests {
             .unwrap();
 
             assert_eq!(
-                config.sites().get("foo.com").unwrap()[0].1.validation().enabled(),
+                config.sites().get("foo.com").unwrap()[0]
+                    .1
+                    .validation()
+                    .enabled(),
                 false
             );
         }

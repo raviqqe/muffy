@@ -417,8 +417,7 @@ mod tests {
             "--no-validation",
         ])
         .command
-        .unwrap()
-        else {
+        .unwrap() else {
             panic!()
         };
 

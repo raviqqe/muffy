@@ -21,7 +21,10 @@ use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
 use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::{BTreeSet, HashMap}, sync::LazyLock};
+use std::{
+    collections::{BTreeSet, HashMap},
+    sync::LazyLock,
+};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -364,7 +367,11 @@ impl WebValidator {
                         for (name, _) in attributes {
                             item_futures.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
-                                    attributes: [(name.clone(), [muffy_validation::AttributeError::Invalid].into())].into(),
+                                    attributes: [(
+                                        name.clone(),
+                                        [muffy_validation::AttributeError::Invalid].into(),
+                                    )]
+                                    .into(),
                                     children: Default::default(),
                                 };
                                 async move { Err(Error::HtmlValidation(error)) }
@@ -375,7 +382,11 @@ impl WebValidator {
                             item_futures.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: Default::default(),
-                                    children: [(name.clone(), [muffy_validation::ChildError::Invalid].into())].into(),
+                                    children: [(
+                                        name.clone(),
+                                        [muffy_validation::ChildError::Invalid].into(),
+                                    )]
+                                    .into(),
                                 };
                                 async move { Err(Error::HtmlValidation(error)) }
                             }));
