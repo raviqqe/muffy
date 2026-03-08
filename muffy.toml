@@ -20,18 +20,18 @@ interval = { initial = "500ms", cap = "10s" }
 user-agent = "Muffy/0.2.0"
 
 [sites.default.validation]
-html = { ignored_attributes = ["^align$", "^data-", "^sl-"], ignored_elements = [
-  "^astro-island$",
-  "^div$",
-  "^mobile-starlight-",
-  "^site-search$",
-  "^sl-",
-  "^starlight-",
-  "^style$",
+html = { ignored_attributes = ["align", "data-.*", "sl-.*"], ignored_elements = [
+  "astro-island",
+  "div",
+  "mobile-starlight-.*",
+  "site-search",
+  "sl-.*",
+  "starlight-.*",
+  "style",
   # TODO Allow inlined SVG elements.
-  "^circle$",
-  "^path$",
-  "^svg$",
+  "circle",
+  "path",
+  "svg",
 ] }
 svg = {}
 css = true

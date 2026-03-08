@@ -101,7 +101,7 @@ mod tests {
             let element = create_element("div", vec![("data-foo", "bar")], vec![]);
 
             assert_eq!(
-                validate_element(&element, &[Regex::new("^data-").unwrap()], &[]),
+                validate_element(&element, &[Regex::new("^data-.*$").unwrap()], &[]),
                 Ok(())
             );
         }
@@ -115,7 +115,7 @@ mod tests {
             );
 
             assert_eq!(
-                validate_element(&element, &[], &[Regex::new("^sl-").unwrap()]),
+                validate_element(&element, &[], &[Regex::new("^sl-.*$").unwrap()]),
                 Ok(())
             );
         }
@@ -125,7 +125,7 @@ mod tests {
             let element = create_element("sl-button", vec![], vec![]);
 
             assert_eq!(
-                validate_element(&element, &[], &[Regex::new("^sl-").unwrap()]),
+                validate_element(&element, &[], &[Regex::new("^sl-.*$").unwrap()]),
                 Ok(())
             );
         }

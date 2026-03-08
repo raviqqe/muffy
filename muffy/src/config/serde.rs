@@ -592,7 +592,7 @@ fn compile_markup_config(
                         .unwrap_or_default()
                 })
                 .into_iter()
-                .map(|string| Regex::new(&string))
+                .map(|string| Regex::new(&format!("^(?:{string})$")))
                 .collect::<Result<Vec<_>, _>>()?,
             config
                 .ignored_elements
@@ -609,7 +609,7 @@ fn compile_markup_config(
                         .unwrap_or_default()
                 })
                 .into_iter()
-                .map(|string| Regex::new(&string))
+                .map(|string| Regex::new(&format!("^(?:{string})$")))
                 .collect::<Result<Vec<_>, _>>()?,
         ))
     } else {
