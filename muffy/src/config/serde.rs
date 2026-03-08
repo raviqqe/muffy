@@ -112,6 +112,7 @@ struct SiteConfig {
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
     timeout: Option<DurationString>,
+    validation: Option<ValidationConfig>,
 }
 
 impl SiteConfig {
@@ -183,6 +184,14 @@ impl SiteConfig {
         if other.timeout.is_some() {
             self.timeout = other.timeout;
         }
+
+        if let Some(other) = other.validation {
+            if let Some(validation) = &mut self.validation {
+                validation.merge(other);
+            } else {
+                self.validation = Some(other);
+            }
+        }
     }
 }
 
@@ -196,6 +205,30 @@ impl CacheConfig {
     const fn merge(&mut self, other: Self) {
         if other.max_age.is_some() {
             self.max_age = other.max_age;
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ValidationConfig {
+    html: Option<bool>,
+    svg: Option<bool>,
+    css: Option<bool>,
+}
+
+impl ValidationConfig {
+    const fn merge(&mut self, other: Self) {
+        if other.html.is_some() {
+            self.html = other.html;
+        }
+
+        if other.svg.is_some() {
+            self.svg = other.svg;
+        }
+
+        if other.css.is_some() {
+            self.css = other.css;
         }
     }
 }
@@ -475,7 +508,28 @@ fn compile_site_config(
         } else {
             parent.retry().clone()
         })
-        .set_recursive(site.recurse == Some(true)))
+        .set_recursive(site.recurse == Some(true))
+        .set_validation(
+            super::ValidationConfig::default()
+                .set_html(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.html)
+                        .unwrap_or(parent.validation().html()),
+                )
+                .set_svg(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.svg)
+                        .unwrap_or(parent.validation().svg()),
+                )
+                .set_css(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.css)
+                        .unwrap_or(parent.validation().css()),
+                ),
+        ))
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1422,6 +1476,51 @@ mod tests {
             assert!(site.roots.as_ref().unwrap().is_empty());
             assert!(site.schemes.as_ref().unwrap().is_empty());
             assert!(site.statuses.as_ref().unwrap().is_empty());
+        }
+
+        #[test]
+        fn compile_validation() {
+            let config = compile_config(SerializableConfig {
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        validation: Some(ValidationConfig {
+                            html: Some(true),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            })
+            .unwrap();
+
+            assert_eq!(
+                config.sites().get("foo.com").unwrap()[0]
+                    .1
+                    .validation()
+                    .html(),
+                true
+            );
+        }
+
+        #[test]
+        fn merge_validation_config() {
+            let mut config = ValidationConfig {
+                html: Some(true),
+                ..Default::default()
+            };
+
+            config.merge(ValidationConfig {
+                html: Some(false),
+                svg: Some(true),
+                ..Default::default()
+            });
+
+            assert_eq!(config.html, Some(false));
+            assert_eq!(config.svg, Some(true));
         }
     }
 }

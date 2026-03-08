@@ -1,4 +1,4 @@
-use crate::{cache::CacheError, html_parser::HtmlError, http_client::HttpClientError};
+use crate::{cache::CacheError, html_parser::HtmlParseError, http_client::HttpClientError};
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -24,10 +24,12 @@ pub enum Error {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML error.
-    Html(HtmlError),
-    /// An HTML parse error.
+    /// An HTML element not found.
     HtmlElementNotFound(String),
+    /// An HTML parse error.
+    HtmlParse(HtmlParseError),
+    /// An HTML validation failure.
+    HtmlValidation(muffy_validation::ValidationError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
@@ -67,10 +69,11 @@ impl Display for Error {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::Html(error) => write!(formatter, "{error}"),
             Self::HtmlElementNotFound(name) => {
                 write!(formatter, "HTML element for #{name} not found")
             }
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
@@ -111,9 +114,9 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<HtmlError> for Error {
-    fn from(error: HtmlError) -> Self {
-        Self::Html(error)
+impl From<HtmlParseError> for Error {
+    fn from(error: HtmlParseError) -> Self {
+        Self::HtmlParse(error)
     }
 }
 
@@ -162,5 +165,21 @@ impl From<sitemaps::error::Error> for Error {
 impl From<Utf8Error> for Error {
     fn from(error: Utf8Error) -> Self {
         Self::Utf8(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_html_validation_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
+            ),
+            "unknown tag \"foo\""
+        );
     }
 }

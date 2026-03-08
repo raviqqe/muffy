@@ -15,7 +15,7 @@ use crate::{
     response::Response,
     robot_list::RobotList,
 };
-use alloc::sync::Arc;
+use alloc::{collections::BTreeSet, sync::Arc};
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
@@ -278,87 +278,8 @@ impl WebValidator {
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
-            let attributes = HashMap::<_, _>::from_iter(element.attributes());
-
-            // TODO Allow skipping element or attribute validation conditionally.
-            // TODO Generalize element validation.
-            let mut links = vec![];
-
-            match element.name() {
-                "base" => {}
-                "link" => {
-                    if !attributes
-                        .get("rel")
-                        .map(|rel| LINK_ORIGIN_RELATIONS.contains(rel))
-                        .unwrap_or_default()
-                        && let Some(value) = attributes.get("href")
-                    {
-                        links.push((
-                            vec![("href", value)],
-                            vec![(
-                                value.to_string(),
-                                (attributes.get("rel") == Some(&"sitemap"))
-                                    .then_some(DocumentType::Sitemap),
-                            )],
-                        ));
-                    }
-                }
-                "meta" => {
-                    if let Some(content) = attributes.get("content")
-                        && let Some(property) = attributes.get("property")
-                        && META_LINK_PROPERTIES.contains(property)
-                    {
-                        links.push((
-                            vec![("property", property), ("content", content)],
-                            vec![(content.to_string(), None)],
-                        ));
-                    }
-                }
-                _ => {
-                    if let Some(value) = attributes.get("href") {
-                        links.push((vec![("href", value)], vec![(value.to_string(), None)]));
-                    }
-
-                    if let Some(value) = attributes.get("src") {
-                        links.push((vec![("src", value)], vec![(value.to_string(), None)]));
-                    }
-
-                    if let Some(value) = attributes.get("srcset") {
-                        links.push((
-                            vec![("srcset", value)],
-                            Self::parse_srcset(value).map(|url| (url, None)).collect(),
-                        ));
-                    }
-                }
-            }
-
-            if !links.is_empty() {
-                futures.push((
-                    Element::new(
-                        element.name().into(),
-                        links
-                            .iter()
-                            .flat_map(|(attributes, _)| {
-                                attributes
-                                    .iter()
-                                    .map(|(name, value)| (name.to_string(), value.to_string()))
-                            })
-                            .collect(),
-                    ),
-                    links
-                        .iter()
-                        .flat_map(|(_, links)| {
-                            links.iter().map(|(link, document_type)| {
-                                spawn(self.cloned().validate_element_link(
-                                    context.clone(),
-                                    link.to_string(),
-                                    base.clone(),
-                                    *document_type,
-                                ))
-                            })
-                        })
-                        .collect(),
-                ));
+            if let Some(future) = self.validate_html_element_content(context, base, element) {
+                futures.push(future);
             }
 
             for node in element.children() {
@@ -367,6 +288,163 @@ impl WebValidator {
         }
 
         Ok(())
+    }
+
+    fn validate_html_element_content(
+        &self,
+        context: &Arc<Context>,
+        base: &Arc<Url>,
+        element: &muffy_document::html::Element,
+    ) -> Option<ElementFuture> {
+        let attributes = HashMap::<_, _>::from_iter(element.attributes());
+        let mut links = vec![];
+
+        match element.name() {
+            "base" => {}
+            "link" => {
+                if !attributes
+                    .get("rel")
+                    .map(|rel| LINK_ORIGIN_RELATIONS.contains(rel))
+                    .unwrap_or_default()
+                    && let Some(value) = attributes.get("href")
+                {
+                    links.push((
+                        vec![("href", value)],
+                        vec![(
+                            value.to_string(),
+                            (attributes.get("rel") == Some(&"sitemap"))
+                                .then_some(DocumentType::Sitemap),
+                        )],
+                    ));
+                }
+            }
+            "meta" => {
+                if let Some(content) = attributes.get("content")
+                    && let Some(property) = attributes.get("property")
+                    && META_LINK_PROPERTIES.contains(property)
+                {
+                    links.push((
+                        vec![("property", property), ("content", content)],
+                        vec![(content.to_string(), None)],
+                    ));
+                }
+            }
+            _ => {
+                if let Some(value) = attributes.get("href") {
+                    links.push((vec![("href", value)], vec![(value.to_string(), None)]));
+                }
+
+                if let Some(value) = attributes.get("src") {
+                    links.push((vec![("src", value)], vec![(value.to_string(), None)]));
+                }
+
+                if let Some(value) = attributes.get("srcset") {
+                    links.push((
+                        vec![("srcset", value)],
+                        Self::parse_srcset(value).map(|url| (url, None)).collect(),
+                    ));
+                }
+            }
+        }
+
+        let validation_result = if context.config().site(base).validation().html() {
+            muffy_validation::validate_element(element)
+        } else {
+            Ok(())
+        };
+
+        let mut items = links
+            .iter()
+            .flat_map(|(_, links)| {
+                links.iter().map(|(link, document_type)| {
+                    spawn(self.cloned().validate_element_link(
+                        context.clone(),
+                        link.to_string(),
+                        base.clone(),
+                        *document_type,
+                    ))
+                })
+            })
+            .collect::<Vec<_>>();
+
+        if let Err(error) = &validation_result {
+            // TODO Do not abuse `muffy_validation::ValidationError`.
+            // We should define an error type for elements different fom the global error
+            // type.
+            match error {
+                muffy_validation::ValidationError::UnknownTag(_) => {
+                    items.push(spawn({
+                        let error = error.clone();
+                        async move { Err(Error::HtmlValidation(error)) }
+                    }));
+                }
+                muffy_validation::ValidationError::InvalidElement {
+                    attributes,
+                    children,
+                } => {
+                    for name in attributes.keys() {
+                        items.push(spawn({
+                            let error = muffy_validation::ValidationError::InvalidElement {
+                                attributes: [(
+                                    name.clone(),
+                                    [muffy_validation::AttributeError::NotAllowed].into(),
+                                )]
+                                .into(),
+                                children: Default::default(),
+                            };
+                            async move { Err(Error::HtmlValidation(error)) }
+                        }));
+                    }
+
+                    for name in children.keys() {
+                        items.push(spawn({
+                            let error = muffy_validation::ValidationError::InvalidElement {
+                                attributes: Default::default(),
+                                children: [(
+                                    name.clone(),
+                                    [muffy_validation::ChildError::NotAllowed].into(),
+                                )]
+                                .into(),
+                            };
+                            async move { Err(Error::HtmlValidation(error)) }
+                        }));
+                    }
+                }
+            }
+        }
+
+        if items.is_empty() {
+            None
+        } else {
+            Some((
+                Element::new(
+                    element.name().into(),
+                    links
+                        .iter()
+                        .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
+                        .chain(
+                            if let Err(muffy_validation::ValidationError::InvalidElement {
+                                attributes,
+                                ..
+                            }) = &validation_result
+                            {
+                                attributes.keys().map(AsRef::as_ref).collect::<Vec<_>>()
+                            } else {
+                                Default::default()
+                            },
+                        )
+                        .collect::<BTreeSet<_>>()
+                        .into_iter()
+                        .filter_map(|name| {
+                            attributes
+                                .get(name)
+                                .map(|value| (name.to_string(), value.to_string()))
+                        })
+                        .collect(),
+                ),
+                items,
+            ))
+        }
     }
 
     fn validate_robots(
@@ -543,6 +621,7 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
+                        .set_validation(crate::ValidationConfig::default().set_html(true))
                         .into(),
                 )]
                 .into(),

@@ -124,6 +124,9 @@ struct CheckSiteArguments {
     /// Set a retry interval cap.
     #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
+    /// Enable experimental HTML validation.
+    #[arg(long)]
+    experimental_validation: bool,
 }
 
 #[derive(clap::Args, Debug)]
@@ -346,7 +349,13 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                 )
                 .into(),
         )
-        .set_timeout(Some(*arguments.timeout));
+        .set_timeout(Some(*arguments.timeout))
+        .set_validation(
+            muffy::ValidationConfig::default()
+                .set_html(arguments.experimental_validation)
+                .set_svg(arguments.experimental_validation)
+                .set_css(arguments.experimental_validation),
+        );
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -386,7 +395,7 @@ mod tests {
     use core::time::Duration;
 
     #[test]
-    fn default_check_site_arguments() {
+    fn parse_default_check_site_arguments() {
         let Command::CheckSite(arguments) =
             Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
@@ -401,10 +410,27 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
+        assert!(!arguments.experimental_validation);
     }
 
     #[test]
-    fn cache_path_arguments() {
+    fn parse_experimental_validation_check_site_arguments() {
+        let Command::CheckSite(arguments) = Arguments::parse_from([
+            "command",
+            "check-site",
+            "https://foo.com",
+            "--experimental-validation",
+        ])
+        .command
+        .unwrap() else {
+            panic!()
+        };
+
+        assert!(arguments.experimental_validation);
+    }
+
+    #[test]
+    fn parse_cache_path_arguments() {
         let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "path"])
             .command
             .unwrap()
@@ -416,7 +442,7 @@ mod tests {
     }
 
     #[test]
-    fn cache_clean_arguments() {
+    fn parse_cache_clean_arguments() {
         let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "clean"])
             .command
             .unwrap()
@@ -428,7 +454,7 @@ mod tests {
     }
 
     #[test]
-    fn cache_directory_suffix() {
+    fn check_cache_directory_suffix() {
         let expected = PathBuf::from(DATABASE_DIRECTORY)
             .join(crate_version!())
             .join(SLED_DIRECTORY);

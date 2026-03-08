@@ -2,39 +2,13 @@
 
 extern crate alloc;
 
-use alloc::collections::{BTreeMap, BTreeSet};
+mod error;
+
+pub use self::error::*;
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
 html! {}
-
-/// A validation error.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ValidationError {
-    /// An invalid tag.
-    InvalidTag(String),
-    /// Invalid element.
-    InvalidElement {
-        /// Invalid attributes by name.
-        attributes: BTreeMap<String, BTreeSet<AttributeError>>,
-        /// Invalid children by name.
-        children: BTreeMap<String, BTreeSet<ChildError>>,
-    },
-}
-
-/// A validation attribute error.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum AttributeError {
-    /// An invalid attribute.
-    Invalid,
-}
-
-/// A validation child error.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum ChildError {
-    /// An invalid child.
-    Invalid,
-}
 
 #[cfg(test)]
 mod tests {
@@ -66,7 +40,7 @@ mod tests {
 
         assert_eq!(
             validate_element(&element),
-            Err(ValidationError::InvalidTag("invalid".to_owned()))
+            Err(ValidationError::UnknownTag("invalid".to_owned()))
         );
     }
 
@@ -94,7 +68,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::Invalid].into())].into(),
+                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
                 })
             );
@@ -112,8 +86,8 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: [
-                        ("invalid-one".into(), [AttributeError::Invalid].into()),
-                        ("invalid-two".into(), [AttributeError::Invalid].into()),
+                        ("invalid-one".into(), [AttributeError::NotAllowed].into()),
+                        ("invalid-two".into(), [AttributeError::NotAllowed].into()),
                     ]
                     .into(),
                     children: Default::default(),
@@ -147,7 +121,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -168,8 +142,8 @@ mod tests {
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [
-                        ("div".into(), [ChildError::Invalid].into()),
-                        ("table".into(), [ChildError::Invalid].into()),
+                        ("div".into(), [ChildError::NotAllowed].into()),
+                        ("table".into(), [ChildError::NotAllowed].into()),
                     ]
                     .into(),
                 })
@@ -224,7 +198,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -242,7 +216,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -266,7 +240,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -292,7 +266,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -393,6 +367,13 @@ mod tests {
         #[test]
         fn validate_valid_charset() {
             let element = create_element("meta", vec![("charset", "utf-8")], vec![]);
+
+            assert_eq!(validate_element(&element), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_property() {
+            let element = create_element("meta", vec![("property", "og:image")], vec![]);
 
             assert_eq!(validate_element(&element), Ok(()));
         }

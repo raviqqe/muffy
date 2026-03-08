@@ -150,6 +150,7 @@ pub struct SiteConfig {
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
+    validation: ValidationConfig,
 }
 
 impl SiteConfig {
@@ -206,6 +207,11 @@ impl SiteConfig {
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
+    }
+
+    /// Returns a validation configuration.
+    pub const fn validation(&self) -> &ValidationConfig {
+        &self.validation
     }
 
     /// Sets an ID.
@@ -267,6 +273,12 @@ impl SiteConfig {
         self.recursive = recursive;
         self
     }
+
+    /// Sets a validation configuration.
+    pub const fn set_validation(mut self, validation: ValidationConfig) -> Self {
+        self.validation = validation;
+        self
+    }
 }
 
 /// A status code configuration.
@@ -322,6 +334,49 @@ impl Default for SchemeConfig {
                 .map(ToOwned::to_owned)
                 .collect(),
         }
+    }
+}
+
+/// A validation configuration.
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct ValidationConfig {
+    html: bool,
+    svg: bool,
+    css: bool,
+}
+
+impl ValidationConfig {
+    /// Returns whether HTML validation is enabled.
+    pub const fn html(&self) -> bool {
+        self.html
+    }
+
+    /// Returns whether SVG validation is enabled.
+    pub const fn svg(&self) -> bool {
+        self.svg
+    }
+
+    /// Returns whether CSS validation is enabled.
+    pub const fn css(&self) -> bool {
+        self.css
+    }
+
+    /// Sets whether HTML validation is enabled.
+    pub const fn set_html(mut self, enabled: bool) -> Self {
+        self.html = enabled;
+        self
+    }
+
+    /// Sets whether SVG validation is enabled.
+    pub const fn set_svg(mut self, enabled: bool) -> Self {
+        self.svg = enabled;
+        self
+    }
+
+    /// Sets whether CSS validation is enabled.
+    pub const fn set_css(mut self, enabled: bool) -> Self {
+        self.css = enabled;
+        self
     }
 }
 
@@ -623,6 +678,40 @@ mod tests {
             !config
                 .site(&Url::parse("http://example.com/other").unwrap())
                 .recursive()
+        );
+    }
+
+    #[test]
+    fn default_validation_config() {
+        let config = ValidationConfig::default();
+
+        assert!(!config.html());
+        assert!(!config.svg());
+        assert!(!config.css());
+    }
+
+    #[test]
+    fn set_validation_config_enabled() {
+        let config = ValidationConfig::default()
+            .set_html(true)
+            .set_svg(true)
+            .set_css(true);
+
+        assert!(config.html());
+        assert!(config.svg());
+        assert!(config.css());
+    }
+
+    #[test]
+    fn validate_site_config() {
+        let config = SiteConfig::default();
+
+        assert!(!config.validation().html());
+        assert!(
+            config
+                .set_validation(ValidationConfig::default().set_html(true))
+                .validation()
+                .html()
         );
     }
 }

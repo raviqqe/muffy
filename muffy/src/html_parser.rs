@@ -13,19 +13,19 @@ use std::io;
 
 /// An HTML parser.
 pub struct HtmlParser {
-    cache: Box<dyn Cache<Result<Arc<Document>, HtmlError>>>,
+    cache: Box<dyn Cache<Result<Arc<Document>, HtmlParseError>>>,
 }
 
 impl HtmlParser {
     /// Creates an HTML parser.
-    pub fn new(cache: impl Cache<Result<Arc<Document>, HtmlError>> + 'static) -> Self {
+    pub fn new(cache: impl Cache<Result<Arc<Document>, HtmlParseError>> + 'static) -> Self {
         Self {
             cache: Box::new(cache),
         }
     }
 
     /// Parses an HTML document.
-    pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlError> {
+    pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlParseError> {
         let response = response.clone();
 
         self.cache
@@ -34,7 +34,7 @@ impl HtmlParser {
                 Box::new(async move {
                     parse_bytes(response.body())
                         .map(Into::into)
-                        .map_err(|error| HtmlError::Io(error.into()))
+                        .map_err(|error| HtmlParseError::Io(error.into()))
                 }),
             )
             .await?
@@ -42,14 +42,14 @@ impl HtmlParser {
 }
 
 #[derive(Clone, Debug)]
-pub enum HtmlError {
+pub enum HtmlParseError {
     Cache(CacheError),
     Io(Arc<io::Error>),
 }
 
-impl Error for HtmlError {}
+impl Error for HtmlParseError {}
 
-impl Display for HtmlError {
+impl Display for HtmlParseError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Cache(error) => write!(formatter, "{error}"),
@@ -58,7 +58,7 @@ impl Display for HtmlError {
     }
 }
 
-impl From<CacheError> for HtmlError {
+impl From<CacheError> for HtmlParseError {
     fn from(error: CacheError) -> Self {
         Self::Cache(error)
     }
