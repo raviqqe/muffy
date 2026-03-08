@@ -380,8 +380,6 @@ impl ValidationConfig {
     }
 }
 
-use regex::Regex;
-
 /// A markup validation configuration.
 #[derive(Clone, Debug, Default)]
 pub struct MarkupConfig {

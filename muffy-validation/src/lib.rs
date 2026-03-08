@@ -7,7 +7,6 @@ mod error;
 pub use self::error::*;
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
-use regex::Regex;
 
 html! {}
 
@@ -15,6 +14,7 @@ html! {}
 mod tests {
     use super::*;
     use muffy_document::html::Node;
+    use regex::Regex;
     use std::sync::Arc;
 
     fn create_element(

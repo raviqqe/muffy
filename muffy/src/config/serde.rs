@@ -1,4 +1,3 @@
-use regex::Regex;
 use super::error::ConfigError;
 use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
