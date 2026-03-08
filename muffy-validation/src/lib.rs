@@ -7,6 +7,7 @@ mod error;
 pub use self::error::*;
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
+use regex::Regex;
 
 html! {}
 
@@ -99,7 +100,10 @@ mod tests {
         fn validate_ignored_attribute_prefix() {
             let element = create_element("div", vec![("data-foo", "bar")], vec![]);
 
-            assert_eq!(validate_element(&element, &["data-"], &[]), Ok(()));
+            assert_eq!(
+                validate_element(&element, &[Regex::new("^data-").unwrap()], &[]),
+                Ok(())
+            );
         }
 
         #[test]
@@ -110,14 +114,20 @@ mod tests {
                 vec![create_element("sl-button", vec![], vec![])],
             );
 
-            assert_eq!(validate_element(&element, &[], &["sl-"]), Ok(()));
+            assert_eq!(
+                validate_element(&element, &[], &[Regex::new("^sl-").unwrap()]),
+                Ok(())
+            );
         }
 
         #[test]
         fn validate_ignored_unknown_tag_prefix() {
             let element = create_element("sl-button", vec![], vec![]);
 
-            assert_eq!(validate_element(&element, &[], &["sl-"]), Ok(()));
+            assert_eq!(
+                validate_element(&element, &[], &[Regex::new("^sl-").unwrap()]),
+                Ok(())
+            );
         }
 
         #[test]

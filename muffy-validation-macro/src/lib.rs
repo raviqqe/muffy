@@ -79,7 +79,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 >::new();
 
                 for (attribute, _) in element.attributes() {
-                    if ignored_attribute_prefixes.iter().any(|prefix| attribute.starts_with(prefix)) {
+                    if ignored_attributes.iter().any(|regex| regex.is_match(attribute)) {
                         continue;
                     }
 
@@ -103,10 +103,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     if let muffy_document::html::Node::Element(element) = child {
                         let name = element.name();
 
-                        if ignored_element_prefixes
-                            .iter()
-                            .any(|prefix| name.starts_with(prefix))
-                        {
+                        if ignored_elements.iter().any(|regex| regex.is_match(name)) {
                             continue;
                         }
 
@@ -138,12 +135,12 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         /// Validates an element.
         pub fn validate_element(
             element: &Element,
-            ignored_attribute_prefixes: &[&str],
-            ignored_element_prefixes: &[&str],
+            ignored_attributes: &[::regex::Regex],
+            ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
-                name if ignored_element_prefixes.iter().any(|prefix| name.starts_with(prefix)) => Ok(()),
+                name if ignored_elements.iter().any(|regex| regex.is_match(name)) => Ok(()),
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }
