@@ -546,7 +546,11 @@ impl WebValidator {
         })
     }
 
-    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, ItemError> {
+    async fn has_html_element(
+        &self,
+        response: &Arc<Response>,
+        id: &str,
+    ) -> Result<bool, ItemError> {
         Ok(self
             .0
             .html_parser
