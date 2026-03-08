@@ -381,34 +381,46 @@ impl ValidationConfig {
 }
 
 /// A markup validation configuration.
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct MarkupConfig {
-    ignored_attribute_prefixes: Vec<String>,
-    ignored_element_prefixes: Vec<String>,
+    ignored_attributes: Vec<Regex>,
+    ignored_elements: Vec<Regex>,
 }
 
 impl MarkupConfig {
     /// Creates a markup validation configuration.
-    pub const fn new(
-        ignored_attribute_prefixes: Vec<String>,
-        ignored_element_prefixes: Vec<String>,
-    ) -> Self {
+    pub const fn new(ignored_attributes: Vec<Regex>, ignored_elements: Vec<Regex>) -> Self {
         Self {
-            ignored_attribute_prefixes,
-            ignored_element_prefixes,
+            ignored_attributes,
+            ignored_elements,
         }
     }
 
-    /// Returns ignored attribute prefixes.
-    pub fn ignored_attribute_prefixes(&self) -> impl Iterator<Item = &str> {
-        self.ignored_attribute_prefixes.iter().map(AsRef::as_ref)
+    /// Returns ignored attributes.
+    pub fn ignored_attributes(&self) -> &[Regex] {
+        &self.ignored_attributes
     }
 
-    /// Returns ignored element prefixes.
-    pub fn ignored_element_prefixes(&self) -> impl Iterator<Item = &str> {
-        self.ignored_element_prefixes.iter().map(AsRef::as_ref)
+    /// Returns ignored elements.
+    pub fn ignored_elements(&self) -> &[Regex] {
+        &self.ignored_elements
     }
 }
+
+impl PartialEq for MarkupConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.ignored_attributes.len() == other.ignored_attributes.len()
+            && self.ignored_elements.len() == other.ignored_elements.len()
+            && self
+                .ignored_attributes
+                .iter()
+                .zip(&other.ignored_attributes)
+                .chain(self.ignored_elements.iter().zip(&other.ignored_elements))
+                .all(|(one, other)| one.as_str() == other.as_str())
+    }
+}
+
+impl Eq for MarkupConfig {}
 
 /// A cache configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

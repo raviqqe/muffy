@@ -244,29 +244,29 @@ impl ValidationConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct MarkupConfig {
-    ignored_attribute_prefixes: Option<Vec<String>>,
-    ignored_element_prefixes: Option<Vec<String>>,
+    ignored_attributes: Option<Vec<String>>,
+    ignored_elements: Option<Vec<String>>,
 }
 
 impl MarkupConfig {
     fn merge(&mut self, other: Self) {
-        if let Some(other) = other.ignored_attribute_prefixes {
-            if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
+        if let Some(other) = other.ignored_attributes {
+            if let Some(prefixes) = &mut self.ignored_attributes {
                 prefixes.extend(other);
                 prefixes.sort();
                 prefixes.dedup();
             } else {
-                self.ignored_attribute_prefixes = Some(other);
+                self.ignored_attributes = Some(other);
             }
         }
 
-        if let Some(other) = other.ignored_element_prefixes {
-            if let Some(prefixes) = &mut self.ignored_element_prefixes {
+        if let Some(other) = other.ignored_elements {
+            if let Some(prefixes) = &mut self.ignored_elements {
                 prefixes.extend(other);
                 prefixes.sort();
                 prefixes.dedup();
             } else {
-                self.ignored_element_prefixes = Some(other);
+                self.ignored_elements = Some(other);
             }
         }
     }
@@ -567,13 +567,13 @@ fn compile_site_config(
                         .as_ref()
                         .and_then(|validation| validation.html.as_ref()),
                     parent.validation().html(),
-                ))
+                )?)
                 .set_svg(compile_markup_config(
                     site.validation
                         .as_ref()
                         .and_then(|validation| validation.svg.as_ref()),
                     parent.validation().svg(),
-                ))
+                )?)
                 .set_css(
                     site.validation
                         .as_ref()
@@ -586,36 +586,37 @@ fn compile_site_config(
 fn compile_markup_config(
     config: Option<&MarkupConfig>,
     parent: Option<&super::MarkupConfig>,
-) -> Option<super::MarkupConfig> {
-    config
-        .map(|config| {
-            super::MarkupConfig::new(
-                config
-                    .ignored_attribute_prefixes
-                    .clone()
-                    .unwrap_or_else(|| {
-                        parent
-                            .map(|parent| {
-                                parent
-                                    .ignored_attribute_prefixes()
-                                    .map(ToOwned::to_owned)
-                                    .collect()
-                            })
-                            .unwrap_or_default()
-                    }),
-                config.ignored_element_prefixes.clone().unwrap_or_else(|| {
-                    parent
-                        .map(|parent| {
-                            parent
-                                .ignored_element_prefixes()
-                                .map(ToOwned::to_owned)
-                                .collect()
-                        })
-                        .unwrap_or_default()
-                }),
-            )
-        })
-        .or_else(|| parent.cloned())
+) -> Result<Option<super::MarkupConfig>, ConfigError> {
+    Ok(if let Some(config) = config {
+        Some(super::MarkupConfig::new(
+            compile_patterns(
+                &config.ignored_attributes,
+                parent.map(|parent| parent.ignored_attributes()),
+            )?,
+            compile_patterns(
+                &config.ignored_elements,
+                parent.map(|parent| parent.ignored_elements()),
+            )?,
+        ))
+    } else {
+        parent.cloned()
+    })
+}
+
+fn compile_patterns(
+    patterns: &Option<Vec<String>>,
+    parent_patterns: Option<&[Regex]>,
+) -> Result<Vec<Regex>, ConfigError> {
+    Ok(if let Some(patterns) = patterns {
+        patterns
+            .iter()
+            .map(|string| Regex::new(&format!("^(?:{string})$")))
+            .collect::<Result<_, _>>()?
+    } else {
+        parent_patterns
+            .map(|patterns| patterns.to_vec())
+            .unwrap_or_default()
+    })
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1596,16 +1597,16 @@ mod tests {
         fn merge_validation_config() {
             let mut config = ValidationConfig {
                 html: Some(MarkupConfig {
-                    ignored_attribute_prefixes: Some(vec!["a-".into()]),
-                    ignored_element_prefixes: Some(vec!["x-".into()]),
+                    ignored_attributes: Some(vec!["a-".into()]),
+                    ignored_elements: Some(vec!["x-".into()]),
                 }),
                 ..Default::default()
             };
 
             config.merge(ValidationConfig {
                 html: Some(MarkupConfig {
-                    ignored_attribute_prefixes: Some(vec!["b-".into()]),
-                    ignored_element_prefixes: Some(vec!["y-".into()]),
+                    ignored_attributes: Some(vec!["b-".into()]),
+                    ignored_elements: Some(vec!["y-".into()]),
                 }),
                 svg: Some(MarkupConfig::default()),
                 ..Default::default()
@@ -1616,7 +1617,7 @@ mod tests {
                     .html
                     .as_ref()
                     .unwrap()
-                    .ignored_attribute_prefixes
+                    .ignored_attributes
                     .as_ref()
                     .unwrap(),
                 &vec!["a-".to_string(), "b-".to_string()]
@@ -1626,12 +1627,66 @@ mod tests {
                     .html
                     .as_ref()
                     .unwrap()
-                    .ignored_element_prefixes
+                    .ignored_elements
                     .as_ref()
                     .unwrap(),
                 &vec!["x-".to_string(), "y-".to_string()]
             );
             assert!(config.svg.is_some());
+        }
+
+        #[test]
+        fn compile_markup_config_with_regex_wrapping() {
+            let config = MarkupConfig {
+                ignored_attributes: Some(vec!["data-.*".into(), "align".into()]),
+                ignored_elements: Some(vec!["sl-.*".into(), "div".into()]),
+            };
+
+            let compiled = compile_markup_config(Some(&config), None).unwrap().unwrap();
+
+            let attributes = compiled.ignored_attributes();
+            assert_eq!(attributes.len(), 2);
+            assert_eq!(attributes[0].as_str(), "^(?:data-.*)$");
+            assert_eq!(attributes[1].as_str(), "^(?:align)$");
+
+            let elements = compiled.ignored_elements();
+            assert_eq!(elements.len(), 2);
+            assert_eq!(elements[0].as_str(), "^(?:sl-.*)$");
+            assert_eq!(elements[1].as_str(), "^(?:div)$");
+        }
+
+        #[test]
+        fn compile_markup_config_with_inheritance() {
+            let parent = crate::config::MarkupConfig::new(
+                vec![Regex::new("^(?:parent-attr)$").unwrap()],
+                vec![Regex::new("^(?:parent-el)$").unwrap()],
+            );
+
+            // Inherit from parent
+            let compiled = compile_markup_config(Some(&MarkupConfig::default()), Some(&parent))
+                .unwrap()
+                .unwrap();
+
+            assert_eq!(
+                compiled.ignored_attributes()[0].as_str(),
+                "^(?:parent-attr)$"
+            );
+            assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:parent-el)$");
+
+            // Override parent
+            let config = MarkupConfig {
+                ignored_attributes: Some(vec!["child-attr".into()]),
+                ignored_elements: Some(vec!["child-el".into()]),
+            };
+            let compiled = compile_markup_config(Some(&config), Some(&parent))
+                .unwrap()
+                .unwrap();
+
+            assert_eq!(
+                compiled.ignored_attributes()[0].as_str(),
+                "^(?:child-attr)$"
+            );
+            assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:child-el)$");
         }
     }
 }
