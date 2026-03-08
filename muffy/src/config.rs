@@ -412,11 +412,8 @@ impl PartialEq for MarkupConfig {
         self.ignored_attributes
             .iter()
             .zip(&other.ignored_attributes)
+            .chain(self.ignored_elements.iter().zip(&other.ignored_elements))
             .all(|(one, other)| one.as_str() == other.as_str())
-            && self.ignored_elements
-                .iter()
-                .zip(&other.ignored_elements)
-                .all(|(one, other)| one.as_str() == other.as_str())
     }
 }
 
