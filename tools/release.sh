@@ -2,6 +2,8 @@
 
 set -ex
 
+[ -n "$CI" ]
+
 # Build asset files ahead of release.
 cargo build
 
