@@ -26,8 +26,7 @@ use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
 
-type ElementFuture = (Element, Vec<ItemFuture>);
-type ItemFuture = JoinHandle<Result<ItemOutput, ItemError>>;
+type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, ItemError>>>);
 
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
