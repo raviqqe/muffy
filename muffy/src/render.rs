@@ -118,7 +118,7 @@ mod tests {
         DocumentOutput::new(
             Url::parse("https://foo.com").unwrap(),
             vec![ElementOutput::new(
-                Element::new("a".into(), vec![]),
+                Element::new("foo".into(), vec![]),
                 vec![
                     Ok(ItemOutput::default().with_response(
                         Response::new(
