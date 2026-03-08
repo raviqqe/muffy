@@ -1259,7 +1259,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 1), Metrics::new(1, 1))
+            (Metrics::new(2, 0), Metrics::new(1, 0))
         );
     }
 
@@ -1301,7 +1301,7 @@ mod tests {
 
         assert_eq!(
             collect_metrics(&mut documents).await,
-            (Metrics::new(1, 1), Metrics::new(0, 1))
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 

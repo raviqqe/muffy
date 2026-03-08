@@ -37,6 +37,15 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         &mut definitions,
     )?;
 
+    load_schema(
+        &Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("schema")
+            .join("html5")
+            .join("rdfa.rnc"),
+        &mut definitions,
+    )?;
+
     // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
 

@@ -372,16 +372,10 @@ mod tests {
         }
 
         #[test]
-        fn validate_invalid_property() {
+        fn validate_valid_property() {
             let element = create_element("meta", vec![("property", "og:image")], vec![]);
 
-            assert_eq!(
-                validate_element(&element),
-                Err(ValidationError::InvalidElement {
-                    attributes: [("property".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
-                })
-            );
+            assert_eq!(validate_element(&element), Ok(()));
         }
     }
 
