@@ -27,8 +27,6 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A regular expression error.
-    Regex(regex::Error),
     /// A sitemap error.
     Sitemap(sitemaps::error::Error),
     /// A Sled database error.
@@ -53,7 +51,6 @@ impl Display for Error {
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Regex(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
@@ -96,12 +93,6 @@ impl From<HtmlParseError> for Error {
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
-    }
-}
-
-impl From<regex::Error> for Error {
-    fn from(error: regex::Error) -> Self {
-        Self::Regex(error)
     }
 }
 
