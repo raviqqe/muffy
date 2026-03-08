@@ -334,6 +334,7 @@ impl WebValidator {
             } else {
                 Ok(())
             };
+
             let mut item_futures = links
                 .iter()
                 .flat_map(|(_, links)| {
