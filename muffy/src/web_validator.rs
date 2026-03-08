@@ -21,10 +21,7 @@ use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
 use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{
-    collections::{BTreeSet, HashMap},
-    sync::LazyLock,
-};
+use std::{collections::HashMap, sync::LazyLock};
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
