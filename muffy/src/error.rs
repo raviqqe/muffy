@@ -24,7 +24,7 @@ pub enum Error {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML parse error.
+    /// An HTML element not found.
     HtmlElementNotFound(String),
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
