@@ -101,20 +101,20 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
                 for child in element.children() {
                     if let muffy_document::html::Node::Element(child_element) = child {
-                        let child_name = child_element.name();
+                        let name = child_element.name();
 
                         if ignored_children_prefixes
                             .iter()
-                            .any(|prefix| child_name.starts_with(prefix))
+                            .any(|prefix| name.starts_with(prefix))
                         {
                             continue;
                         }
 
-                        match child_name {
+                        match name {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
                                 children
-                                    .entry(child_name.into())
+                                    .entry(name.into())
                                     .or_insert_with(Default::default)
                                     .insert(ChildError::NotAllowed);
                             }
