@@ -393,22 +393,24 @@ impl WebValidator {
             }
 
             if !items.is_empty() {
-                let mut attribute_names = links
-                    .iter()
-                    .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
-                    .collect::<BTreeSet<_>>();
-
-                if let Err(muffy_validation::ValidationError::InvalidElement {
-                    attributes, ..
-                }) = &validation_result
-                {
-                    attribute_names.extend(attributes.keys().map(String::as_str));
-                }
-
                 futures.push((
                     Element::new(
                         element.name().into(),
-                        attribute_names
+                        links
+                            .iter()
+                            .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
+                            .chain(
+                                if let Err(muffy_validation::ValidationError::InvalidElement {
+                                    attributes,
+                                    ..
+                                }) = &validation_result
+                                {
+                                    attributes.keys().map(AsRef::as_ref).collect::<Vec<_>>()
+                                } else {
+                                    Default::default()
+                                },
+                            )
+                            .collect::<BTreeSet<_>>()
                             .into_iter()
                             .filter_map(|name| {
                                 attributes
