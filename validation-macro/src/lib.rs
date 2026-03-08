@@ -28,23 +28,16 @@ pub fn html(_input: TokenStream) -> TokenStream {
 fn generate_html() -> Result<TokenStream, MacroError> {
     let mut definitions = Default::default();
 
-    load_schema(
-        &Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src")
-            .join("schema")
-            .join("html5")
-            .join("html5.rnc"),
-        &mut definitions,
-    )?;
-
-    load_schema(
-        &Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("src")
-            .join("schema")
-            .join("html5")
-            .join("rdfa.rnc"),
-        &mut definitions,
-    )?;
+    for file in ["html5.rnc", "rdfa.rnc"] {
+        load_schema(
+            &Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("src")
+                .join("schema")
+                .join("html5")
+                .join(file),
+            &mut definitions,
+        )?;
+    }
 
     // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
