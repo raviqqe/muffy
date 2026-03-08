@@ -731,7 +731,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(Error::HttpClient(crate::http_client::HttpClientError::Http(msg))) if msg.contains("invalid status 404")
+            Err(Error::Item(ItemError::HttpStatus(StatusCode::NOT_FOUND)))
         ));
     }
 
