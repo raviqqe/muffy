@@ -26,8 +26,6 @@ pub enum Error {
     },
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
-    /// An HTTP client error.
-    HttpClient(HttpClientError),
     /// An I/O error.
     Io(io::Error),
     /// An item error.
@@ -64,7 +62,6 @@ impl Display for Error {
                 )
             }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
-            Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
@@ -106,12 +103,6 @@ impl From<io::Error> for Error {
 impl From<HtmlParseError> for Error {
     fn from(error: HtmlParseError) -> Self {
         Self::HtmlParse(error)
-    }
-}
-
-impl From<HttpClientError> for Error {
-    fn from(error: HttpClientError) -> Self {
-        Self::HttpClient(error)
     }
 }
 
