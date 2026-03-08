@@ -279,7 +279,6 @@ impl WebValidator {
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
             let attributes = HashMap::<_, _>::from_iter(element.attributes());
-
             let mut links = vec![];
 
             match element.name() {
