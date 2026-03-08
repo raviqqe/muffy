@@ -770,4 +770,14 @@ mod tests {
                 .is_some()
         );
     }
+
+    #[test]
+    fn retry_config_statuses() {
+        let config = RetryConfig::new().set_statuses(HashSet::from([StatusCode::REQUEST_TIMEOUT]));
+
+        assert_eq!(
+            config.statuses(),
+            &HashSet::from([StatusCode::REQUEST_TIMEOUT])
+        );
+    }
 }

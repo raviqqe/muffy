@@ -1716,15 +1716,30 @@ mod tests {
             .unwrap();
 
             assert_eq!(
-                config
-                    .sites()
-                    .get("foo.com")
-                    .unwrap()[0]
+                config.sites().get("foo.com").unwrap()[0]
                     .1
                     .retry()
                     .statuses(),
-                &HashSet::from([StatusCode::TOO_MANY_REQUESTS, StatusCode::SERVICE_UNAVAILABLE])
+                &HashSet::from([
+                    StatusCode::TOO_MANY_REQUESTS,
+                    StatusCode::SERVICE_UNAVAILABLE
+                ])
             );
+        }
+
+        #[test]
+        fn merge_retry_statuses() {
+            let mut config = RetryConfig {
+                statuses: Some([429].into()),
+                ..Default::default()
+            };
+
+            config.merge(RetryConfig {
+                statuses: Some([503].into()),
+                ..Default::default()
+            });
+
+            assert_eq!(config.statuses.unwrap(), HashSet::from([503]));
         }
     }
 }
