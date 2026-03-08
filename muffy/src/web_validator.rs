@@ -362,9 +362,6 @@ impl WebValidator {
             .collect::<Vec<_>>();
 
         if let Err(error) = &validation_result {
-            // TODO Do not abuse `muffy_validation::ValidationError`.
-            // We should define an error type for elements different fom the global error
-            // type.
             match error {
                 muffy_validation::ValidationError::UnknownTag(_) => {
                     items.push(spawn({
@@ -505,7 +502,7 @@ impl WebValidator {
     fn validate_document_type(
         response: &Response,
         document_type: Option<DocumentType>,
-    ) -> Result<Option<DocumentType>, Error> {
+    ) -> Result<Option<DocumentType>, ItemError> {
         let Some(value) = response.headers().get("content-type") else {
             return Ok(document_type);
         };
@@ -517,7 +514,7 @@ impl WebValidator {
         Ok(match document_type {
             Some(DocumentType::Html) => {
                 if value != "text/html" {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
                     });
@@ -527,7 +524,7 @@ impl WebValidator {
             }
             Some(DocumentType::Robots) => {
                 if value != "text/plain" {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/plain",
                     });
@@ -537,7 +534,7 @@ impl WebValidator {
             }
             Some(DocumentType::Sitemap) => {
                 if !value.ends_with("/xml") {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "*/xml",
                     });
@@ -549,7 +546,7 @@ impl WebValidator {
         })
     }
 
-    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
+    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, ItemError> {
         Ok(self
             .0
             .html_parser

@@ -17,13 +17,6 @@ pub enum Error {
     Acquire(AcquireError),
     /// A cache error.
     Cache(CacheError),
-    /// An invalid content type.
-    ContentTypeInvalid {
-        /// An actual content type.
-        actual: String,
-        /// An expected content type.
-        expected: &'static str,
-    },
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
     /// An I/O error.
@@ -55,12 +48,6 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
-            Self::ContentTypeInvalid { actual, expected } => {
-                write!(
-                    formatter,
-                    "content type expected {expected} but got {actual}"
-                )
-            }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Item(error) => write!(formatter, "{error}"),
@@ -151,8 +138,17 @@ impl From<Utf8Error> for Error {
 /// An element item error.
 #[derive(Debug)]
 pub enum ItemError {
+    /// An invalid content type.
+    ContentTypeInvalid {
+        /// An actual content type.
+        actual: String,
+        /// An expected content type.
+        expected: &'static str,
+    },
     /// An HTML element not found.
     HtmlElementNotFound(String),
+    /// An HTML parse error.
+    HtmlParse(HtmlParseError),
     /// An HTML validation failure.
     HtmlValidation(muffy_validation::ValidationError),
     /// An HTTP client error.
@@ -163,6 +159,8 @@ pub enum ItemError {
     InvalidScheme(String),
     /// A URL parse error.
     UrlParse(ParseError),
+    /// A UTF-8 error.
+    Utf8(Utf8Error),
 }
 
 impl error::Error for ItemError {}
@@ -170,14 +168,22 @@ impl error::Error for ItemError {}
 impl Display for ItemError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::ContentTypeInvalid { actual, expected } => {
+                write!(
+                    formatter,
+                    "content type expected {expected} but got {actual}"
+                )
+            }
             Self::HtmlElementNotFound(name) => {
                 write!(formatter, "HTML element for #{name} not found")
             }
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::UrlParse(error) => write!(formatter, "{error}"),
+            Self::Utf8(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -185,6 +191,12 @@ impl Display for ItemError {
 impl Serialize for ItemError {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl From<HtmlParseError> for ItemError {
+    fn from(error: HtmlParseError) -> Self {
+        Self::HtmlParse(error)
     }
 }
 
@@ -197,6 +209,12 @@ impl From<HttpClientError> for ItemError {
 impl From<url::ParseError> for ItemError {
     fn from(error: url::ParseError) -> Self {
         Self::UrlParse(error)
+    }
+}
+
+impl From<Utf8Error> for ItemError {
+    fn from(error: Utf8Error) -> Self {
+        Self::Utf8(error)
     }
 }
 
