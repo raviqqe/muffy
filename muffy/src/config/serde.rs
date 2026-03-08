@@ -260,18 +260,16 @@ impl MarkupConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct MarkupConfigInner {
-    ignored_prefixes: Option<Vec<String>>,
+    ignored_attribute_prefixes: Option<HashSet<String>>,
 }
 
 impl MarkupConfigInner {
     fn merge(&mut self, other: Self) {
-        if let Some(other) = other.ignored_prefixes {
-            if let Some(prefixes) = &mut self.ignored_prefixes {
+        if let Some(other) = other.ignored_attribute_prefixes {
+            if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
                 prefixes.extend(other);
-                prefixes.sort();
-                prefixes.dedup();
             } else {
-                self.ignored_prefixes = Some(other);
+                self.ignored_attribute_prefixes = Some(other);
             }
         }
     }
@@ -580,11 +578,14 @@ fn compile_markup_config(
         Some(MarkupConfig::Enabled(true)) => Some(parent.cloned().unwrap_or_default()),
         Some(MarkupConfig::Enabled(false)) => None,
         Some(MarkupConfig::Config(config)) => Some(super::MarkupConfig::new(
-            config.ignored_prefixes.clone().unwrap_or_else(|| {
-                parent
-                    .map(|parent| parent.ignored_prefixes().to_vec())
-                    .unwrap_or_default()
-            }),
+            config
+                .ignored_attribute_prefixes
+                .clone()
+                .unwrap_or_else(|| {
+                    parent
+                        .map(|parent| parent.ignored_attribute_prefixes().clone())
+                        .unwrap_or_default()
+                }),
         )),
         None => parent.cloned(),
     }

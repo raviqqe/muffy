@@ -346,7 +346,16 @@ impl WebValidator {
                 muffy_validation::validate_element(
                     element,
                     &config
-                        .ignored_prefixes()
+                        .ignored_attribute_prefixes()
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<_>>(),
+                )
+            } else if let Some(config) = context.config().site(base).validation().svg() {
+                muffy_validation::validate_element(
+                    element,
+                    &config
+                        .ignored_attribute_prefixes()
                         .iter()
                         .map(AsRef::as_ref)
                         .collect::<Vec<_>>(),
