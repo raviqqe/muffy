@@ -1593,39 +1593,27 @@ mod tests {
         fn merge_validation_config() {
             let mut config = ValidationConfig {
                 html: Some(MarkupConfig {
-                    ignored_attribute_prefixes: Some(vec!["a-".into()]),
-                    ignored_element_prefixes: Some(vec!["x-".into()]),
+                    ignored_attributes: Some(vec!["a-".into()]),
+                    ignored_elements: Some(vec!["x-".into()]),
                 }),
                 ..Default::default()
             };
 
             config.merge(ValidationConfig {
                 html: Some(MarkupConfig {
-                    ignored_attribute_prefixes: Some(vec!["b-".into()]),
-                    ignored_element_prefixes: Some(vec!["y-".into()]),
+                    ignored_attributes: Some(vec!["b-".into()]),
+                    ignored_elements: Some(vec!["y-".into()]),
                 }),
                 svg: Some(MarkupConfig::default()),
                 ..Default::default()
             });
 
             assert_eq!(
-                config
-                    .html
-                    .as_ref()
-                    .unwrap()
-                    .ignored_attribute_prefixes
-                    .as_ref()
-                    .unwrap(),
+                config.html.as_ref().unwrap().ignored_attributes.as_ref().unwrap(),
                 &vec!["a-".to_string(), "b-".to_string()]
             );
             assert_eq!(
-                config
-                    .html
-                    .as_ref()
-                    .unwrap()
-                    .ignored_element_prefixes
-                    .as_ref()
-                    .unwrap(),
+                config.html.as_ref().unwrap().ignored_elements.as_ref().unwrap(),
                 &vec!["x-".to_string(), "y-".to_string()]
             );
             assert!(config.svg.is_some());
