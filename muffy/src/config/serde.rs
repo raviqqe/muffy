@@ -624,7 +624,7 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 mod tests {
     use super::*;
     use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS,
+        self, DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS,
         DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
@@ -723,10 +723,10 @@ mod tests {
 
         let compile_config = |id: Option<&str>| {
             Arc::new(
-                crate::config::SiteConfig::default()
+                config::SiteConfig::default()
                     .set_id(id.map(Into::into))
                     .set_cache(
-                        crate::config::CacheConfig::default()
+                        config::CacheConfig::default()
                             .set_max_age(Duration::from_secs(2045).into()),
                     )
                     .set_fragments_ignored(true)
@@ -734,7 +734,7 @@ mod tests {
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
                     )]))
-                    .set_status(crate::config::StatusConfig::new(
+                    .set_status(config::StatusConfig::new(
                         [
                             StatusCode::try_from(200).unwrap(),
                             StatusCode::try_from(403).unwrap(),
@@ -742,17 +742,15 @@ mod tests {
                         ]
                         .into(),
                     ))
-                    .set_scheme(crate::config::SchemeConfig::new(
-                        ["https".to_owned()].into(),
-                    ))
+                    .set_scheme(config::SchemeConfig::new(["https".to_owned()].into()))
                     .set_max_redirects(42)
                     .set_timeout(Duration::from_secs(42).into())
                     .set_retry(
-                        crate::config::RetryConfig::default()
+                        config::RetryConfig::default()
                             .set_count(193)
                             .set_factor(4.2.into())
                             .set_interval(
-                                crate::config::RetryDurationConfig::default()
+                                config::RetryDurationConfig::default()
                                     .set_initial(Duration::from_millis(42).into())
                                     .set_cap(Duration::from_secs(42).into()),
                             )
@@ -1035,7 +1033,7 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().concurrency(),
-            &crate::config::ConcurrencyConfig {
+            &config::ConcurrencyConfig {
                 global: Some(2045),
                 sites: [("foo".into(), 42)].into(),
             }
@@ -1067,15 +1065,14 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
-            &crate::config::RateLimitConfig::default()
+            &config::RateLimitConfig::default()
                 .set_global(
-                    crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
+                    config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
                 )
                 .set_sites(
                     [(
                         "foo".into(),
-                        crate::config::SiteRateLimitConfig::new(123, Duration::from_millis(456))
-                            .into()
+                        config::SiteRateLimitConfig::new(123, Duration::from_millis(456)).into()
                     )]
                     .into()
                 )
@@ -1548,7 +1545,7 @@ mod tests {
                     .1
                     .validation()
                     .html(),
-                Some(&crate::config::MarkupConfig::default())
+                Some(&config::MarkupConfig::default())
             );
         }
 
