@@ -79,7 +79,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 >::new();
 
                 for (attribute, _) in element.attributes() {
-                    if ignored_attributes.iter().any(|regex| regex.is_match(attribute)) {
+                    if ignored_attributes.iter().any(|pattern| pattern.is_match(attribute)) {
                         continue;
                     }
 
@@ -103,7 +103,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     if let muffy_document::html::Node::Element(element) = child {
                         let name = element.name();
 
-                        if ignored_elements.iter().any(|regex| regex.is_match(name)) {
+                        if ignored_elements.iter().any(|pattern| pattern.is_match(name)) {
                             continue;
                         }
 
@@ -140,7 +140,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         ) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
-                name if ignored_elements.iter().any(|regex| regex.is_match(name)) => Ok(()),
+                name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }
