@@ -208,19 +208,13 @@ impl WebValidator {
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
-
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
-        let mut results = Vec::with_capacity(futures.len());
-
-        for futures in futures {
-            results.push(try_join_all(futures).await?);
-        }
 
         Ok(DocumentOutput::new(
             response.url().clone(),
             elements
                 .into_iter()
-                .zip(results)
+                .zip(try_join_all(futures.into_iter().map(try_join_all)).await?)
                 .map(|(element, results)| ElementOutput::new(element, results))
                 .collect(),
         ))
