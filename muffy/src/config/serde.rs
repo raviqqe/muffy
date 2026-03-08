@@ -1486,7 +1486,8 @@ mod tests {
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         validation: Some(ValidationConfig {
-                            enabled: Some(true),
+                            html: Some(true),
+                            ..Default::default()
                         }),
                         ..Default::default()
                     },
@@ -1500,7 +1501,7 @@ mod tests {
                 config.sites().get("foo.com").unwrap()[0]
                     .1
                     .validation()
-                    .enabled(),
+                    .html(),
                 true
             );
         }
@@ -1508,14 +1509,18 @@ mod tests {
         #[test]
         fn merge_validation_config() {
             let mut config = ValidationConfig {
-                enabled: Some(true),
+                html: Some(true),
+                ..Default::default()
             };
 
             config.merge(ValidationConfig {
-                enabled: Some(false),
+                html: Some(false),
+                svg: Some(true),
+                ..Default::default()
             });
 
-            assert_eq!(config.enabled, Some(false));
+            assert_eq!(config.html, Some(false));
+            assert_eq!(config.svg, Some(true));
         }
     }
 }
