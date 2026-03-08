@@ -4,17 +4,19 @@ use core::error::Error;
 use std::{path::Path, process::Command};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    Command::new("ln")
-        .arg("-s")
-        .arg(
-            Path::new("..")
-                .join("..")
-                .join("vendor")
-                .join("validator")
-                .join("schema"),
-        )
-        .arg("src")
-        .output()?;
+    if !exists(Path::new("src").join("schema")) {
+        Command::new("ln")
+            .arg("-s")
+            .arg(
+                Path::new("..")
+                    .join("..")
+                    .join("vendor")
+                    .join("validator")
+                    .join("schema"),
+            )
+            .arg("src")
+            .output()?;
+    }
 
     Ok(())
 }
