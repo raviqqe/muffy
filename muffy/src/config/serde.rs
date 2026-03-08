@@ -1695,5 +1695,36 @@ mod tests {
             );
             assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:child-el)$");
         }
+
+        #[test]
+        fn compile_retry_statuses() {
+            let config = compile_config(SerializableConfig {
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        retry: Some(RetryConfig {
+                            statuses: Some([429, 503].into()),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            })
+            .unwrap();
+
+            assert_eq!(
+                config
+                    .sites()
+                    .get("foo.com")
+                    .unwrap()[0]
+                    .1
+                    .retry()
+                    .statuses(),
+                &HashSet::from([StatusCode::TOO_MANY_REQUESTS, StatusCode::SERVICE_UNAVAILABLE])
+            );
+        }
     }
 }

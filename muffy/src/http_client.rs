@@ -272,9 +272,12 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
-    use std::sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering},
+    use std::{
+        collections::HashSet,
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
     };
     use tokio::spawn;
     use url::Url;
@@ -758,7 +761,6 @@ mod tests {
     mod retry {
         use super::*;
         use pretty_assertions::assert_eq;
-        use std::collections::HashSet;
 
         #[tokio::test]
         async fn retry_once_with_http_error() {
