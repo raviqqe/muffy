@@ -67,7 +67,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
                 })
@@ -84,7 +84,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: [
                         ("invalid-one".into(), [AttributeError::NotAllowed].into()),
                         ("invalid-two".into(), [AttributeError::NotAllowed].into()),
@@ -126,7 +126,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
@@ -146,7 +146,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [
                         ("div".into(), [ChildError::NotAllowed].into()),
@@ -203,7 +203,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
@@ -221,7 +221,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
@@ -245,7 +245,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
@@ -271,7 +271,7 @@ mod tests {
 
             assert_eq!(
                 validate_element(&element, &[]),
-                Err(ValidationError::InvalidElement {
+                Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })

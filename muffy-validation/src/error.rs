@@ -77,7 +77,7 @@ impl Display for MarkupError {
     }
 }
 
-/// An attribute validation error.
+/// An attribute markup error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
     /// Not allowed.
@@ -92,7 +92,7 @@ impl Display for AttributeError {
     }
 }
 
-/// A child validation error.
+/// A child markup error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
     /// Not allowed.
