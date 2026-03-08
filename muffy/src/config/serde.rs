@@ -212,23 +212,67 @@ impl CacheConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ValidationConfig {
-    html: Option<bool>,
-    svg: Option<bool>,
+    html: Option<MarkupConfig>,
+    svg: Option<MarkupConfig>,
     css: Option<bool>,
 }
 
 impl ValidationConfig {
-    const fn merge(&mut self, other: Self) {
-        if other.html.is_some() {
-            self.html = other.html;
+    fn merge(&mut self, other: Self) {
+        if let Some(other) = other.html {
+            if let Some(html) = &mut self.html {
+                html.merge(other);
+            } else {
+                self.html = Some(other);
+            }
         }
 
-        if other.svg.is_some() {
-            self.svg = other.svg;
+        if let Some(other) = other.svg {
+            if let Some(svg) = &mut self.svg {
+                svg.merge(other);
+            } else {
+                self.svg = Some(other);
+            }
         }
 
         if other.css.is_some() {
             self.css = other.css;
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum MarkupConfig {
+    Enabled(bool),
+    Config(MarkupConfigInner),
+}
+
+impl MarkupConfig {
+    fn merge(&mut self, other: Self) {
+        match (self, other) {
+            (Self::Config(this), Self::Config(other)) => this.merge(other),
+            (this, other) => *this = other,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MarkupConfigInner {
+    ignored_prefixes: Option<Vec<String>>,
+}
+
+impl MarkupConfigInner {
+    fn merge(&mut self, other: Self) {
+        if let Some(other) = other.ignored_prefixes {
+            if let Some(prefixes) = &mut self.ignored_prefixes {
+                prefixes.extend(other);
+                prefixes.sort();
+                prefixes.dedup();
+            } else {
+                self.ignored_prefixes = Some(other);
+            }
         }
     }
 }
@@ -511,18 +555,14 @@ fn compile_site_config(
         .set_recursive(site.recurse == Some(true))
         .set_validation(
             super::ValidationConfig::default()
-                .set_html(
-                    site.validation
-                        .as_ref()
-                        .and_then(|validation| validation.html)
-                        .unwrap_or(parent.validation().html()),
-                )
-                .set_svg(
-                    site.validation
-                        .as_ref()
-                        .and_then(|validation| validation.svg)
-                        .unwrap_or(parent.validation().svg()),
-                )
+                .set_html(compile_markup_config(
+                    site.validation.as_ref().and_then(|v| v.html.as_ref()),
+                    parent.validation().html(),
+                ))
+                .set_svg(compile_markup_config(
+                    site.validation.as_ref().and_then(|v| v.svg.as_ref()),
+                    parent.validation().svg(),
+                ))
                 .set_css(
                     site.validation
                         .as_ref()
@@ -530,6 +570,24 @@ fn compile_site_config(
                         .unwrap_or(parent.validation().css()),
                 ),
         ))
+}
+
+fn compile_markup_config(
+    config: Option<&MarkupConfig>,
+    parent: Option<&super::MarkupConfig>,
+) -> Option<super::MarkupConfig> {
+    match config {
+        Some(MarkupConfig::Enabled(true)) => Some(parent.cloned().unwrap_or_default()),
+        Some(MarkupConfig::Enabled(false)) => None,
+        Some(MarkupConfig::Config(config)) => Some(super::MarkupConfig::new(
+            config.ignored_prefixes.clone().unwrap_or_else(|| {
+                parent
+                    .map(|parent| parent.ignored_prefixes().to_vec())
+                    .unwrap_or_default()
+            }),
+        )),
+        None => parent.cloned(),
+    }
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1486,7 +1544,7 @@ mod tests {
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         validation: Some(ValidationConfig {
-                            html: Some(true),
+                            html: Some(MarkupConfig::Enabled(true)),
                             ..Default::default()
                         }),
                         ..Default::default()
@@ -1502,25 +1560,25 @@ mod tests {
                     .1
                     .validation()
                     .html(),
-                true
+                Some(&crate::config::MarkupConfig::default())
             );
         }
 
         #[test]
         fn merge_validation_config() {
             let mut config = ValidationConfig {
-                html: Some(true),
+                html: Some(MarkupConfig::Enabled(true)),
                 ..Default::default()
             };
 
             config.merge(ValidationConfig {
-                html: Some(false),
-                svg: Some(true),
+                html: Some(MarkupConfig::Enabled(false)),
+                svg: Some(MarkupConfig::Enabled(true)),
                 ..Default::default()
             });
 
-            assert_eq!(config.html, Some(false));
-            assert_eq!(config.svg, Some(true));
+            assert!(matches!(config.html, Some(MarkupConfig::Enabled(false))));
+            assert!(matches!(config.svg, Some(MarkupConfig::Enabled(true))));
         }
     }
 }

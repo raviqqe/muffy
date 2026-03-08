@@ -341,8 +341,24 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if context.config().site(base).validation().html() {
-            muffy_validation::validate_element(element)
+        let validation_result = if let Some(config) = context.config().site(base).validation().html() {
+            muffy_validation::validate_element(
+                element,
+                &config
+                    .ignored_prefixes()
+                    .iter()
+                    .map(AsRef::as_ref)
+                    .collect::<Vec<_>>(),
+            )
+        } else if let Some(config) = context.config().site(base).validation().svg() {
+            muffy_validation::validate_element(
+                element,
+                &config
+                    .ignored_prefixes()
+                    .iter()
+                    .map(AsRef::as_ref)
+                    .collect::<Vec<_>>(),
+            )
         } else {
             Ok(())
         };
@@ -585,7 +601,7 @@ mod tests {
     use super::*;
     use crate::{
         Metrics, MokaCache, SchemeConfig,
-        config::{Config, SiteConfig},
+        config::{Config, MarkupConfig, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
@@ -616,7 +632,7 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
-                        .set_validation(crate::ValidationConfig::default().set_html(true))
+                        .set_validation(crate::ValidationConfig::default().set_html(Some(MarkupConfig::default())))
                         .into(),
                 )]
                 .into(),
