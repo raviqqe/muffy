@@ -333,7 +333,7 @@ impl WebValidator {
                 }
             }
 
-            let validation_result = if context.config().site(base).validation().enabled() {
+            let validation_result = if context.config().site(base).validation().html() {
                 muffy_validation::validate_element(element)
             } else {
                 Ok(())

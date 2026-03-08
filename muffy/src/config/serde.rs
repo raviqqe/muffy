@@ -510,12 +510,25 @@ fn compile_site_config(
         })
         .set_recursive(site.recurse == Some(true))
         .set_validation(
-            super::ValidationConfig::default().set_enabled(
-                site.validation
-                    .as_ref()
-                    .and_then(|validation| validation.enabled)
-                    .unwrap_or(parent.validation().enabled()),
-            ),
+            super::ValidationConfig::default()
+                .set_html(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.html)
+                        .unwrap_or(parent.validation().html()),
+                )
+                .set_svg(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.svg)
+                        .unwrap_or(parent.validation().svg()),
+                )
+                .set_css(
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.css)
+                        .unwrap_or(parent.validation().css()),
+                ),
         ))
 }
 
