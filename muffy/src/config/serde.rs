@@ -1627,9 +1627,7 @@ mod tests {
                 ignored_elements: Some(vec!["sl-.*".into(), "div".into()]),
             };
 
-            let compiled = super::compile_markup_config(Some(&config), None)
-                .unwrap()
-                .unwrap();
+            let compiled = compile_markup_config(Some(&config), None).unwrap().unwrap();
 
             let attributes = compiled.ignored_attributes();
             assert_eq!(attributes.len(), 2);
@@ -1650,11 +1648,14 @@ mod tests {
             );
 
             // Inherit from parent
-            let compiled = super::compile_markup_config(Some(&MarkupConfig::default()), Some(&parent))
+            let compiled = compile_markup_config(Some(&MarkupConfig::default()), Some(&parent))
                 .unwrap()
                 .unwrap();
 
-            assert_eq!(compiled.ignored_attributes()[0].as_str(), "^(?:parent-attr)$");
+            assert_eq!(
+                compiled.ignored_attributes()[0].as_str(),
+                "^(?:parent-attr)$"
+            );
             assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:parent-el)$");
 
             // Override parent
@@ -1662,11 +1663,14 @@ mod tests {
                 ignored_attributes: Some(vec!["child-attr".into()]),
                 ignored_elements: Some(vec!["child-el".into()]),
             };
-            let compiled = super::compile_markup_config(Some(&config), Some(&parent))
+            let compiled = compile_markup_config(Some(&config), Some(&parent))
                 .unwrap()
                 .unwrap();
 
-            assert_eq!(compiled.ignored_attributes()[0].as_str(), "^(?:child-attr)$");
+            assert_eq!(
+                compiled.ignored_attributes()[0].as_str(),
+                "^(?:child-attr)$"
+            );
             assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:child-el)$");
         }
     }
