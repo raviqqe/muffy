@@ -260,7 +260,7 @@ impl MarkupConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct MarkupConfigInner {
-    ignored_attribute_prefixes: Option<HashSet<String>>,
+    ignored_attribute_prefixes: Option<Vec<String>>,
 }
 
 impl MarkupConfigInner {
@@ -268,6 +268,8 @@ impl MarkupConfigInner {
         if let Some(other) = other.ignored_attribute_prefixes {
             if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
                 prefixes.extend(other);
+                prefixes.sort();
+                prefixes.dedup();
             } else {
                 self.ignored_attribute_prefixes = Some(other);
             }
@@ -583,7 +585,7 @@ fn compile_markup_config(
                 .clone()
                 .unwrap_or_else(|| {
                     parent
-                        .map(|parent| parent.ignored_attribute_prefixes().clone())
+                        .map(|parent| parent.ignored_attribute_prefixes().to_vec())
                         .unwrap_or_default()
                 }),
         )),

@@ -383,19 +383,19 @@ impl ValidationConfig {
 /// A markup validation configuration.
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct MarkupConfig {
-    ignored_attribute_prefixes: HashSet<String>,
+    ignored_attribute_prefixes: Vec<String>,
 }
 
 impl MarkupConfig {
     /// Creates a markup validation configuration.
-    pub fn new(ignored_attribute_prefixes: HashSet<String>) -> Self {
+    pub fn new(ignored_attribute_prefixes: Vec<String>) -> Self {
         Self {
             ignored_attribute_prefixes,
         }
     }
 
     /// Returns ignored attribute prefixes.
-    pub fn ignored_attribute_prefixes(&self) -> &HashSet<String> {
+    pub fn ignored_attribute_prefixes(&self) -> &[String] {
         &self.ignored_attribute_prefixes
     }
 }
