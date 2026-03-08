@@ -187,12 +187,11 @@ impl HttpClient {
         let mut backoff = retry.interval().initial();
 
         for _ in 0..retry.count() {
-            if let Ok(response) = &result {
-                let status = response.status();
-
-                if !status.is_server_error() && !retry.statuses().contains(&status) {
-                    break;
-                }
+            if let Ok(response) = &result
+                && !response.status().is_server_error()
+                && !retry.statuses().contains(&response.status())
+            {
+                break;
             }
 
             sleep(backoff).await;
