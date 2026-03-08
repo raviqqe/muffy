@@ -18,8 +18,6 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@v1
-      # Build the asset files ahead of the release.
-      - run: cargo build
       - uses: rust-lang/crates-io-auth-action@v1
         id: auth
         if: github.ref == 'refs/heads/main'
