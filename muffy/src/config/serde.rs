@@ -285,7 +285,7 @@ struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
     interval: Option<RetryDurationConfig>,
-    status_codes: Option<Vec<u16>>,
+    status_codes: Option<HashSet<u16>>,
 }
 
 impl RetryConfig {
@@ -552,8 +552,15 @@ fn compile_site_config(
                     retry
                         .status_codes
                         .as_ref()
-                        .cloned()
-                        .unwrap_or_else(|| parent.retry().status_codes().to_vec()),
+                        .map(|codes| {
+                            codes
+                                .iter()
+                                .copied()
+                                .map(StatusCode::try_from)
+                                .collect::<Result<HashSet<_>, _>>()
+                        })
+                        .transpose()?
+                        .unwrap_or_else(|| parent.retry().status_codes().clone()),
                 )
                 .into()
         } else {

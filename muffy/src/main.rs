@@ -15,10 +15,11 @@ use muffy::{
 };
 use regex::Regex;
 use std::{
+    collections::HashSet,
     env::{current_dir, temp_dir},
     path::PathBuf,
     process::exit,
-    sync::LazyLock,
+    sync::Arc,
 };
 use tabled::{
     Table,
@@ -126,7 +127,7 @@ struct CheckSiteArguments {
     retry_interval_cap: DurationString,
     /// Set a list of status codes to retry on.
     #[arg(long, value_delimiter = ',')]
-    retry_status_codes: Vec<u16>,
+    retry_status_codes: HashSet<u16>,
     /// Enable experimental HTML validation.
     #[arg(long)]
     experimental_validation: bool,
@@ -350,7 +351,14 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                         .set_initial(*arguments.initial_retry_interval)
                         .set_cap((*arguments.retry_interval_cap).into()),
                 )
-                .set_status_codes(arguments.retry_status_codes.clone())
+                .set_status_codes(
+                    arguments
+                        .retry_status_codes
+                        .iter()
+                        .copied()
+                        .map(StatusCode::try_from)
+                        .collect::<Result<_, _>>()?,
+                )
                 .into(),
         )
         .set_timeout(Some(*arguments.timeout))

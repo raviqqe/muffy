@@ -452,7 +452,7 @@ pub struct RetryConfig {
     count: usize,
     factor: f64,
     interval: RetryDurationConfig,
-    status_codes: Vec<u16>,
+    status_codes: HashSet<StatusCode>,
 }
 
 impl RetryConfig {
@@ -481,8 +481,8 @@ impl RetryConfig {
         &self.interval
     }
 
-    /// Returns a list of status codes.
-    pub fn status_codes(&self) -> &[u16] {
+    /// Returns a set of status codes.
+    pub const fn status_codes(&self) -> &HashSet<StatusCode> {
         &self.status_codes
     }
 
@@ -504,8 +504,8 @@ impl RetryConfig {
         self
     }
 
-    /// Sets a list of status codes.
-    pub fn set_status_codes(mut self, status_codes: Vec<u16>) -> Self {
+    /// Sets a set of status codes.
+    pub fn set_status_codes(mut self, status_codes: HashSet<StatusCode>) -> Self {
         self.status_codes = status_codes;
         self
     }

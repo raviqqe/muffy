@@ -190,7 +190,7 @@ impl HttpClient {
             if let Ok(response) = &result {
                 let status = response.status();
 
-                if !status.is_server_error() && !retry.status_codes().contains(&status.as_u16()) {
+                if !status.is_server_error() && !retry.status_codes().contains(&status) {
                     break;
                 }
             }
@@ -759,6 +759,7 @@ mod tests {
     mod retry {
         use super::*;
         use pretty_assertions::assert_eq;
+        use std::collections::HashSet;
 
         #[tokio::test]
         async fn retry_once_with_http_error() {
@@ -966,7 +967,7 @@ mod tests {
                         .set_retry(
                             RetryConfig::default()
                                 .set_count(1)
-                                .set_status_codes(vec![429])
+                                .set_status_codes(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
                                 .into()
                         )
                 )
