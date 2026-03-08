@@ -540,11 +540,15 @@ fn compile_site_config(
         .set_validation(
             super::ValidationConfig::default()
                 .set_html(compile_markup_config(
-                    site.validation.as_ref().and_then(|v| v.html.as_ref()),
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.html.as_ref()),
                     parent.validation().html(),
                 ))
                 .set_svg(compile_markup_config(
-                    site.validation.as_ref().and_then(|v| v.svg.as_ref()),
+                    site.validation
+                        .as_ref()
+                        .and_then(|validation| validation.svg.as_ref()),
                     parent.validation().svg(),
                 ))
                 .set_css(
