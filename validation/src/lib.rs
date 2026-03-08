@@ -2,8 +2,6 @@
 
 extern crate alloc;
 
-pub mod error;
-
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::fmt::{self, Display, Formatter};
 use muffy_document::html::Element;
