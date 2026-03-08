@@ -124,6 +124,9 @@ struct CheckSiteArguments {
     /// Set a retry interval cap.
     #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
+    /// Set a list of status codes to retry on.
+    #[arg(long, value_delimiter = ',')]
+    retry_status_codes: Vec<u16>,
     /// Enable experimental HTML validation.
     #[arg(long)]
     experimental_validation: bool,
@@ -347,6 +350,7 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                         .set_initial(*arguments.initial_retry_interval)
                         .set_cap((*arguments.retry_interval_cap).into()),
                 )
+                .set_status_codes(arguments.retry_status_codes.clone())
                 .into(),
         )
         .set_timeout(Some(*arguments.timeout))

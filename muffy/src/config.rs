@@ -440,6 +440,7 @@ pub struct RetryConfig {
     count: usize,
     factor: f64,
     interval: RetryDurationConfig,
+    status_codes: Vec<u16>,
 }
 
 impl RetryConfig {
@@ -449,6 +450,7 @@ impl RetryConfig {
             count: 0,
             factor: 1.0,
             interval: Default::default(),
+            status_codes: Default::default(),
         }
     }
 
@@ -467,6 +469,11 @@ impl RetryConfig {
         &self.interval
     }
 
+    /// Returns a list of status codes.
+    pub fn status_codes(&self) -> &[u16] {
+        &self.status_codes
+    }
+
     /// Sets a count.
     pub const fn set_count(mut self, count: usize) -> Self {
         self.count = count;
@@ -482,6 +489,12 @@ impl RetryConfig {
     /// Sets a duration configuration.
     pub const fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
         self.interval = duration;
+        self
+    }
+
+    /// Sets a list of status codes.
+    pub fn set_status_codes(mut self, status_codes: Vec<u16>) -> Self {
+        self.status_codes = status_codes;
         self
     }
 }

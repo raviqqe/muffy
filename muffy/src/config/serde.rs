@@ -285,10 +285,11 @@ struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
     interval: Option<RetryDurationConfig>,
+    status_codes: Option<Vec<u16>>,
 }
 
 impl RetryConfig {
-    const fn merge(&mut self, other: Self) {
+    fn merge(&mut self, other: Self) {
         if other.count.is_some() {
             self.count = other.count;
         }
@@ -303,6 +304,10 @@ impl RetryConfig {
             } else {
                 self.interval = Some(other);
             }
+        }
+
+        if other.status_codes.is_some() {
+            self.status_codes = other.status_codes;
         }
     }
 }
@@ -543,6 +548,13 @@ fn compile_site_config(
                 } else {
                     parent.retry().interval().clone()
                 })
+                .set_status_codes(
+                    retry
+                        .status_codes
+                        .as_ref()
+                        .cloned()
+                        .unwrap_or_else(|| parent.retry().status_codes().to_vec()),
+                )
                 .into()
         } else {
             parent.retry().clone()
@@ -719,6 +731,7 @@ mod tests {
                                 cap: Some(Duration::from_secs(42).into()),
                             }
                             .into(),
+                            status_codes: None,
                         }),
                         roots: Some(Default::default()),
                         schemes: Some(["https".to_owned()].into()),
@@ -1445,11 +1458,12 @@ mod tests {
                         max_redirects: Some(5),
                         retry: Some(RetryConfig {
                             count: Some(1),
-                            factor: Some(1.0),
+                            factor: Some(2.0),
                             interval: Some(RetryDurationConfig {
-                                initial: Some(Duration::from_secs(1).into()),
-                                cap: Some(Duration::from_secs(5).into()),
+                                initial: Some(DurationString::from_str("3s").unwrap()),
+                                cap: Some(DurationString::from_str("4s").unwrap()),
                             }),
+                            status_codes: None,
                         }),
                         timeout: Some(Duration::from_secs(4).into()),
                         ..Default::default()
@@ -1474,6 +1488,7 @@ mod tests {
                                 initial: None,
                                 cap: Some(Duration::from_secs(9).into()),
                             }),
+                            status_codes: None,
                         }),
                         timeout: None,
                         ..Default::default()
