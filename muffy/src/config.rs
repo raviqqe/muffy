@@ -693,24 +693,35 @@ mod tests {
 
     #[test]
     fn default_validation_config() {
-        assert!(!ValidationConfig::default().enabled());
+        let config = ValidationConfig::default();
+
+        assert!(!config.html());
+        assert!(!config.svg());
+        assert!(!config.css());
     }
 
     #[test]
     fn set_validation_config_enabled() {
-        assert!(ValidationConfig::default().set_enabled(true).enabled());
+        let config = ValidationConfig::default()
+            .set_html(true)
+            .set_svg(true)
+            .set_css(true);
+
+        assert!(config.html());
+        assert!(config.svg());
+        assert!(config.css());
     }
 
     #[test]
     fn validate_site_config() {
         let config = SiteConfig::default();
 
-        assert!(!config.validation().enabled());
+        assert!(!config.validation().html());
         assert!(
             config
-                .set_validation(ValidationConfig::default().set_enabled(true))
+                .set_validation(ValidationConfig::default().set_html(true))
                 .validation()
-                .enabled()
+                .html()
         );
     }
 }

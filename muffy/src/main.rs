@@ -350,7 +350,12 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                 .into(),
         )
         .set_timeout(Some(*arguments.timeout))
-        .set_validation(muffy::ValidationConfig::default().set_enabled(arguments.experimental_validation));
+        .set_validation(
+            muffy::ValidationConfig::default()
+                .set_html(arguments.experimental_validation)
+                .set_svg(arguments.experimental_validation)
+                .set_css(arguments.experimental_validation),
+        );
 
     Ok(Config::new(
         arguments.url.to_vec(),
