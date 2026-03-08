@@ -409,11 +409,14 @@ impl MarkupConfig {
 
 impl PartialEq for MarkupConfig {
     fn eq(&self, other: &Self) -> bool {
-        self.ignored_attributes
-            .iter()
-            .zip(&other.ignored_attributes)
-            .chain(self.ignored_elements.iter().zip(&other.ignored_elements))
-            .all(|(one, other)| one.as_str() == other.as_str())
+        self.ignored_attributes.len() == other.ignored_attributes.len()
+            && self.ignored_elements.len() == other.ignored_elements.len()
+            && self
+                .ignored_attributes
+                .iter()
+                .zip(&other.ignored_attributes)
+                .chain(self.ignored_elements.iter().zip(&other.ignored_elements))
+                .all(|(one, other)| one.as_str() == other.as_str())
     }
 }
 
