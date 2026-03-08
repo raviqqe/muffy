@@ -241,29 +241,13 @@ impl ValidationConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum MarkupConfig {
-    Enabled(bool),
-    Config(MarkupConfigInner),
-}
-
-impl MarkupConfig {
-    fn merge(&mut self, other: Self) {
-        match (self, other) {
-            (Self::Config(this), Self::Config(other)) => this.merge(other),
-            (this, other) => *this = other,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct MarkupConfigInner {
+struct MarkupConfig {
     ignored_attribute_prefixes: Option<Vec<String>>,
 }
 
-impl MarkupConfigInner {
+impl MarkupConfig {
     fn merge(&mut self, other: Self) {
         if let Some(other) = other.ignored_attribute_prefixes {
             if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
@@ -576,21 +560,20 @@ fn compile_markup_config(
     config: Option<&MarkupConfig>,
     parent: Option<&super::MarkupConfig>,
 ) -> Option<super::MarkupConfig> {
-    match config {
-        Some(MarkupConfig::Enabled(true)) => Some(parent.cloned().unwrap_or_default()),
-        Some(MarkupConfig::Enabled(false)) => None,
-        Some(MarkupConfig::Config(config)) => Some(super::MarkupConfig::new(
-            config
-                .ignored_attribute_prefixes
-                .clone()
-                .unwrap_or_else(|| {
-                    parent
-                        .map(|parent| parent.ignored_attribute_prefixes().to_vec())
-                        .unwrap_or_default()
-                }),
-        )),
-        None => parent.cloned(),
-    }
+    config
+        .map(|config| {
+            super::MarkupConfig::new(config.ignored_attribute_prefixes.clone().unwrap_or_else(|| {
+                parent
+                    .map(|parent| {
+                        parent
+                            .ignored_attribute_prefixes()
+                            .map(ToOwned::to_owned)
+                            .collect()
+                    })
+                    .unwrap_or_default()
+            }))
+        })
+        .or_else(|| parent.cloned())
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1547,7 +1530,7 @@ mod tests {
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         validation: Some(ValidationConfig {
-                            html: Some(MarkupConfig::Enabled(true)),
+                            html: Some(MarkupConfig::default()),
                             ..Default::default()
                         }),
                         ..Default::default()
@@ -1570,18 +1553,25 @@ mod tests {
         #[test]
         fn merge_validation_config() {
             let mut config = ValidationConfig {
-                html: Some(MarkupConfig::Enabled(true)),
+                html: Some(MarkupConfig {
+                    ignored_attribute_prefixes: Some(vec!["a-".into()]),
+                }),
                 ..Default::default()
             };
 
             config.merge(ValidationConfig {
-                html: Some(MarkupConfig::Enabled(false)),
-                svg: Some(MarkupConfig::Enabled(true)),
+                html: Some(MarkupConfig {
+                    ignored_attribute_prefixes: Some(vec!["b-".into()]),
+                }),
+                svg: Some(MarkupConfig::default()),
                 ..Default::default()
             });
 
-            assert!(matches!(config.html, Some(MarkupConfig::Enabled(false))));
-            assert!(matches!(config.svg, Some(MarkupConfig::Enabled(true))));
+            assert_eq!(
+                config.html.unwrap().ignored_attribute_prefixes.unwrap(),
+                vec!["a-".to_string(), "b-".to_string()]
+            );
+            assert!(config.svg.is_some());
         }
     }
 }
