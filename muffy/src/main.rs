@@ -124,9 +124,9 @@ struct CheckSiteArguments {
     /// Set a retry interval cap.
     #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
-    /// Disable HTML validation.
+    /// Enable experimental HTML validation.
     #[arg(long)]
-    no_validation: bool,
+    experimental_validation: bool,
 }
 
 #[derive(clap::Args, Debug)]
@@ -350,7 +350,7 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                 .into(),
         )
         .set_timeout(Some(*arguments.timeout))
-        .set_validation(muffy::ValidationConfig::default().set_enabled(!arguments.no_validation));
+        .set_validation(muffy::ValidationConfig::default().set_enabled(arguments.experimental_validation));
 
     Ok(Config::new(
         arguments.url.to_vec(),
@@ -405,24 +405,25 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
-        assert!(!arguments.no_validation);
-    }
+        assert!(!arguments.experimental_validation);
+        }
 
-    #[test]
-    fn parse_no_validation_check_site_arguments() {
+        #[test]
+        fn parse_experimental_validation_check_site_arguments() {
         let Command::CheckSite(arguments) = Arguments::parse_from([
             "command",
             "check-site",
             "https://foo.com",
-            "--no-validation",
+            "--experimental-validation",
         ])
         .command
-        .unwrap() else {
+        .unwrap()
+        else {
             panic!()
         };
 
-        assert!(arguments.no_validation);
-    }
+        assert!(arguments.experimental_validation);
+        }
 
     #[test]
     fn parse_cache_path_arguments() {

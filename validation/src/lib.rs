@@ -12,13 +12,13 @@ html! {}
 /// A validation error.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ValidationError {
-    /// An invalid tag.
-    InvalidTag(String),
+    /// An unknown tag.
+    UnknownTag(String),
     /// Invalid element.
     InvalidElement {
-        /// Invalid attributes by name.
+        /// Not allowed attributes by name.
         attributes: BTreeMap<String, BTreeSet<AttributeError>>,
-        /// Invalid children by name.
+        /// Not allowed children by name.
         children: BTreeMap<String, BTreeSet<ChildError>>,
     },
 }
@@ -26,13 +26,13 @@ pub enum ValidationError {
 impl Display for ValidationError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidTag(tag) => write!(formatter, "invalid tag \"{tag}\""),
+            Self::UnknownTag(tag) => write!(formatter, "unknown tag \"{tag}\""),
             Self::InvalidElement {
                 attributes,
                 children,
             } => {
                 if !attributes.is_empty() {
-                    write!(formatter, "invalid attributes: ")?;
+                    write!(formatter, "attributes not allowed: ")?;
 
                     for (index, (name, errors)) in attributes.iter().enumerate() {
                         if index > 0 {
@@ -58,7 +58,7 @@ impl Display for ValidationError {
                         write!(formatter, ", ")?;
                     }
 
-                    write!(formatter, "invalid children: ")?;
+                    write!(formatter, "children not allowed: ")?;
 
                     for (index, (name, errors)) in children.iter().enumerate() {
                         if index > 0 {
@@ -88,14 +88,14 @@ impl Display for ValidationError {
 /// A validation attribute error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
-    /// An invalid attribute.
-    Invalid,
+    /// A not allowed attribute.
+    NotAllowed,
 }
 
 impl Display for AttributeError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Invalid => write!(formatter, "invalid"),
+            Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
 }
@@ -103,14 +103,14 @@ impl Display for AttributeError {
 /// A validation child error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
-    /// An invalid child.
-    Invalid,
+    /// A not allowed child.
+    NotAllowed,
 }
 
 impl Display for ChildError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Invalid => write!(formatter, "invalid"),
+            Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
 }

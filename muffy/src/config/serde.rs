@@ -34,7 +34,6 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
         ))
         .set_max_redirects(DEFAULT_MAX_REDIRECTS)
         .set_timeout(DEFAULT_TIMEOUT.into())
-        .set_validation(super::ValidationConfig::default().set_enabled(true))
 });
 
 /// A serializable configuration.
@@ -1464,7 +1463,7 @@ mod tests {
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         validation: Some(ValidationConfig {
-                            enabled: Some(false),
+                            enabled: Some(true),
                         }),
                         ..Default::default()
                     },
@@ -1479,7 +1478,7 @@ mod tests {
                     .1
                     .validation()
                     .enabled(),
-                false
+                true
             );
         }
 

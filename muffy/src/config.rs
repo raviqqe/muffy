@@ -358,7 +358,7 @@ impl ValidationConfig {
 
 impl Default for ValidationConfig {
     fn default() -> Self {
-        Self { enabled: true }
+        Self { enabled: false }
     }
 }
 
@@ -665,22 +665,22 @@ mod tests {
 
     #[test]
     fn default_validation_config() {
-        assert!(ValidationConfig::default().enabled());
+        assert!(!ValidationConfig::default().enabled());
     }
 
     #[test]
     fn set_validation_config_enabled() {
-        assert!(!ValidationConfig::default().set_enabled(false).enabled());
+        assert!(ValidationConfig::default().set_enabled(true).enabled());
     }
 
     #[test]
     fn validate_site_config() {
         let config = SiteConfig::default();
 
-        assert!(config.validation().enabled());
+        assert!(!config.validation().enabled());
         assert!(
-            !config
-                .set_validation(ValidationConfig::default().set_enabled(false))
+            config
+                .set_validation(ValidationConfig::default().set_enabled(true))
                 .validation()
                 .enabled()
         );

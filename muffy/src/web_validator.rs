@@ -606,6 +606,7 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
+                        .set_validation(crate::ValidationConfig::default().set_enabled(true))
                         .into(),
                 )]
                 .into(),
