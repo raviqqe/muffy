@@ -364,7 +364,7 @@ impl WebValidator {
                         attributes,
                         children,
                     } => {
-                        for (name, _) in attributes {
+                        for name in attributes.keys() {
                             item_futures.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: [(
@@ -378,7 +378,7 @@ impl WebValidator {
                             }));
                         }
 
-                        for (name, _) in children {
+                        for name in children.keys() {
                             item_futures.push(spawn({
                                 let error = muffy_validation::ValidationError::InvalidElement {
                                     attributes: Default::default(),
