@@ -1,3 +1,4 @@
+use regex::Regex;
 use super::error::ConfigError;
 use crate::config::{
     DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS, DEFAULT_TIMEOUT,
@@ -244,29 +245,29 @@ impl ValidationConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct MarkupConfig {
-    ignored_attribute_prefixes: Option<Vec<String>>,
-    ignored_element_prefixes: Option<Vec<String>>,
+    ignored_attributes: Option<Vec<String>>,
+    ignored_elements: Option<Vec<String>>,
 }
 
 impl MarkupConfig {
     fn merge(&mut self, other: Self) {
-        if let Some(other) = other.ignored_attribute_prefixes {
-            if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
+        if let Some(other) = other.ignored_attributes {
+            if let Some(prefixes) = &mut self.ignored_attributes {
                 prefixes.extend(other);
                 prefixes.sort();
                 prefixes.dedup();
             } else {
-                self.ignored_attribute_prefixes = Some(other);
+                self.ignored_attributes = Some(other);
             }
         }
 
-        if let Some(other) = other.ignored_element_prefixes {
-            if let Some(prefixes) = &mut self.ignored_element_prefixes {
+        if let Some(other) = other.ignored_elements {
+            if let Some(prefixes) = &mut self.ignored_elements {
                 prefixes.extend(other);
                 prefixes.sort();
                 prefixes.dedup();
             } else {
-                self.ignored_element_prefixes = Some(other);
+                self.ignored_elements = Some(other);
             }
         }
     }
@@ -555,13 +556,13 @@ fn compile_site_config(
                         .as_ref()
                         .and_then(|validation| validation.html.as_ref()),
                     parent.validation().html(),
-                ))
+                )?)
                 .set_svg(compile_markup_config(
                     site.validation
                         .as_ref()
                         .and_then(|validation| validation.svg.as_ref()),
                     parent.validation().svg(),
-                ))
+                )?)
                 .set_css(
                     site.validation
                         .as_ref()
@@ -574,36 +575,47 @@ fn compile_site_config(
 fn compile_markup_config(
     config: Option<&MarkupConfig>,
     parent: Option<&super::MarkupConfig>,
-) -> Option<super::MarkupConfig> {
-    config
-        .map(|config| {
-            super::MarkupConfig::new(
-                config
-                    .ignored_attribute_prefixes
-                    .clone()
-                    .unwrap_or_else(|| {
-                        parent
-                            .map(|parent| {
-                                parent
-                                    .ignored_attribute_prefixes()
-                                    .map(ToOwned::to_owned)
-                                    .collect()
-                            })
-                            .unwrap_or_default()
-                    }),
-                config.ignored_element_prefixes.clone().unwrap_or_else(|| {
+) -> Result<Option<super::MarkupConfig>, ConfigError> {
+    Ok(if let Some(config) = config {
+        Some(super::MarkupConfig::new(
+            config
+                .ignored_attributes
+                .clone()
+                .unwrap_or_else(|| {
                     parent
                         .map(|parent| {
                             parent
-                                .ignored_element_prefixes()
-                                .map(ToOwned::to_owned)
+                                .ignored_attributes()
+                                .iter()
+                                .map(|r| r.as_str().to_owned())
                                 .collect()
                         })
                         .unwrap_or_default()
-                }),
-            )
-        })
-        .or_else(|| parent.cloned())
+                })
+                .into_iter()
+                .map(|s| Regex::new(&s))
+                .collect::<Result<Vec<_>, _>>()?,
+            config
+                .ignored_elements
+                .clone()
+                .unwrap_or_else(|| {
+                    parent
+                        .map(|parent| {
+                            parent
+                                .ignored_elements()
+                                .iter()
+                                .map(|r| r.as_str().to_owned())
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                })
+                .into_iter()
+                .map(|s| Regex::new(&s))
+                .collect::<Result<Vec<_>, _>>()?,
+        ))
+    } else {
+        parent.cloned()
+    })
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
