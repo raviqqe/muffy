@@ -131,8 +131,7 @@ impl WebValidator {
                     .set_site_id(site.id().cloned())
                     .set_timeout(site.timeout()),
             )
-            .await
-            .map_err(ItemError::from)?
+            .await?
         else {
             return Ok(ItemOutput::default());
         };
@@ -146,32 +145,14 @@ impl WebValidator {
             return Err(ItemError::HttpStatus(response.status()));
         }
 
-        let Some(document_type) = Self::validate_document_type(&response, document_type).map_err(
-            |error| match error {
-                Error::ContentTypeInvalid { actual, expected } => {
-                    ItemError::HttpClient(crate::http_client::HttpClientError::Http(
-                        format!("content type expected {expected} but got {actual}").into(),
-                    ))
-                }
-                _ => unreachable!(),
-            },
-        )?
-        else {
+        let Some(document_type) = Self::validate_document_type(&response, document_type)? else {
             return Ok(ItemOutput::new().with_response(response));
         };
 
         if let Some(fragment) = url.fragment()
             && document_type == DocumentType::Html
             && !site.fragments_ignored()
-            && !self
-                .has_html_element(&response, fragment)
-                .await
-                .map_err(|error| match error {
-                    Error::HtmlParse(error) => ItemError::HttpClient(
-                        crate::http_client::HttpClientError::Http(error.to_string().into()),
-                    ),
-                    _ => unreachable!(),
-                })?
+            && !self.has_html_element(&response, fragment).await?
         {
             return Err(ItemError::HtmlElementNotFound(fragment.into()));
         }
