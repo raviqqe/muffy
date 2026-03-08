@@ -352,8 +352,16 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
         .set_timeout(Some(*arguments.timeout))
         .set_validation(
             muffy::ValidationConfig::default()
-                .set_html(arguments.experimental_validation.then(MarkupConfig::default))
-                .set_svg(arguments.experimental_validation.then(MarkupConfig::default))
+                .set_html(
+                    arguments
+                        .experimental_validation
+                        .then(MarkupConfig::default),
+                )
+                .set_svg(
+                    arguments
+                        .experimental_validation
+                        .then(MarkupConfig::default),
+                )
                 .set_css(arguments.experimental_validation),
         );
 

@@ -341,27 +341,28 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if let Some(config) = context.config().site(base).validation().html() {
-            muffy_validation::validate_element(
-                element,
-                &config
-                    .ignored_prefixes()
-                    .iter()
-                    .map(AsRef::as_ref)
-                    .collect::<Vec<_>>(),
-            )
-        } else if let Some(config) = context.config().site(base).validation().svg() {
-            muffy_validation::validate_element(
-                element,
-                &config
-                    .ignored_prefixes()
-                    .iter()
-                    .map(AsRef::as_ref)
-                    .collect::<Vec<_>>(),
-            )
-        } else {
-            Ok(())
-        };
+        let validation_result =
+            if let Some(config) = context.config().site(base).validation().html() {
+                muffy_validation::validate_element(
+                    element,
+                    &config
+                        .ignored_prefixes()
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<_>>(),
+                )
+            } else if let Some(config) = context.config().site(base).validation().svg() {
+                muffy_validation::validate_element(
+                    element,
+                    &config
+                        .ignored_prefixes()
+                        .iter()
+                        .map(AsRef::as_ref)
+                        .collect::<Vec<_>>(),
+                )
+            } else {
+                Ok(())
+            };
 
         let mut items = links
             .iter()
@@ -632,7 +633,10 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
-                        .set_validation(crate::ValidationConfig::default().set_html(Some(MarkupConfig::default())))
+                        .set_validation(
+                            crate::ValidationConfig::default()
+                                .set_html(Some(MarkupConfig::default())),
+                        )
                         .into(),
                 )]
                 .into(),
