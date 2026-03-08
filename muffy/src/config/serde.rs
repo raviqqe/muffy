@@ -34,6 +34,7 @@ static DEFAULT_SITE_CONFIG: LazyLock<super::SiteConfig> = LazyLock::new(|| {
         ))
         .set_max_redirects(DEFAULT_MAX_REDIRECTS)
         .set_timeout(DEFAULT_TIMEOUT.into())
+        .set_validation(super::ValidationConfig::default().set_enabled(true))
 });
 
 /// A serializable configuration.
@@ -112,6 +113,7 @@ struct SiteConfig {
     schemes: Option<HashSet<String>>,
     statuses: Option<HashSet<u16>>,
     timeout: Option<DurationString>,
+    validation: Option<ValidationConfig>,
 }
 
 impl SiteConfig {
@@ -183,6 +185,14 @@ impl SiteConfig {
         if other.timeout.is_some() {
             self.timeout = other.timeout;
         }
+
+        if let Some(other) = other.validation {
+            if let Some(validation) = &mut self.validation {
+                validation.merge(other);
+            } else {
+                self.validation = Some(other);
+            }
+        }
     }
 }
 
@@ -196,6 +206,20 @@ impl CacheConfig {
     const fn merge(&mut self, other: Self) {
         if other.max_age.is_some() {
             self.max_age = other.max_age;
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ValidationConfig {
+    enabled: Option<bool>,
+}
+
+impl ValidationConfig {
+    const fn merge(&mut self, other: Self) {
+        if other.enabled.is_some() {
+            self.enabled = other.enabled;
         }
     }
 }
@@ -475,7 +499,15 @@ fn compile_site_config(
         } else {
             parent.retry().clone()
         })
-        .set_recursive(site.recurse == Some(true)))
+        .set_recursive(site.recurse == Some(true))
+        .set_validation(
+            super::ValidationConfig::default().set_enabled(
+                site.validation
+                    .as_ref()
+                    .and_then(|validation| validation.enabled)
+                    .unwrap_or(parent.validation().enabled()),
+            ),
+        ))
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -1422,6 +1454,30 @@ mod tests {
             assert!(site.roots.as_ref().unwrap().is_empty());
             assert!(site.schemes.as_ref().unwrap().is_empty());
             assert!(site.statuses.as_ref().unwrap().is_empty());
+        }
+
+        #[test]
+        fn compile_validation() {
+            let config = compile_config(SerializableConfig {
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        validation: Some(ValidationConfig {
+                            enabled: Some(false),
+                        }),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            })
+            .unwrap();
+
+            assert_eq!(
+                config.sites().get("foo.com").unwrap()[0].1.validation().enabled(),
+                false
+            );
         }
     }
 }

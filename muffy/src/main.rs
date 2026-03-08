@@ -124,6 +124,9 @@ struct CheckSiteArguments {
     /// Set a retry interval cap.
     #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
+    /// Disable HTML validation.
+    #[arg(long)]
+    no_validation: bool,
 }
 
 #[derive(clap::Args, Debug)]
@@ -346,7 +349,8 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                 )
                 .into(),
         )
-        .set_timeout(Some(*arguments.timeout));
+        .set_timeout(Some(*arguments.timeout))
+        .set_validation(muffy::ValidationConfig::default().set_enabled(!arguments.no_validation));
 
     Ok(Config::new(
         arguments.url.to_vec(),

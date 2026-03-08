@@ -150,6 +150,7 @@ pub struct SiteConfig {
     scheme: SchemeConfig,
     status: StatusConfig,
     timeout: Option<Duration>,
+    validation: ValidationConfig,
 }
 
 impl SiteConfig {
@@ -206,6 +207,11 @@ impl SiteConfig {
     /// Returns whether we should validate the website recursively.
     pub const fn recursive(&self) -> bool {
         self.recursive
+    }
+
+    /// Returns a validation configuration.
+    pub const fn validation(&self) -> &ValidationConfig {
+        &self.validation
     }
 
     /// Sets an ID.
@@ -267,6 +273,12 @@ impl SiteConfig {
         self.recursive = recursive;
         self
     }
+
+    /// Sets a validation configuration.
+    pub const fn set_validation(mut self, validation: ValidationConfig) -> Self {
+        self.validation = validation;
+        self
+    }
 }
 
 /// A status code configuration.
@@ -322,6 +334,31 @@ impl Default for SchemeConfig {
                 .map(ToOwned::to_owned)
                 .collect(),
         }
+    }
+}
+
+/// A validation configuration.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ValidationConfig {
+    enabled: bool,
+}
+
+impl ValidationConfig {
+    /// Returns whether validation is enabled.
+    pub const fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    /// Sets whether validation is enabled.
+    pub const fn set_enabled(mut self, enabled: bool) -> Self {
+        self.enabled = enabled;
+        self
+    }
+}
+
+impl Default for ValidationConfig {
+    fn default() -> Self {
+        Self { enabled: true }
     }
 }
 

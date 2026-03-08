@@ -475,6 +475,19 @@ mod tests {
 
             assert_eq!(validate_element(&element), Ok(()));
         }
+
+        #[test]
+        fn validate_invalid_property() {
+            let element = create_element("meta", vec![("property", "og:image")], vec![]);
+
+            assert_eq!(
+                validate_element(&element),
+                Err(ValidationError::InvalidElement {
+                    attributes: [("property".into(), [AttributeError::Invalid].into())].into(),
+                    children: Default::default(),
+                })
+            );
+        }
     }
 
     mod link {
