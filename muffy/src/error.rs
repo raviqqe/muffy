@@ -89,6 +89,8 @@ pub enum ItemError {
     HttpStatus(StatusCode),
     /// An invalid scheme.
     InvalidScheme(String),
+    /// A URL parse error.
+    UrlParse(ParseError),
 }
 
 impl error::Error for ItemError {}
@@ -103,6 +105,7 @@ impl Display for ItemError {
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+            Self::UrlParse(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -121,7 +124,7 @@ impl From<HttpClientError> for ItemError {
 
 impl From<url::ParseError> for ItemError {
     fn from(error: url::ParseError) -> Self {
-        Self::HttpClient(HttpClientError::UrlParse(error.to_string().into()))
+        Self::UrlParse(error)
     }
 }
 
@@ -141,6 +144,7 @@ impl From<ItemError> for Error {
             ItemError::InvalidScheme(scheme) => Self::HttpClient(HttpClientError::Http(
                 format!("invalid scheme \"{scheme}\"").into(),
             )),
+            ItemError::UrlParse(error) => Self::UrlParse(error),
         }
     }
 }
