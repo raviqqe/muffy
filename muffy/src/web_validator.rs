@@ -369,7 +369,8 @@ impl WebValidator {
 
         if let Err(error) = &validation_result {
             // TODO Do not abuse `muffy_validation::ValidationError`.
-            // We should define an error type for elements different fom the global error type.
+            // We should define an error type for elements different fom the global error
+            // type.
             match error {
                 muffy_validation::ValidationError::UnknownTag(_) => {
                     items.push(spawn({
