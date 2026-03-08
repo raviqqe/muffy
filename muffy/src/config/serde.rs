@@ -212,13 +212,23 @@ impl CacheConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ValidationConfig {
-    enabled: Option<bool>,
+    html: Option<bool>,
+    svg: Option<bool>,
+    css: Option<bool>,
 }
 
 impl ValidationConfig {
     const fn merge(&mut self, other: Self) {
-        if other.enabled.is_some() {
-            self.enabled = other.enabled;
+        if other.html.is_some() {
+            self.html = other.html;
+        }
+
+        if other.svg.is_some() {
+            self.svg = other.svg;
+        }
+
+        if other.css.is_some() {
+            self.css = other.css;
         }
     }
 }

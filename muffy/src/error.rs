@@ -177,9 +177,9 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                Error::HtmlValidation(muffy_validation::ValidationError::InvalidTag("foo".into()))
+                Error::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
             ),
-            "invalid tag \"foo\""
+            "unknown tag \"foo\""
         );
     }
 }

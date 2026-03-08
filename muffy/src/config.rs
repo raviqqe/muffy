@@ -340,25 +340,53 @@ impl Default for SchemeConfig {
 /// A validation configuration.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ValidationConfig {
-    enabled: bool,
+    html: bool,
+    svg: bool,
+    css: bool,
 }
 
 impl ValidationConfig {
-    /// Returns whether validation is enabled.
-    pub const fn enabled(&self) -> bool {
-        self.enabled
+    /// Returns whether HTML validation is enabled.
+    pub const fn html(&self) -> bool {
+        self.html
     }
 
-    /// Sets whether validation is enabled.
-    pub const fn set_enabled(mut self, enabled: bool) -> Self {
-        self.enabled = enabled;
+    /// Returns whether SVG validation is enabled.
+    pub const fn svg(&self) -> bool {
+        self.svg
+    }
+
+    /// Returns whether CSS validation is enabled.
+    pub const fn css(&self) -> bool {
+        self.css
+    }
+
+    /// Sets whether HTML validation is enabled.
+    pub const fn set_html(mut self, enabled: bool) -> Self {
+        self.html = enabled;
+        self
+    }
+
+    /// Sets whether SVG validation is enabled.
+    pub const fn set_svg(mut self, enabled: bool) -> Self {
+        self.svg = enabled;
+        self
+    }
+
+    /// Sets whether CSS validation is enabled.
+    pub const fn set_css(mut self, enabled: bool) -> Self {
+        self.css = enabled;
         self
     }
 }
 
 impl Default for ValidationConfig {
     fn default() -> Self {
-        Self { enabled: false }
+        Self {
+            html: false,
+            svg: false,
+            css: false,
+        }
     }
 }
 

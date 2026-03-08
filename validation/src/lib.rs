@@ -2,6 +2,8 @@
 
 extern crate alloc;
 
+pub mod error;
+
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::fmt::{self, Display, Formatter};
 use muffy_document::html::Element;
@@ -145,7 +147,7 @@ mod tests {
 
         assert_eq!(
             validate_element(&element),
-            Err(ValidationError::InvalidTag("invalid".to_owned()))
+            Err(ValidationError::UnknownTag("invalid".to_owned()))
         );
     }
 
@@ -173,7 +175,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::Invalid].into())].into(),
+                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
                 })
             );
@@ -191,8 +193,8 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: [
-                        ("invalid-one".into(), [AttributeError::Invalid].into()),
-                        ("invalid-two".into(), [AttributeError::Invalid].into()),
+                        ("invalid-one".into(), [AttributeError::NotAllowed].into()),
+                        ("invalid-two".into(), [AttributeError::NotAllowed].into()),
                     ]
                     .into(),
                     children: Default::default(),
@@ -226,7 +228,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -247,8 +249,8 @@ mod tests {
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
                     children: [
-                        ("div".into(), [ChildError::Invalid].into()),
-                        ("table".into(), [ChildError::Invalid].into()),
+                        ("div".into(), [ChildError::NotAllowed].into()),
+                        ("table".into(), [ChildError::NotAllowed].into()),
                     ]
                     .into(),
                 })
@@ -303,7 +305,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -321,7 +323,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("div".into(), [ChildError::Invalid].into())].into(),
+                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -345,7 +347,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -371,7 +373,7 @@ mod tests {
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
                     attributes: Default::default(),
-                    children: [("p".into(), [ChildError::Invalid].into())].into(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                 })
             );
         }
@@ -483,7 +485,7 @@ mod tests {
             assert_eq!(
                 validate_element(&element),
                 Err(ValidationError::InvalidElement {
-                    attributes: [("property".into(), [AttributeError::Invalid].into())].into(),
+                    attributes: [("property".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
                 })
             );
@@ -505,56 +507,56 @@ mod tests {
         }
     }
 
-    mod error {
+    mod display {
         use super::*;
 
         #[test]
-        fn display_invalid_tag() {
+        fn display_unknown_tag() {
             assert_eq!(
-                format!("{}", ValidationError::InvalidTag("foo".into())),
-                "invalid tag \"foo\""
+                format!("{}", ValidationError::UnknownTag("foo".into())),
+                "unknown tag \"foo\""
             );
         }
 
         #[test]
-        fn display_invalid_attributes() {
+        fn display_not_allowed_attributes() {
             assert_eq!(
                 format!(
                     "{}",
                     ValidationError::InvalidElement {
-                        attributes: [("foo".into(), [AttributeError::Invalid].into())].into(),
+                        attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
                         children: Default::default(),
                     }
                 ),
-                "invalid attributes: foo (invalid)"
+                "attributes not allowed: foo (not allowed)"
             );
         }
 
         #[test]
-        fn display_invalid_children() {
+        fn display_not_allowed_children() {
             assert_eq!(
                 format!(
                     "{}",
                     ValidationError::InvalidElement {
                         attributes: Default::default(),
-                        children: [("foo".into(), [ChildError::Invalid].into())].into(),
+                        children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
                     }
                 ),
-                "invalid children: foo (invalid)"
+                "children not allowed: foo (not allowed)"
             );
         }
 
         #[test]
-        fn display_invalid_attributes_and_children() {
+        fn display_not_allowed_attributes_and_children() {
             assert_eq!(
                 format!(
                     "{}",
                     ValidationError::InvalidElement {
-                        attributes: [("foo".into(), [AttributeError::Invalid].into())].into(),
-                        children: [("bar".into(), [ChildError::Invalid].into())].into(),
+                        attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
+                        children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
                     }
                 ),
-                "invalid attributes: foo (invalid), invalid children: bar (invalid)"
+                "attributes not allowed: foo (not allowed), children not allowed: bar (not allowed)"
             );
         }
     }

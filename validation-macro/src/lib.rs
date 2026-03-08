@@ -83,7 +83,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                             attributes
                                 .entry(attribute.into())
                                 .or_insert_with(Default::default)
-                                .insert(AttributeError::Invalid);
+                                .insert(AttributeError::NotAllowed);
                         }
                     }
                 }
@@ -103,7 +103,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                                 children
                                     .entry(child_name.into())
                                     .or_insert_with(Default::default)
-                                    .insert(ChildError::Invalid);
+                                    .insert(ChildError::NotAllowed);
                             }
                         }
                     }
@@ -126,7 +126,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         pub fn validate_element(element: &Element) -> Result<(), ValidationError> {
             match element.name() {
                 #(#element_matches)*
-                _ => Err(ValidationError::InvalidTag(element.name().to_string())),
+                _ => Err(ValidationError::UnknownTag(element.name().to_string())),
             }
         }
     }
