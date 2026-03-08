@@ -105,19 +105,11 @@ impl WebValidator {
         {
             return Ok(ItemOutput::new());
         } else if document_type != Some(DocumentType::Robots) {
-            let _ = Box::into_pin(Box::new(
-                self.cloned().validate_link(
-                    context.clone(),
-                    url.join(ROBOTS_PATH)
-                        .map_err(|error| {
-                            ItemError::HttpClient(crate::http_client::HttpClientError::UrlParse(
-                                error.to_string().into(),
-                            ))
-                        })?
-                        .into(),
-                    Some(DocumentType::Robots),
-                ),
-            ))
+            let _ = Box::into_pin(Box::new(self.cloned().validate_link(
+                context.clone(),
+                url.join(ROBOTS_PATH)?.into(),
+                Some(DocumentType::Robots),
+            )))
             .await;
         }
 
