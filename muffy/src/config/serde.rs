@@ -562,16 +562,18 @@ fn compile_markup_config(
 ) -> Option<super::MarkupConfig> {
     config
         .map(|config| {
-            super::MarkupConfig::new(config.ignored_attribute_prefixes.clone().unwrap_or_else(|| {
-                parent
-                    .map(|parent| {
-                        parent
-                            .ignored_attribute_prefixes()
-                            .map(ToOwned::to_owned)
-                            .collect()
-                    })
-                    .unwrap_or_default()
-            }))
+            super::MarkupConfig::new(config.ignored_attribute_prefixes.clone().unwrap_or_else(
+                || {
+                    parent
+                        .map(|parent| {
+                            parent
+                                .ignored_attribute_prefixes()
+                                .map(ToOwned::to_owned)
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                },
+            ))
         })
         .or_else(|| parent.cloned())
 }

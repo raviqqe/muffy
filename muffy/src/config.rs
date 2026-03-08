@@ -400,7 +400,6 @@ impl MarkupConfig {
     }
 }
 
-
 /// A cache configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct CacheConfig {
