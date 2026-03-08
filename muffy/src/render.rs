@@ -131,7 +131,7 @@ mod tests {
                         .into(),
                     )),
                     Err(ItemError::HtmlValidation(
-                        muffy_validation::ValidationError::UnknownTag("foo".into()),
+                        muffy_validation::MarkupError::UnknownTag("foo".into()),
                     )),
                 ],
             )],

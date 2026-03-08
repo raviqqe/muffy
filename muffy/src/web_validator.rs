@@ -367,19 +367,19 @@ impl WebValidator {
 
         if let Err(error) = &validation_result {
             match error {
-                muffy_validation::ValidationError::UnknownTag(_) => {
+                muffy_validation::MarkupError::UnknownTag(_) => {
                     items.push(spawn({
                         let error = error.clone();
                         async move { Err(ItemError::HtmlValidation(error)) }
                     }));
                 }
-                muffy_validation::ValidationError::InvalidElement {
+                muffy_validation::MarkupError::InvalidElement {
                     attributes,
                     children,
                 } => {
                     for name in attributes.keys() {
                         items.push(spawn({
-                            let error = muffy_validation::ValidationError::InvalidElement {
+                            let error = muffy_validation::MarkupError::InvalidElement {
                                 attributes: [(
                                     name.clone(),
                                     [muffy_validation::AttributeError::NotAllowed].into(),
@@ -393,7 +393,7 @@ impl WebValidator {
 
                     for name in children.keys() {
                         items.push(spawn({
-                            let error = muffy_validation::ValidationError::InvalidElement {
+                            let error = muffy_validation::MarkupError::InvalidElement {
                                 attributes: Default::default(),
                                 children: [(
                                     name.clone(),
@@ -418,7 +418,7 @@ impl WebValidator {
                         .iter()
                         .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
                         .chain(
-                            if let Err(muffy_validation::ValidationError::InvalidElement {
+                            if let Err(muffy_validation::MarkupError::InvalidElement {
                                 attributes,
                                 ..
                             }) = &validation_result

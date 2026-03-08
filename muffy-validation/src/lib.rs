@@ -40,7 +40,7 @@ mod tests {
 
         assert_eq!(
             validate_element(&element, &[]),
-            Err(ValidationError::UnknownTag("invalid".to_owned()))
+            Err(MarkupError::UnknownTag("invalid".to_owned()))
         );
     }
 

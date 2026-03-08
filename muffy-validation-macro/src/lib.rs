@@ -118,7 +118,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 if attributes.is_empty() && children.is_empty() {
                     Ok(())
                 } else {
-                    Err(ValidationError::InvalidElement {
+                    Err(MarkupError::InvalidElement {
                         attributes,
                         children,
                     })
@@ -129,10 +129,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     Ok(quote! {
         /// Validates an element.
-        pub fn validate_element(element: &Element, ignored_attribute_prefixes: &[&str]) -> Result<(), ValidationError> {
+        pub fn validate_element(element: &Element, ignored_attribute_prefixes: &[&str]) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
-                _ => Err(ValidationError::UnknownTag(element.name().to_string())),
+                _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }
     }

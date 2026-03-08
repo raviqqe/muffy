@@ -141,7 +141,7 @@ pub enum ItemError {
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
     /// An HTML validation failure.
-    HtmlValidation(muffy_validation::ValidationError),
+    HtmlValidation(muffy_validation::MarkupError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
@@ -218,9 +218,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ItemError::HtmlValidation(muffy_validation::ValidationError::UnknownTag(
-                    "foo".into()
-                ))
+                ItemError::HtmlValidation(muffy_validation::MarkupError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
         );
