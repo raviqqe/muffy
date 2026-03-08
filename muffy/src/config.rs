@@ -118,7 +118,7 @@ impl Config {
     }
 
     /// Sets persistent cache.
-    pub fn set_persistent_cache(mut self, persistent_cache: bool) -> Self {
+    pub const fn set_persistent_cache(mut self, persistent_cache: bool) -> Self {
         self.persistent_cache = persistent_cache;
         self
     }
@@ -221,13 +221,13 @@ impl SiteConfig {
     }
 
     /// Sets a cache configuration.
-    pub fn set_cache(mut self, cache: CacheConfig) -> Self {
+    pub const fn set_cache(mut self, cache: CacheConfig) -> Self {
         self.cache = cache;
         self
     }
 
     /// Sets whether URL fragments are ignored.
-    pub fn set_fragments_ignored(mut self, ignored: bool) -> Self {
+    pub const fn set_fragments_ignored(mut self, ignored: bool) -> Self {
         self.fragments_ignored = ignored;
         self
     }
@@ -257,19 +257,19 @@ impl SiteConfig {
     }
 
     /// Sets a maximum number of redirects.
-    pub fn set_max_redirects(mut self, count: usize) -> Self {
+    pub const fn set_max_redirects(mut self, count: usize) -> Self {
         self.max_redirects = count;
         self
     }
 
     /// Sets a timeout.
-    pub fn set_timeout(mut self, duration: Option<Duration>) -> Self {
+    pub const fn set_timeout(mut self, duration: Option<Duration>) -> Self {
         self.timeout = duration;
         self
     }
 
     /// Sets whether we should validate the website recursively
-    pub fn set_recursive(mut self, recursive: bool) -> Self {
+    pub const fn set_recursive(mut self, recursive: bool) -> Self {
         self.recursive = recursive;
         self
     }
@@ -374,7 +374,7 @@ impl ValidationConfig {
     }
 
     /// Sets whether CSS validation is enabled.
-    pub fn set_css(mut self, enabled: bool) -> Self {
+    pub const fn set_css(mut self, enabled: bool) -> Self {
         self.css = enabled;
         self
     }
@@ -388,7 +388,7 @@ pub struct MarkupConfig {
 
 impl MarkupConfig {
     /// Creates a markup validation configuration.
-    pub fn new(ignored_prefixes: Vec<String>) -> Self {
+    pub const fn new(ignored_prefixes: Vec<String>) -> Self {
         Self { ignored_prefixes }
     }
 
@@ -416,7 +416,7 @@ impl CacheConfig {
     }
 
     /// Sets a maximum age.
-    pub fn set_max_age(mut self, age: Duration) -> Self {
+    pub const fn set_max_age(mut self, age: Duration) -> Self {
         self.max_age = age;
         self
     }
@@ -456,19 +456,19 @@ impl RetryConfig {
     }
 
     /// Sets a count.
-    pub fn set_count(mut self, count: usize) -> Self {
+    pub const fn set_count(mut self, count: usize) -> Self {
         self.count = count;
         self
     }
 
     /// Sets a factor.
-    pub fn set_factor(mut self, factor: f64) -> Self {
+    pub const fn set_factor(mut self, factor: f64) -> Self {
         self.factor = factor;
         self
     }
 
     /// Sets a duration configuration.
-    pub fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
+    pub const fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
         self.interval = duration;
         self
     }
@@ -498,13 +498,13 @@ impl RetryDurationConfig {
     }
 
     /// Sets an initial duration.
-    pub fn set_initial(mut self, duration: Duration) -> Self {
+    pub const fn set_initial(mut self, duration: Duration) -> Self {
         self.initial = duration;
         self
     }
 
     /// Sets a cap duration.
-    pub fn set_cap(mut self, duration: Option<Duration>) -> Self {
+    pub const fn set_cap(mut self, duration: Option<Duration>) -> Self {
         self.cap = duration;
         self
     }
@@ -534,7 +534,7 @@ impl ConcurrencyConfig {
     }
 
     /// Sets a global concurrency.
-    pub fn set_global(mut self, concurrency: Option<usize>) -> Self {
+    pub const fn set_global(mut self, concurrency: Option<usize>) -> Self {
         self.global = concurrency;
         self
     }
@@ -570,7 +570,7 @@ impl RateLimitConfig {
     }
 
     /// Sets a global rate limit.
-    pub fn set_global(mut self, rate_limit: Option<SiteRateLimitConfig>) -> Self {
+    pub const fn set_global(mut self, rate_limit: Option<SiteRateLimitConfig>) -> Self {
         self.global = rate_limit;
         self
     }
@@ -606,13 +606,13 @@ impl SiteRateLimitConfig {
     }
 
     /// Sets a supply.
-    pub fn set_supply(mut self, supply: u64) -> Self {
+    pub const fn set_supply(mut self, supply: u64) -> Self {
         self.supply = supply;
         self
     }
 
     /// Sets a window.
-    pub fn set_window(mut self, window: Duration) -> Self {
+    pub const fn set_window(mut self, window: Duration) -> Self {
         self.window = window;
         self
     }
