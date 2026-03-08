@@ -212,23 +212,51 @@ impl CacheConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct ValidationConfig {
-    html: Option<bool>,
-    svg: Option<bool>,
+    html: Option<MarkupConfig>,
+    svg: Option<MarkupConfig>,
     css: Option<bool>,
 }
 
 impl ValidationConfig {
-    const fn merge(&mut self, other: Self) {
-        if other.html.is_some() {
-            self.html = other.html;
+    fn merge(&mut self, other: Self) {
+        if let Some(other) = other.html {
+            if let Some(html) = &mut self.html {
+                html.merge(other);
+            } else {
+                self.html = Some(other);
+            }
         }
 
-        if other.svg.is_some() {
-            self.svg = other.svg;
+        if let Some(other) = other.svg {
+            if let Some(svg) = &mut self.svg {
+                svg.merge(other);
+            } else {
+                self.svg = Some(other);
+            }
         }
 
         if other.css.is_some() {
             self.css = other.css;
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MarkupConfig {
+    ignored_attribute_prefixes: Option<Vec<String>>,
+}
+
+impl MarkupConfig {
+    fn merge(&mut self, other: Self) {
+        if let Some(other) = other.ignored_attribute_prefixes {
+            if let Some(prefixes) = &mut self.ignored_attribute_prefixes {
+                prefixes.extend(other);
+                prefixes.sort();
+                prefixes.dedup();
+            } else {
+                self.ignored_attribute_prefixes = Some(other);
+            }
         }
     }
 }
@@ -511,18 +539,18 @@ fn compile_site_config(
         .set_recursive(site.recurse == Some(true))
         .set_validation(
             super::ValidationConfig::default()
-                .set_html(
+                .set_html(compile_markup_config(
                     site.validation
                         .as_ref()
-                        .and_then(|validation| validation.html)
-                        .unwrap_or(parent.validation().html()),
-                )
-                .set_svg(
+                        .and_then(|validation| validation.html.as_ref()),
+                    parent.validation().html(),
+                ))
+                .set_svg(compile_markup_config(
                     site.validation
                         .as_ref()
-                        .and_then(|validation| validation.svg)
-                        .unwrap_or(parent.validation().svg()),
-                )
+                        .and_then(|validation| validation.svg.as_ref()),
+                    parent.validation().svg(),
+                ))
                 .set_css(
                     site.validation
                         .as_ref()
@@ -530,6 +558,28 @@ fn compile_site_config(
                         .unwrap_or(parent.validation().css()),
                 ),
         ))
+}
+
+fn compile_markup_config(
+    config: Option<&MarkupConfig>,
+    parent: Option<&super::MarkupConfig>,
+) -> Option<super::MarkupConfig> {
+    config
+        .map(|config| {
+            super::MarkupConfig::new(config.ignored_attribute_prefixes.clone().unwrap_or_else(
+                || {
+                    parent
+                        .map(|parent| {
+                            parent
+                                .ignored_attribute_prefixes()
+                                .map(ToOwned::to_owned)
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                },
+            ))
+        })
+        .or_else(|| parent.cloned())
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
@@ -578,7 +628,7 @@ fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, 
 mod tests {
     use super::*;
     use crate::config::{
-        DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS,
+        self, DEFAULT_ACCEPTED_SCHEMES, DEFAULT_ACCEPTED_STATUS_CODES, DEFAULT_MAX_REDIRECTS,
         DEFAULT_TIMEOUT,
     };
     use core::time::Duration;
@@ -677,10 +727,10 @@ mod tests {
 
         let compile_config = |id: Option<&str>| {
             Arc::new(
-                crate::config::SiteConfig::default()
+                config::SiteConfig::default()
                     .set_id(id.map(Into::into))
                     .set_cache(
-                        crate::config::CacheConfig::default()
+                        config::CacheConfig::default()
                             .set_max_age(Duration::from_secs(2045).into()),
                     )
                     .set_fragments_ignored(true)
@@ -688,7 +738,7 @@ mod tests {
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
                     )]))
-                    .set_status(crate::config::StatusConfig::new(
+                    .set_status(config::StatusConfig::new(
                         [
                             StatusCode::try_from(200).unwrap(),
                             StatusCode::try_from(403).unwrap(),
@@ -696,17 +746,15 @@ mod tests {
                         ]
                         .into(),
                     ))
-                    .set_scheme(crate::config::SchemeConfig::new(
-                        ["https".to_owned()].into(),
-                    ))
+                    .set_scheme(config::SchemeConfig::new(["https".to_owned()].into()))
                     .set_max_redirects(42)
                     .set_timeout(Duration::from_secs(42).into())
                     .set_retry(
-                        crate::config::RetryConfig::default()
+                        config::RetryConfig::default()
                             .set_count(193)
                             .set_factor(4.2.into())
                             .set_interval(
-                                crate::config::RetryDurationConfig::default()
+                                config::RetryDurationConfig::default()
                                     .set_initial(Duration::from_millis(42).into())
                                     .set_cap(Duration::from_secs(42).into()),
                             )
@@ -989,7 +1037,7 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().concurrency(),
-            &crate::config::ConcurrencyConfig {
+            &config::ConcurrencyConfig {
                 global: Some(2045),
                 sites: [("foo".into(), 42)].into(),
             }
@@ -1021,15 +1069,14 @@ mod tests {
 
         assert_eq!(
             compile_config(config).unwrap().rate_limit(),
-            &crate::config::RateLimitConfig::default()
+            &config::RateLimitConfig::default()
                 .set_global(
-                    crate::config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
+                    config::SiteRateLimitConfig::new(42, Duration::from_millis(2045)).into()
                 )
                 .set_sites(
                     [(
                         "foo".into(),
-                        crate::config::SiteRateLimitConfig::new(123, Duration::from_millis(456))
-                            .into()
+                        config::SiteRateLimitConfig::new(123, Duration::from_millis(456)).into()
                     )]
                     .into()
                 )
@@ -1486,7 +1533,7 @@ mod tests {
                     SiteConfig {
                         roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
                         validation: Some(ValidationConfig {
-                            html: Some(true),
+                            html: Some(MarkupConfig::default()),
                             ..Default::default()
                         }),
                         ..Default::default()
@@ -1502,25 +1549,32 @@ mod tests {
                     .1
                     .validation()
                     .html(),
-                true
+                Some(&config::MarkupConfig::default())
             );
         }
 
         #[test]
         fn merge_validation_config() {
             let mut config = ValidationConfig {
-                html: Some(true),
+                html: Some(MarkupConfig {
+                    ignored_attribute_prefixes: Some(vec!["a-".into()]),
+                }),
                 ..Default::default()
             };
 
             config.merge(ValidationConfig {
-                html: Some(false),
-                svg: Some(true),
+                html: Some(MarkupConfig {
+                    ignored_attribute_prefixes: Some(vec!["b-".into()]),
+                }),
+                svg: Some(MarkupConfig::default()),
                 ..Default::default()
             });
 
-            assert_eq!(config.html, Some(false));
-            assert_eq!(config.svg, Some(true));
+            assert_eq!(
+                config.html.unwrap().ignored_attribute_prefixes.unwrap(),
+                vec!["a-".to_string(), "b-".to_string()]
+            );
+            assert!(config.svg.is_some());
         }
     }
 }

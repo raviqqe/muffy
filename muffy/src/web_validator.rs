@@ -341,11 +341,15 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if context.config().site(base).validation().html() {
-            muffy_validation::validate_element(element)
-        } else {
-            Ok(())
-        };
+        let validation_result =
+            if let Some(config) = context.config().site(base).validation().html() {
+                muffy_validation::validate_element(
+                    element,
+                    &config.ignored_attribute_prefixes().collect::<Vec<_>>(),
+                )
+            } else {
+                Ok(())
+            };
 
         let mut items = links
             .iter()
@@ -585,7 +589,7 @@ mod tests {
     use super::*;
     use crate::{
         Metrics, MokaCache, SchemeConfig,
-        config::{Config, SiteConfig},
+        config::{Config, MarkupConfig, SiteConfig},
         html_parser::HtmlParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
@@ -616,7 +620,10 @@ mod tests {
                     SiteConfig::default()
                         .set_recursive(true)
                         .set_max_redirects(1 << 32)
-                        .set_validation(crate::ValidationConfig::default().set_html(true))
+                        .set_validation(
+                            crate::ValidationConfig::default()
+                                .set_html(Some(MarkupConfig::default())),
+                        )
                         .into(),
                 )]
                 .into(),

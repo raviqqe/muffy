@@ -79,6 +79,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 >::new();
 
                 for (attribute, _) in element.attributes() {
+                    if ignored_attribute_prefixes.iter().any(|prefix| attribute.starts_with(prefix)) {
+                        continue;
+                    }
+
                     match attribute {
                         #(#attributes |)* "_DUMMY_" => {}
                         _ => {
@@ -125,7 +129,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     Ok(quote! {
         /// Validates an element.
-        pub fn validate_element(element: &Element) -> Result<(), MarkupError> {
+        pub fn validate_element(element: &Element, ignored_attribute_prefixes: &[&str]) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),

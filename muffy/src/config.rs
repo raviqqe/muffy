@@ -275,7 +275,7 @@ impl SiteConfig {
     }
 
     /// Sets a validation configuration.
-    pub const fn set_validation(mut self, validation: ValidationConfig) -> Self {
+    pub fn set_validation(mut self, validation: ValidationConfig) -> Self {
         self.validation = validation;
         self
     }
@@ -340,20 +340,20 @@ impl Default for SchemeConfig {
 /// A validation configuration.
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct ValidationConfig {
-    html: bool,
-    svg: bool,
+    html: Option<MarkupConfig>,
+    svg: Option<MarkupConfig>,
     css: bool,
 }
 
 impl ValidationConfig {
-    /// Returns whether HTML validation is enabled.
-    pub const fn html(&self) -> bool {
-        self.html
+    /// Returns an HTML validation configuration.
+    pub const fn html(&self) -> Option<&MarkupConfig> {
+        self.html.as_ref()
     }
 
-    /// Returns whether SVG validation is enabled.
-    pub const fn svg(&self) -> bool {
-        self.svg
+    /// Returns an SVG validation configuration.
+    pub const fn svg(&self) -> Option<&MarkupConfig> {
+        self.svg.as_ref()
     }
 
     /// Returns whether CSS validation is enabled.
@@ -361,15 +361,15 @@ impl ValidationConfig {
         self.css
     }
 
-    /// Sets whether HTML validation is enabled.
-    pub const fn set_html(mut self, enabled: bool) -> Self {
-        self.html = enabled;
+    /// Sets an HTML validation configuration.
+    pub fn set_html(mut self, config: Option<MarkupConfig>) -> Self {
+        self.html = config;
         self
     }
 
-    /// Sets whether SVG validation is enabled.
-    pub const fn set_svg(mut self, enabled: bool) -> Self {
-        self.svg = enabled;
+    /// Sets an SVG validation configuration.
+    pub fn set_svg(mut self, config: Option<MarkupConfig>) -> Self {
+        self.svg = config;
         self
     }
 
@@ -377,6 +377,26 @@ impl ValidationConfig {
     pub const fn set_css(mut self, enabled: bool) -> Self {
         self.css = enabled;
         self
+    }
+}
+
+/// A markup validation configuration.
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct MarkupConfig {
+    ignored_attribute_prefixes: Vec<String>,
+}
+
+impl MarkupConfig {
+    /// Creates a markup validation configuration.
+    pub const fn new(ignored_attribute_prefixes: Vec<String>) -> Self {
+        Self {
+            ignored_attribute_prefixes,
+        }
+    }
+
+    /// Returns ignored attribute prefixes.
+    pub fn ignored_attribute_prefixes(&self) -> impl Iterator<Item = &str> {
+        self.ignored_attribute_prefixes.iter().map(AsRef::as_ref)
     }
 }
 
@@ -685,20 +705,20 @@ mod tests {
     fn default_validation_config() {
         let config = ValidationConfig::default();
 
-        assert!(!config.html());
-        assert!(!config.svg());
+        assert!(config.html().is_none());
+        assert!(config.svg().is_none());
         assert!(!config.css());
     }
 
     #[test]
     fn set_validation_config_enabled() {
         let config = ValidationConfig::default()
-            .set_html(true)
-            .set_svg(true)
+            .set_html(Some(MarkupConfig::default()))
+            .set_svg(Some(MarkupConfig::default()))
             .set_css(true);
 
-        assert!(config.html());
-        assert!(config.svg());
+        assert!(config.html().is_some());
+        assert!(config.svg().is_some());
         assert!(config.css());
     }
 
@@ -706,12 +726,13 @@ mod tests {
     fn validate_site_config() {
         let config = SiteConfig::default();
 
-        assert!(!config.validation().html());
+        assert!(config.validation().html().is_none());
         assert!(
             config
-                .set_validation(ValidationConfig::default().set_html(true))
+                .set_validation(ValidationConfig::default().set_html(Some(MarkupConfig::default())))
                 .validation()
                 .html()
+                .is_some()
         );
     }
 }

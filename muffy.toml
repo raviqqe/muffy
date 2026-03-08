@@ -20,9 +20,10 @@ interval = { initial = "500ms", cap = "10s" }
 user-agent = "Muffy/0.2.0"
 
 [sites.default.validation]
-html = false
-svg = false
-css = false
+# TODO Enable HTML validation.
+# html = { ignored_attribute_prefixes = ["data-", "sl-"] }
+svg = {}
+css = true
 
 [sites.external]
 extend = "default"

@@ -8,8 +8,8 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MokaCache,
-    RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, RetryConfig,
+    CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MarkupConfig,
+    MokaCache, RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, RetryConfig,
     RetryDurationConfig, SchemeConfig, SiteConfig, SiteRateLimitConfig, SledCache, StatusConfig,
     WebValidator,
 };
@@ -352,8 +352,16 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
         .set_timeout(Some(*arguments.timeout))
         .set_validation(
             muffy::ValidationConfig::default()
-                .set_html(arguments.experimental_validation)
-                .set_svg(arguments.experimental_validation)
+                .set_html(
+                    arguments
+                        .experimental_validation
+                        .then(MarkupConfig::default),
+                )
+                .set_svg(
+                    arguments
+                        .experimental_validation
+                        .then(MarkupConfig::default),
+                )
                 .set_css(arguments.experimental_validation),
         );
 
