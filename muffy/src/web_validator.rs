@@ -208,7 +208,6 @@ impl WebValidator {
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
         };
-
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
         Ok(DocumentOutput::new(
