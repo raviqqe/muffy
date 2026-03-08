@@ -452,7 +452,7 @@ pub struct RetryConfig {
     count: usize,
     factor: f64,
     interval: RetryDurationConfig,
-    status_codes: HashSet<StatusCode>,
+    statuses: HashSet<StatusCode>,
 }
 
 impl RetryConfig {
@@ -462,7 +462,7 @@ impl RetryConfig {
             count: 0,
             factor: 1.0,
             interval: Default::default(),
-            status_codes: Default::default(),
+            statuses: Default::default(),
         }
     }
 
@@ -482,8 +482,8 @@ impl RetryConfig {
     }
 
     /// Returns a set of status codes.
-    pub const fn status_codes(&self) -> &HashSet<StatusCode> {
-        &self.status_codes
+    pub const fn statuses(&self) -> &HashSet<StatusCode> {
+        &self.statuses
     }
 
     /// Sets a count.
@@ -505,8 +505,8 @@ impl RetryConfig {
     }
 
     /// Sets a set of status codes.
-    pub fn set_status_codes(mut self, status_codes: HashSet<StatusCode>) -> Self {
-        self.status_codes = status_codes;
+    pub fn set_statuses(mut self, statuses: HashSet<StatusCode>) -> Self {
+        self.statuses = statuses;
         self
     }
 }

@@ -190,7 +190,7 @@ impl HttpClient {
             if let Ok(response) = &result {
                 let status = response.status();
 
-                if !status.is_server_error() && !retry.status_codes().contains(&status) {
+                if !status.is_server_error() && !retry.statuses().contains(&status) {
                     break;
                 }
             }
@@ -967,7 +967,7 @@ mod tests {
                         .set_retry(
                             RetryConfig::default()
                                 .set_count(1)
-                                .set_status_codes(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
+                                .set_statuses(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
                                 .into()
                         )
                 )

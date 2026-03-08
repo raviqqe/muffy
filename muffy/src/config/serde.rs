@@ -285,7 +285,7 @@ struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
     interval: Option<RetryDurationConfig>,
-    status_codes: Option<HashSet<u16>>,
+    statuses: Option<HashSet<u16>>,
 }
 
 impl RetryConfig {
@@ -306,8 +306,8 @@ impl RetryConfig {
             }
         }
 
-        if other.status_codes.is_some() {
-            self.status_codes = other.status_codes;
+        if other.statuses.is_some() {
+            self.statuses = other.statuses;
         }
     }
 }
@@ -548,9 +548,9 @@ fn compile_site_config(
                 } else {
                     parent.retry().interval().clone()
                 })
-                .set_status_codes(
+                .set_statuses(
                     retry
-                        .status_codes
+                        .statuses
                         .as_ref()
                         .map(|codes| {
                             codes
@@ -560,7 +560,7 @@ fn compile_site_config(
                                 .collect::<Result<HashSet<_>, _>>()
                         })
                         .transpose()?
-                        .unwrap_or_else(|| parent.retry().status_codes().clone()),
+                        .unwrap_or_else(|| parent.retry().statuses().clone()),
                 )
                 .into()
         } else {
@@ -739,7 +739,7 @@ mod tests {
                                 cap: Some(Duration::from_secs(42).into()),
                             }
                             .into(),
-                            status_codes: None,
+                            statuses: None,
                         }),
                         roots: Some(Default::default()),
                         schemes: Some(["https".to_owned()].into()),
@@ -1471,7 +1471,7 @@ mod tests {
                                 initial: Some(Duration::from_secs(1).into()),
                                 cap: Some(Duration::from_secs(5).into()),
                             }),
-                            status_codes: None,
+                            statuses: None,
                         }),
                         timeout: Some(Duration::from_secs(4).into()),
                         ..Default::default()
@@ -1496,7 +1496,7 @@ mod tests {
                                 initial: None,
                                 cap: Some(Duration::from_secs(9).into()),
                             }),
-                            status_codes: None,
+                            statuses: None,
                         }),
                         timeout: None,
                         ..Default::default()
