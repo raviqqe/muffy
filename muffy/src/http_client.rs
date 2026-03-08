@@ -188,7 +188,6 @@ impl HttpClient {
 
         for _ in 0..retry.count() {
             if let Ok(response) = &result
-                && !response.status().is_server_error()
                 && !retry.statuses().contains(&response.status())
             {
                 break;
