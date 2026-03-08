@@ -578,16 +578,19 @@ fn compile_markup_config(
     config
         .map(|config| {
             super::MarkupConfig::new(
-                config.ignored_attribute_prefixes.clone().unwrap_or_else(|| {
-                    parent
-                        .map(|parent| {
-                            parent
-                                .ignored_attribute_prefixes()
-                                .map(ToOwned::to_owned)
-                                .collect()
-                        })
-                        .unwrap_or_default()
-                }),
+                config
+                    .ignored_attribute_prefixes
+                    .clone()
+                    .unwrap_or_else(|| {
+                        parent
+                            .map(|parent| {
+                                parent
+                                    .ignored_attribute_prefixes()
+                                    .map(ToOwned::to_owned)
+                                    .collect()
+                            })
+                            .unwrap_or_default()
+                    }),
                 config.ignored_children_prefixes.clone().unwrap_or_else(|| {
                     parent
                         .map(|parent| {
@@ -1594,11 +1597,23 @@ mod tests {
             });
 
             assert_eq!(
-                config.html.as_ref().unwrap().ignored_attribute_prefixes.as_ref().unwrap(),
+                config
+                    .html
+                    .as_ref()
+                    .unwrap()
+                    .ignored_attribute_prefixes
+                    .as_ref()
+                    .unwrap(),
                 &vec!["a-".to_string(), "b-".to_string()]
             );
             assert_eq!(
-                config.html.as_ref().unwrap().ignored_children_prefixes.as_ref().unwrap(),
+                config
+                    .html
+                    .as_ref()
+                    .unwrap()
+                    .ignored_children_prefixes
+                    .as_ref()
+                    .unwrap(),
                 &vec!["x-".to_string(), "y-".to_string()]
             );
             assert!(config.svg.is_some());
