@@ -100,8 +100,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 >::new();
 
                 for child in element.children() {
-                    if let muffy_document::html::Node::Element(child_element) = child {
-                        let name = child_element.name();
+                    if let muffy_document::html::Node::Element(element) = child {
+                        let name = element.name();
 
                         if ignored_children_prefixes
                             .iter()
