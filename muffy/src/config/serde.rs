@@ -1466,7 +1466,7 @@ mod tests {
                         max_redirects: Some(5),
                         retry: Some(RetryConfig {
                             count: Some(1),
-                            factor: Some(2.0),
+                            factor: Some(1.0),
                             interval: Some(RetryDurationConfig {
                                 initial: Some(Duration::from_secs(1).into()),
                                 cap: Some(Duration::from_secs(5).into()),
