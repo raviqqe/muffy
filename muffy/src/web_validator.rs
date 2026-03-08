@@ -15,8 +15,7 @@ use crate::{
     response::Response,
     robot_list::RobotList,
 };
-use alloc::collections::BTreeSet;
-use alloc::sync::Arc;
+use alloc::{collections::BTreeSet, sync::Arc};
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
