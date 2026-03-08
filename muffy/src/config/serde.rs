@@ -576,41 +576,35 @@ fn compile_markup_config(
     parent: Option<&super::MarkupConfig>,
 ) -> Result<Option<super::MarkupConfig>, ConfigError> {
     Ok(if let Some(config) = config {
+        let compile_regexes = |regexes: &Option<Vec<String>>,
+                               parent_regexes: Option<&[Regex]>|
+         -> Result<Vec<Regex>, ConfigError> {
+            regexes
+                .clone()
+                .unwrap_or_else(|| {
+                    parent_regexes
+                        .map(|regexes| {
+                            regexes
+                                .iter()
+                                .map(|regex| regex.as_str().to_owned())
+                                .collect()
+                        })
+                        .unwrap_or_default()
+                })
+                .into_iter()
+                .map(|string| Ok(Regex::new(&format!("^(?:{string})$"))?))
+                .collect()
+        };
+
         Some(super::MarkupConfig::new(
-            config
-                .ignored_attributes
-                .clone()
-                .unwrap_or_else(|| {
-                    parent
-                        .map(|parent| {
-                            parent
-                                .ignored_attributes()
-                                .iter()
-                                .map(|regex| regex.as_str().to_owned())
-                                .collect()
-                        })
-                        .unwrap_or_default()
-                })
-                .into_iter()
-                .map(|string| Regex::new(&format!("^(?:{string})$")))
-                .collect::<Result<Vec<_>, _>>()?,
-            config
-                .ignored_elements
-                .clone()
-                .unwrap_or_else(|| {
-                    parent
-                        .map(|parent| {
-                            parent
-                                .ignored_elements()
-                                .iter()
-                                .map(|regex| regex.as_str().to_owned())
-                                .collect()
-                        })
-                        .unwrap_or_default()
-                })
-                .into_iter()
-                .map(|string| Regex::new(&format!("^(?:{string})$")))
-                .collect::<Result<Vec<_>, _>>()?,
+            compile_regexes(
+                &config.ignored_attributes,
+                parent.map(|parent| parent.ignored_attributes()),
+            )?,
+            compile_regexes(
+                &config.ignored_elements,
+                parent.map(|parent| parent.ignored_elements()),
+            )?,
         ))
     } else {
         parent.cloned()
