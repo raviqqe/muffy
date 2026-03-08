@@ -24,18 +24,10 @@ pub enum Error {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML element not found.
-    HtmlElementNotFound(String),
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
-    /// An HTML validation failure.
-    HtmlValidation(muffy_validation::ValidationError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
-    /// An error status code in an HTTP response.
-    HttpStatus(StatusCode),
-    /// An invalid scheme.
-    InvalidScheme(String),
     /// An I/O error.
     Io(io::Error),
     /// An thread join error.
@@ -69,14 +61,8 @@ impl Display for Error {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::HtmlElementNotFound(name) => {
-                write!(formatter, "HTML element for #{name} not found")
-            }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
-            Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
-            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
-            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
@@ -93,6 +79,75 @@ impl Display for Error {
 impl Serialize for Error {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+/// An element item error.
+#[derive(Debug)]
+pub enum ItemError {
+    /// An HTML element not found.
+    HtmlElementNotFound(String),
+    /// An HTML validation failure.
+    HtmlValidation(muffy_validation::ValidationError),
+    /// An HTTP client error.
+    HttpClient(HttpClientError),
+    /// An error status code in an HTTP response.
+    HttpStatus(StatusCode),
+    /// An invalid scheme.
+    InvalidScheme(String),
+}
+
+impl error::Error for ItemError {}
+
+impl Display for ItemError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::HtmlElementNotFound(name) => {
+                write!(formatter, "HTML element for #{name} not found")
+            }
+            Self::HtmlValidation(error) => write!(formatter, "{error}"),
+            Self::HttpClient(error) => write!(formatter, "{error}"),
+            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+        }
+    }
+}
+
+impl Serialize for ItemError {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl From<HttpClientError> for ItemError {
+    fn from(error: HttpClientError) -> Self {
+        Self::HttpClient(error)
+    }
+}
+
+impl From<url::ParseError> for ItemError {
+    fn from(error: url::ParseError) -> Self {
+        Self::HttpClient(HttpClientError::UrlParse(error.to_string().into()))
+    }
+}
+
+impl From<ItemError> for Error {
+    fn from(error: ItemError) -> Self {
+        match error {
+            ItemError::HtmlElementNotFound(name) => {
+                Self::HttpClient(HttpClientError::Http(format!("element #{name} not found").into()))
+            }
+            ItemError::HtmlValidation(error) => {
+                Self::HttpClient(HttpClientError::Http(error.to_string().into()))
+            }
+            ItemError::HttpClient(error) => Self::HttpClient(error),
+            ItemError::HttpStatus(status) => {
+                Self::HttpClient(HttpClientError::Http(format!("invalid status {status}").into()))
+            }
+            ItemError::InvalidScheme(scheme) => Self::HttpClient(HttpClientError::Http(
+                format!("invalid scheme \"{scheme}\"").into(),
+            )),
+        }
     }
 }
 
@@ -173,11 +228,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn display_html_validation_error() {
+    fn display_item_html_validation_error() {
         assert_eq!(
             format!(
                 "{}",
-                Error::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
+                ItemError::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
         );

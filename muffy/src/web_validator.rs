@@ -7,7 +7,7 @@ use crate::{
     document_type::DocumentType,
     element::Element,
     element_output::ElementOutput,
-    error::Error,
+    error::{Error, ItemError},
     html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
@@ -26,7 +26,8 @@ use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
 
-type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, Error>>>);
+type ElementFuture = (Element, Vec<ItemFuture>);
+type ItemFuture = JoinHandle<Result<ItemOutput, ItemError>>;
 
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
@@ -94,7 +95,7 @@ impl WebValidator {
         context: Arc<Context>,
         url: String,
         document_type: Option<DocumentType>,
-    ) -> Result<ItemOutput, Error> {
+    ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&url)?;
 
         if context
@@ -104,11 +105,19 @@ impl WebValidator {
         {
             return Ok(ItemOutput::new());
         } else if document_type != Some(DocumentType::Robots) {
-            let _ = Box::into_pin(Box::new(self.cloned().validate_link(
-                context.clone(),
-                url.join(ROBOTS_PATH)?.into(),
-                Some(DocumentType::Robots),
-            )))
+            let _ = Box::into_pin(Box::new(
+                self.cloned().validate_link(
+                    context.clone(),
+                    url.join(ROBOTS_PATH)
+                        .map_err(|error| {
+                            ItemError::HttpClient(crate::http_client::HttpClientError::UrlParse(
+                                error.to_string().into(),
+                            ))
+                        })?
+                        .into(),
+                    Some(DocumentType::Robots),
+                ),
+            ))
             .await;
         }
 
@@ -130,7 +139,8 @@ impl WebValidator {
                     .set_site_id(site.id().cloned())
                     .set_timeout(site.timeout()),
             )
-            .await?
+            .await
+            .map_err(ItemError::from)?
         else {
             return Ok(ItemOutput::default());
         };
@@ -141,19 +151,37 @@ impl WebValidator {
             .status()
             .accepted(response.status())
         {
-            return Err(Error::HttpStatus(response.status()));
+            return Err(ItemError::HttpStatus(response.status()));
         }
 
-        let Some(document_type) = Self::validate_document_type(&response, document_type)? else {
+        let Some(document_type) = Self::validate_document_type(&response, document_type).map_err(
+            |error| match error {
+                Error::ContentTypeInvalid { actual, expected } => {
+                    ItemError::HttpClient(crate::http_client::HttpClientError::Http(
+                        format!("content type expected {expected} but got {actual}").into(),
+                    ))
+                }
+                _ => unreachable!(),
+            },
+        )?
+        else {
             return Ok(ItemOutput::new().with_response(response));
         };
 
         if let Some(fragment) = url.fragment()
             && document_type == DocumentType::Html
             && !site.fragments_ignored()
-            && !self.has_html_element(&response, fragment).await?
+            && !self
+                .has_html_element(&response, fragment)
+                .await
+                .map_err(|error| match error {
+                    Error::HtmlParse(error) => ItemError::HttpClient(
+                        crate::http_client::HttpClientError::Http(error.to_string().into()),
+                    ),
+                    _ => unreachable!(),
+                })?
         {
-            return Err(Error::HtmlElementNotFound(fragment.into()));
+            return Err(ItemError::HtmlElementNotFound(fragment.into()));
         }
 
         if url
@@ -226,7 +254,7 @@ impl WebValidator {
         url: String,
         base: Arc<Url>,
         document_type: Option<DocumentType>,
-    ) -> Result<ItemOutput, Error> {
+    ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
@@ -235,7 +263,7 @@ impl WebValidator {
             self.validate_link(context, url.to_string(), document_type)
                 .await
         } else {
-            Err(Error::InvalidScheme(url.scheme().into()))
+            Err(ItemError::InvalidScheme(url.scheme().into()))
         }
     }
 
@@ -369,7 +397,7 @@ impl WebValidator {
                 muffy_validation::ValidationError::UnknownTag(_) => {
                     items.push(spawn({
                         let error = error.clone();
-                        async move { Err(Error::HtmlValidation(error)) }
+                        async move { Err(ItemError::HtmlValidation(error)) }
                     }));
                 }
                 muffy_validation::ValidationError::InvalidElement {
@@ -386,7 +414,7 @@ impl WebValidator {
                                 .into(),
                                 children: Default::default(),
                             };
-                            async move { Err(Error::HtmlValidation(error)) }
+                            async move { Err(ItemError::HtmlValidation(error)) }
                         }));
                     }
 
@@ -400,7 +428,7 @@ impl WebValidator {
                                 )]
                                 .into(),
                             };
-                            async move { Err(Error::HtmlValidation(error)) }
+                            async move { Err(ItemError::HtmlValidation(error)) }
                         }));
                     }
                 }
@@ -703,7 +731,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(Error::HttpStatus(StatusCode::NOT_FOUND))
+            Err(Error::HttpClient(crate::http_client::HttpClientError::Http(msg))) if msg.contains("invalid status 404")
         ));
     }
 

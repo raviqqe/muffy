@@ -1,11 +1,11 @@
 use super::{item_output::RenderedItemOutput, result::RenderedResult};
-use crate::{element::Element, error::Error};
+use crate::{element::Element, error::ItemError};
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedElementOutput<'a> {
     element: &'a Element,
-    results: Vec<RenderedResult<RenderedItemOutput<'a>, &'a Error>>,
+    results: Vec<RenderedResult<RenderedItemOutput<'a>, &'a ItemError>>,
 }
 
 impl<'a> RenderedElementOutput<'a> {
@@ -15,7 +15,7 @@ impl<'a> RenderedElementOutput<'a> {
 
     pub fn results(
         &self,
-    ) -> impl ExactSizeIterator<Item = &RenderedResult<RenderedItemOutput<'a>, &'a Error>> {
+    ) -> impl ExactSizeIterator<Item = &RenderedResult<RenderedItemOutput<'a>, &'a ItemError>> {
         self.results.iter()
     }
 
