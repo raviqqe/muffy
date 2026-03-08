@@ -161,7 +161,7 @@ mod tests {
         use super::*;
 
         #[tokio::test]
-        async fn render() {
+        async fn render_error() {
             let mut string = vec![];
 
             render_document(
@@ -176,7 +176,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_with_verbose_option() {
+        async fn render_success_and_error_with_verbose_option() {
             let mut string = vec![];
 
             render_document(
@@ -193,7 +193,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_document() {
+        async fn render_success() {
             let mut string = vec![];
 
             render_document(
@@ -208,7 +208,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_element() {
+        async fn render_success_with_verbose_option() {
             let mut string = vec![];
 
             render_document(
@@ -229,7 +229,7 @@ mod tests {
         use super::*;
 
         #[tokio::test]
-        async fn render() {
+        async fn render_error() {
             colored::control::set_override(false);
             let mut string = vec![];
 
@@ -245,7 +245,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_with_verbose_option() {
+        async fn render_success_and_error_with_verbose_option() {
             colored::control::set_override(false);
             let mut string = vec![];
 
@@ -261,7 +261,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_document() {
+        async fn render_success() {
             colored::control::set_override(false);
             let mut string = vec![];
 
@@ -277,7 +277,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_element() {
+        async fn render_success_with_verbose_option() {
             colored::control::set_override(false);
             let mut string = vec![];
 
