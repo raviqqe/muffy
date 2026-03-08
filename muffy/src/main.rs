@@ -411,10 +411,10 @@ mod tests {
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
         assert!(!arguments.experimental_validation);
-        }
+    }
 
-        #[test]
-        fn parse_experimental_validation_check_site_arguments() {
+    #[test]
+    fn parse_experimental_validation_check_site_arguments() {
         let Command::CheckSite(arguments) = Arguments::parse_from([
             "command",
             "check-site",
@@ -422,13 +422,12 @@ mod tests {
             "--experimental-validation",
         ])
         .command
-        .unwrap()
-        else {
+        .unwrap() else {
             panic!()
         };
 
         assert!(arguments.experimental_validation);
-        }
+    }
 
     #[test]
     fn parse_cache_path_arguments() {
