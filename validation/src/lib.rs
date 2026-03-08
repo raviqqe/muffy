@@ -504,4 +504,58 @@ mod tests {
             assert_eq!(validate_element(&element), Ok(()));
         }
     }
+
+    mod error {
+        use super::*;
+
+        #[test]
+        fn display_invalid_tag() {
+            assert_eq!(
+                format!("{}", ValidationError::InvalidTag("foo".into())),
+                "invalid tag \"foo\""
+            );
+        }
+
+        #[test]
+        fn display_invalid_attributes() {
+            assert_eq!(
+                format!(
+                    "{}",
+                    ValidationError::InvalidElement {
+                        attributes: [("foo".into(), [AttributeError::Invalid].into())].into(),
+                        children: Default::default(),
+                    }
+                ),
+                "invalid attributes: foo (invalid)"
+            );
+        }
+
+        #[test]
+        fn display_invalid_children() {
+            assert_eq!(
+                format!(
+                    "{}",
+                    ValidationError::InvalidElement {
+                        attributes: Default::default(),
+                        children: [("foo".into(), [ChildError::Invalid].into())].into(),
+                    }
+                ),
+                "invalid children: foo (invalid)"
+            );
+        }
+
+        #[test]
+        fn display_invalid_attributes_and_children() {
+            assert_eq!(
+                format!(
+                    "{}",
+                    ValidationError::InvalidElement {
+                        attributes: [("foo".into(), [AttributeError::Invalid].into())].into(),
+                        children: [("bar".into(), [ChildError::Invalid].into())].into(),
+                    }
+                ),
+                "invalid attributes: foo (invalid), invalid children: bar (invalid)"
+            );
+        }
+    }
 }

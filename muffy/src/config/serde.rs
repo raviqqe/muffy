@@ -1479,5 +1479,18 @@ mod tests {
                 false
             );
         }
+
+        #[test]
+        fn merge_validation_config() {
+            let mut config = ValidationConfig {
+                enabled: Some(true),
+            };
+
+            config.merge(ValidationConfig {
+                enabled: Some(false),
+            });
+
+            assert_eq!(config.enabled, Some(false));
+        }
     }
 }

@@ -390,7 +390,7 @@ mod tests {
     use core::time::Duration;
 
     #[test]
-    fn default_check_site_arguments() {
+    fn parse_default_check_site_arguments() {
         let Command::CheckSite(arguments) =
             Arguments::parse_from(["command", "check-site", "https://foo.com"])
                 .command
@@ -405,10 +405,28 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
+        assert!(!arguments.no_validation);
     }
 
     #[test]
-    fn cache_path_arguments() {
+    fn parse_no_validation_check_site_arguments() {
+        let Command::CheckSite(arguments) = Arguments::parse_from([
+            "command",
+            "check-site",
+            "https://foo.com",
+            "--no-validation",
+        ])
+        .command
+        .unwrap()
+        else {
+            panic!()
+        };
+
+        assert!(arguments.no_validation);
+    }
+
+    #[test]
+    fn parse_cache_path_arguments() {
         let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "path"])
             .command
             .unwrap()
@@ -420,7 +438,7 @@ mod tests {
     }
 
     #[test]
-    fn cache_clean_arguments() {
+    fn parse_cache_clean_arguments() {
         let Command::Cache(arguments) = Arguments::parse_from(["command", "cache", "clean"])
             .command
             .unwrap()
@@ -432,7 +450,7 @@ mod tests {
     }
 
     #[test]
-    fn cache_directory_suffix() {
+    fn check_cache_directory_suffix() {
         let expected = PathBuf::from(DATABASE_DIRECTORY)
             .join(crate_version!())
             .join(SLED_DIRECTORY);

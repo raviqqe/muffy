@@ -167,3 +167,19 @@ impl From<Utf8Error> for Error {
         Self::Utf8(error)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_html_validation_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                Error::HtmlValidation(muffy_validation::ValidationError::InvalidTag("foo".into()))
+            ),
+            "invalid tag \"foo\""
+        );
+    }
+}

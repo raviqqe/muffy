@@ -662,4 +662,27 @@ mod tests {
                 .recursive()
         );
     }
+
+    #[test]
+    fn default_validation_config() {
+        assert!(ValidationConfig::default().enabled());
+    }
+
+    #[test]
+    fn set_validation_config_enabled() {
+        assert!(!ValidationConfig::default().set_enabled(false).enabled());
+    }
+
+    #[test]
+    fn validate_site_config() {
+        let config = SiteConfig::default();
+
+        assert!(config.validation().enabled());
+        assert!(
+            !config
+                .set_validation(ValidationConfig::default().set_enabled(false))
+                .validation()
+                .enabled()
+        );
+    }
 }
