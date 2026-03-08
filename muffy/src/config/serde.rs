@@ -586,13 +586,13 @@ fn compile_markup_config(
                             parent
                                 .ignored_attributes()
                                 .iter()
-                                .map(|r| r.as_str().to_owned())
+                                .map(|regex| regex.as_str().to_owned())
                                 .collect()
                         })
                         .unwrap_or_default()
                 })
                 .into_iter()
-                .map(|s| Regex::new(&s))
+                .map(|string| Regex::new(&string))
                 .collect::<Result<Vec<_>, _>>()?,
             config
                 .ignored_elements
@@ -603,13 +603,13 @@ fn compile_markup_config(
                             parent
                                 .ignored_elements()
                                 .iter()
-                                .map(|r| r.as_str().to_owned())
+                                .map(|regex| regex.as_str().to_owned())
                                 .collect()
                         })
                         .unwrap_or_default()
                 })
                 .into_iter()
-                .map(|s| Regex::new(&s))
+                .map(|string| Regex::new(&string))
                 .collect::<Result<Vec<_>, _>>()?,
         ))
     } else {
