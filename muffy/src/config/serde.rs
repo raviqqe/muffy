@@ -1461,8 +1461,8 @@ mod tests {
                             count: Some(1),
                             factor: Some(2.0),
                             interval: Some(RetryDurationConfig {
-                                initial: Some(DurationString::from_str("3s").unwrap()),
-                                cap: Some(DurationString::from_str("4s").unwrap()),
+                                initial: Some(DurationString::from_string("1s".into()).unwrap()),
+                                cap: Some(DurationString::from_string("4s".into()).unwrap()),
                             }),
                             status_codes: None,
                         }),
