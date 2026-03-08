@@ -1,9 +1,9 @@
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::fmt::{self, Display, Formatter};
 
-/// A validation error.
+/// A markup error.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ValidationError {
+pub enum MarkupError {
     /// An unknown tag.
     UnknownTag(String),
     /// Invalid element.
@@ -15,7 +15,7 @@ pub enum ValidationError {
     },
 }
 
-impl Display for ValidationError {
+impl Display for MarkupError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnknownTag(tag) => write!(formatter, "unknown tag \"{tag}\""),
@@ -114,7 +114,7 @@ mod tests {
     #[test]
     fn display_unknown_tag() {
         assert_eq!(
-            format!("{}", ValidationError::UnknownTag("foo".into())),
+            format!("{}", MarkupError::UnknownTag("foo".into())),
             "unknown tag \"foo\""
         );
     }
@@ -124,7 +124,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ValidationError::InvalidElement {
+                MarkupError::InvalidElement {
                     attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
                 }
@@ -138,7 +138,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ValidationError::InvalidElement {
+                MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
                 }
@@ -152,7 +152,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ValidationError::InvalidElement {
+                MarkupError::InvalidElement {
                     attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
                     children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
                 }
