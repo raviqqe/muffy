@@ -339,6 +339,7 @@ impl Default for SchemeConfig {
 
 /// A validation configuration.
 #[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Default)]
 pub struct ValidationConfig {
     html: bool,
     svg: bool,
@@ -380,15 +381,6 @@ impl ValidationConfig {
     }
 }
 
-impl Default for ValidationConfig {
-    fn default() -> Self {
-        Self {
-            html: false,
-            svg: false,
-            css: false,
-        }
-    }
-}
 
 /// A cache configuration.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
