@@ -1,4 +1,4 @@
-use crate::{cache::CacheError, html_parser::HtmlError, http_client::HttpClientError};
+use crate::{cache::CacheError, html_parser::HtmlParseError, http_client::HttpClientError};
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -24,10 +24,12 @@ pub enum Error {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML error.
-    Html(HtmlError),
+    /// An HTML parse error.
+    HtmlParse(HtmlParseError),
     /// An HTML parse error.
     HtmlElementNotFound(String),
+    /// An HTML validation failure.
+    HtmlValidation(muffy_validation::ValidationError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
@@ -52,8 +54,6 @@ pub enum Error {
     Utf8(Utf8Error),
     /// A validation failure.
     Validation,
-    /// An HTML validation failure.
-    HtmlValidation(muffy_validation::ValidationError),
 }
 
 impl error::Error for Error {}
@@ -69,7 +69,7 @@ impl Display for Error {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::Html(error) => write!(formatter, "{error}"),
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HtmlElementNotFound(name) => {
                 write!(formatter, "HTML element for #{name} not found")
             }
@@ -114,9 +114,9 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<HtmlError> for Error {
-    fn from(error: HtmlError) -> Self {
-        Self::Html(error)
+impl From<HtmlParseError> for Error {
+    fn from(error: HtmlParseError) -> Self {
+        Self::HtmlParse(error)
     }
 }
 
