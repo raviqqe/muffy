@@ -25,9 +25,9 @@ pub enum Error {
         expected: &'static str,
     },
     /// An HTML parse error.
-    HtmlParse(HtmlParseError),
-    /// An HTML parse error.
     HtmlElementNotFound(String),
+    /// An HTML parse error.
+    HtmlParse(HtmlParseError),
     /// An HTML validation failure.
     HtmlValidation(muffy_validation::ValidationError),
     /// An HTTP client error.
@@ -69,10 +69,11 @@ impl Display for Error {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HtmlElementNotFound(name) => {
                 write!(formatter, "HTML element for #{name} not found")
             }
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
@@ -85,7 +86,6 @@ impl Display for Error {
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
             Self::Validation => write!(formatter, "validation failed"),
-            Self::HtmlValidation(error) => write!(formatter, "{error}"),
         }
     }
 }
