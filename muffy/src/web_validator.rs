@@ -351,15 +351,6 @@ impl WebValidator {
                         .map(AsRef::as_ref)
                         .collect::<Vec<_>>(),
                 )
-            } else if let Some(config) = context.config().site(base).validation().svg() {
-                muffy_validation::validate_element(
-                    element,
-                    &config
-                        .ignored_prefixes()
-                        .iter()
-                        .map(AsRef::as_ref)
-                        .collect::<Vec<_>>(),
-                )
             } else {
                 Ok(())
             };
