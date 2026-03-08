@@ -39,7 +39,7 @@ mod tests {
         let element = create_element("invalid", vec![], vec![]);
 
         assert_eq!(
-            validate_element(&element, &[]),
+            validate_element(&element, &[], &[]),
             Err(MarkupError::UnknownTag("invalid".to_owned()))
         );
     }
@@ -51,14 +51,14 @@ mod tests {
         fn validate_valid_element() {
             let element = create_element("div", vec![], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
         fn validate_valid_attributes() {
             let element = create_element("div", vec![("id", "foo"), ("class", "bar")], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -66,7 +66,7 @@ mod tests {
             let element = create_element("div", vec![("invalid", "foo")], vec![]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
                     children: Default::default(),
@@ -83,7 +83,7 @@ mod tests {
             );
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: [
                         ("invalid-one".into(), [AttributeError::NotAllowed].into()),
@@ -99,14 +99,25 @@ mod tests {
         fn validate_ignored_attribute_prefix() {
             let element = create_element("div", vec![("data-foo", "bar")], vec![]);
 
-            assert_eq!(validate_element(&element, &["data-"]), Ok(()));
+            assert_eq!(validate_element(&element, &["data-"], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_ignored_child_prefix() {
+            let element = create_element(
+                "div",
+                vec![],
+                vec![create_element("sl-button", vec![], vec![])],
+            );
+
+            assert_eq!(validate_element(&element, &[], &["sl-"]), Ok(()));
         }
 
         #[test]
         fn validate_valid_child() {
             let element = create_element("div", vec![], vec![create_element("p", vec![], vec![])]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -117,7 +128,7 @@ mod tests {
         fn validate_valid_element() {
             let element = create_element("p", vec![], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -125,7 +136,7 @@ mod tests {
             let element = create_element("p", vec![], vec![create_element("div", vec![], vec![])]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::NotAllowed].into())].into(),
@@ -145,7 +156,7 @@ mod tests {
             );
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [
@@ -165,7 +176,7 @@ mod tests {
         fn validate_valid_element() {
             let element = create_element("html", vec![], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -179,7 +190,7 @@ mod tests {
                 ],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -194,7 +205,7 @@ mod tests {
                 vec![create_element("title", vec![], vec![])],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -202,7 +213,7 @@ mod tests {
             let element = create_element("head", vec![], vec![create_element("p", vec![], vec![])]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
@@ -220,7 +231,7 @@ mod tests {
                 create_element("title", vec![], vec![create_element("div", vec![], vec![])]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("div".into(), [ChildError::NotAllowed].into())].into(),
@@ -236,7 +247,7 @@ mod tests {
         fn validate_valid_child() {
             let element = create_element("ul", vec![], vec![create_element("li", vec![], vec![])]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -244,7 +255,7 @@ mod tests {
             let element = create_element("ul", vec![], vec![create_element("p", vec![], vec![])]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
@@ -261,7 +272,7 @@ mod tests {
             let element =
                 create_element("table", vec![], vec![create_element("tr", vec![], vec![])]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -270,7 +281,7 @@ mod tests {
                 create_element("table", vec![], vec![create_element("p", vec![], vec![])]);
 
             assert_eq!(
-                validate_element(&element, &[]),
+                validate_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: [("p".into(), [ChildError::NotAllowed].into())].into(),
@@ -293,7 +304,7 @@ mod tests {
                 ],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -304,7 +315,7 @@ mod tests {
         fn validate_valid_attributes() {
             let element = create_element("form", vec![("action", "/"), ("method", "post")], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -315,7 +326,7 @@ mod tests {
                 vec![create_element("input", vec![], vec![])],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -330,7 +341,7 @@ mod tests {
                 vec![],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -342,7 +353,7 @@ mod tests {
             let element =
                 create_element("video", vec![("src", "vid.mp4"), ("controls", "")], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
@@ -353,7 +364,7 @@ mod tests {
                 vec![create_element("track", vec![], vec![])],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -368,21 +379,21 @@ mod tests {
                 vec![],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
         fn validate_valid_charset() {
             let element = create_element("meta", vec![("charset", "utf-8")], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
 
         #[test]
         fn validate_valid_property() {
             let element = create_element("meta", vec![("property", "og:image")], vec![]);
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 
@@ -397,7 +408,7 @@ mod tests {
                 vec![],
             );
 
-            assert_eq!(validate_element(&element, &[]), Ok(()));
+            assert_eq!(validate_element(&element, &[], &[]), Ok(()));
         }
     }
 }

@@ -100,14 +100,21 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 >::new();
 
                 for child in element.children() {
-                    if let muffy_document::html::Node::Element(child_element) = child {
-                        let child_name = child_element.name();
+                    if let muffy_document::html::Node::Element(element) = child {
+                        let name = element.name();
 
-                        match child_name {
+                        if ignored_children_prefixes
+                            .iter()
+                            .any(|prefix| name.starts_with(prefix))
+                        {
+                            continue;
+                        }
+
+                        match name {
                             #(#children |)* "_DUMMY_" => {}
                             _ => {
                                 children
-                                    .entry(child_name.into())
+                                    .entry(name.into())
                                     .or_insert_with(Default::default)
                                     .insert(ChildError::NotAllowed);
                             }
@@ -129,7 +136,11 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     Ok(quote! {
         /// Validates an element.
-        pub fn validate_element(element: &Element, ignored_attribute_prefixes: &[&str]) -> Result<(), MarkupError> {
+        pub fn validate_element(
+            element: &Element,
+            ignored_attribute_prefixes: &[&str],
+            ignored_children_prefixes: &[&str],
+        ) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),

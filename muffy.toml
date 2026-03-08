@@ -21,7 +21,18 @@ user-agent = "Muffy/0.2.0"
 
 [sites.default.validation]
 # TODO Enable HTML validation.
-# html = { ignored_attribute_prefixes = ["data-", "sl-"] }
+# html = { ignored_attribute_prefixes = [
+#   "data-",
+#   "sl-",
+# ], ignored_children_prefixes = [
+#   "astro-island",
+#   "div",
+#   "mobile-starlight-",
+#   "site-search",
+#   "sl-",
+#   "starlight-",
+#   "svg",
+# ] }
 svg = {}
 css = true
 
