@@ -8,9 +8,9 @@ pub enum ValidationError {
     UnknownTag(String),
     /// Invalid element.
     InvalidElement {
-        /// Not allowed attributes by name.
+        /// Invalid attributes.
         attributes: BTreeMap<String, BTreeSet<AttributeError>>,
-        /// Not allowed children by name.
+        /// Invalid children.
         children: BTreeMap<String, BTreeSet<ChildError>>,
     },
 }
