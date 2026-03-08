@@ -7,7 +7,7 @@ use crate::{
     document_type::DocumentType,
     element::Element,
     element_output::ElementOutput,
-    error::Error,
+    error::{Error, ItemError},
     html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
@@ -26,7 +26,7 @@ use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
 
-type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, Error>>>);
+type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, ItemError>>>);
 
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
@@ -94,7 +94,7 @@ impl WebValidator {
         context: Arc<Context>,
         url: String,
         document_type: Option<DocumentType>,
-    ) -> Result<ItemOutput, Error> {
+    ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&url)?;
 
         if context
@@ -141,7 +141,7 @@ impl WebValidator {
             .status()
             .accepted(response.status())
         {
-            return Err(Error::HttpStatus(response.status()));
+            return Err(ItemError::HttpStatus(response.status()));
         }
 
         let Some(document_type) = Self::validate_document_type(&response, document_type)? else {
@@ -153,7 +153,7 @@ impl WebValidator {
             && !site.fragments_ignored()
             && !self.has_html_element(&response, fragment).await?
         {
-            return Err(Error::HtmlElementNotFound(fragment.into()));
+            return Err(ItemError::HtmlElementNotFound(fragment.into()));
         }
 
         if url
@@ -226,7 +226,7 @@ impl WebValidator {
         url: String,
         base: Arc<Url>,
         document_type: Option<DocumentType>,
-    ) -> Result<ItemOutput, Error> {
+    ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
@@ -235,7 +235,7 @@ impl WebValidator {
             self.validate_link(context, url.to_string(), document_type)
                 .await
         } else {
-            Err(Error::InvalidScheme(url.scheme().into()))
+            Err(ItemError::InvalidScheme(url.scheme().into()))
         }
     }
 
@@ -362,14 +362,11 @@ impl WebValidator {
             .collect::<Vec<_>>();
 
         if let Err(error) = &validation_result {
-            // TODO Do not abuse `muffy_validation::ValidationError`.
-            // We should define an error type for elements different fom the global error
-            // type.
             match error {
                 muffy_validation::ValidationError::UnknownTag(_) => {
                     items.push(spawn({
                         let error = error.clone();
-                        async move { Err(Error::HtmlValidation(error)) }
+                        async move { Err(ItemError::HtmlValidation(error)) }
                     }));
                 }
                 muffy_validation::ValidationError::InvalidElement {
@@ -386,7 +383,7 @@ impl WebValidator {
                                 .into(),
                                 children: Default::default(),
                             };
-                            async move { Err(Error::HtmlValidation(error)) }
+                            async move { Err(ItemError::HtmlValidation(error)) }
                         }));
                     }
 
@@ -400,7 +397,7 @@ impl WebValidator {
                                 )]
                                 .into(),
                             };
-                            async move { Err(Error::HtmlValidation(error)) }
+                            async move { Err(ItemError::HtmlValidation(error)) }
                         }));
                     }
                 }
@@ -505,7 +502,7 @@ impl WebValidator {
     fn validate_document_type(
         response: &Response,
         document_type: Option<DocumentType>,
-    ) -> Result<Option<DocumentType>, Error> {
+    ) -> Result<Option<DocumentType>, ItemError> {
         let Some(value) = response.headers().get("content-type") else {
             return Ok(document_type);
         };
@@ -517,7 +514,7 @@ impl WebValidator {
         Ok(match document_type {
             Some(DocumentType::Html) => {
                 if value != "text/html" {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
                     });
@@ -527,7 +524,7 @@ impl WebValidator {
             }
             Some(DocumentType::Robots) => {
                 if value != "text/plain" {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/plain",
                     });
@@ -537,7 +534,7 @@ impl WebValidator {
             }
             Some(DocumentType::Sitemap) => {
                 if !value.ends_with("/xml") {
-                    return Err(Error::ContentTypeInvalid {
+                    return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "*/xml",
                     });
@@ -549,7 +546,11 @@ impl WebValidator {
         })
     }
 
-    async fn has_html_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, Error> {
+    async fn has_html_element(
+        &self,
+        response: &Arc<Response>,
+        id: &str,
+    ) -> Result<bool, ItemError> {
         Ok(self
             .0
             .html_parser
@@ -703,7 +704,7 @@ mod tests {
 
         assert!(matches!(
             result,
-            Err(Error::HttpStatus(StatusCode::NOT_FOUND))
+            Err(Error::Item(ItemError::HttpStatus(StatusCode::NOT_FOUND)))
         ));
     }
 

@@ -25,7 +25,7 @@ pub use self::{
     cache::{Cache, FjallCache, MemoryCache, MokaCache, SledCache},
     config::*,
     document_output::DocumentOutput,
-    error::Error,
+    error::{Error, ItemError},
     html_parser::HtmlParser,
     http_client::{BareHttpClient, HttpClient, ReqwestHttpClient},
     metrics::Metrics,

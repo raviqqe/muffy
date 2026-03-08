@@ -17,33 +17,16 @@ pub enum Error {
     Acquire(AcquireError),
     /// A cache error.
     Cache(CacheError),
-    /// An invalid content type.
-    ContentTypeInvalid {
-        /// An actual content type.
-        actual: String,
-        /// An expected content type.
-        expected: &'static str,
-    },
-    /// An HTML element not found.
-    HtmlElementNotFound(String),
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
-    /// An HTML validation failure.
-    HtmlValidation(muffy_validation::ValidationError),
-    /// An HTTP client error.
-    HttpClient(HttpClientError),
-    /// An error status code in an HTTP response.
-    HttpStatus(StatusCode),
-    /// An invalid scheme.
-    InvalidScheme(String),
     /// An I/O error.
     Io(io::Error),
+    /// An item error.
+    Item(ItemError),
     /// An thread join error.
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A regular expression error.
-    Regex(regex::Error),
     /// A sitemap error.
     Sitemap(sitemaps::error::Error),
     /// A Sled database error.
@@ -63,24 +46,11 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
-            Self::ContentTypeInvalid { actual, expected } => {
-                write!(
-                    formatter,
-                    "content type expected {expected} but got {actual}"
-                )
-            }
-            Self::HtmlElementNotFound(name) => {
-                write!(formatter, "HTML element for #{name} not found")
-            }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
-            Self::HtmlValidation(error) => write!(formatter, "{error}"),
-            Self::HttpClient(error) => write!(formatter, "{error}"),
-            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
-            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Io(error) => write!(formatter, "{error}"),
+            Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Regex(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
@@ -90,9 +60,9 @@ impl Display for Error {
     }
 }
 
-impl Serialize for Error {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.to_string())
+impl From<ItemError> for Error {
+    fn from(error: ItemError) -> Self {
+        Self::Item(error)
     }
 }
 
@@ -120,21 +90,9 @@ impl From<HtmlParseError> for Error {
     }
 }
 
-impl From<HttpClientError> for Error {
-    fn from(error: HttpClientError) -> Self {
-        Self::HttpClient(error)
-    }
-}
-
 impl From<JoinError> for Error {
     fn from(error: JoinError) -> Self {
         Self::Join(error)
-    }
-}
-
-impl From<regex::Error> for Error {
-    fn from(error: regex::Error) -> Self {
-        Self::Regex(error)
     }
 }
 
@@ -168,16 +126,101 @@ impl From<Utf8Error> for Error {
     }
 }
 
+/// An element item error.
+#[derive(Debug)]
+pub enum ItemError {
+    /// An invalid content type.
+    ContentTypeInvalid {
+        /// An actual content type.
+        actual: String,
+        /// An expected content type.
+        expected: &'static str,
+    },
+    /// An HTML element not found.
+    HtmlElementNotFound(String),
+    /// An HTML parse error.
+    HtmlParse(HtmlParseError),
+    /// An HTML validation failure.
+    HtmlValidation(muffy_validation::ValidationError),
+    /// An HTTP client error.
+    HttpClient(HttpClientError),
+    /// An error status code in an HTTP response.
+    HttpStatus(StatusCode),
+    /// An invalid scheme.
+    InvalidScheme(String),
+    /// A URL parse error.
+    UrlParse(ParseError),
+    /// A UTF-8 error.
+    Utf8(Utf8Error),
+}
+
+impl error::Error for ItemError {}
+
+impl Display for ItemError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ContentTypeInvalid { actual, expected } => {
+                write!(
+                    formatter,
+                    "content type expected {expected} but got {actual}"
+                )
+            }
+            Self::HtmlElementNotFound(name) => {
+                write!(formatter, "HTML element for #{name} not found")
+            }
+            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::HtmlValidation(error) => write!(formatter, "{error}"),
+            Self::HttpClient(error) => write!(formatter, "{error}"),
+            Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+            Self::UrlParse(error) => write!(formatter, "{error}"),
+            Self::Utf8(error) => write!(formatter, "{error}"),
+        }
+    }
+}
+
+impl Serialize for ItemError {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl From<HtmlParseError> for ItemError {
+    fn from(error: HtmlParseError) -> Self {
+        Self::HtmlParse(error)
+    }
+}
+
+impl From<HttpClientError> for ItemError {
+    fn from(error: HttpClientError) -> Self {
+        Self::HttpClient(error)
+    }
+}
+
+impl From<url::ParseError> for ItemError {
+    fn from(error: url::ParseError) -> Self {
+        Self::UrlParse(error)
+    }
+}
+
+impl From<Utf8Error> for ItemError {
+    fn from(error: Utf8Error) -> Self {
+        Self::Utf8(error)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn display_html_validation_error() {
+    fn display_item_html_validation_error() {
         assert_eq!(
             format!(
                 "{}",
-                Error::HtmlValidation(muffy_validation::ValidationError::UnknownTag("foo".into()))
+                ItemError::HtmlValidation(muffy_validation::ValidationError::UnknownTag(
+                    "foo".into()
+                ))
             ),
             "unknown tag \"foo\""
         );

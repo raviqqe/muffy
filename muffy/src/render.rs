@@ -107,7 +107,7 @@ async fn render_line(string: &str, writer: &mut (impl AsyncWrite + Unpin)) -> Re
 mod tests {
     use super::*;
     use crate::{
-        element::Element, element_output::ElementOutput, item_output::ItemOutput,
+        element::Element, element_output::ElementOutput, error::ItemError, item_output::ItemOutput,
         response::Response,
     };
     use core::str;
@@ -118,7 +118,7 @@ mod tests {
         DocumentOutput::new(
             Url::parse("https://foo.com").unwrap(),
             vec![ElementOutput::new(
-                Element::new("a".into(), vec![]),
+                Element::new("foo".into(), vec![]),
                 vec![
                     Ok(ItemOutput::default().with_response(
                         Response::new(
@@ -130,7 +130,9 @@ mod tests {
                         )
                         .into(),
                     )),
-                    Err(Error::Validation),
+                    Err(ItemError::HtmlValidation(
+                        muffy_validation::ValidationError::UnknownTag("foo".into()),
+                    )),
                 ],
             )],
         )
@@ -155,100 +157,11 @@ mod tests {
         )
     }
 
-    mod text {
-        use super::*;
-
-        #[tokio::test]
-        async fn render() {
-            colored::control::set_override(false);
-            let mut string = vec![];
-
-            render_document(
-                &mixed_document_output(),
-                &RenderOptions::default(),
-                &mut string,
-            )
-            .await
-            .unwrap();
-
-            assert_snapshot!(str::from_utf8(&string).unwrap());
-        }
-
-        #[tokio::test]
-        async fn render_with_verbose_option() {
-            colored::control::set_override(false);
-            let mut string = vec![];
-
-            render_document(
-                &mixed_document_output(),
-                &RenderOptions::default().set_verbose(true),
-                &mut string,
-            )
-            .await
-            .unwrap();
-
-            assert_snapshot!(str::from_utf8(&string).unwrap());
-        }
-
-        #[tokio::test]
-        async fn render_successful_document() {
-            colored::control::set_override(false);
-            let mut string = vec![];
-
-            render_document(
-                &successful_document_output(),
-                &RenderOptions::default(),
-                &mut string,
-            )
-            .await
-            .unwrap();
-
-            assert_snapshot!(str::from_utf8(&string).unwrap());
-        }
-
-        #[tokio::test]
-        async fn render_successful_element() {
-            colored::control::set_override(false);
-            let mut string = vec![];
-
-            render_document(
-                &DocumentOutput::new(
-                    Url::parse("https://foo.com").unwrap(),
-                    vec![
-                        ElementOutput::new(
-                            Element::new("a".into(), vec![]),
-                            vec![Ok(ItemOutput::default().with_response(
-                                Response::new(
-                                    Url::parse("https://foo.com").unwrap(),
-                                    Default::default(),
-                                    Default::default(),
-                                    Default::default(),
-                                    Default::default(),
-                                )
-                                .into(),
-                            ))],
-                        ),
-                        ElementOutput::new(
-                            Element::new("a".into(), vec![]),
-                            vec![Err(Error::Validation)],
-                        ),
-                    ],
-                ),
-                &RenderOptions::default(),
-                &mut string,
-            )
-            .await
-            .unwrap();
-
-            assert_snapshot!(str::from_utf8(&string).unwrap());
-        }
-    }
-
     mod json {
         use super::*;
 
         #[tokio::test]
-        async fn render() {
+        async fn render_error() {
             let mut string = vec![];
 
             render_document(
@@ -263,7 +176,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_with_verbose_option() {
+        async fn render_success_and_error_with_verbose_option() {
             let mut string = vec![];
 
             render_document(
@@ -280,8 +193,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_document() {
-            colored::control::set_override(false);
+        async fn render_success() {
             let mut string = vec![];
 
             render_document(
@@ -296,34 +208,82 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_successful_element() {
+        async fn render_success_with_verbose_option() {
+            let mut string = vec![];
+
+            render_document(
+                &successful_document_output(),
+                &RenderOptions::default()
+                    .set_format(RenderFormat::Json)
+                    .set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+    }
+
+    mod text {
+        use super::*;
+
+        #[tokio::test]
+        async fn render_error() {
             colored::control::set_override(false);
             let mut string = vec![];
 
             render_document(
-                &DocumentOutput::new(
-                    Url::parse("https://foo.com").unwrap(),
-                    vec![
-                        ElementOutput::new(
-                            Element::new("a".into(), vec![]),
-                            vec![Ok(ItemOutput::default().with_response(
-                                Response::new(
-                                    Url::parse("https://foo.com").unwrap(),
-                                    Default::default(),
-                                    Default::default(),
-                                    Default::default(),
-                                    Default::default(),
-                                )
-                                .into(),
-                            ))],
-                        ),
-                        ElementOutput::new(
-                            Element::new("a".into(), vec![]),
-                            vec![Err(Error::Validation)],
-                        ),
-                    ],
-                ),
-                &RenderOptions::default().set_format(RenderFormat::Json),
+                &mixed_document_output(),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_success_and_error_with_verbose_option() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                &mixed_document_output(),
+                &RenderOptions::default().set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_success() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                &successful_document_output(),
+                &RenderOptions::default(),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_success_with_verbose_option() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                &successful_document_output(),
+                &RenderOptions::default().set_verbose(true),
                 &mut string,
             )
             .await
