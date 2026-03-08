@@ -595,21 +595,16 @@ fn compile_patterns(
     patterns: &Option<Vec<String>>,
     parent_patterns: Option<&[Regex]>,
 ) -> Result<Vec<Regex>, ConfigError> {
-    patterns
-        .clone()
-        .unwrap_or_else(|| {
-            parent_patterns
-                .map(|patterns| {
-                    patterns
-                        .iter()
-                        .map(|pattern| pattern.as_str().to_owned())
-                        .collect()
-                })
-                .unwrap_or_default()
-        })
-        .into_iter()
-        .map(|string| Ok(Regex::new(&format!("^(?:{string})$"))?))
-        .collect()
+    if let Some(patterns) = patterns {
+        patterns
+            .iter()
+            .map(|string| Ok(Regex::new(&format!("^(?:{string})$"))?))
+            .collect()
+    } else {
+        Ok(parent_patterns
+            .map(|patterns| patterns.to_vec())
+            .unwrap_or_default())
+    }
 }
 
 fn sort_site_configs(sites: &BTreeMap<String, SiteConfig>) -> Result<Vec<&str>, ConfigError> {
