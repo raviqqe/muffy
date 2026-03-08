@@ -388,7 +388,7 @@ pub struct MarkupConfig {
 
 impl MarkupConfig {
     /// Creates a markup validation configuration.
-    pub fn new(ignored_attribute_prefixes: Vec<String>) -> Self {
+    pub const fn new(ignored_attribute_prefixes: Vec<String>) -> Self {
         Self {
             ignored_attribute_prefixes,
         }
