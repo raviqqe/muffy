@@ -210,11 +210,7 @@ impl WebValidator {
         };
 
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
-        let mut results = Vec::with_capacity(futures.len());
-
-        for futures in futures {
-            results.push(try_join_all(futures).await?);
-        }
+        let results = try_join_all(futures.into_iter().map(try_join_all)).await?;
 
         Ok(DocumentOutput::new(
             response.url().clone(),
