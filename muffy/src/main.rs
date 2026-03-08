@@ -350,7 +350,7 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                         .set_initial(*arguments.initial_retry_interval)
                         .set_cap((*arguments.retry_interval_cap).into()),
                 )
-                .set_status_codes(
+                .set_statuses(
                     arguments
                         .retry_status
                         .iter()
