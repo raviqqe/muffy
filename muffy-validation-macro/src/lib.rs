@@ -103,7 +103,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     if let muffy_document::html::Node::Element(element) = child {
                         let name = element.name();
 
-                        if ignored_children_prefixes
+                        if ignored_element_prefixes
                             .iter()
                             .any(|prefix| name.starts_with(prefix))
                         {
@@ -139,10 +139,11 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         pub fn validate_element(
             element: &Element,
             ignored_attribute_prefixes: &[&str],
-            ignored_children_prefixes: &[&str],
+            ignored_element_prefixes: &[&str],
         ) -> Result<(), MarkupError> {
             match element.name() {
                 #(#element_matches)*
+                name if ignored_element_prefixes.iter().any(|prefix| name.starts_with(prefix)) => Ok(()),
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }

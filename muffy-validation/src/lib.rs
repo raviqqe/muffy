@@ -103,12 +103,19 @@ mod tests {
         }
 
         #[test]
-        fn validate_ignored_child_prefix() {
+        fn validate_ignored_element_prefix() {
             let element = create_element(
                 "div",
                 vec![],
                 vec![create_element("sl-button", vec![], vec![])],
             );
+
+            assert_eq!(validate_element(&element, &[], &["sl-"]), Ok(()));
+        }
+
+        #[test]
+        fn validate_ignored_unknown_tag_prefix() {
+            let element = create_element("sl-button", vec![], vec![]);
 
             assert_eq!(validate_element(&element, &[], &["sl-"]), Ok(()));
         }
