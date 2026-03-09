@@ -21,7 +21,12 @@ statuses = [408, 502, 503, 504]
 user-agent = "Muffy/0.2.0"
 
 [sites.default.validation]
-html = { ignored_attributes = ["align", "data-.*", "sl-.*"], ignored_elements = [
+svg = {}
+css = true
+
+[sites.default.validation.html]
+ignored_attributes = ["align", "data-.*", "sl-.*"]
+ignored_elements = [
   "astro-island",
   "div",
   "mobile-starlight-.*",
@@ -33,9 +38,7 @@ html = { ignored_attributes = ["align", "data-.*", "sl-.*"], ignored_elements = 
   "circle",
   "path",
   "svg",
-] }
-svg = {}
-css = true
+]
 
 [sites.external]
 extend = "default"
