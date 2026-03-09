@@ -343,7 +343,7 @@ impl WebValidator {
 
         let validation_result =
             if let Some(config) = context.config().site(base).validation().html() {
-                muffy_validation::validate_element(
+                muffy_validation::validate_html_element(
                     element,
                     config.ignored_attributes(),
                     config.ignored_elements(),
