@@ -124,6 +124,9 @@ struct CheckSiteArguments {
     /// Set a retry interval cap.
     #[arg(long, default_value = "10s")]
     retry_interval_cap: DurationString,
+    /// Set a list of status codes to retry on.
+    #[arg(long)]
+    retry_status: Vec<u16>,
     /// Enable experimental HTML validation.
     #[arg(long)]
     experimental_validation: bool,
@@ -347,6 +350,14 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                         .set_initial(*arguments.initial_retry_interval)
                         .set_cap((*arguments.retry_interval_cap).into()),
                 )
+                .set_statuses(
+                    arguments
+                        .retry_status
+                        .iter()
+                        .copied()
+                        .map(StatusCode::try_from)
+                        .collect::<Result<_, _>>()?,
+                )
                 .into(),
         )
         .set_timeout(Some(*arguments.timeout))
@@ -418,7 +429,39 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
+        assert_eq!(arguments.retry_status, Vec::<u16>::new());
         assert!(!arguments.experimental_validation);
+    }
+
+    #[test]
+    fn parse_retry_check_site_arguments() {
+        let Command::CheckSite(arguments) = Arguments::parse_from([
+            "command",
+            "check-site",
+            "https://foo.com",
+            "--retry-count",
+            "3",
+            "--retry-factor",
+            "3.0",
+            "--initial-retry-interval",
+            "2s",
+            "--retry-interval-cap",
+            "20s",
+            "--retry-status",
+            "429",
+            "--retry-status",
+            "503",
+        ])
+        .command
+        .unwrap() else {
+            panic!()
+        };
+
+        assert_eq!(arguments.retry_count, 3);
+        assert_eq!(arguments.retry_factor, 3.0);
+        assert_eq!(*arguments.initial_retry_interval, Duration::from_secs(2));
+        assert_eq!(*arguments.retry_interval_cap, Duration::from_secs(20));
+        assert_eq!(arguments.retry_status, vec![429, 503]);
     }
 
     #[test]

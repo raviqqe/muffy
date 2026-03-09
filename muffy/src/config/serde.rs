@@ -285,10 +285,11 @@ struct RetryConfig {
     count: Option<usize>,
     factor: Option<f64>,
     interval: Option<RetryDurationConfig>,
+    statuses: Option<HashSet<u16>>,
 }
 
 impl RetryConfig {
-    const fn merge(&mut self, other: Self) {
+    fn merge(&mut self, other: Self) {
         if other.count.is_some() {
             self.count = other.count;
         }
@@ -303,6 +304,10 @@ impl RetryConfig {
             } else {
                 self.interval = Some(other);
             }
+        }
+
+        if other.statuses.is_some() {
+            self.statuses = other.statuses;
         }
     }
 }
@@ -543,6 +548,20 @@ fn compile_site_config(
                 } else {
                     parent.retry().interval().clone()
                 })
+                .set_statuses(
+                    retry
+                        .statuses
+                        .as_ref()
+                        .map(|codes| {
+                            codes
+                                .iter()
+                                .copied()
+                                .map(StatusCode::try_from)
+                                .collect::<Result<HashSet<_>, _>>()
+                        })
+                        .transpose()?
+                        .unwrap_or_else(|| parent.retry().statuses().clone()),
+                )
                 .into()
         } else {
             parent.retry().clone()
@@ -720,6 +739,7 @@ mod tests {
                                 cap: Some(Duration::from_secs(42).into()),
                             }
                             .into(),
+                            statuses: None,
                         }),
                         roots: Some(Default::default()),
                         schemes: Some(["https".to_owned()].into()),
@@ -1451,6 +1471,7 @@ mod tests {
                                 initial: Some(Duration::from_secs(1).into()),
                                 cap: Some(Duration::from_secs(5).into()),
                             }),
+                            statuses: None,
                         }),
                         timeout: Some(Duration::from_secs(4).into()),
                         ..Default::default()
@@ -1475,6 +1496,7 @@ mod tests {
                                 initial: None,
                                 cap: Some(Duration::from_secs(9).into()),
                             }),
+                            statuses: None,
                         }),
                         timeout: None,
                         ..Default::default()
@@ -1672,6 +1694,52 @@ mod tests {
                 "^(?:child-attr)$"
             );
             assert_eq!(compiled.ignored_elements()[0].as_str(), "^(?:child-el)$");
+        }
+
+        #[test]
+        fn compile_retry_statuses() {
+            let config = compile_config(SerializableConfig {
+                sites: [(
+                    "foo".to_owned(),
+                    SiteConfig {
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        retry: Some(RetryConfig {
+                            statuses: Some([429, 503].into()),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
+                )]
+                .into(),
+                ..Default::default()
+            })
+            .unwrap();
+
+            assert_eq!(
+                config.sites().get("foo.com").unwrap()[0]
+                    .1
+                    .retry()
+                    .statuses(),
+                &HashSet::from([
+                    StatusCode::TOO_MANY_REQUESTS,
+                    StatusCode::SERVICE_UNAVAILABLE
+                ])
+            );
+        }
+
+        #[test]
+        fn merge_retry_statuses() {
+            let mut config = RetryConfig {
+                statuses: Some([429].into()),
+                ..Default::default()
+            };
+
+            config.merge(RetryConfig {
+                statuses: Some([503].into()),
+                ..Default::default()
+            });
+
+            assert_eq!(config.statuses.unwrap(), HashSet::from([503]));
         }
     }
 }

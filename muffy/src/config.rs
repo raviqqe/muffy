@@ -452,6 +452,7 @@ pub struct RetryConfig {
     count: usize,
     factor: f64,
     interval: RetryDurationConfig,
+    statuses: HashSet<StatusCode>,
 }
 
 impl RetryConfig {
@@ -461,6 +462,7 @@ impl RetryConfig {
             count: 0,
             factor: 1.0,
             interval: Default::default(),
+            statuses: Default::default(),
         }
     }
 
@@ -479,6 +481,11 @@ impl RetryConfig {
         &self.interval
     }
 
+    /// Returns a set of status codes.
+    pub const fn statuses(&self) -> &HashSet<StatusCode> {
+        &self.statuses
+    }
+
     /// Sets a count.
     pub const fn set_count(mut self, count: usize) -> Self {
         self.count = count;
@@ -494,6 +501,12 @@ impl RetryConfig {
     /// Sets a duration configuration.
     pub const fn set_interval(mut self, duration: RetryDurationConfig) -> Self {
         self.interval = duration;
+        self
+    }
+
+    /// Sets a set of status codes.
+    pub fn set_statuses(mut self, statuses: HashSet<StatusCode>) -> Self {
+        self.statuses = statuses;
         self
     }
 }
@@ -755,6 +768,16 @@ mod tests {
                 .validation()
                 .html()
                 .is_some()
+        );
+    }
+
+    #[test]
+    fn retry_config_statuses() {
+        let config = RetryConfig::new().set_statuses(HashSet::from([StatusCode::REQUEST_TIMEOUT]));
+
+        assert_eq!(
+            config.statuses(),
+            &HashSet::from([StatusCode::REQUEST_TIMEOUT])
         );
     }
 }
