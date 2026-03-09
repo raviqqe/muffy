@@ -188,7 +188,7 @@ impl HttpClient {
 
         for _ in 0..retry.count() {
             if let Ok(response) = &result
-                && !response.status().is_server_error()
+                && !retry.statuses().contains(&response.status())
             {
                 break;
             }
@@ -271,9 +271,12 @@ mod tests {
     use core::time::Duration;
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
-    use std::sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering},
+    use std::{
+        collections::HashSet,
+        sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        },
     };
     use tokio::spawn;
     use url::Url;
@@ -794,7 +797,12 @@ mod tests {
                 .get(
                     &Request::new(url, Default::default())
                         .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(1).into())
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(1)
+                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                                .into()
+                        )
                 )
                 .await
                 .unwrap(),
@@ -919,7 +927,59 @@ mod tests {
                 .get(
                     &Request::new(url, Default::default())
                         .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(2).into())
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(2)
+                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                                .into()
+                        )
+                )
+                .await
+                .unwrap(),
+                Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_with_status_code() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let retry_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::TOO_MANY_REQUESTS,
+                headers: Default::default(),
+                body: vec![],
+            };
+            let successful_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::OK,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(retry_response.clone())),
+                        (url.as_str().into(), Ok(successful_response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                )
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(1)
+                                .set_statuses(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
+                                .into()
+                        )
                 )
                 .await
                 .unwrap(),
