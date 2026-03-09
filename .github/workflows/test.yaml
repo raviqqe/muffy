@@ -79,6 +79,10 @@ jobs:
           cargo run -- check-site
           --header user-agent:Muffy/0.2.0
           --retry-count 5
+          --retry-status 408
+          --retry-status 502
+          --retry-status 503
+          --retry-status 504
           --verbose
           ${{ matrix.cache && '--cache' || '' }}
           ${{ join(matrix.arguments, ' ') }}
