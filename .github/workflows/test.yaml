@@ -11,37 +11,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: raviqqe/cargo-cache@v1
+      - uses: raviqqe/cargo-cache@317322b53633417f67a46d1134375b837712c7a2 # v1
       - run: cargo build
   unit_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: raviqqe/cargo-cache@v1
+      - uses: raviqqe/cargo-cache@317322b53633417f67a46d1134375b837712c7a2 # v1
       - run: cargo test
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
       - run: tools/coverage.sh
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           fail_ci_if_error: true
           files: lcov.info
   check_command_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: raviqqe/cargo-cache@v1
+      - uses: raviqqe/cargo-cache@317322b53633417f67a46d1134375b837712c7a2 # v1
       - run: cargo run -- --verbose
   check_site_command_test:
     strategy:
@@ -71,10 +71,10 @@ jobs:
           - true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: raviqqe/cargo-cache@v1
+      - uses: raviqqe/cargo-cache@317322b53633417f67a46d1134375b837712c7a2 # v1
       - run: >
           cargo run -- check-site
           --header user-agent:Muffy/0.2.0
@@ -85,13 +85,13 @@ jobs:
   docker_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
-      - uses: raviqqe/cargo-cache@v1
+      - uses: raviqqe/cargo-cache@317322b53633417f67a46d1134375b837712c7a2 # v1
       - id: version
         run: tools/github/version.sh
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
