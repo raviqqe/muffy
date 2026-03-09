@@ -797,7 +797,12 @@ mod tests {
                 .get(
                     &Request::new(url, Default::default())
                         .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(1).into())
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(1)
+                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                                .into()
+                        )
                 )
                 .await
                 .unwrap(),
@@ -922,7 +927,12 @@ mod tests {
                 .get(
                     &Request::new(url, Default::default())
                         .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(2).into())
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(2)
+                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                                .into()
+                        )
                 )
                 .await
                 .unwrap(),
