@@ -132,8 +132,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     Ok(quote! {
-        /// Validates an element.
-        pub fn validate_element(
+        /// Validates an HTML element.
+        pub fn validate_html_element(
             element: &Element,
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
