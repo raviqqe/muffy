@@ -95,7 +95,7 @@ jobs:
       - uses: raviqqe/cargo-cache@6d2d8fbe4fc04627b0a05f603fce1dc9fd0baf0d # v1.0.0
       - id: version
         run: tools/github/version.sh
-      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
