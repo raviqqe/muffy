@@ -229,16 +229,17 @@ impl WebValidator {
     ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
 
-        if !DOCUMENT_SCHEMES.contains(&url.scheme())
-            || context
-                .config()
-                .ignored_links()
-                .any(|pattern| pattern.is_match(url.as_str()))
-        {
+        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
         } else if context.config().site(&url).scheme().accepted(url.scheme()) {
             self.validate_link(context, url.to_string(), document_type)
                 .await
+        } else if context
+            .config()
+            .ignored_links()
+            .any(|pattern| pattern.is_match(url.as_str()))
+        {
+            Ok(ItemOutput::new())
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
