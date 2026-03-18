@@ -1772,6 +1772,15 @@ mod tests {
                 ["data:image/png;base64,abc", "/bar.png"]
             );
         }
+
+        #[test]
+        fn parse_urls_with_width_descriptors() {
+            assert_eq!(
+                WebValidator::parse_srcset("small.jpg 500w, medium.jpg 1000w, large.jpg 1500w")
+                    .collect::<Vec<_>>(),
+                ["small.jpg", "medium.jpg", "large.jpg"]
+            );
+        }
     }
 
     mod sitemap {
