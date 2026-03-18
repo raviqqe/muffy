@@ -585,7 +585,6 @@ impl WebValidator {
 
         core::iter::from_fn(move || {
             loop {
-                // Skip whitespace and commas.
                 while chars
                     .peek()
                     .is_some_and(|&char| char.is_whitespace() || char == ',')
@@ -593,23 +592,18 @@ impl WebValidator {
                     chars.next();
                 }
 
-                // Collect non-whitespace characters as a URL candidate.
                 let candidate: String = chars
                     .by_ref()
                     .take_while(|char| !char.is_whitespace())
                     .collect();
+                let url = candidate.trim_end_matches(',');
 
                 if candidate.is_empty() {
                     return None;
-                }
-
-                let url = candidate.trim_end_matches(',');
-
-                if url.is_empty() {
+                } else if url.is_empty() {
                     continue;
                 }
 
-                // Skip a descriptor if the URL had no trailing commas.
                 if url.len() == candidate.len() {
                     while chars.peek().is_some_and(|&char| char != ',') {
                         chars.next();
