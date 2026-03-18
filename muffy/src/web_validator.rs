@@ -16,12 +16,11 @@ use crate::{
     robot_list::RobotList,
 };
 use alloc::{collections::BTreeSet, sync::Arc};
-use core::str;
+use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
-use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::HashMap, sync::LazyLock};
+use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -42,9 +41,6 @@ const META_LINK_PROPERTIES: &[&str] = &[
     "twitter:image",
 ];
 const LINK_ORIGIN_RELATIONS: &[&str] = &["dns-prefetch", "preconnect"];
-
-static SRCSET_PATTERN: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
 
 /// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
@@ -341,7 +337,9 @@ impl WebValidator {
                 if let Some(value) = attributes.get("srcset") {
                     links.push((
                         vec![("srcset", value)],
-                        Self::parse_srcset(value).map(|url| (url, None)).collect(),
+                        Self::parse_srcset(value)
+                            .map(|url| (url.into(), None))
+                            .collect(),
                     ));
                 }
             }
@@ -584,10 +582,21 @@ impl WebValidator {
         }
     }
 
-    fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> {
-        srcset
-            .split(",")
-            .map(|string| SRCSET_PATTERN.replace(string, "$1").to_string())
+    fn parse_srcset(srcset: &str) -> impl Iterator<Item = &str> + '_ {
+        let mut rest = srcset;
+
+        iter::from_fn(move || {
+            rest = rest.trim_start_matches(|char: char| char.is_whitespace() || char == ',');
+
+            let url =
+                rest[..rest.find(char::is_whitespace).unwrap_or(rest.len())].trim_end_matches(',');
+
+            rest = &rest[rest[url.len()..]
+                .find(',')
+                .map_or(rest.len(), |index| url.len() + index)..];
+
+            (!url.is_empty()).then_some(url)
+        })
     }
 }
 
@@ -605,6 +614,7 @@ mod tests {
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
+    use regex::Regex;
     use url::Url;
 
     async fn validate(
@@ -1707,6 +1717,70 @@ mod tests {
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(1, 0))
         );
+    }
+
+    mod srcset {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_url() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_url_with_descriptor() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png 2x").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_multiple_urls() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png, /bar.png 2x, /baz.png 800w")
+                    .collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png", "/baz.png"]
+            );
+        }
+
+        #[test]
+        fn skip_empty_entry() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,, /bar.png").collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png"]
+            );
+        }
+
+        #[test]
+        fn skip_trailing_comma() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_data_url() {
+            assert_eq!(
+                WebValidator::parse_srcset("data:image/png;base64,abc 2x, /bar.png")
+                    .collect::<Vec<_>>(),
+                ["data:image/png;base64,abc", "/bar.png"]
+            );
+        }
+
+        #[test]
+        fn parse_urls_with_width_descriptors() {
+            assert_eq!(
+                WebValidator::parse_srcset("small.jpg 500w, medium.jpg 1000w, large.jpg 1500w")
+                    .collect::<Vec<_>>(),
+                ["small.jpg", "medium.jpg", "large.jpg"]
+            );
+        }
     }
 
     mod sitemap {
