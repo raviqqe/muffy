@@ -234,6 +234,12 @@ impl WebValidator {
         } else if context.config().site(&url).scheme().accepted(url.scheme()) {
             self.validate_link(context, url.to_string(), document_type)
                 .await
+        } else if context
+            .config()
+            .ignored_links()
+            .any(|pattern| pattern.is_match(url.as_str()))
+        {
+            Ok(ItemOutput::new())
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
@@ -1622,6 +1628,72 @@ mod tests {
                     [("".into(), SiteConfig::default().set_recursive(true).into())]
                         .into_iter()
                         .collect(),
+                )]
+                .into_iter()
+                .collect(),
+            )
+            .set_ignored_links(vec![Regex::new("bar").unwrap()]),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_ignored_link_with_invalid_scheme() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            url.as_str().into(),
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"
+                                <a href="http://foo.com/bar"/>
+                            "#
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MokaCache::new(0)),
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(
+            &Config::new(
+                vec![url.as_str().into()],
+                Default::default(),
+                [(
+                    url.host_str().unwrap_or_default().into(),
+                    [(
+                        "".into(),
+                        SiteConfig::default()
+                            .set_scheme(SchemeConfig::new(["https".into()].into()))
+                            .set_recursive(true)
+                            .into(),
+                    )]
+                    .into_iter()
+                    .collect(),
                 )]
                 .into_iter()
                 .collect(),
