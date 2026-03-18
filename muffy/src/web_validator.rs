@@ -337,7 +337,9 @@ impl WebValidator {
                 if let Some(value) = attributes.get("srcset") {
                     links.push((
                         vec![("srcset", value)],
-                        Self::parse_srcset(value).map(|url| (url, None)).collect(),
+                        Self::parse_srcset(value)
+                            .map(|url| (url.into(), None))
+                            .collect(),
                     ));
                 }
             }
@@ -580,7 +582,7 @@ impl WebValidator {
         }
     }
 
-    fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> + '_ {
+    fn parse_srcset(srcset: &str) -> impl Iterator<Item = &str> + '_ {
         let mut rest = srcset;
 
         iter::from_fn(move || {
@@ -593,7 +595,7 @@ impl WebValidator {
                 .find(',')
                 .map_or(rest.len(), |index| url.len() + index)..];
 
-            (!url.is_empty()).then(|| url.into())
+            (!url.is_empty()).then(|| url)
         })
     }
 }
