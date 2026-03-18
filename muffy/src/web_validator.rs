@@ -1640,50 +1640,6 @@ mod tests {
         );
     }
 
-    mod srcset {
-        use super::*;
-        use pretty_assertions::assert_eq;
-
-        #[test]
-        fn parse_url() {
-            assert_eq!(
-                WebValidator::parse_srcset("/foo.png").collect::<Vec<_>>(),
-                ["/foo.png"]
-            );
-        }
-
-        #[test]
-        fn parse_url_with_descriptor() {
-            assert_eq!(
-                WebValidator::parse_srcset("/foo.png 2x").collect::<Vec<_>>(),
-                ["/foo.png"]
-            );
-        }
-
-        #[test]
-        fn parse_multiple_urls() {
-            assert_eq!(
-                WebValidator::parse_srcset("/foo.png, /bar.png 2x, /baz.png 800w")
-                    .collect::<Vec<_>>(),
-                ["/foo.png", "/bar.png", "/baz.png"]
-            );
-        }
-
-        #[test]
-        fn skip_empty_entry() {
-            assert_eq!(
-                WebValidator::parse_srcset("/foo.png,, /bar.png").collect::<Vec<_>>(),
-                ["/foo.png", "/bar.png"]
-            );
-        }
-
-        #[test]
-        fn skip_trailing_comma() {
-            assert_eq!(
-                WebValidator::parse_srcset("/foo.png,").collect::<Vec<_>>(),
-                ["/foo.png"]
-            );
-        }
     #[tokio::test]
     async fn validate_ignored_link_with_invalid_scheme() {
         let url = Url::parse("https://foo.com").unwrap();
@@ -1748,6 +1704,52 @@ mod tests {
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(1, 0))
         );
+    }
+
+    mod srcset {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_url() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_url_with_descriptor() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png 2x").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_multiple_urls() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png, /bar.png 2x, /baz.png 800w")
+                    .collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png", "/baz.png"]
+            );
+        }
+
+        #[test]
+        fn skip_empty_entry() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,, /bar.png").collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png"]
+            );
+        }
+
+        #[test]
+        fn skip_trailing_comma() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
     }
 
     mod sitemap {
