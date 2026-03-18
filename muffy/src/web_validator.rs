@@ -1750,6 +1750,15 @@ mod tests {
                 ["/foo.png"]
             );
         }
+
+        #[test]
+        fn parse_data_url() {
+            assert_eq!(
+                WebValidator::parse_srcset("data:image/png;base64,abc 2x, /bar.png")
+                    .collect::<Vec<_>>(),
+                ["data:image/png;base64,abc", "/bar.png"]
+            );
+        }
     }
 
     mod sitemap {
