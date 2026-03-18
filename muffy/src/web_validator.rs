@@ -16,8 +16,7 @@ use crate::{
     robot_list::RobotList,
 };
 use alloc::{collections::BTreeSet, sync::Arc};
-use core::iter;
-use core::str;
+use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
@@ -582,33 +581,21 @@ impl WebValidator {
     }
 
     fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> + '_ {
-        let mut chars = srcset.chars().peekable();
+        let mut rest = srcset;
 
         iter::from_fn(move || {
-            while chars
-                .peek()
-                .is_some_and(|&char| char.is_whitespace() || char == ',')
-            {
-                chars.next();
-            }
+            rest = rest.trim_start_matches(|char: char| char.is_whitespace() || char == ',');
 
-            let candidate = chars
-                .by_ref()
-                .take_while(|char| !char.is_whitespace())
-                .collect::<String>();
-            let url = candidate.trim_end_matches(',');
+            let url = rest[..rest
+                .find(|char: char| char.is_whitespace())
+                .unwrap_or(rest.len())]
+                .trim_end_matches(',');
 
-            if url.is_empty() {
-                return None;
-            }
+            rest = &rest[rest[url.len()..]
+                .find(',')
+                .map_or(rest.len(), |index| url.len() + index)..];
 
-            if url.len() == candidate.len() {
-                while chars.peek().is_some_and(|&char| char != ',') {
-                    chars.next();
-                }
-            }
-
-            Some(url.into())
+            (!url.is_empty()).then(|| url.into())
         })
     }
 }
