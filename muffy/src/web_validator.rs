@@ -592,10 +592,10 @@ impl WebValidator {
                 chars.next();
             }
 
-            let candidate: String = chars
+            let candidate = chars
                 .by_ref()
                 .take_while(|char| !char.is_whitespace())
-                .collect();
+                .collect::<String>();
             let url = candidate.trim_end_matches(',');
 
             if url.is_empty() {
