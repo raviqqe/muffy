@@ -595,7 +595,7 @@ impl WebValidator {
                 .find(',')
                 .map_or(rest.len(), |index| url.len() + index)..];
 
-            (!url.is_empty()).then(|| url)
+            (!url.is_empty()).then_some(url)
         })
     }
 }
