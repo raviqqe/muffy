@@ -72,6 +72,11 @@ concurrency = 64
 supply = 10
 window = "1s"
 
+[sites.semantic_scholar]
+extend = "external"
+roots = ["https://www.semanticscholar.org/"]
+statuses = [200, 202]
+
 [sites.flaky]
 extend = "external"
 roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
@@ -83,7 +88,8 @@ count = 5
 extend = "external"
 roots = [
   "https://armoredcore.fandom.com/",
-  "https://dl.acm.org",
+  "https://dl.acm.org/",
+  "https://jcsites.juniata.edu/",
   "https://dragonquest.fandom.com/",
   "https://en.wikipedia.org/wiki/",
 ]
