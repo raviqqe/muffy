@@ -586,10 +586,8 @@ impl WebValidator {
         iter::from_fn(move || {
             rest = rest.trim_start_matches(|char: char| char.is_whitespace() || char == ',');
 
-            let url = rest[..rest
-                .find(|char: char| char.is_whitespace())
-                .unwrap_or(rest.len())]
-                .trim_end_matches(',');
+            let url =
+                rest[..rest.find(char::is_whitespace).unwrap_or(rest.len())].trim_end_matches(',');
 
             rest = &rest[rest[url.len()..]
                 .find(',')
