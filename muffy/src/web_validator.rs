@@ -19,9 +19,8 @@ use alloc::{collections::BTreeSet, sync::Arc};
 use core::str;
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
-use regex::Regex;
 use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
-use std::{collections::HashMap, sync::LazyLock};
+use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
 use url::Url;
@@ -42,9 +41,6 @@ const META_LINK_PROPERTIES: &[&str] = &[
     "twitter:image",
 ];
 const LINK_ORIGIN_RELATIONS: &[&str] = &["dns-prefetch", "preconnect"];
-
-static SRCSET_PATTERN: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"([^\s]+)(\s+[^\s]+)?"#).unwrap());
 
 /// A web validator.
 pub struct WebValidator(Arc<WebValidatorInner>);
@@ -580,8 +576,8 @@ impl WebValidator {
 
     fn parse_srcset(srcset: &str) -> impl Iterator<Item = String> {
         srcset
-            .split(",")
-            .map(|string| SRCSET_PATTERN.replace(string, "$1").to_string())
+            .split(',')
+            .filter_map(|entry| entry.split_whitespace().next().map(Into::into))
     }
 }
 
@@ -599,6 +595,7 @@ mod tests {
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
+    use regex::Regex;
     use url::Url;
 
     async fn validate(
@@ -1635,6 +1632,52 @@ mod tests {
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(1, 0))
         );
+    }
+
+    mod srcset {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_url() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_url_with_descriptor() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png 2x").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
+
+        #[test]
+        fn parse_multiple_urls() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png, /bar.png 2x, /baz.png 800w")
+                    .collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png", "/baz.png"]
+            );
+        }
+
+        #[test]
+        fn skip_empty_entry() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,, /bar.png").collect::<Vec<_>>(),
+                ["/foo.png", "/bar.png"]
+            );
+        }
+
+        #[test]
+        fn skip_trailing_comma() {
+            assert_eq!(
+                WebValidator::parse_srcset("/foo.png,").collect::<Vec<_>>(),
+                ["/foo.png"]
+            );
+        }
     }
 
     mod sitemap {
