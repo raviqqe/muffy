@@ -29,6 +29,8 @@ ignored_attributes = ["align", "data-.*", "sl-.*"]
 ignored_elements = [
   "astro-island",
   "mobile-starlight-.*",
+  "monza-editor",
+  "picolight-.*",
   "site-search",
   "sl-.*",
   "starlight-.*",
@@ -37,7 +39,9 @@ ignored_elements = [
   "style",
   # TODO Allow inlined SVG elements.
   "circle",
+  "foreignObject",
   "path",
+  "picture",
   "svg",
 ]
 
@@ -57,6 +61,11 @@ roots = [
 ]
 recurse = true
 
+[sites.algo_logic]
+extend = "external"
+roots = ["https://algo-logic.info/"]
+fragments_ignored = true
+
 [sites.crates_io]
 extend = "external"
 roots = ["https://crates.io/"]
@@ -66,10 +75,16 @@ statuses = [200, 403, 404]
 extend = "external"
 roots = ["https://github.com/"]
 concurrency = 64
+fragments_ignored = true
 
 [sites.github.rate_limit]
 supply = 10
 window = "1s"
+
+[sites.semantic_scholar]
+extend = "external"
+roots = ["https://www.semanticscholar.org/"]
+statuses = [200, 202]
 
 [sites.flaky]
 extend = "external"
@@ -82,8 +97,12 @@ count = 5
 extend = "external"
 roots = [
   "https://armoredcore.fandom.com/",
+  "https://dl.acm.org/",
   "https://dragonquest.fandom.com/",
   "https://en.wikipedia.org/wiki/",
+  "https://jcsites.juniata.edu/",
+  "https://www.npmjs.com/",
+  "https://www.researchgate.net/",
 ]
 statuses = [200, 403]
 
