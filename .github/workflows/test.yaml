@@ -49,9 +49,13 @@ jobs:
       matrix:
         arguments:
           - - --accept-status 200
+            - --accept-status 202
             - --accept-status 403
             - --accept-status 999
             - --ignore https://aclanthology.org/
+            - --ignore https://algo-logic.info/
+            - --ignore https://crates.io/
+            - --ignore https://github.com/raviqqe/stak
             - https://raviqqe.com
           - - --accept-status 200
             - --accept-status 403
@@ -80,6 +84,7 @@ jobs:
           --header user-agent:Muffy/0.2.0
           --retry-count 5
           --retry-status 408
+          --retry-status 500
           --retry-status 502
           --retry-status 503
           --retry-status 504
