@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -214,19 +214,6 @@ Schema {
                                                         ),
                                                     ),
                                                 ],
-                                            ),
-                                            Many1(
-                                                Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "rtc",
-                                                            sub_components: [
-                                                                "elem",
-                                                            ],
-                                                        },
-                                                    },
-                                                ),
                                             ),
                                         ],
                                     ),
@@ -579,134 +566,6 @@ Schema {
                                     ],
                                 },
                             },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "rtc",
-                            sub_components: [
-                                "elem",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "rtc",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "rtc",
-                                                sub_components: [
-                                                    "inner",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "rtc",
-                                                sub_components: [
-                                                    "attrs",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "rtc",
-                            sub_components: [
-                                "attrs",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: Identifier {
-                                            component: "common",
-                                            sub_components: [
-                                                "attrs",
-                                            ],
-                                        },
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "common",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "aria",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "rtc",
-                            sub_components: [
-                                "inner",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: Identifier {
-                                            component: "common",
-                                            sub_components: [
-                                                "inner",
-                                                "phrasing",
-                                            ],
-                                        },
-                                    },
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "rt",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
                         ),
                     },
                 ),
