@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -984,6 +984,20 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
+                                                component: "video",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "loading",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
                                                 component: "common",
                                                 sub_components: [
                                                     "attrs",
@@ -1166,6 +1180,71 @@ Schema {
                                             ),
                                         ),
                                         value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: Identifier {
+                            component: "video",
+                            sub_components: [
+                                "attrs",
+                                "loading",
+                            ],
+                        },
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "loading",
+                                        sub_components: [],
+                                    },
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "lazy",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "eager",
                                     },
                                 ],
                             ),
@@ -1467,6 +1546,20 @@ Schema {
                                         Name {
                                             prefix: None,
                                             local: Identifier {
+                                                component: "audio",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "loading",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
                                                 component: "common",
                                                 sub_components: [
                                                     "attrs",
@@ -1480,6 +1573,71 @@ Schema {
                                 ),
                             ],
                         ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: Identifier {
+                            component: "audio",
+                            sub_components: [
+                                "attrs",
+                                "loading",
+                            ],
+                        },
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "loading",
+                                        sub_components: [],
+                                    },
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "lazy",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "eager",
+                                    },
+                                ],
+                            ),
+                        },
                     },
                 ),
                 Definition(
