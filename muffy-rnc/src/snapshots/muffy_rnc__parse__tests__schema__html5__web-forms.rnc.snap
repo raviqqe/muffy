@@ -4334,35 +4334,7 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: Identifier {
-                                            component: "common",
-                                            sub_components: [
-                                                "inner",
-                                                "phrasing",
-                                            ],
-                                        },
-                                    },
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "div",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
+                        pattern: Text,
                     },
                 ),
                 Definition(
@@ -4435,19 +4407,17 @@ Schema {
                                         },
                                     },
                                 ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "optgroup",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "label",
-                                                ],
-                                            },
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: Identifier {
+                                            component: "optgroup",
+                                            sub_components: [
+                                                "attrs",
+                                                "label",
+                                            ],
                                         },
-                                    ),
+                                    },
                                 ),
                                 Optional(
                                     Name(
@@ -4540,19 +4510,6 @@ Schema {
                         combine: None,
                         pattern: Interleave(
                             [
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "legend",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
                                 Many0(
                                     Name(
                                         Name {
@@ -4561,150 +4518,6 @@ Schema {
                                                 component: "option",
                                                 sub_components: [
                                                     "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "optgroupdiv",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "noscript",
-                                                sub_components: [
-                                                    "elem",
-                                                    "flow",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "common",
-                                                sub_components: [
-                                                    "elem",
-                                                    "script-supporting",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "optgroupdiv",
-                            sub_components: [
-                                "elem",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "div",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "optgroupdiv",
-                                                sub_components: [
-                                                    "inner",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "div",
-                                                sub_components: [
-                                                    "attrs",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "optgroupdiv",
-                            sub_components: [
-                                "inner",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "option",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "optgroupdiv",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "noscript",
-                                                sub_components: [
-                                                    "elem",
-                                                    "flow",
                                                 ],
                                             },
                                         },
@@ -5029,19 +4842,6 @@ Schema {
                         combine: None,
                         pattern: Interleave(
                             [
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "button",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
                                 Many0(
                                     Name(
                                         Name {
@@ -5076,176 +4876,6 @@ Schema {
                                                 component: "hr",
                                                 sub_components: [
                                                     "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "selectdiv",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "noscript",
-                                                sub_components: [
-                                                    "elem",
-                                                    "flow",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "common",
-                                                sub_components: [
-                                                    "elem",
-                                                    "script-supporting",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "selectdiv",
-                            sub_components: [
-                                "elem",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "div",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "selectdiv",
-                                                sub_components: [
-                                                    "inner",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "div",
-                                                sub_components: [
-                                                    "attrs",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "selectdiv",
-                            sub_components: [
-                                "inner",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "optgroup",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "option",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "hr",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "selectdiv",
-                                                sub_components: [
-                                                    "elem",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Many0(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "noscript",
-                                                sub_components: [
-                                                    "elem",
-                                                    "flow",
                                                 ],
                                             },
                                         },
@@ -5286,131 +4916,6 @@ Schema {
                                 prefix: None,
                                 local: Identifier {
                                     component: "select",
-                                    sub_components: [
-                                        "elem",
-                                    ],
-                                },
-                            },
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "selectedcontent",
-                            sub_components: [
-                                "elem",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Element {
-                            name_class: Name(
-                                Name {
-                                    prefix: None,
-                                    local: Identifier {
-                                        component: "selectedcontent",
-                                        sub_components: [],
-                                    },
-                                },
-                            ),
-                            pattern: Interleave(
-                                [
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "selectedcontent",
-                                                sub_components: [
-                                                    "inner",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "selectedcontent",
-                                                sub_components: [
-                                                    "attrs",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ],
-                            ),
-                        },
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "selectedcontent",
-                            sub_components: [
-                                "attrs",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Interleave(
-                            [
-                                Name(
-                                    Name {
-                                        prefix: None,
-                                        local: Identifier {
-                                            component: "common",
-                                            sub_components: [
-                                                "attrs",
-                                            ],
-                                        },
-                                    },
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "common",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "aria",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                            ],
-                        ),
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "selectedcontent",
-                            sub_components: [
-                                "inner",
-                            ],
-                        },
-                        combine: None,
-                        pattern: Empty,
-                    },
-                ),
-                Definition(
-                    Definition {
-                        name: Identifier {
-                            component: "common",
-                            sub_components: [
-                                "elem",
-                                "phrasing",
-                            ],
-                        },
-                        combine: Some(
-                            Choice,
-                        ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "selectedcontent",
                                     sub_components: [
                                         "elem",
                                     ],
