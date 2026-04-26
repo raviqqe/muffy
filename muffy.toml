@@ -86,6 +86,14 @@ extend = "external"
 roots = ["https://www.semanticscholar.org/"]
 statuses = [200, 202]
 
+[sites.youtube]
+extend = "external"
+roots = ["https://www.youtube.com/"]
+
+[sites.youtube.rate_limit]
+supply = 1
+window = "1s"
+
 [sites.flaky]
 extend = "external"
 roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
