@@ -52,7 +52,6 @@ jobs:
             - --accept-status 202
             - --accept-status 403
             - --accept-status 999
-            - --concurrency 64
             - --ignore https://aclanthology.org/
             - --ignore https://algo-logic.info/
             - --ignore https://crates.io/
@@ -83,6 +82,7 @@ jobs:
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - run: >
           cargo run -- check-site
+          --concurrency 64
           --header user-agent:Muffy/0.2.0
           --retry-count 5
           --retry-status 408
