@@ -86,13 +86,20 @@ extend = "external"
 roots = ["https://www.semanticscholar.org/"]
 statuses = [200, 202]
 
-[sites.youtube]
+[sites.rate_limited]
 extend = "external"
-roots = ["https://www.youtube.com/"]
 
-[sites.youtube.rate_limit]
+[sites.rate_limited.rate_limit]
 supply = 1
 window = "1s"
+
+[sites.dblp]
+extend = "rate_limited"
+roots = ["https://dblp.org/"]
+
+[sites.youtube]
+extend = "rate_limited"
+roots = ["https://www.youtube.com/"]
 
 [sites.flaky]
 extend = "external"
