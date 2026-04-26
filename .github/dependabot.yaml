@@ -14,7 +14,9 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /.github/actions/*
     schedule:
       interval: daily
   - package-ecosystem: gitsubmodule
@@ -25,3 +27,8 @@ updates:
     directory: /doc
     schedule:
       interval: daily
+    groups:
+      astro:
+        patterns:
+          - astro
+          - "@astrojs/*"
