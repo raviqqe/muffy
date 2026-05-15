@@ -336,8 +336,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
 
     let ignored_links = config
         .sites
-        .iter()
-        .flat_map(|(_, site)| {
+        .values()
+        .flat_map(|site| {
             if site.ignore == Some(true) {
                 site.roots
                     .iter()
