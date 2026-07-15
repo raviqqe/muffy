@@ -11,6 +11,7 @@ pub struct Request {
     max_redirects: usize,
     retry: Arc<RetryConfig>,
     site_id: Option<Arc<str>>,
+    stale_while_revalidate: Duration,
     timeout: Option<Duration>,
 }
 
@@ -22,6 +23,7 @@ impl Request {
             max_age: Default::default(),
             max_redirects: Default::default(),
             retry: Default::default(),
+            stale_while_revalidate: Default::default(),
             timeout: Default::default(),
         }
     }
@@ -50,6 +52,10 @@ impl Request {
         self.max_age
     }
 
+    pub const fn stale_while_revalidate(&self) -> Duration {
+        self.stale_while_revalidate
+    }
+
     pub fn retry(&self) -> &RetryConfig {
         &self.retry
     }
@@ -76,6 +82,11 @@ impl Request {
 
     pub fn set_site_id(mut self, site_id: Option<Arc<str>>) -> Self {
         self.site_id = site_id;
+        self
+    }
+
+    pub const fn set_stale_while_revalidate(mut self, period: Duration) -> Self {
+        self.stale_while_revalidate = period;
         self
     }
 

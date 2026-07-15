@@ -199,12 +199,17 @@ impl SiteConfig {
 #[serde(deny_unknown_fields)]
 struct CacheConfig {
     max_age: Option<DurationString>,
+    stale_while_revalidate: Option<DurationString>,
 }
 
 impl CacheConfig {
     const fn merge(&mut self, other: Self) {
         if other.max_age.is_some() {
             self.max_age = other.max_age;
+        }
+
+        if other.stale_while_revalidate.is_some() {
+            self.stale_while_revalidate = other.stale_while_revalidate;
         }
     }
 }
@@ -489,12 +494,19 @@ fn compile_site_config(
     Ok(super::SiteConfig::default()
         .set_id(id.map(Into::into))
         .set_cache(
-            super::CacheConfig::default().set_max_age(
-                site.cache
-                    .as_ref()
-                    .and_then(|cache| cache.max_age.as_deref().copied())
-                    .unwrap_or(parent.cache().max_age()),
-            ),
+            super::CacheConfig::default()
+                .set_max_age(
+                    site.cache
+                        .as_ref()
+                        .and_then(|cache| cache.max_age.as_deref().copied())
+                        .unwrap_or(parent.cache().max_age()),
+                )
+                .set_stale_while_revalidate(
+                    site.cache
+                        .as_ref()
+                        .and_then(|cache| cache.stale_while_revalidate.as_deref().copied())
+                        .unwrap_or(parent.cache().stale_while_revalidate()),
+                ),
         )
         .set_fragments_ignored(site.fragments_ignored.unwrap_or(parent.fragments_ignored()))
         .set_headers(
@@ -705,6 +717,10 @@ mod tests {
         assert_eq!(default.max_redirects(), DEFAULT_MAX_REDIRECTS);
         assert_eq!(default.timeout(), DEFAULT_TIMEOUT.into());
         assert_eq!(default.cache().max_age(), Duration::default());
+        assert_eq!(
+            default.cache().stale_while_revalidate(),
+            Duration::default()
+        );
 
         for status in DEFAULT_ACCEPTED_STATUS_CODES {
             assert!(default.status().accepted(*status));
@@ -725,6 +741,7 @@ mod tests {
                     SiteConfig {
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(2045).into()),
+                            stale_while_revalidate: Some(Duration::from_secs(30).into()),
                         }),
                         concurrency: Some(42),
                         fragments_ignored: true.into(),
@@ -775,7 +792,9 @@ mod tests {
                 config::SiteConfig::default()
                     .set_id(id.map(Into::into))
                     .set_cache(
-                        config::CacheConfig::default().set_max_age(Duration::from_secs(2045)),
+                        config::CacheConfig::default()
+                            .set_max_age(Duration::from_secs(2045))
+                            .set_stale_while_revalidate(Duration::from_secs(30)),
                     )
                     .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
@@ -1323,6 +1342,7 @@ mod tests {
                     SiteConfig {
                         cache: Some(CacheConfig {
                             max_age: Some(Duration::from_secs(5).into()),
+                            stale_while_revalidate: Some(Duration::from_secs(7).into()),
                         }),
                         concurrency: Some(4),
                         headers: Some([("user-agent".to_owned(), "base".to_owned())].into()),
@@ -1346,7 +1366,10 @@ mod tests {
                     (
                         "example".to_owned(),
                         SiteConfig {
-                            cache: Some(CacheConfig { max_age: None }),
+                            cache: Some(CacheConfig {
+                                max_age: None,
+                                stale_while_revalidate: None,
+                            }),
                             concurrency: Some(8),
                             headers: Some(
                                 [
@@ -1390,6 +1413,16 @@ mod tests {
                     .copied()
                     .unwrap(),
                 Duration::from_secs(5)
+            );
+            assert_eq!(
+                site.cache
+                    .as_ref()
+                    .unwrap()
+                    .stale_while_revalidate
+                    .as_deref()
+                    .copied()
+                    .unwrap(),
+                Duration::from_secs(7)
             );
 
             let headers = site.headers.as_ref().unwrap();
