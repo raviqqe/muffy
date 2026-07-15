@@ -4,6 +4,9 @@ branding:
   icon: pen-tool
   color: orange
 inputs:
+  cache:
+    description: Use the persistent Muffy cache on a host
+    required: false
   config:
     description: A configuration file
     required: false
@@ -17,9 +20,13 @@ runs:
     - id: version
       shell: bash
       run: echo version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+') >> ${{ github.output }}
+    - if: inputs.cache == 'true'
+      shell: bash
+      run: mkdir -p ~/.cache/muffy
     - shell: bash
       run: >
         docker run --network host
+        ${{ inputs.cache == 'true' && '--env XDG_CACHE_HOME=/cache --mount type=bind,src=$HOME/.cache/muffy,dst=/cache/muffy' || '' }}
         --mount type=bind,src=.,dst=/work
         --workdir /work
         raviqqe/muffy:${{ steps.version.outputs.version }}

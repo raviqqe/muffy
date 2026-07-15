@@ -112,6 +112,7 @@ jobs:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
       - uses: ./.
         with:
+          cache: true
           verbose: true
   test:
     needs:
