@@ -1,3 +1,4 @@
+use super::HttpClientError;
 use crate::response::Response;
 use alloc::sync::Arc;
 use core::time::Duration;
@@ -6,29 +7,23 @@ use std::time::SystemTime;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CachedResponse {
-    response: Arc<Response>,
+    result: Result<Arc<Response>, HttpClientError>,
     timestamp: SystemTime,
 }
 
 impl CachedResponse {
-    pub fn new(response: Response) -> Self {
+    pub fn new(result: Result<Arc<Response>, HttpClientError>) -> Self {
         Self {
-            response: response.into(),
+            result,
             timestamp: SystemTime::now(),
         }
     }
 
-    pub const fn response(&self) -> &Arc<Response> {
-        &self.response
+    pub const fn result(&self) -> &Result<Arc<Response>, HttpClientError> {
+        &self.result
     }
 
     pub fn is_expired(&self, duration: Duration) -> bool {
         SystemTime::now() > self.timestamp + duration
-    }
-}
-
-impl From<Response> for CachedResponse {
-    fn from(response: Response) -> Self {
-        Self::new(response)
     }
 }

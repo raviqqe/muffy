@@ -36,7 +36,7 @@ pub struct HttpClient {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
-    global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+    global_cache: Box<dyn Cache<Arc<CachedResponse>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
@@ -48,7 +48,7 @@ impl HttpClient {
     pub fn new(
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
-        cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+        cache: Box<dyn Cache<Arc<CachedResponse>>>,
     ) -> Self {
         Self {
             client: Box::new(client),
@@ -154,31 +154,34 @@ impl HttpClient {
             self.global_cache.get_with(
                 request.url().to_string(),
                 Box::new(async move {
-                    if robots
-                        && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_allowed(request.url().path())
-                    {
-                        return Err(HttpClientError::RobotsTxt);
-                    }
+                    Arc::new(CachedResponse::new(
+                        async {
+                            if robots
+                                && let Some(robot) = self.get_robot(request).await?
+                                && !robot.is_allowed(request.url().path())
+                            {
+                                return Err(HttpClientError::RobotsTxt);
+                            }
 
-                    let response = self.get_retried(request).await?;
-
-                    Ok(Arc::new(response.into()))
+                            Ok(Arc::new(self.get_retried(request).await?))
+                        }
+                        .await,
+                    ))
                 }),
             )
         };
 
-        let response = get().await??;
+        let cached = get().await?;
 
-        Ok(if response.is_expired(request.max_age()) {
+        if cached.is_expired(request.max_age()) {
             self.global_cache.remove(request.url().as_str()).await?;
 
-            get().await??
+            get().await?
         } else {
-            response
+            cached
         }
-        .response()
-        .clone())
+        .result()
+        .clone()
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
@@ -476,20 +479,16 @@ mod tests {
             .get_with(
                 url.as_str().into(),
                 Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
+                    Arc::new(CachedResponse::new(Ok(Arc::new(Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..response.clone()
+                        },
+                        Duration::default(),
+                    )))))
                 }),
             )
             .await
-            .unwrap()
             .unwrap();
 
         assert_eq!(
@@ -542,20 +541,87 @@ mod tests {
             .get_with(
                 url.as_str().into(),
                 Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
+                    Arc::new(CachedResponse::new(Ok(Arc::new(Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..response.clone()
+                        },
+                        Duration::default(),
+                    )))))
                 }),
             )
             .await
-            .unwrap()
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone()))
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+            )
+            .get(&Request::new(url, Default::default()))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn get_error_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async { Arc::new(CachedResponse::new(Err(HttpClientError::RobotsTxt))) }),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(Default::default()),
+                StubTimer::new(),
+                Box::new(cache),
+            )
+            .get(&Request::new(url, Default::default()).set_max_age(CACHE_MAX_AGE))
+            .await
+            .unwrap(),
+            None
+        );
+    }
+
+    #[tokio::test]
+    async fn update_error_cache() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async { Arc::new(CachedResponse::new(Err(HttpClientError::RobotsTxt))) }),
+            )
+            .await
             .unwrap();
 
         assert_eq!(
