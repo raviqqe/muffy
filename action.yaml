@@ -4,9 +4,6 @@ branding:
   icon: pen-tool
   color: orange
 inputs:
-  cache:
-    description: Use a persistent cache.
-    required: false
   config:
     description: A configuration file.
     required: false
@@ -20,13 +17,13 @@ runs:
     - id: version
       shell: bash
       run: echo version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+') >> ${{ github.output }}
-    - if: inputs.cache == 'true'
-      shell: bash
+    - shell: bash
       run: mkdir -p ~/.cache/muffy
     - shell: bash
       run: >
         docker run --network host
-        ${{ inputs.cache == 'true' && '--env XDG_CACHE_HOME=/cache --mount type=bind,src=$HOME/.cache/muffy,dst=/cache/muffy' || '' }}
+        --env XDG_CACHE_HOME=/cache
+        --mount type=bind,src=$HOME/.cache/muffy,dst=/cache/muffy
         --mount type=bind,src=.,dst=/work
         --workdir /work
         raviqqe/muffy:${{ steps.version.outputs.version }}
