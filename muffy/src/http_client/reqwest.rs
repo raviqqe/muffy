@@ -24,7 +24,7 @@ impl ReqwestHttpClient {
 #[async_trait]
 impl BareHttpClient for ReqwestHttpClient {
     async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
-        trace!("sending a request to {}", &request.url);
+        trace!("sending a request to {}", request.url);
 
         let response = self
             .client
@@ -36,7 +36,7 @@ impl BareHttpClient for ReqwestHttpClient {
             )
             .await?;
 
-        trace!("got {} response from {}", response.status(), &request.url);
+        trace!("got {} response from {}", response.status(), request.url);
 
         Ok(BareResponse {
             url: response.url().clone(),
