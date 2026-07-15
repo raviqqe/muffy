@@ -15,7 +15,7 @@ mod tests {
     use super::*;
     use muffy_document::html::Node;
     use regex::Regex;
-    use std::sync::Arc;
+    use alloc::sync::Arc;
 
     fn create_element(
         name: &str,

@@ -776,7 +776,7 @@ mod tests {
                     .set_id(id.map(Into::into))
                     .set_cache(
                         config::CacheConfig::default()
-                            .set_max_age(Duration::from_secs(2045).into()),
+                            .set_max_age(Duration::from_secs(2045)),
                     )
                     .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
@@ -797,10 +797,10 @@ mod tests {
                     .set_retry(
                         config::RetryConfig::default()
                             .set_count(193)
-                            .set_factor(4.2.into())
+                            .set_factor(4.2)
                             .set_interval(
                                 config::RetryDurationConfig::default()
-                                    .set_initial(Duration::from_millis(42).into())
+                                    .set_initial(Duration::from_millis(42))
                                     .set_cap(Duration::from_secs(42).into()),
                             )
                             .into(),
@@ -1121,7 +1121,7 @@ mod tests {
                 .set_sites(
                     [(
                         "foo".into(),
-                        config::SiteRateLimitConfig::new(123, Duration::from_millis(456)).into()
+                        config::SiteRateLimitConfig::new(123, Duration::from_millis(456))
                     )]
                     .into()
                 )

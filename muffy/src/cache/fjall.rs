@@ -86,7 +86,7 @@ mod tests {
             .open()
             .unwrap();
         let cache = FjallCache::new(
-            db.keyspace("foo", || fjall::KeyspaceCreateOptions::default())
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
         );
 
@@ -113,7 +113,7 @@ mod tests {
             .open()
             .unwrap();
         let cache = Arc::new(FjallCache::new(
-            db.keyspace("foo", || fjall::KeyspaceCreateOptions::default())
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
         ));
 
@@ -140,7 +140,7 @@ mod tests {
             .open()
             .unwrap();
         let cache = FjallCache::new(
-            db.keyspace("foo", || fjall::KeyspaceCreateOptions::default())
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
         );
 
