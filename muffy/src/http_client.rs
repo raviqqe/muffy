@@ -269,7 +269,10 @@ mod tests {
         timer::StubTimer,
     };
     use alloc::sync::Arc;
-    use core::{sync::atomic::Ordering, time::Duration};
+    use core::{
+        sync::atomic::{AtomicUsize, Ordering},
+        time::Duration,
+    };
     use http::{HeaderName, HeaderValue, StatusCode};
     use pretty_assertions::assert_eq;
     use std::collections::HashSet;
