@@ -775,8 +775,7 @@ mod tests {
                 config::SiteConfig::default()
                     .set_id(id.map(Into::into))
                     .set_cache(
-                        config::CacheConfig::default()
-                            .set_max_age(Duration::from_secs(2045)),
+                        config::CacheConfig::default().set_max_age(Duration::from_secs(2045)),
                     )
                     .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
