@@ -72,13 +72,9 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
-      - id: version
-        run: tools/github/version.sh
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - uses: ./.github/actions/muffy-cache
         with:
-          path: ~/.cache/muffy
-          key: muffy-${{ steps.version.outputs.version }}-${{ strategy.job-index }}-${{ github.run_id }}
-          restore-keys: muffy-${{ steps.version.outputs.version }}-${{ strategy.job-index }}-
+          key: ${{ strategy.job-index }}
       - run: >
           cargo run -- check-site
           --accept-status 200
@@ -105,6 +101,9 @@ jobs:
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - id: version
         run: tools/github/version.sh
+      - uses: ./.github/actions/muffy-cache
+        with:
+          key: docker
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
