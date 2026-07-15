@@ -42,6 +42,9 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
+      - uses: ./.github/actions/muffy-cache
+        with:
+          key: check
       - run: cargo run -- --verbose
   check_site_command_test:
     strategy:
@@ -74,7 +77,7 @@ jobs:
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - uses: ./.github/actions/muffy-cache
         with:
-          key: ${{ strategy.job-index }}
+          key: check-site-${{ strategy.job-index }}
       - run: >
           cargo run -- check-site
           --accept-status 200
