@@ -18,12 +18,8 @@ runs:
       shell: bash
       run: echo version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+') >> ${{ github.output }}
     - shell: bash
-      run: mkdir -p ~/.cache/muffy
-    - shell: bash
       run: >
         docker run --network host
-        --env XDG_CACHE_HOME=/cache
-        --mount type=bind,src=$HOME/.cache/muffy,dst=/cache/muffy
         --mount type=bind,src=.,dst=/work
         --workdir /work
         raviqqe/muffy:${{ steps.version.outputs.version }}
