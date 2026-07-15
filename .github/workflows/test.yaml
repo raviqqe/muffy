@@ -48,9 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         arguments:
-          - - --accept-status 200
-            - --accept-status 202
-            - --accept-status 403
+          - - --accept-status 202
             - --accept-status 999
             - --ignore https://aclanthology.org/
             - --ignore https://algo-logic.info/
@@ -59,16 +57,12 @@ jobs:
             - --ignore https://prog-lang-sys-ja.zulipchat.com/
             - --ignore https://www.gnu.org/software/guile/
             - https://raviqqe.com
-          - - --accept-status 200
-            - --accept-status 403
-            - --ignore https://codspeed.io/raviqqe/stak
+          - - --ignore https://codspeed.io/raviqqe/stak
             - --ignore https://r7rs.org/
             - --ignore https://www.gnu.org/software/guile/
             - --header accept:text/html,*/*
             - https://raviqqe.com/stak
-          - - --accept-status 200
-            - --accept-status 403
-            - --ignore https://crates.io/crates/muffy
+          - - --ignore https://crates.io/crates/muffy
             - https://raviqqe.com/muffy
           - - --ignore https://goreportcard.com/
             - https://raviqqe.com/muffet
@@ -83,6 +77,9 @@ jobs:
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - run: >
           cargo run -- check-site
+          --accept-status 200
+          --accept-status 403
+          --accept-status 429
           --concurrency 64
           --header user-agent:Muffy/0.2.0
           --retry-count 5
