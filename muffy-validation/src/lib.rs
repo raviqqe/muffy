@@ -13,9 +13,9 @@ html! {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::sync::Arc;
     use muffy_document::html::Node;
     use regex::Regex;
-    use std::sync::Arc;
 
     fn create_element(
         name: &str,

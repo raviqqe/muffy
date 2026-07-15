@@ -1,0 +1,21 @@
+name: muffy-cache
+description: Caches the persistent Muffy cache
+inputs:
+  key:
+    description: A cache key segment differentiating caches
+    required: false
+    default: default
+outputs: {}
+runs:
+  using: composite
+  steps:
+    - id: version
+      shell: bash
+      run: tools/github/version.sh
+    - shell: bash
+      run: mkdir -p ~/.cache/muffy
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ~/.cache/muffy
+        key: muffy-${{ steps.version.outputs.version }}-${{ inputs.key }}-${{ github.run_id }}
+        restore-keys: muffy-${{ steps.version.outputs.version }}-${{ inputs.key }}-

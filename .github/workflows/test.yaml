@@ -42,6 +42,9 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
+      - uses: ./.github/actions/muffy-cache
+        with:
+          key: check
       - run: cargo run -- --verbose
   check_site_command_test:
     strategy:
@@ -66,22 +69,24 @@ jobs:
             - https://raviqqe.com/muffy
           - - --ignore https://goreportcard.com/
             - https://raviqqe.com/muffet
-        cache:
-          - false
-          - true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
+      - uses: ./.github/actions/muffy-cache
+        with:
+          key: check-site-${{ strategy.job-index }}
       - run: >
           cargo run -- check-site
           --accept-status 200
           --accept-status 403
           --accept-status 429
+          --cache
           --concurrency 64
           --header user-agent:Muffy/0.2.0
+          --max-age 1w
           --retry-count 5
           --retry-status 408
           --retry-status 500
@@ -89,7 +94,6 @@ jobs:
           --retry-status 503
           --retry-status 504
           --verbose
-          ${{ matrix.cache && '--cache' || '' }}
           ${{ join(matrix.arguments, ' ') }}
   docker_test:
     runs-on: ubuntu-latest
@@ -100,6 +104,9 @@ jobs:
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - id: version
         run: tools/github/version.sh
+      - uses: ./.github/actions/muffy-cache
+        with:
+          key: docker
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}

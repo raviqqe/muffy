@@ -1539,7 +1539,7 @@ mod tests {
                             Default::default(),
                         ),
                         build_stub_response(
-                            url.as_str().into(),
+                            url.as_str(),
                             StatusCode::OK,
                             HeaderMap::from_iter([(
                                 HeaderName::from_static("content-type"),
@@ -1605,7 +1605,7 @@ mod tests {
                             Default::default(),
                         ),
                         build_stub_response(
-                            url.as_str().into(),
+                            url.as_str(),
                             StatusCode::OK,
                             html_headers.clone(),
                             r#"
@@ -1671,7 +1671,7 @@ mod tests {
                             Default::default(),
                         ),
                         build_stub_response(
-                            url.as_str().into(),
+                            url.as_str(),
                             StatusCode::OK,
                             html_headers.clone(),
                             r#"
