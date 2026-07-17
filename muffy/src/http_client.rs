@@ -168,17 +168,24 @@ impl HttpClient {
             )
         };
 
-        let response = get().await??;
+        let cached = get().await?;
 
-        Ok(if response.is_expired(request.max_age()) {
+        // Refresh an expired response.
+        let cached = if matches!(&cached, Ok(response) if response.is_expired(request.max_age())) {
             self.global_cache.remove(request.url().as_str()).await?;
 
-            get().await??
+            get().await?
         } else {
-            response
+            cached
+        };
+
+        // Errors are not persisted so that a transient failure or a robots.txt
+        // denial is reconsidered on the next run.
+        if cached.is_err() {
+            self.global_cache.remove(request.url().as_str()).await?;
         }
-        .response()
-        .clone())
+
+        Ok(cached?.response().clone())
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
@@ -680,6 +687,61 @@ mod tests {
                     ]
                     .into_iter()
                     .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+            )
+            .get(&Request::new(url, Default::default()))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn do_not_persist_error() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let robots = build_stub_response(
+            url.join("/robots.txt").unwrap().as_str(),
+            StatusCode::OK,
+            Default::default(),
+            vec![],
+        );
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        assert!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        robots.clone(),
+                        (
+                            url.as_str().into(),
+                            Err(HttpClientError::Http("boom".into())),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache.clone()),
+            )
+            .get(&Request::new(url.clone(), Default::default()))
+            .await
+            .is_err()
+        );
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [robots, (url.as_str().into(), Ok(response.clone()))]
+                        .into_iter()
+                        .collect(),
                 ),
                 StubTimer::new(),
                 Box::new(cache),
