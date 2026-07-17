@@ -51,8 +51,16 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 
         loop {
             if let Some(value) = self.keyspace.get(key.as_bytes())? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    return Ok(value);
+                match bitcode::deserialize::<Option<T>>(&value) {
+                    Ok(Some(value)) => return Ok(value),
+                    Ok(None) => {}
+                    // A corrupt or incompatible entry, such as one left by an older
+                    // cache format, is dropped and recomputed so that it never
+                    // permanently poisons the key.
+                    Err(_) => {
+                        self.keyspace.remove(key.as_str())?;
+                        return self.get_with(key, future).await;
+                    }
                 }
             } else {
                 // An entry was removed while we were waiting. Retry from the beginning. We
@@ -89,6 +97,38 @@ mod tests {
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
         );
+
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
+    async fn recompute_corrupt_entry() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let keyspace = db
+            .keyspace("foo", fjall::KeyspaceCreateOptions::default)
+            .unwrap();
+
+        let corrupt = bitcode::serialize(&Some("incompatible")).unwrap();
+        assert!(bitcode::deserialize::<Option<i32>>(&corrupt).is_err());
+        keyspace.insert("key", corrupt).unwrap();
+
+        let cache = FjallCache::new(keyspace);
 
         assert_eq!(
             cache

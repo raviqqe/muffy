@@ -57,9 +57,20 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 
         loop {
             if let Some(value) = self.tree.get(&key)? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    trace!("waited for cache at {key}");
-                    return Ok(value);
+                match bitcode::deserialize::<Option<T>>(&value) {
+                    Ok(Some(value)) => {
+                        trace!("waited for cache at {key}");
+                        return Ok(value);
+                    }
+                    Ok(None) => {}
+                    // A corrupt or incompatible entry, such as one left by an older
+                    // cache format, is dropped and recomputed so that it never
+                    // permanently poisons the key.
+                    Err(_) => {
+                        trace!("discarding corrupt cache entry at {key}");
+                        self.tree.remove(&key)?;
+                        return self.get_with(key, future).await;
+                    }
                 }
             } else {
                 // An entry was removed while we were waiting. Retry from the beginning. We
@@ -91,6 +102,33 @@ mod tests {
     async fn get_or_set() {
         let file = TempDir::new().unwrap();
         let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
+    async fn recompute_corrupt_entry() {
+        let file = TempDir::new().unwrap();
+        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+
+        let corrupt = bitcode::serialize(&Some("incompatible")).unwrap();
+        assert!(bitcode::deserialize::<Option<i32>>(&corrupt).is_err());
+        tree.insert("key", corrupt).unwrap();
+
+        let cache = SledCache::new(tree);
 
         assert_eq!(
             cache
