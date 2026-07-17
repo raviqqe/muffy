@@ -109,11 +109,15 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let robots = robots && request.url().path() != ROBOTS_PATH;
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            let response = self.get_cached_locally(&request, robots).await?;
+            // Evaluate this per hop against the current URL. When a redirect lands on a
+            // robots.txt path, its robots pre-check must be skipped, or it would fetch the
+            // same URL from inside its own in-flight cache entry and deadlock.
+            let response = self
+                .get_cached_locally(&request, robots && request.url().path() != ROBOTS_PATH)
+                .await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -457,6 +461,63 @@ mod tests {
             .get(&Request::new(foo_response.url.clone(), Default::default()))
             .await,
             Err(HttpClientError::TooManyRedirects)
+        );
+    }
+
+    #[tokio::test]
+    async fn redirect_to_robots_txt() {
+        let page_response = BareResponse {
+            url: Url::parse("https://foo.com/page").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://bar.com/robots.txt"),
+            )]
+            .into_iter()
+            .collect(),
+            body: vec![],
+        };
+        let robots_response = BareResponse {
+            url: Url::parse("https://bar.com/robots.txt").unwrap(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: b"# bar".to_vec(),
+        };
+
+        let client = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (page_response.url.clone().into(), Ok(page_response.clone())),
+                    (
+                        robots_response.url.clone().into(),
+                        Ok(robots_response.clone()),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(10),
+            client.get(
+                &Request::new(page_response.url.clone(), Default::default()).set_max_redirects(1),
+            ),
+        )
+        .await
+        .expect("following a redirect to a robots.txt URL must not deadlock");
+
+        assert_eq!(
+            result.unwrap(),
+            Some(Response::from_bare(robots_response, Duration::from_millis(0)).into())
         );
     }
 
