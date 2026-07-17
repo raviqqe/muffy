@@ -14,13 +14,31 @@ pub struct SledCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T> SledCache<T> {
+impl<T: Serialize> SledCache<T> {
     /// Creates a cache.
-    pub fn new(tree: Tree) -> Self {
-        Self {
+    ///
+    /// In-flight markers left behind by a previous process are purged. A marker
+    /// means a fetch is in progress, which cannot be true at startup, so
+    /// any surviving marker is stale and would otherwise make waiters spin
+    /// forever.
+    pub fn new(tree: Tree) -> Result<Self, CacheError> {
+        let placeholder = bitcode::serialize(&None::<T>)?;
+        let stale_keys = tree
+            .iter()
+            .filter_map(|entry| match entry {
+                Ok((key, value)) => (value.as_ref() == placeholder.as_slice()).then_some(Ok(key)),
+                Err(error) => Some(Err(error)),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        for key in stale_keys {
+            tree.remove(key)?;
+        }
+
+        Ok(Self {
             tree,
             phantom: Default::default(),
-        }
+        })
     }
 }
 
@@ -90,7 +108,8 @@ mod tests {
     #[tokio::test]
     async fn get_or_set() {
         let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
 
         assert_eq!(
             cache
@@ -109,11 +128,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn recover_from_stale_marker() {
+        let file = TempDir::new().unwrap();
+        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        let cache = SledCache::new(tree).unwrap();
+
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                cache.get_with("key".into(), Box::new(async { 42 })),
+            )
+            .await
+            .expect("a stale in-flight marker must not make a reader spin forever")
+            .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
     async fn remove_while_set() {
         let file = TempDir::new().unwrap();
-        let cache = Arc::new(SledCache::new(
-            sled::open(file.path()).unwrap().open_tree("foo").unwrap(),
-        ));
+        let cache = Arc::new(
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap(),
+        );
 
         assert_eq!(
             cache
@@ -134,7 +174,8 @@ mod tests {
     #[tokio::test]
     async fn remove_while_get() {
         let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
 
         for _ in 0..10000 {
             let mutex = Arc::new(Mutex::new(()));

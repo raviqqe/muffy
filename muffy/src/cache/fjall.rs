@@ -13,13 +13,33 @@ pub struct FjallCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T> FjallCache<T> {
+impl<T: Serialize> FjallCache<T> {
     /// Creates a cache.
-    pub fn new(keyspace: SingleWriterTxKeyspace) -> Self {
-        Self {
+    ///
+    /// In-flight markers left behind by a previous process are purged. A marker
+    /// means a fetch is in progress, which cannot be true at startup, so
+    /// any surviving marker is stale and would otherwise make waiters spin
+    /// forever.
+    pub fn new(keyspace: SingleWriterTxKeyspace) -> Result<Self, CacheError> {
+        let placeholder = bitcode::serialize(&None::<T>)?;
+        let stale_keys = keyspace
+            .inner()
+            .iter()
+            .map(|guard| guard.into_inner())
+            .filter_map(|entry| match entry {
+                Ok((key, value)) => (value.as_ref() == placeholder.as_slice()).then_some(Ok(key)),
+                Err(error) => Some(Err(error)),
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        for key in stale_keys {
+            keyspace.remove(key)?;
+        }
+
+        Ok(Self {
             keyspace,
             phantom: Default::default(),
-        }
+        })
     }
 }
 
@@ -88,7 +108,8 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        );
+        )
+        .unwrap();
 
         assert_eq!(
             cache
@@ -107,15 +128,45 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn recover_from_stale_marker() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let keyspace = db
+            .keyspace("foo", fjall::KeyspaceCreateOptions::default)
+            .unwrap();
+        keyspace
+            .insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        let cache = FjallCache::new(keyspace).unwrap();
+
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                cache.get_with("key".into(), Box::new(async { 42 })),
+            )
+            .await
+            .expect("a stale in-flight marker must not make a reader spin forever")
+            .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
     async fn remove_while_set() {
         let directory = TempDir::new().unwrap();
         let db = fjall::SingleWriterTxDatabase::builder(directory.path())
             .open()
             .unwrap();
-        let cache = Arc::new(FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        ));
+        let cache = Arc::new(
+            FjallCache::new(
+                db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
+                    .unwrap(),
+            )
+            .unwrap(),
+        );
 
         assert_eq!(
             cache
@@ -142,7 +193,8 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        );
+        )
+        .unwrap();
 
         for _ in 0..10000 {
             let mutex = Arc::new(Mutex::new(()));
