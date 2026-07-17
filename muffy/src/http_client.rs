@@ -107,13 +107,14 @@ impl HttpClient {
     async fn get_inner(
         &self,
         request: &Request,
-        robots: bool,
+        mut robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
+            robots = robots && request.url().path() != ROBOTS_PATH;
             let response = self
-                .get_cached_locally(&request, robots && request.url().path() != ROBOTS_PATH)
+                .get_cached_locally(&request, robots)
                 .await?;
 
             if !response.status().is_redirection() {
