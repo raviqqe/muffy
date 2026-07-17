@@ -64,8 +64,8 @@ pub async fn render_document(
             match result.result() {
                 Ok(success) => {
                     render_line(
-                        &success.response().map_or_else(
-                            || "\t\tvalid URL".into(),
+                        &format!("\t\t✅ {}", success.response().map_or_else(
+                            || "valid URL".into(),
                             |response| {
                                 format!(
                                     "\t\t{}\t{}\t{}",
@@ -74,13 +74,13 @@ pub async fn render_document(
                                     format!("{} ms", response.duration()).yellow()
                                 )
                             },
-                        ),
+                        )),
                         &mut writer,
                     )
                     .await?
                 }
                 Err(error) => {
-                    render_line(&format!("\t\t{}\t{error}", "ERROR".red()), &mut writer).await?
+                    render_line(&format!("\t\t{} {}", "❌" error.to_string().red()), &mut writer).await?
                 }
             }
         }
