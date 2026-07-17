@@ -16,11 +16,6 @@ pub struct SledCache<T> {
 
 impl<T: Serialize> SledCache<T> {
     /// Creates a cache.
-    ///
-    /// In-flight markers left behind by a previous process are purged. A marker
-    /// means a fetch is in progress, which cannot be true at startup, so
-    /// any surviving marker is stale and would otherwise make waiters spin
-    /// forever.
     pub fn new(tree: Tree) -> Result<Self, CacheError> {
         let placeholder = bitcode::serialize(&None::<T>)?;
         let stale_keys = tree
