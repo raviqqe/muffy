@@ -112,9 +112,6 @@ impl HttpClient {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
-            // Evaluate this per hop against the current URL. When a redirect lands on a
-            // robots.txt path, its robots pre-check must be skipped, or it would fetch the
-            // same URL from inside its own in-flight cache entry and deadlock.
             let response = self
                 .get_cached_locally(&request, robots && request.url().path() != ROBOTS_PATH)
                 .await?;
