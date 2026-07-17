@@ -70,7 +70,7 @@ pub async fn render_document(
                                 || "valid URL".into(),
                                 |response| {
                                     format!(
-                                        "\t\t{}\t{}\t{}",
+                                        "{}\t{}\t{}",
                                         response.status().to_string().green(),
                                         response.url(),
                                         format!("{} ms", response.duration()).yellow()
@@ -84,7 +84,7 @@ pub async fn render_document(
                 }
                 Err(error) => {
                     render_line(
-                        &format!("\t\t{} {}", "❌", error.to_string().red()),
+                        &format!("\t\t❌ {}", error.to_string().red()),
                         &mut writer,
                     )
                     .await?
