@@ -520,6 +520,57 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn redirect_from_robots_txt() {
+        let robots_response = BareResponse {
+            url: Url::parse("https://foo.com/robots.txt").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://foo.com/page"),
+            )]
+            .into_iter()
+            .collect(),
+            body: vec![],
+        };
+        let page_response = BareResponse {
+            url: Url::parse("https://foo.com/page").unwrap(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let client = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    (
+                        robots_response.url.clone().into(),
+                        Ok(robots_response.clone()),
+                    ),
+                    (page_response.url.clone().into(), Ok(page_response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(10),
+            client.get(
+                &Request::new(robots_response.url.clone(), Default::default()).set_max_redirects(1),
+            ),
+        )
+        .await
+        .expect("following a redirect from a robots.txt URL must not deadlock");
+
+        assert_eq!(
+            result.unwrap(),
+            Some(Response::from_bare(page_response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
     async fn get_cache() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
