@@ -26,7 +26,7 @@ use tabled::{
 };
 use tokio::{
     fs::{create_dir_all, remove_dir_all, try_exists},
-    io::stdout,
+    io::{AsyncWriteExt, stdout},
 };
 use url::Url;
 
