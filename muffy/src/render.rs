@@ -83,11 +83,7 @@ pub async fn render_document(
                     .await?
                 }
                 Err(error) => {
-                    render_line(
-                        &format!("\t\t❌ {}", error.to_string().red()),
-                        &mut writer,
-                    )
-                    .await?
+                    render_line(&format!("\t\t❌ {}", error.to_string().red()), &mut writer).await?
                 }
             }
         }
