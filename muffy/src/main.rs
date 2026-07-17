@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 
 use clap::{Parser, crate_version};
-use core::{error::Error, str::FromStr};
+use core::{error::Error, str::FromStr, time::Duration};
 use dirs::cache_dir;
 use duration_string::DurationString;
 use futures::StreamExt;
@@ -27,6 +27,7 @@ use tabled::{
 use tokio::{
     fs::{create_dir_all, remove_dir_all, try_exists},
     io::{AsyncWriteExt, stdout},
+    time::sleep,
 };
 use url::Url;
 
@@ -248,6 +249,9 @@ async fn run_config(
     }
 
     output.flush().await?;
+
+    sleep(Duration::from_millis(1)).await;
+
     eprintln!();
     eprintln!(
         "{}",
