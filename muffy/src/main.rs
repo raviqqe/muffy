@@ -248,7 +248,6 @@ async fn run_config(
     }
 
     output.flush().await?;
-    drop(output);
 
     eprintln!();
     eprintln!(
