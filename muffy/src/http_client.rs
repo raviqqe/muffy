@@ -113,9 +113,7 @@ impl HttpClient {
 
         for _ in 0..request.max_redirects() + 1 {
             robots = robots && request.url().path() != ROBOTS_PATH;
-            let response = self
-                .get_cached_locally(&request, robots)
-                .await?;
+            let response = self.get_cached_locally(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
