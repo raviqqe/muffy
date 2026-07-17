@@ -112,10 +112,10 @@ impl HttpClient {
         }
     }
 
-    /// Refetches responses served stale within their stale-while-revalidate
+    /// Re-fetches responses served stale within their stale-while-revalidate
     /// periods and caches them.
     pub(crate) async fn revalidate(&self) -> Result<(), CacheError> {
-        // Keep the lock only for draining as refetches record stale responses
+        // Keep the lock only for draining as re-fetches record stale responses
         // of their own like ones of robots.txt files.
         let requests = mem::take(&mut *self.stale_requests.lock().await);
 
