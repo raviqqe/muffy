@@ -247,6 +247,7 @@ async fn run_config(
         .await?;
     }
 
+    output.flush().await?;
     eprintln!();
     eprintln!(
         "{}",
