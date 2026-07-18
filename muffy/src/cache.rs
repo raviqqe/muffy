@@ -32,6 +32,21 @@ pub trait Cache<T: Clone>: Send + Sync {
     async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
 
+#[async_trait]
+impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+    async fn get_with<'a>(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
+    ) -> Result<T, CacheError> {
+        (**self).get_with(key, future).await
+    }
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        (**self).remove(key).await
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum CacheError {
     Bitcode(Arc<str>),
