@@ -32,7 +32,7 @@ pub trait Cache<T: Clone>: Send + Sync {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
     async fn get_with<'a>(
         &self,
         key: String,
