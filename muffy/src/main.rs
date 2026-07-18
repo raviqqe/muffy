@@ -217,7 +217,7 @@ async fn run_config(
             ReqwestHttpClient::new()?,
             ClockTimer::new(),
             if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?)?)
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },

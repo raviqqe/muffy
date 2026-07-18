@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{Cache, CacheError, utility};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use log::trace;
@@ -14,13 +14,23 @@ pub struct SledCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T> SledCache<T> {
+impl<T: Serialize> SledCache<T> {
     /// Creates a cache.
-    pub fn new(tree: Tree) -> Self {
-        Self {
+    pub fn new(tree: Tree) -> Result<Self, CacheError> {
+        let placeholder = utility::placeholder::<T>()?;
+
+        for result in tree.iter() {
+            let (key, value) = result?;
+
+            if value == placeholder {
+                tree.remove(key)?;
+            }
+        }
+
+        Ok(Self {
             tree,
             phantom: Default::default(),
-        }
+        })
     }
 }
 
@@ -38,7 +48,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
                 &key,
                 None,
-                Some(bitcode::serialize(&Option::<T>::None)?),
+                Some(utility::placeholder::<T>()?),
             )?
             .is_ok()
         {
@@ -90,7 +100,8 @@ mod tests {
     #[tokio::test]
     async fn get_or_set() {
         let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
 
         assert_eq!(
             cache
@@ -109,11 +120,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn recover_from_stale_marker() {
+        let file = TempDir::new().unwrap();
+        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        let cache = SledCache::new(tree).unwrap();
+
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                cache.get_with("key".into(), Box::new(async { 42 })),
+            )
+            .await
+            .expect("a stale in-flight marker must not make a reader spin forever")
+            .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
     async fn remove_while_set() {
         let file = TempDir::new().unwrap();
-        let cache = Arc::new(SledCache::new(
-            sled::open(file.path()).unwrap().open_tree("foo").unwrap(),
-        ));
+        let cache = Arc::new(
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap(),
+        );
 
         assert_eq!(
             cache
@@ -134,7 +166,8 @@ mod tests {
     #[tokio::test]
     async fn remove_while_get() {
         let file = TempDir::new().unwrap();
-        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
 
         for _ in 0..10000 {
             let mutex = Arc::new(Mutex::new(()));
