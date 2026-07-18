@@ -18,16 +18,13 @@ impl<T: Serialize> SledCache<T> {
     /// Creates a cache.
     pub fn new(tree: Tree) -> Result<Self, CacheError> {
         let placeholder = bitcode::serialize(&None::<T>)?;
-        let stale_keys = tree
-            .iter()
-            .filter_map(|entry| match entry {
-                Ok((key, value)) => (value.as_ref() == placeholder.as_slice()).then_some(Ok(key)),
-                Err(error) => Some(Err(error)),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
 
-        for key in stale_keys {
-            tree.remove(key)?;
+        for result in tree.iter() {
+            let (key, value) = result?;
+
+            if value == placeholder {
+                tree.remove(key)?;
+            }
         }
 
         Ok(Self {
