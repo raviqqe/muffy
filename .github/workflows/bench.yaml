@@ -29,7 +29,6 @@ jobs:
         with:
           mode: simulation
           run: cargo codspeed run
-          token: ${{ secrets.CODSPEED_TOKEN }}
   bench:
     needs:
       - cargo
