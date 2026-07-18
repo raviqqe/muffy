@@ -26,7 +26,7 @@ use tabled::{
 };
 use tokio::{
     fs::{create_dir_all, remove_dir_all, try_exists},
-    io::stdout,
+    io::{AsyncWriteExt, stdout},
 };
 use url::Url;
 
@@ -217,7 +217,7 @@ async fn run_config(
             ReqwestHttpClient::new()?,
             ClockTimer::new(),
             if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?)?)
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
@@ -246,6 +246,8 @@ async fn run_config(
         )
         .await?;
     }
+
+    output.flush().await?;
 
     eprintln!();
     eprintln!(

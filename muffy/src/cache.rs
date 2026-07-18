@@ -2,6 +2,7 @@ mod fjall;
 mod memory;
 mod moka;
 mod sled;
+mod utility;
 
 pub use self::{fjall::FjallCache, memory::MemoryCache, moka::MokaCache, sled::SledCache};
 use alloc::sync::Arc;
@@ -29,6 +30,21 @@ pub trait Cache<T: Clone>: Send + Sync {
 
     /// Removes a cached value corresponding to the given key.
     async fn remove(&self, key: &str) -> Result<(), CacheError>;
+}
+
+#[async_trait]
+impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+    async fn get_with<'a>(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
+    ) -> Result<T, CacheError> {
+        (**self).get_with(key, future).await
+    }
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        (**self).remove(key).await
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
