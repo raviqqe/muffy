@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{Cache, CacheError, utility};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use log::trace;
@@ -17,7 +17,7 @@ pub struct SledCache<T> {
 impl<T: Serialize> SledCache<T> {
     /// Creates a cache.
     pub fn new(tree: Tree) -> Result<Self, CacheError> {
-        let placeholder = bitcode::serialize(&None::<T>)?;
+        let placeholder = utility::placeholder::<T>()?;
 
         for result in tree.iter() {
             let (key, value) = result?;
@@ -48,7 +48,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
             .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
                 &key,
                 None,
-                Some(bitcode::serialize(&Option::<T>::None)?),
+                Some(utility::placeholder::<T>()?),
             )?
             .is_ok()
         {
