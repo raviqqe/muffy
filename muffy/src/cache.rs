@@ -2,6 +2,7 @@ mod fjall;
 mod memory;
 mod moka;
 mod sled;
+mod utility;
 
 pub use self::{fjall::FjallCache, memory::MemoryCache, moka::MokaCache, sled::SledCache};
 use alloc::sync::Arc;

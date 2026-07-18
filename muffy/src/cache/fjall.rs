@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{Cache, CacheError, utility};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use fjall::SingleWriterTxKeyspace;
@@ -13,13 +13,23 @@ pub struct FjallCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T> FjallCache<T> {
+impl<T: Serialize> FjallCache<T> {
     /// Creates a cache.
-    pub fn new(keyspace: SingleWriterTxKeyspace) -> Self {
-        Self {
+    pub fn new(keyspace: SingleWriterTxKeyspace) -> Result<Self, CacheError> {
+        let placeholder = utility::placeholder::<T>()?;
+
+        for guard in keyspace.inner().iter() {
+            let (key, value) = guard.into_inner()?;
+
+            if value == placeholder {
+                keyspace.remove(key)?;
+            }
+        }
+
+        Ok(Self {
             keyspace,
             phantom: Default::default(),
-        }
+        })
     }
 }
 
@@ -30,7 +40,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
-        let placeholder = bitcode::serialize(&None::<T>)?;
+        let placeholder = utility::placeholder::<T>()?;
 
         let previous = self.keyspace.fetch_update(key.clone(), |previous| {
             Some(if let Some(value) = previous {
@@ -88,7 +98,8 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        );
+        )
+        .unwrap();
 
         assert_eq!(
             cache
@@ -107,15 +118,45 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn recover_from_stale_marker() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let keyspace = db
+            .keyspace("foo", fjall::KeyspaceCreateOptions::default)
+            .unwrap();
+        keyspace
+            .insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        let cache = FjallCache::new(keyspace).unwrap();
+
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                cache.get_with("key".into(), Box::new(async { 42 })),
+            )
+            .await
+            .expect("a stale in-flight marker must not make a reader spin forever")
+            .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
     async fn remove_while_set() {
         let directory = TempDir::new().unwrap();
         let db = fjall::SingleWriterTxDatabase::builder(directory.path())
             .open()
             .unwrap();
-        let cache = Arc::new(FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        ));
+        let cache = Arc::new(
+            FjallCache::new(
+                db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
+                    .unwrap(),
+            )
+            .unwrap(),
+        );
 
         assert_eq!(
             cache
@@ -142,7 +183,8 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        );
+        )
+        .unwrap();
 
         for _ in 0..10000 {
             let mutex = Arc::new(Mutex::new(()));
