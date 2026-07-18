@@ -196,12 +196,15 @@ fn sled_cache(criterion: &mut Criterion) {
     benchmark_cache(
         criterion,
         "sled",
-        &Arc::new(SledCache::new(
-            sled::open(directory.path())
-                .unwrap()
-                .open_tree("cache")
-                .unwrap(),
-        )),
+        &Arc::new(
+            SledCache::new(
+                sled::open(directory.path())
+                    .unwrap()
+                    .open_tree("cache")
+                    .unwrap(),
+            )
+            .unwrap(),
+        ),
     );
 }
 
@@ -211,13 +214,16 @@ fn fjall_cache(criterion: &mut Criterion) {
     benchmark_cache(
         criterion,
         "fjall",
-        &Arc::new(FjallCache::new(
-            SingleWriterTxDatabase::builder(directory.path())
-                .open()
-                .unwrap()
-                .keyspace("cache", KeyspaceCreateOptions::default)
-                .unwrap(),
-        )),
+        &Arc::new(
+            FjallCache::new(
+                SingleWriterTxDatabase::builder(directory.path())
+                    .open()
+                    .unwrap()
+                    .keyspace("cache", KeyspaceCreateOptions::default)
+                    .unwrap(),
+            )
+            .unwrap(),
+        ),
     );
 }
 
