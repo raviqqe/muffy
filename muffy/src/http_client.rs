@@ -168,24 +168,20 @@ impl HttpClient {
             )
         };
 
-        let cached = get().await?;
-
-        // Refresh an expired response.
-        let cached = if matches!(&cached, Ok(response) if response.is_expired(request.max_age())) {
+        let result = get().await?;
+        let result = if matches!(&result, Ok(response) if response.is_expired(request.max_age())) {
             self.global_cache.remove(request.url().as_str()).await?;
 
             get().await?
         } else {
-            cached
+            result
         };
 
-        // Errors are not persisted so that a transient failure or a robots.txt
-        // denial is reconsidered on the next run.
-        if cached.is_err() {
+        if result.is_err() {
             self.global_cache.remove(request.url().as_str()).await?;
         }
 
-        Ok(cached?.response().clone())
+        Ok(result?.response().clone())
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
