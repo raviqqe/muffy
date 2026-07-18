@@ -17,18 +17,13 @@ impl<T: Serialize> FjallCache<T> {
     /// Creates a cache.
     pub fn new(keyspace: SingleWriterTxKeyspace) -> Result<Self, CacheError> {
         let placeholder = bitcode::serialize(&None::<T>)?;
-        let stale_keys = keyspace
-            .inner()
-            .iter()
-            .map(|guard| guard.into_inner())
-            .filter_map(|entry| match entry {
-                Ok((key, value)) => (value.as_ref() == placeholder.as_slice()).then_some(Ok(key)),
-                Err(error) => Some(Err(error)),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
 
-        for key in stale_keys {
-            keyspace.remove(key)?;
+        for guard in keyspace.inner().iter() {
+            let (key, value) = guard.into_inner()?;
+
+            if value == placeholder {
+                keyspace.remove(key)?;
+            }
         }
 
         Ok(Self {
