@@ -1,13 +1,13 @@
 #![allow(missing_docs)]
 
+extern crate alloc;
+
+use alloc::sync::Arc;
+use core::sync::atomic::{AtomicUsize, Ordering};
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use fjall::{KeyspaceCreateOptions, SingleWriterTxDatabase};
 use futures::future::join_all;
 use muffy::{Cache, FjallCache, SledCache};
-use std::sync::{
-    Arc,
-    atomic::{AtomicUsize, Ordering},
-};
 use tempfile::TempDir;
 use tokio::runtime::Runtime;
 
