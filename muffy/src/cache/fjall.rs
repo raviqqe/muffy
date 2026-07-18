@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{Cache, CacheError, utility};
 use async_trait::async_trait;
 use core::{marker::PhantomData, time::Duration};
 use fjall::SingleWriterTxKeyspace;
@@ -16,7 +16,7 @@ pub struct FjallCache<T> {
 impl<T: Serialize> FjallCache<T> {
     /// Creates a cache.
     pub fn new(keyspace: SingleWriterTxKeyspace) -> Result<Self, CacheError> {
-        let placeholder = bitcode::serialize(&None::<T>)?;
+        let placeholder = utility::placeholder::<T>()?;
 
         for guard in keyspace.inner().iter() {
             let (key, value) = guard.into_inner()?;
@@ -40,7 +40,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         key: String,
         future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
-        let placeholder = bitcode::serialize(&None::<T>)?;
+        let placeholder = utility::placeholder::<T>()?;
 
         let previous = self.keyspace.fetch_update(key.clone(), |previous| {
             Some(if let Some(value) = previous {
