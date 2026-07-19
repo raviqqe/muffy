@@ -95,8 +95,6 @@ mod tests {
 
         join_all(futures).await;
 
-        // The last batch of requests waits only for the second-to-last window
-        // boundary.
         let duration = WINDOW * (REQUEST_COUNT / SUPPLY - 1) as _;
 
         assert!(time.elapsed() >= duration);
