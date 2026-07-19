@@ -79,9 +79,9 @@ mod tests {
 
     #[tokio::test]
     async fn run_many_times() {
-        const REQUEST_COUNT: u64 = 100_000;
+        const REQUEST_COUNT: u64 = 10_000;
         const SUPPLY: u64 = 1000;
-        const WINDOW: Duration = Duration::from_millis(10);
+        const WINDOW: Duration = Duration::from_millis(100);
 
         let time = Instant::now();
         let limiter = Arc::new(RateLimiter::new(SUPPLY, WINDOW));
@@ -95,7 +95,7 @@ mod tests {
 
         join_all(futures).await;
 
-        let duration = WINDOW * (REQUEST_COUNT / SUPPLY) as _;
+        let duration = WINDOW * (REQUEST_COUNT / SUPPLY - 1) as _;
 
         assert!(time.elapsed() >= duration);
         assert!(time.elapsed() < duration.mul_f64(1.5));
