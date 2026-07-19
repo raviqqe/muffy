@@ -15,7 +15,7 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
-      - run: cargo bench
+      - run: cargo bench -j2
   codspeed:
     runs-on: ubuntu-latest
     steps:
