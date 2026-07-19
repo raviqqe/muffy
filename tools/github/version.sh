@@ -2,4 +2,4 @@
 
 set -e
 
-echo version=$(cargo run -- --version | grep -o '[0-9.]\+') >>$GITHUB_OUTPUT
+echo version=$(yq .workspace.package.version Cargo.toml) >>$GITHUB_OUTPUT
