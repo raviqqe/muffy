@@ -7,6 +7,8 @@ on:
 concurrency:
   group: bench-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+env:
+  CARGO_OPTIONS: -j 2
 jobs:
   cargo:
     runs-on: ubuntu-latest
@@ -15,7 +17,7 @@ jobs:
         with:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
-      - run: cargo bench -j2
+      - run: cargo bench $CARGO_OPTIONS
   codspeed:
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +26,7 @@ jobs:
           submodules: true
       - uses: raviqqe/cargo-cache@4c7db86c0f73cc94a5608ad8b09e7a8e136fd259 # v1.0.4
       - run: cargo install --features vendored-openssl cargo-codspeed
-      - run: cargo codspeed build
+      - run: cargo codspeed build $CARGO_OPTIONS
         # cspell: ignore codspeedhq
       - uses: codspeedhq/action@f99becdce5e5d51fd556489ebef684f4ecfd6286 # v4.18.5
         with:
