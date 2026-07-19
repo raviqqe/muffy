@@ -177,7 +177,13 @@ impl HttpClient {
             result
         };
 
-        if result.is_err() {
+        if match &result {
+            Ok(response) => request
+                .retry()
+                .statuses()
+                .contains(&response.response().status()),
+            Err(_) => true,
+        } {
             self.global_cache.remove(request.url().as_str()).await?;
         }
 
@@ -750,6 +756,154 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn evict_cached_response_with_retry_status() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let cached_response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::TOO_MANY_REQUESTS,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let fresh_response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let robots = build_stub_response(
+            url.join("/robots.txt").unwrap().as_str(),
+            StatusCode::OK,
+            Default::default(),
+            vec![],
+        );
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
+                    Ok(Arc::new(
+                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                    ))
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+
+        let request = Request::new(url.clone(), Default::default())
+            .set_max_age(CACHE_MAX_AGE)
+            .set_retry(
+                RetryConfig::default()
+                    .set_statuses([StatusCode::TOO_MANY_REQUESTS].into())
+                    .into(),
+            );
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        robots.clone(),
+                        (url.as_str().into(), Ok(fresh_response.clone()))
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache.clone()),
+            )
+            .get(&request)
+            .await
+            .unwrap(),
+            Some(Response::from_bare(cached_response, Duration::default()).into())
+        );
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [robots, (url.as_str().into(), Ok(fresh_response.clone()))]
+                        .into_iter()
+                        .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+            )
+            .get(&request)
+            .await
+            .unwrap(),
+            Some(Response::from_bare(fresh_response, Duration::default()).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn keep_cached_response_without_retry_status() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let cached_response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::TOO_MANY_REQUESTS,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let robots = build_stub_response(
+            url.join("/robots.txt").unwrap().as_str(),
+            StatusCode::OK,
+            Default::default(),
+            vec![],
+        );
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
+                    Ok(Arc::new(
+                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                    ))
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+
+        let request = Request::new(url.clone(), Default::default())
+            .set_max_age(CACHE_MAX_AGE)
+            .set_retry(
+                RetryConfig::default()
+                    .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                    .into(),
+            );
+
+        for _ in 0..2 {
+            assert_eq!(
+                HttpClient::new(
+                    StubHttpClient::new(
+                        [
+                            robots.clone(),
+                            (
+                                url.as_str().into(),
+                                Ok(BareResponse {
+                                    url: url.clone(),
+                                    status: StatusCode::OK,
+                                    headers: Default::default(),
+                                    body: vec![],
+                                })
+                            )
+                        ]
+                        .into_iter()
+                        .collect(),
+                    ),
+                    StubTimer::new(),
+                    Box::new(cache.clone()),
+                )
+                .get(&request)
+                .await
+                .unwrap(),
+                Some(Response::from_bare(cached_response.clone(), Duration::default()).into())
+            );
+        }
+    }
+
+    #[tokio::test]
     async fn hit_timeout() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
@@ -1148,6 +1302,47 @@ mod tests {
                 .await
                 .unwrap(),
                 Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
+            );
+        }
+
+        #[tokio::test]
+        async fn exhaust_retries_with_status_code() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let retry_response = BareResponse {
+                url: url.clone(),
+                status: StatusCode::TOO_MANY_REQUESTS,
+                headers: Default::default(),
+                body: vec![],
+            };
+
+            assert_eq!(
+                HttpClient::new(
+                    StubSequenceHttpClient::new(vec![
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(retry_response.clone())),
+                        (url.as_str().into(), Ok(retry_response.clone())),
+                    ]),
+                    StubTimer::new(),
+                    Box::new(MemoryCache::new(CACHE_CAPACITY)),
+                )
+                .get(
+                    &Request::new(url, Default::default())
+                        .set_max_age(CACHE_MAX_AGE)
+                        .set_retry(
+                            RetryConfig::default()
+                                .set_count(1)
+                                .set_statuses([StatusCode::TOO_MANY_REQUESTS].into())
+                                .into()
+                        )
+                )
+                .await
+                .unwrap(),
+                Some(Response::from_bare(retry_response, Duration::from_millis(0)).into())
             );
         }
     }
