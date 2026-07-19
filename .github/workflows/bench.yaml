@@ -8,7 +8,7 @@ concurrency:
   group: bench-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 env:
-  CARGO_OPTIONS: -j 3
+  CARGO_OPTIONS: -j 2
 jobs:
   cargo:
     runs-on: ubuntu-latest
