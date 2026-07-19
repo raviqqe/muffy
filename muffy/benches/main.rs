@@ -31,7 +31,7 @@ fn benchmark_get_with_cold<C: Cache<Vec<u8>> + 'static>(
     cache: &Arc<C>,
     value_size: usize,
 ) {
-    let counter = AtomicUsize::new(0);
+    let counter = AtomicUsize::default();
     let value = page(value_size);
 
     criterion.bench_function(name, |bencher| {
@@ -92,7 +92,7 @@ fn benchmark_get_with_concurrent<C: Cache<Vec<u8>> + 'static>(
     runtime: &Runtime,
     cache: &Arc<C>,
 ) {
-    let counter = AtomicUsize::new(0);
+    let counter = AtomicUsize::default();
     let value = page(SMALL_VALUE_SIZE);
 
     criterion.bench_function(name, |bencher| {
