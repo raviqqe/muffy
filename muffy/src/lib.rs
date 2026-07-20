@@ -18,6 +18,7 @@ mod render;
 mod request;
 mod response;
 mod robot_list;
+mod sitemap;
 mod timer;
 mod web_validator;
 
