@@ -1,4 +1,7 @@
-use crate::{cache::CacheError, html_parser::HtmlParseError, http_client::HttpClientError};
+use crate::{
+    cache::CacheError, html_parser::HtmlParseError, http_client::HttpClientError,
+    sitemap::SitemapError,
+};
 use core::{
     error,
     fmt::{self, Display, Formatter},
@@ -27,8 +30,6 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A sitemap error.
-    Sitemap(sitemaps::error::Error),
     /// A Sled database error.
     Sled(sled::Error),
     /// A URL parse error.
@@ -51,7 +52,6 @@ impl Display for Error {
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
@@ -114,12 +114,6 @@ impl From<url::ParseError> for Error {
     }
 }
 
-impl From<sitemaps::error::Error> for Error {
-    fn from(error: sitemaps::error::Error) -> Self {
-        Self::Sitemap(error)
-    }
-}
-
 impl From<Utf8Error> for Error {
     fn from(error: Utf8Error) -> Self {
         Self::Utf8(error)
@@ -148,6 +142,8 @@ pub enum ItemError {
     HttpStatus(StatusCode),
     /// An invalid scheme.
     InvalidScheme(String),
+    /// A sitemap parse error.
+    Sitemap(SitemapError),
     /// A URL parse error.
     UrlParse(ParseError),
     /// A UTF-8 error.
@@ -173,6 +169,7 @@ impl Display for ItemError {
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+            Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }

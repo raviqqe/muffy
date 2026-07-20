@@ -14,12 +14,12 @@ use crate::{
     request::Request,
     response::Response,
     robot_list::RobotList,
+    sitemap,
 };
 use alloc::{collections::BTreeSet, sync::Arc};
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
-use sitemaps::{Sitemaps, siteindex::SiteIndex, sitemap::Sitemap};
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
@@ -202,7 +202,7 @@ impl WebValidator {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Robots => self.validate_robots(&context, &response)?,
-            DocumentType::Sitemap => self.validate_sitemap(&context, &response)?,
+            DocumentType::Sitemap => self.validate_sitemap(&context, &response),
         };
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
@@ -471,41 +471,31 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         response: &Arc<Response>,
-    ) -> Result<Vec<ElementFuture>, Error> {
-        Ok(match SiteIndex::read_from(response.body()) {
-            Ok(site_index) if !site_index.entries.is_empty() => site_index
-                .entries
-                .iter()
+    ) -> Vec<ElementFuture> {
+        match sitemap::parse(response.body()) {
+            Ok(entries) => entries
+                .into_iter()
                 .map(|entry| {
+                    let (url, document_type) = match entry {
+                        sitemap::Entry::Sitemap(url) => (url, Some(DocumentType::Sitemap)),
+                        sitemap::Entry::Url(url) => (url, None),
+                    };
+
                     (
                         Element::new("loc".into(), vec![]),
                         vec![spawn(self.cloned().validate_link(
                             context.clone(),
-                            entry.loc.clone(),
-                            Some(DocumentType::Sitemap),
+                            url,
+                            document_type,
                         ))],
                     )
                 })
-                .collect::<Vec<_>>(),
-            _ => {
-                let sitemap = Sitemap::read_from(response.body())?;
-
-                sitemap
-                    .entries
-                    .iter()
-                    .map(|entry| {
-                        (
-                            Element::new("loc".into(), vec![]),
-                            vec![spawn(self.cloned().validate_link(
-                                context.clone(),
-                                entry.loc.clone(),
-                                None,
-                            ))],
-                        )
-                    })
-                    .collect::<Vec<_>>()
-            }
-        })
+                .collect(),
+            Err(error) => vec![(
+                Element::new("sitemap".into(), vec![]),
+                vec![spawn(async move { Err(ItemError::Sitemap(error)) })],
+            )],
+        }
     }
 
     fn validate_document_type(
@@ -1952,6 +1942,54 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(5, 0), Metrics::new(4, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_malformed_sitemap_as_error() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<link rel="sitemap" href="https://foo.com/sitemap.xml"/>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sitemap.xml",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("application/xml"),
+                            )]),
+                            r#"<urlset><url><loc>https://foo.com/bar</loc></wrong></urlset>"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 1), Metrics::new(1, 1))
             );
         }
 
