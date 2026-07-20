@@ -91,7 +91,7 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
 }
 
 /// A sitemap parse error.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct SitemapError {
     message: Arc<str>,
 }
