@@ -1,4 +1,3 @@
-use alloc::sync::Arc;
 use core::{
     error::Error,
     fmt::{self, Display, Formatter},
@@ -35,9 +34,9 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                 let name = element.local_name().as_ref().to_vec();
 
                 if name == LOCATION_ELEMENT
-                    && elements.last().is_some_and(|parent| {
-                        parent == SITEMAP_ELEMENT || parent == URL_ELEMENT
-                    })
+                    && elements
+                        .last()
+                        .is_some_and(|parent| parent == SITEMAP_ELEMENT || parent == URL_ELEMENT)
                 {
                     location = Some(String::new());
                 }
@@ -92,31 +91,33 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
 
 /// A sitemap parse error.
 #[derive(Debug)]
-pub struct SitemapError {
-    message: Arc<str>,
+pub enum SitemapError {
+    /// A UTF-8 error.
+    Utf8(Utf8Error),
+    /// An XML parse error.
+    Xml(quick_xml::Error),
 }
 
 impl Error for SitemapError {}
 
 impl Display for SitemapError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "invalid sitemap: {}", self.message)
+        match self {
+            Self::Xml(error)=> write!(formatter, "{error}"),
+            Self::Utf8(error) => write!(formatter, "{error}"),
+        }
     }
 }
 
 impl From<quick_xml::Error> for SitemapError {
     fn from(error: quick_xml::Error) -> Self {
-        Self {
-            message: error.to_string().into(),
-        }
+        Self::Xml(error)
     }
 }
 
 impl From<Utf8Error> for SitemapError {
     fn from(error: Utf8Error) -> Self {
-        Self {
-            message: error.to_string().into(),
-        }
+        Self::Utf8(error)
     }
 }
 
