@@ -11,7 +11,7 @@ const SITEMAP_ELEMENT: &[u8] = b"sitemap";
 const URL_ELEMENT: &[u8] = b"url";
 
 /// A sitemap location entry.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Entry {
     /// A nested sitemap in a sitemap index.
     Sitemap(String),
