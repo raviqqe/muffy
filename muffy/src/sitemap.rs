@@ -34,9 +34,9 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
             Event::Start(element) => {
                 let name = element.local_name().as_ref().to_vec();
 
-                if name.as_slice() == LOCATION_ELEMENT
+                if name == LOCATION_ELEMENT
                     && elements.last().is_some_and(|parent| {
-                        parent.as_slice() == SITEMAP_ELEMENT || parent.as_slice() == URL_ELEMENT
+                        parent == SITEMAP_ELEMENT || parent == URL_ELEMENT
                     })
                 {
                     location = Some(String::new());
