@@ -103,7 +103,7 @@ impl Error for SitemapError {}
 impl Display for SitemapError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Xml(error)=> write!(formatter, "{error}"),
+            Self::Xml(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
     }
