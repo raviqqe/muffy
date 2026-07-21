@@ -25,7 +25,7 @@ use crate::{
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
-use core::{mem, str, time::Duration};
+use core::{mem::take, str, time::Duration};
 use futures::future::join_all;
 use http::StatusCode;
 use std::collections::HashMap;
@@ -112,12 +112,8 @@ impl HttpClient {
         }
     }
 
-    /// Re-fetches responses served stale within their stale-while-revalidate
-    /// periods and caches them.
     pub(crate) async fn revalidate(&self) -> Result<(), CacheError> {
-        // Keep the lock only for draining as re-fetches record stale responses
-        // of their own like ones of robots.txt files.
-        let requests = mem::take(&mut *self.stale_requests.lock().await);
+        let requests = take(&mut *self.stale_requests.lock().await);
 
         join_all(requests.iter().map(|(request, robots)| async move {
             self.global_cache.remove(request.url().as_str()).await?;
