@@ -85,8 +85,8 @@ impl Request {
         self
     }
 
-    pub const fn set_stale_while_revalidate(mut self, period: Duration) -> Self {
-        self.stale_while_revalidate = period;
+    pub const fn set_stale_while_revalidate(mut self, duration: Duration) -> Self {
+        self.stale_while_revalidate = duration;
         self
     }
 
