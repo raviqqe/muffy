@@ -48,7 +48,7 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                         .last()
                         .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
                 {
-                    location.push_str(&unescape(&text.decode()?)?);
+                    location.push_str(&text.decode()?);
                 }
             }
             Event::CData(data) => {
@@ -58,6 +58,15 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                         .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
                 {
                     location.push_str(str::from_utf8(&data.into_inner())?);
+                }
+            }
+            Event::GeneralRef(reference) => {
+                if let Some(location) = &mut location
+                    && elements
+                        .last()
+                        .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
+                {
+                    location.push_str(&unescape(&format!("&{};", reference.decode()?))?);
                 }
             }
             Event::End(_) => {
