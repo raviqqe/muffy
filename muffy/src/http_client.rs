@@ -112,6 +112,7 @@ impl HttpClient {
         }
     }
 
+    // TODO Inline the revalidation logic into the `get_cached_globally` function.
     pub(crate) async fn revalidate(&self) -> Result<(), CacheError> {
         let requests = take(&mut *self.stale_requests.lock().await);
 
@@ -203,6 +204,7 @@ impl HttpClient {
             result
         };
 
+        // TODO Leave retried responses.
         if match &result {
             Ok(response) => request
                 .retry()
