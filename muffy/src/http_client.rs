@@ -158,12 +158,10 @@ impl HttpClient {
                         && let Some(robot) = self.get_robot(request).await?
                         && !robot.is_allowed(request.url().path())
                     {
-                        return Err(HttpClientError::RobotsTxt);
+                        Err(HttpClientError::RobotsTxt)
+                    } else {
+                        Ok(Arc::new(self.get_retried(request).await?.into()))
                     }
-
-                    let response = self.get_retried(request).await?;
-
-                    Ok(Arc::new(response.into()))
                 }),
             )
         };
