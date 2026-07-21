@@ -3,6 +3,7 @@ use core::{
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
+use quick_xml::{encoding::EncodingError, escape::EscapeError};
 
 /// A sitemap parse error.
 #[derive(Debug)]
@@ -33,5 +34,17 @@ impl From<quick_xml::Error> for SitemapError {
 impl From<Utf8Error> for SitemapError {
     fn from(error: Utf8Error) -> Self {
         Self::Utf8(error)
+    }
+}
+
+impl From<EncodingError> for SitemapError {
+    fn from(error: EncodingError) -> Self {
+        Self::Xml(error.into())
+    }
+}
+
+impl From<EscapeError> for SitemapError {
+    fn from(error: EscapeError) -> Self {
+        Self::Xml(error.into())
     }
 }

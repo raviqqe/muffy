@@ -2,7 +2,7 @@ mod error;
 
 pub use self::error::SitemapError;
 use core::str;
-use quick_xml::{Reader, events::Event};
+use quick_xml::{Reader, escape::unescape, events::Event};
 
 const LOCATION_ELEMENT: &[u8] = b"loc";
 const SITEMAP_ELEMENT: &[u8] = b"sitemap";
@@ -20,7 +20,7 @@ pub enum Entry {
 /// Extracts locations from a sitemap or a sitemap index.
 pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
     let mut reader = Reader::from_reader(source);
-    reader.trim_text(true);
+    reader.config_mut().trim_text(true);
 
     let mut buffer = vec![];
     let mut elements = Vec::<Vec<u8>>::new();
@@ -48,7 +48,7 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                         .last()
                         .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
                 {
-                    location.push_str(&text.unescape()?);
+                    location.push_str(&unescape(&text.decode()?)?);
                 }
             }
             Event::CData(data) => {
