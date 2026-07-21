@@ -118,8 +118,6 @@ impl HttpClient {
         join_all(requests.iter().map(|(request, robots)| async move {
             self.global_cache.remove(request.url().as_str()).await?;
 
-            // Do not persist re-fetch errors and retried responses like other
-            // cache entries.
             if match &self.get_cached(request, *robots).await? {
                 Ok(response) => request
                     .retry()
