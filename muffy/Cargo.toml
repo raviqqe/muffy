@@ -12,6 +12,11 @@ categories.workspace = true
 [[bench]]
 harness = false
 name = "main"
+required-features = ["integration-bench"]
+
+[features]
+# Benchmarks of persistent caches depending on file systems
+integration-bench = []
 
 [dependencies]
 async-recursion = "1.1.1"
