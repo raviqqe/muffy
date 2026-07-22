@@ -86,7 +86,7 @@ impl WebValidator {
 
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
-            .buffer_unordered(JOB_COMPLETION_BUFFER)
+            .buffer_unordered(JOB_COMPLETION_BUFFER))
     }
 
     async fn validate_link(
