@@ -9,8 +9,8 @@ statuses = [200]
 timeout = "30s"
 
 [sites.default.cache]
-max_age = "1w"
-stale_while_revalidate = "1w"
+max_age = "1d"
+stale_while_revalidate = "1d"
 
 [sites.default.retry]
 count = 3
@@ -50,8 +50,8 @@ ignored_elements = [
 extend = "default"
 
 [sites.external.cache]
-max_age = "1h"
-stale_while_revalidate = "1h"
+max_age = "1w"
+stale_while_revalidate = "1w"
 
 [sites.main]
 extend = "default"
