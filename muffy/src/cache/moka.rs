@@ -61,4 +61,18 @@ mod tests {
             42,
         );
     }
+
+    #[tokio::test]
+    async fn get() {
+        let cache = MokaCache::new(1 << 10);
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
 }

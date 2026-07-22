@@ -130,6 +130,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get() {
+        let file = TempDir::new().unwrap();
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn get_ignores_in_flight_marker() {
+        let file = TempDir::new().unwrap();
+        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+        let cache = SledCache::<i32>::new(tree.clone()).unwrap();
+
+        // An in-flight marker left by another task is not a committed value.
+        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+    }
+
+    #[tokio::test]
     async fn recover_from_stale_marker() {
         let file = TempDir::new().unwrap();
         let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();

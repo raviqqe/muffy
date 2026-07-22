@@ -181,18 +181,22 @@ impl HttpClient {
                     .saturating_add(request.stale_while_revalidate()),
             )
         {
-            self.global_cache.remove(request.url().as_str()).await?;
+            if response.is_expired(
+                request
+                    .max_age()
+                    .saturating_add(request.stale_while_revalidate()),
+            ) {
+                self.global_cache.remove(request.url().as_str()).await?;
 
-            get().await?
-        } else if let Some(Ok(response)) = result
-            && response.is_expired(request.max_age())
-        {
-            // TODO Pass this to `TaskTracker`.
-            get().await?;
+                get().await?
+            } else if response.is_expired(request.max_age()) {
+                // TODO Pass this to `TaskTracker`.
+                get().await?;
 
-            Ok(response)
-        } else if let Some(result) = result {
-            result
+                Ok(response)
+            } else {
+                Ok(response)
+            }
         } else {
             get().await?
         }?
