@@ -87,14 +87,6 @@ impl WebValidator {
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
             .buffer_unordered(JOB_COMPLETION_BUFFER)
-            .chain(
-                stream::once({
-                    let validator = self.cloned();
-
-                    Box::pin(async move { validator.0.http_client.revalidate().await })
-                })
-                .filter_map(|result| ready(result.err().map(|error| Err(error.into())))),
-            ))
     }
 
     async fn validate_link(
