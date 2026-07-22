@@ -155,16 +155,7 @@ impl HttpClient {
         let get = || {
             self.global_cache.get_with(
                 request.url().to_string(),
-                Box::new(async move {
-                    if robots
-                        && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_allowed(request.url().path())
-                    {
-                        Err(HttpClientError::RobotsTxt)
-                    } else {
-                        Ok(Arc::new(self.get_retried(request).await?.into()))
-                    }
-                }),
+                Box::new(self.get_filtered(request, robots)),
             )
         };
 
@@ -206,6 +197,21 @@ impl HttpClient {
         }?
         .response()
         .clone())
+    }
+
+    async fn get_filtered(
+        &self,
+        request: &Request,
+        robots: bool,
+    ) -> Result<Arc<CachedResponse>, HttpClientError> {
+        if robots
+            && let Some(robot) = self.get_robot(request).await?
+            && !robot.is_allowed(request.url().path())
+        {
+            Err(HttpClientError::RobotsTxt)
+        } else {
+            Ok(Arc::new(self.get_retried(request).await?.into()))
+        }
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
