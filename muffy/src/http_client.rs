@@ -1006,9 +1006,6 @@ mod tests {
         );
     }
 
-
-
-
     #[tokio::test]
     async fn hit_timeout() {
         let url = Url::parse("https://foo.com").unwrap();
