@@ -61,7 +61,7 @@ jobs:
       - uses: ./.github/actions/muffy-cache
       - run: node --run build -- --site http://localhost:4321
       - run: node --run preview &
-      - run: cargo run check --verbose ../muffy.local.toml
+      - run: cargo run check ../muffy.local.toml
   web_docker_test:
     runs-on: ubuntu-latest
     steps:
