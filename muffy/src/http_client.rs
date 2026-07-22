@@ -158,25 +158,27 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let result = self.get_cached(request, robots).await?;
-        let result = if matches!(&result, Ok(response) if response.is_expired(
-            request
-                .max_age()
-                .saturating_add(request.stale_while_revalidate()),
-        )) {
+        let get = || self.get_cached(request, robots);
+        let result = self.global_cache.get(request, robots).await?;
+        let result = if let Some(Ok(response)) = &result
+            && response.is_expired(
+                request
+                    .max_age()
+                    .saturating_add(request.stale_while_revalidate()),
+            ) {
             self.global_cache.remove(request.url().as_str()).await?;
 
-            self.get_cached(request, robots).await?
-        } else {
-            if let Ok(response) = &result
-                && response.is_expired(request.max_age())
-            {
-                self.stale_requests
-                    .lock()
-                    .await
-                    .push((request.clone(), robots));
-            }
+            get().await?
+        } else if let Some(Ok(response)) = &result
+            && response.is_expired(request.max_age())
+        {
+            self.stale_requests
+                .lock()
+                .await
+                .push((request.clone(), robots));
 
+            result
+        } else {
             result
         };
 
