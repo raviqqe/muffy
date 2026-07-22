@@ -18,11 +18,7 @@ use crate::{
 };
 use alloc::{collections::BTreeSet, sync::Arc};
 use core::{iter, str};
-use futures::{
-    Stream, StreamExt,
-    future::{ready, try_join_all},
-    stream,
-};
+use futures::{Stream, StreamExt, future::try_join_all};
 use muffy_document::html::Node;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};

@@ -25,8 +25,7 @@ use crate::{
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
-use core::{mem::take, str, time::Duration};
-use futures::future::join_all;
+use core::{str, time::Duration};
 use http::StatusCode;
 use std::collections::HashMap;
 use tokio::{
