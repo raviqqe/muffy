@@ -112,30 +112,6 @@ impl HttpClient {
         }
     }
 
-    // TODO Inline the revalidation logic into the `get_cached_globally` function.
-    pub(crate) async fn revalidate(&self) -> Result<(), CacheError> {
-        let requests = take(&mut *self.stale_requests.lock().await);
-
-        join_all(requests.iter().map(|(request, robots)| async move {
-            self.global_cache.remove(request.url().as_str()).await?;
-
-            if match &self.get_cached(request, *robots).await? {
-                Ok(response) => request
-                    .retry()
-                    .statuses()
-                    .contains(&response.response().status()),
-                Err(_) => true,
-            } {
-                self.global_cache.remove(request.url().as_str()).await?;
-            }
-
-            Ok(())
-        }))
-        .await
-        .into_iter()
-        .collect()
-    }
-
     async fn get_inner(
         &self,
         request: &Request,
@@ -218,6 +194,7 @@ impl HttpClient {
         Ok(result?.response().clone())
     }
 
+    // TODO Inline this.
     async fn get_cached(
         &self,
         request: &Request,
