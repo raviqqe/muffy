@@ -169,18 +169,20 @@ impl HttpClient {
         };
 
         let result = self.global_cache.get(request, robots).await?;
-
-        if let Some(result) = &result
+        let result = if let Some(result) = &result
             && match &result {
                 Ok(response) => request
                     .retry()
                     .statuses()
                     .contains(&response.response().status()),
                 Err(_) => true,
-            }
-        {
+            } {
             self.global_cache.remove(request.url().as_str()).await?;
-        }
+
+            None
+        } else {
+            result
+        };
 
         Ok(if let Some(Ok(response)) = &result
             && response.is_expired(
