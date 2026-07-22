@@ -910,21 +910,30 @@ mod tests {
     #[tokio::test]
     async fn get_stale_cache() {
         let url = Url::parse("https://foo.com").unwrap();
-        let response = BareResponse {
+        let stale_response = BareResponse {
             url: url.clone(),
             status: StatusCode::OK,
             headers: Default::default(),
             body: b"stale".to_vec(),
         };
-
-        let cache = MemoryCache::new(CACHE_CAPACITY);
+        let fresh_response = BareResponse {
+            body: b"fresh".to_vec(),
+            ..stale_response.clone()
+        };
+        let robots = build_stub_response(
+            url.join("/robots.txt").unwrap().as_str(),
+            StatusCode::OK,
+            Default::default(),
+            vec![],
+        );
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
             .get_with(
                 url.as_str().into(),
                 Box::new(async {
                     Ok(Arc::new(
-                        Response::from_bare(response.clone(), Duration::default()).into(),
+                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
                     ))
                 }),
             )
@@ -932,16 +941,37 @@ mod tests {
             .unwrap()
             .unwrap();
 
+        sleep(Duration::from_millis(10)).await;
+
         assert_eq!(
             HttpClient::new(
-                StubSequenceHttpClient::new(vec![]),
+                StubHttpClient::new(
+                    [robots, (url.as_str().into(), Ok(fresh_response.clone()))]
+                        .into_iter()
+                        .collect(),
+                ),
                 StubTimer::new(),
-                Box::new(cache),
+                Box::new(cache.clone()),
             )
-            .get(&Request::new(url, Default::default()).set_stale_while_revalidate(CACHE_MAX_AGE))
+            .get(
+                &Request::new(url.clone(), Default::default())
+                    .set_stale_while_revalidate(CACHE_MAX_AGE),
+            )
             .await
             .unwrap(),
-            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+            Some(Response::from_bare(stale_response, Duration::from_millis(0)).into())
+        );
+
+        assert_eq!(
+            cache
+                .get(url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(fresh_response, Duration::from_millis(0)).into()
         );
     }
 
