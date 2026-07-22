@@ -3,3 +3,7 @@ extend = "muffy.toml"
 [sites.main]
 roots = ["http://localhost:4321/muffy"]
 schemes = ["http"]
+
+[sites.main.cache]
+max_age = "0s"
+stale_while_revalidate = "0s"
