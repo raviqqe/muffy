@@ -174,7 +174,7 @@ impl HttpClient {
             result
         };
 
-        Ok(if let Some(Ok(response)) = &result
+        Ok(if let Some(Ok(response)) = result
             && response.is_expired(
                 request
                     .max_age()

@@ -126,6 +126,28 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let cache = FjallCache::new(
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
+                .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
     async fn recover_from_stale_marker() {
         let directory = TempDir::new().unwrap();
         let db = fjall::SingleWriterTxDatabase::builder(directory.path())
