@@ -85,6 +85,10 @@ struct CheckSiteArguments {
     /// Set a maximum cache age.
     #[arg(long, default_value = "0s")]
     max_age: DurationString,
+    /// Set a period to serve cached responses stale beyond their maximum age
+    /// while revalidating them.
+    #[arg(long, default_value = "0s")]
+    stale_while_revalidate: DurationString,
     /// Set accepted status codes.
     #[arg(long, default_value = "200")]
     accept_status: Vec<u16>,
@@ -315,7 +319,11 @@ async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn E
 
 fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, Box<dyn Error>> {
     let site = SiteConfig::default()
-        .set_cache(CacheConfig::default().set_max_age(*arguments.max_age))
+        .set_cache(
+            CacheConfig::default()
+                .set_max_age(*arguments.max_age)
+                .set_stale_while_revalidate(*arguments.stale_while_revalidate),
+        )
         .set_status(StatusConfig::new(
             arguments
                 .accept_status
@@ -431,6 +439,7 @@ mod tests {
         );
         assert_eq!(arguments.timeout, muffy::DEFAULT_TIMEOUT);
         assert_eq!(arguments.max_age, Duration::default());
+        assert_eq!(arguments.stale_while_revalidate, Duration::default());
         assert_eq!(arguments.retry_status, Vec::<u16>::new());
         assert!(!arguments.experimental_validation);
     }
@@ -464,6 +473,26 @@ mod tests {
         assert_eq!(*arguments.initial_retry_interval, Duration::from_secs(2));
         assert_eq!(*arguments.retry_interval_cap, Duration::from_secs(20));
         assert_eq!(arguments.retry_status, vec![429, 503]);
+    }
+
+    #[test]
+    fn parse_stale_while_revalidate_check_site_arguments() {
+        let Command::CheckSite(arguments) = Arguments::parse_from([
+            "command",
+            "check-site",
+            "https://foo.com",
+            "--stale-while-revalidate",
+            "30m",
+        ])
+        .command
+        .unwrap() else {
+            panic!()
+        };
+
+        assert_eq!(
+            *arguments.stale_while_revalidate,
+            Duration::from_secs(30 * 60)
+        );
     }
 
     #[test]

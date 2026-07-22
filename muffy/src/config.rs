@@ -426,6 +426,7 @@ impl Eq for MarkupConfig {}
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct CacheConfig {
     max_age: Duration,
+    stale_while_revalidate: Duration,
 }
 
 impl CacheConfig {
@@ -439,9 +440,20 @@ impl CacheConfig {
         self.max_age
     }
 
+    /// Returns a stale-while-revalidate period.
+    pub const fn stale_while_revalidate(&self) -> Duration {
+        self.stale_while_revalidate
+    }
+
     /// Sets a maximum age.
     pub const fn set_max_age(mut self, age: Duration) -> Self {
         self.max_age = age;
+        self
+    }
+
+    /// Sets a stale-while-revalidate period.
+    pub const fn set_stale_while_revalidate(mut self, period: Duration) -> Self {
+        self.stale_while_revalidate = period;
         self
     }
 }

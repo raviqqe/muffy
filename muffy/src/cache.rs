@@ -83,3 +83,47 @@ impl From<::sled::Error> for CacheError {
         Self::Sled(error.to_string().into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn get_or_set_with_shared_cache() {
+        let cache = Arc::new(MemoryCache::new(1 << 10));
+
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 42 }))
+                .await
+                .unwrap(),
+            42,
+        );
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            42,
+        );
+    }
+
+    #[tokio::test]
+    async fn remove_with_shared_cache() {
+        let cache = Arc::new(MemoryCache::new(1 << 10));
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+        cache.remove("key").await.unwrap();
+
+        assert_eq!(
+            cache
+                .get_with("key".into(), Box::new(async { 0 }))
+                .await
+                .unwrap(),
+            0,
+        );
+    }
+}

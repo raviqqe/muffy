@@ -18,7 +18,11 @@ use crate::{
 };
 use alloc::{collections::BTreeSet, sync::Arc};
 use core::{iter, str};
-use futures::{Stream, StreamExt, future::try_join_all};
+use futures::{
+    Stream, StreamExt,
+    future::{ready, try_join_all},
+    stream,
+};
 use muffy_document::html::Node;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -82,7 +86,15 @@ impl WebValidator {
 
         Ok(ReceiverStream::new(receiver)
             .map(Box::into_pin)
-            .buffer_unordered(JOB_COMPLETION_BUFFER))
+            .buffer_unordered(JOB_COMPLETION_BUFFER)
+            .chain(
+                stream::once({
+                    let validator = self.cloned();
+
+                    Box::pin(async move { validator.0.http_client.revalidate().await })
+                })
+                .filter_map(|result| ready(result.err().map(|error| Err(error.into())))),
+            ))
     }
 
     async fn validate_link(
@@ -124,6 +136,7 @@ impl WebValidator {
                     .set_max_redirects(site.max_redirects())
                     .set_retry(site.retry().clone())
                     .set_site_id(site.id().cloned())
+                    .set_stale_while_revalidate(site.cache().stale_while_revalidate())
                     .set_timeout(site.timeout()),
             )
             .await?
@@ -594,12 +607,15 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Metrics, MokaCache, SchemeConfig,
-        config::{Config, MarkupConfig, SiteConfig},
+        Cache, MemoryCache, Metrics, MokaCache, SchemeConfig,
+        config::{CacheConfig, Config, MarkupConfig, SiteConfig},
         html_parser::HtmlParser,
-        http_client::{BareHttpClient, StubHttpClient, build_stub_response},
+        http_client::{
+            BareHttpClient, BareResponse, HttpClientError, StubHttpClient, build_stub_response,
+        },
         timer::StubTimer,
     };
+    use core::time::Duration;
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
@@ -688,6 +704,103 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(0, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn revalidate_stale_document() {
+        let url = Url::parse("https://foo.com/").unwrap();
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: html_headers.clone(),
+            body: Default::default(),
+        };
+
+        let cache = Arc::new(MemoryCache::new(1 << 8));
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response.clone()
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache.clone()),
+            ),
+            HtmlParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec![url.to_string()],
+            Default::default(),
+            [(
+                url.host_str().unwrap_or_default().into(),
+                [(
+                    "".into(),
+                    SiteConfig::default()
+                        .set_cache(
+                            CacheConfig::default()
+                                .set_stale_while_revalidate(Duration::from_hours(1)),
+                        )
+                        .set_recursive(true)
+                        .into(),
+                )]
+                .into(),
+            )]
+            .into(),
+        ))
+        .await
+        .unwrap();
+
+        while let Some(document) = documents.next().await {
+            document.unwrap();
+        }
+
+        assert_eq!(
+            cache
+                .get_with(
+                    url.as_str().into(),
+                    Box::new(async { Err(HttpClientError::Http("uncached".into())) }),
+                )
+                .await
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(response, Duration::from_millis(0)).into(),
         );
     }
 
