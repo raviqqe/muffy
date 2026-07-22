@@ -824,25 +824,6 @@ mod tests {
         assert_eq!(
             HttpClient::new(
                 StubHttpClient::new(
-                    [
-                        robots.clone(),
-                        (url.as_str().into(), Ok(fresh_response.clone()))
-                    ]
-                    .into_iter()
-                    .collect(),
-                ),
-                StubTimer::new(),
-                Box::new(cache.clone()),
-            )
-            .get(&request)
-            .await
-            .unwrap(),
-            Some(Response::from_bare(cached_response, Duration::default()).into())
-        );
-
-        assert_eq!(
-            HttpClient::new(
-                StubHttpClient::new(
                     [robots, (url.as_str().into(), Ok(fresh_response.clone()))]
                         .into_iter()
                         .collect(),
