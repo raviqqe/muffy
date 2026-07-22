@@ -13,13 +13,8 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MokaCache, RateLimitConfig,
-    cache::{Cache, CacheError},
-    default_concurrency,
-    rate_limiter::RateLimiter,
-    request::Request,
-    response::Response,
-    robot_list::RobotList,
+    ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
+    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
     timer::Timer,
 };
 use alloc::sync::Arc;
