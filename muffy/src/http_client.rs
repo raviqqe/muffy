@@ -174,21 +174,22 @@ impl HttpClient {
         };
 
         Ok(if let Some(Ok(response)) = result {
-            if response.is_expired(
-                request
-                    .max_age()
-                    .saturating_add(request.stale_while_revalidate()),
-            ) {
-                self.global_cache.remove(request.url().as_str()).await?;
-
-                get().await??
-            } else if response.is_expired(request.max_age()) {
-                // TODO Pass this to `TaskTracker`.
-                let _ = get().await?;
-
+            if !response.is_expired(request.max_age()) {
                 response
             } else {
-                response
+                self.global_cache.remove(request.url().as_str()).await?;
+
+                let result = get().await?;
+
+                if response.is_expired(
+                    request
+                        .max_age()
+                        .saturating_add(request.stale_while_revalidate()),
+                ) {
+                    result?
+                } else {
+                    response
+                }
             }
         } else {
             get().await??
