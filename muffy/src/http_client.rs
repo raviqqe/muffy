@@ -184,7 +184,7 @@ impl HttpClient {
                 get().await??
             } else if response.is_expired(request.max_age()) {
                 // TODO Pass this to `TaskTracker`.
-                get().await??;
+                let _ = get().await?;
 
                 response
             } else {
