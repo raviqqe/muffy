@@ -18,6 +18,9 @@ use serde::{Deserialize, Serialize};
 /// Every operation against the cache is transactional.
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
+    /// Gets a value.
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError>;
+
     /// Gets a cached value.
     ///
     /// If a cached value is not found, it awaits the given future and sets its
@@ -34,6 +37,10 @@ pub trait Cache<T: Clone>: Send + Sync {
 
 #[async_trait]
 impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        (**self).get(key).await
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,

@@ -13,24 +13,18 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MokaCache, RateLimitConfig,
-    cache::{Cache, CacheError},
-    default_concurrency,
-    rate_limiter::RateLimiter,
-    request::Request,
-    response::Response,
-    robot_list::RobotList,
+    ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
+    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
     timer::Timer,
 };
 use alloc::sync::Arc;
 use async_recursion::async_recursion;
 use cached_response::CachedResponse;
-use core::{mem::take, str, time::Duration};
-use futures::future::join_all;
+use core::{str, time::Duration};
 use http::StatusCode;
 use std::collections::HashMap;
 use tokio::{
-    sync::{Mutex, Semaphore},
+    sync::Semaphore,
     time::{sleep, timeout},
 };
 
@@ -47,7 +41,6 @@ pub struct HttpClient {
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
     site_rate_limiters: HashMap<String, RateLimiter>,
-    stale_requests: Mutex<Vec<(Request, bool)>>,
 }
 
 impl HttpClient {
@@ -66,7 +59,6 @@ impl HttpClient {
             site_semaphores: Default::default(),
             rate_limiter: Default::default(),
             site_rate_limiters: Default::default(),
-            stale_requests: Default::default(),
         }
     }
 
@@ -110,30 +102,6 @@ impl HttpClient {
             Err(HttpClientError::RobotsTxt) => Ok(None),
             Err(error) => Err(error),
         }
-    }
-
-    // TODO Inline the revalidation logic into the `get_cached_globally` function.
-    pub(crate) async fn revalidate(&self) -> Result<(), CacheError> {
-        let requests = take(&mut *self.stale_requests.lock().await);
-
-        join_all(requests.iter().map(|(request, robots)| async move {
-            self.global_cache.remove(request.url().as_str()).await?;
-
-            if match &self.get_cached(request, *robots).await? {
-                Ok(response) => request
-                    .retry()
-                    .statuses()
-                    .contains(&response.response().status()),
-                Err(_) => true,
-            } {
-                self.global_cache.remove(request.url().as_str()).await?;
-            }
-
-            Ok(())
-        }))
-        .await
-        .into_iter()
-        .collect()
     }
 
     async fn get_inner(
@@ -182,62 +150,66 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let result = self.get_cached(request, robots).await?;
-        let result = if matches!(&result, Ok(response) if response.is_expired(
-            request
-                .max_age()
-                .saturating_add(request.stale_while_revalidate()),
-        )) {
+        let get = || {
+            self.global_cache.get_with(
+                request.url().to_string(),
+                Box::new(self.get_filtered(request, robots)),
+            )
+        };
+
+        let result = self.global_cache.get(request.url().as_str()).await?;
+        let result = if let Some(result) = &result
+            && match &result {
+                Ok(response) => request
+                    .retry()
+                    .statuses()
+                    .contains(&response.response().status()),
+                Err(_) => true,
+            } {
             self.global_cache.remove(request.url().as_str()).await?;
 
-            self.get_cached(request, robots).await?
+            None
         } else {
-            if let Ok(response) = &result
-                && response.is_expired(request.max_age())
-            {
-                self.stale_requests
-                    .lock()
-                    .await
-                    .push((request.clone(), robots));
-            }
-
             result
         };
 
-        // TODO Leave retried responses.
-        if match &result {
-            Ok(response) => request
-                .retry()
-                .statuses()
-                .contains(&response.response().status()),
-            Err(_) => true,
-        } {
-            self.global_cache.remove(request.url().as_str()).await?;
-        }
+        Ok(if let Some(Ok(response)) = result {
+            if response.is_expired(
+                request
+                    .max_age()
+                    .saturating_add(request.stale_while_revalidate()),
+            ) {
+                self.global_cache.remove(request.url().as_str()).await?;
 
-        Ok(result?.response().clone())
+                get().await??
+            } else if response.is_expired(request.max_age()) {
+                // TODO Pass this to `TaskTracker`.
+                get().await??;
+
+                response
+            } else {
+                response
+            }
+        } else {
+            get().await??
+        }
+        .response()
+        .clone())
     }
 
-    async fn get_cached(
+    async fn get_filtered(
         &self,
         request: &Request,
         robots: bool,
-    ) -> Result<Result<Arc<CachedResponse>, HttpClientError>, CacheError> {
-        self.global_cache
-            .get_with(
-                request.url().to_string(),
-                Box::new(async move {
-                    if robots
-                        && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_allowed(request.url().path())
-                    {
-                        Err(HttpClientError::RobotsTxt)
-                    } else {
-                        Ok(Arc::new(self.get_retried(request).await?.into()))
-                    }
-                }),
-            )
-            .await
+    ) -> Result<Arc<CachedResponse>, HttpClientError> {
+        if robots
+            && let Some(robot) = self.get_robot(request).await?
+            && !robot.is_allowed(request.url().path())
+        {
+            Err(HttpClientError::RobotsTxt)
+        } else {
+            Ok(Arc::new(self.get_retried(request).await?.into()))
+        }
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
@@ -852,25 +824,6 @@ mod tests {
         assert_eq!(
             HttpClient::new(
                 StubHttpClient::new(
-                    [
-                        robots.clone(),
-                        (url.as_str().into(), Ok(fresh_response.clone()))
-                    ]
-                    .into_iter()
-                    .collect(),
-                ),
-                StubTimer::new(),
-                Box::new(cache.clone()),
-            )
-            .get(&request)
-            .await
-            .unwrap(),
-            Some(Response::from_bare(cached_response, Duration::default()).into())
-        );
-
-        assert_eq!(
-            HttpClient::new(
-                StubHttpClient::new(
                     [robots, (url.as_str().into(), Ok(fresh_response.clone()))]
                         .into_iter()
                         .collect(),
@@ -1051,164 +1004,6 @@ mod tests {
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
         );
-    }
-
-    #[tokio::test]
-    async fn revalidate_stale_cache() {
-        let url = Url::parse("https://foo.com").unwrap();
-        let response = BareResponse {
-            url: url.clone(),
-            status: StatusCode::OK,
-            headers: Default::default(),
-            body: vec![],
-        };
-
-        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
-
-        cache
-            .get_with(
-                url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                }),
-            )
-            .await
-            .unwrap()
-            .unwrap();
-
-        let client = HttpClient::new(
-            StubSequenceHttpClient::new(vec![
-                build_stub_response(
-                    url.join("/robots.txt").unwrap().as_str(),
-                    StatusCode::OK,
-                    Default::default(),
-                    vec![],
-                ),
-                (url.as_str().into(), Ok(response.clone())),
-            ]),
-            StubTimer::new(),
-            Box::new(cache.clone()),
-        );
-
-        assert_eq!(
-            client
-                .get(
-                    &Request::new(url.clone(), Default::default())
-                        .set_stale_while_revalidate(CACHE_MAX_AGE)
-                )
-                .await
-                .unwrap(),
-            Some(
-                Response::from_bare(
-                    BareResponse {
-                        body: b"stale".to_vec(),
-                        ..response.clone()
-                    },
-                    Duration::from_millis(0)
-                )
-                .into()
-            )
-        );
-
-        client.revalidate().await.unwrap();
-
-        assert_eq!(
-            cache
-                .get_with(
-                    url.as_str().into(),
-                    Box::new(async { Err(HttpClientError::Http("uncached".into())) }),
-                )
-                .await
-                .unwrap()
-                .unwrap()
-                .response()
-                .clone(),
-            Response::from_bare(response, Duration::from_millis(0)).into()
-        );
-    }
-
-    #[tokio::test]
-    async fn revalidate_stale_cache_once() {
-        let url = Url::parse("https://foo.com/robots.txt").unwrap();
-        let response = BareResponse {
-            url: url.clone(),
-            status: StatusCode::OK,
-            headers: Default::default(),
-            body: vec![],
-        };
-
-        let cache = MemoryCache::new(CACHE_CAPACITY);
-
-        cache
-            .get_with(
-                url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                }),
-            )
-            .await
-            .unwrap()
-            .unwrap();
-
-        let client = HttpClient::new(
-            StubSequenceHttpClient::new(vec![(url.as_str().into(), Ok(response.clone()))]),
-            StubTimer::new(),
-            Box::new(cache),
-        );
-
-        assert_eq!(
-            client
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_stale_while_revalidate(CACHE_MAX_AGE)
-                )
-                .await
-                .unwrap(),
-            Some(
-                Response::from_bare(
-                    BareResponse {
-                        body: b"stale".to_vec(),
-                        ..response
-                    },
-                    Duration::from_millis(0)
-                )
-                .into()
-            )
-        );
-
-        client.revalidate().await.unwrap();
-        // The second revalidation re-fetches nothing.
-        client.revalidate().await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn revalidate_nothing() {
-        HttpClient::new(
-            StubSequenceHttpClient::new(vec![]),
-            StubTimer::new(),
-            Box::new(MemoryCache::new(CACHE_CAPACITY)),
-        )
-        .revalidate()
-        .await
-        .unwrap();
     }
 
     #[tokio::test]

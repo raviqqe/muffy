@@ -36,6 +36,16 @@ impl<T: Serialize> SledCache<T> {
 
 #[async_trait]
 impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for SledCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        trace!("reading cache at {key}");
+
+        Ok(if let Some(value) = self.tree.get(key)? {
+            bitcode::deserialize::<Option<T>>(&value)?
+        } else {
+            None
+        })
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,
@@ -117,6 +127,35 @@ mod tests {
                 .unwrap(),
             42,
         );
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let file = TempDir::new().unwrap();
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn get_ignores_in_flight_marker() {
+        let file = TempDir::new().unwrap();
+        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+        let cache = SledCache::<i32>::new(tree.clone()).unwrap();
+
+        // An in-flight marker left by another task is not a committed value.
+        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 
     #[tokio::test]

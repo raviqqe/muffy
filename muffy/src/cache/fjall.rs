@@ -35,6 +35,14 @@ impl<T: Serialize> FjallCache<T> {
 
 #[async_trait]
 impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for FjallCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        Ok(if let Some(value) = self.keyspace.get(key.as_bytes())? {
+            bitcode::deserialize::<Option<T>>(&value)?
+        } else {
+            None
+        })
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,
@@ -115,6 +123,28 @@ mod tests {
                 .unwrap(),
             42,
         );
+    }
+
+    #[tokio::test]
+    async fn get() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let cache = FjallCache::new(
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
+                .unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
+
+        cache
+            .get_with("key".into(), Box::new(async { 42 }))
+            .await
+            .unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
     }
 
     #[tokio::test]
