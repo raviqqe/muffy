@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 /// Every operation against the cache is transactional.
 #[async_trait]
 pub trait Cache<T: Clone>: Send + Sync {
-    /// Gets a cached value if any.
+    /// Gets a value.
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError>;
 
     /// Gets a cached value.
