@@ -169,25 +169,6 @@ impl HttpClient {
         };
 
         let result = self.global_cache.get(request, robots).await?;
-        let result = if let Some(Ok(response)) = &result
-            && response.is_expired(
-                request
-                    .max_age()
-                    .saturating_add(request.stale_while_revalidate()),
-            ) {
-            self.global_cache.remove(request.url().as_str()).await?;
-
-            get().await?
-        } else if let Some(Ok(response)) = &result
-            && response.is_expired(request.max_age())
-        {
-            // TODO Pass this to `TaskTracker`.
-            get().await?;
-
-            result
-        } else {
-            result
-        };
 
         // TODO Leave retried responses.
         if match &result {
@@ -200,7 +181,28 @@ impl HttpClient {
             self.global_cache.remove(request.url().as_str()).await?;
         }
 
-        Ok(result?.response().clone())
+        Ok(if let Some(Ok(response)) = &result
+            && response.is_expired(
+                request
+                    .max_age()
+                    .saturating_add(request.stale_while_revalidate()),
+            )
+        {
+            self.global_cache.remove(request.url().as_str()).await?;
+
+            get().await?
+        } else if let Some(Ok(response)) = &result
+            && response.is_expired(request.max_age())
+        {
+            // TODO Pass this to `TaskTracker`.
+            get().await?;
+
+            result
+        } else {
+            result
+        }?
+        .response()
+        .clone())
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
