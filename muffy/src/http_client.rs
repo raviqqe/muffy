@@ -173,13 +173,7 @@ impl HttpClient {
             result
         };
 
-        Ok(if let Some(Ok(response)) = result
-            && response.is_expired(
-                request
-                    .max_age()
-                    .saturating_add(request.stale_while_revalidate()),
-            )
-        {
+        Ok(if let Some(Ok(response)) = result {
             if response.is_expired(
                 request
                     .max_age()
