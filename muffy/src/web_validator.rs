@@ -595,15 +595,12 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Cache, MemoryCache, Metrics, MokaCache, SchemeConfig,
-        config::{CacheConfig, Config, MarkupConfig, SiteConfig},
+        Metrics, MokaCache, SchemeConfig,
+        config::{Config, MarkupConfig, SiteConfig},
         html_parser::HtmlParser,
-        http_client::{
-            BareHttpClient, BareResponse, HttpClientError, StubHttpClient, build_stub_response,
-        },
+        http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
-    use core::time::Duration;
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
