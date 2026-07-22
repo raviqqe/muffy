@@ -67,7 +67,10 @@ jobs:
           --accept-status 200
           --accept-status 403
           --accept-status 429
+          --cache
           --ignore https://crates.io/
+          --max-age 1w
+          --stale-while-revalidate 1w
           --verbose
           http://localhost:4321/muffy/
   web_docker_test:
