@@ -152,14 +152,13 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
+        let url = request.url().to_string();
         let get = || {
-            self.global_cache.get_with(
-                request.url().to_string(),
-                Box::new(self.get_filtered(request, robots)),
-            )
+            self.global_cache
+                .get_with(url, Box::new(self.get_filtered(request, robots)))
         };
 
-        let result = self.global_cache.get(request, robots).await?;
+        let result = self.global_cache.get(&url).await?;
         let result = if let Some(result) = &result
             && match &result {
                 Ok(response) => request
@@ -185,15 +184,17 @@ impl HttpClient {
             self.global_cache.remove(request.url().as_str()).await?;
 
             get().await?
-        } else if let Some(Ok(response)) = &result
+        } else if let Some(Ok(response)) = result
             && response.is_expired(request.max_age())
         {
             // TODO Pass this to `TaskTracker`.
             get().await?;
 
+            Ok(response)
+        } else if let Some(result) = result {
             result
         } else {
-            result
+            get().await?
         }?
         .response()
         .clone())
