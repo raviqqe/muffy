@@ -24,7 +24,7 @@ use core::{str, time::Duration};
 use http::StatusCode;
 use std::collections::HashMap;
 use tokio::{
-    sync::{Mutex, Semaphore},
+    sync::Semaphore,
     time::{sleep, timeout},
 };
 
@@ -41,7 +41,6 @@ pub struct HttpClient {
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
     site_rate_limiters: HashMap<String, RateLimiter>,
-    stale_requests: Mutex<Vec<(Request, bool)>>,
 }
 
 impl HttpClient {
@@ -60,7 +59,6 @@ impl HttpClient {
             site_semaphores: Default::default(),
             rate_limiter: Default::default(),
             site_rate_limiters: Default::default(),
-            stale_requests: Default::default(),
         }
     }
 
