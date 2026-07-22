@@ -152,13 +152,14 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let url = request.url().to_string();
         let get = || {
-            self.global_cache
-                .get_with(url, Box::new(self.get_filtered(request, robots)))
+            self.global_cache.get_with(
+                request.url().to_string(),
+                Box::new(self.get_filtered(request, robots)),
+            )
         };
 
-        let result = self.global_cache.get(&url).await?;
+        let result = self.global_cache.get(request.url().as_str()).await?;
         let result = if let Some(result) = &result
             && match &result {
                 Ok(response) => request
