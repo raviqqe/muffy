@@ -157,7 +157,21 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let get = || self.get_cached(request, robots);
+        let get = || {
+            self.global_cache.get_with(
+                request.url().to_string(),
+                Box::new(async move {
+                    if robots
+                        && let Some(robot) = self.get_robot(request).await?
+                        && !robot.is_allowed(request.url().path())
+                    {
+                        Err(HttpClientError::RobotsTxt)
+                    } else {
+                        Ok(Arc::new(self.get_retried(request).await?.into()))
+                    }
+                }),
+            )
+        };
         let result = self.global_cache.get(request, robots).await?;
         let result = if let Some(Ok(response)) = &result
             && response.is_expired(
@@ -193,29 +207,6 @@ impl HttpClient {
         }
 
         Ok(result?.response().clone())
-    }
-
-    // TODO Inline this.
-    async fn get_cached(
-        &self,
-        request: &Request,
-        robots: bool,
-    ) -> Result<Result<Arc<CachedResponse>, HttpClientError>, CacheError> {
-        self.global_cache
-            .get_with(
-                request.url().to_string(),
-                Box::new(async move {
-                    if robots
-                        && let Some(robot) = self.get_robot(request).await?
-                        && !robot.is_allowed(request.url().path())
-                    {
-                        Err(HttpClientError::RobotsTxt)
-                    } else {
-                        Ok(Arc::new(self.get_retried(request).await?.into()))
-                    }
-                }),
-            )
-            .await
     }
 
     async fn get_retried(&self, request: &Request) -> Result<Response, HttpClientError> {
