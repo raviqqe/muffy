@@ -170,14 +170,15 @@ impl HttpClient {
 
         let result = self.global_cache.get(request, robots).await?;
 
-        // TODO Leave retried responses.
-        if match &result {
-            Ok(response) => request
-                .retry()
-                .statuses()
-                .contains(&response.response().status()),
-            Err(_) => true,
-        } {
+        if let Some(result) = &result
+            && match &result {
+                Ok(response) => request
+                    .retry()
+                    .statuses()
+                    .contains(&response.response().status()),
+                Err(_) => true,
+            }
+        {
             self.global_cache.remove(request.url().as_str()).await?;
         }
 
