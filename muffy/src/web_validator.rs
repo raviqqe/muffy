@@ -85,6 +85,11 @@ impl WebValidator {
             .buffer_unordered(JOB_COMPLETION_BUFFER))
     }
 
+    /// Waits for background revalidations to complete.
+    pub async fn wait(&self) {
+        self.0.http_client.wait().await;
+    }
+
     async fn validate_link(
         self,
         context: Arc<Context>,

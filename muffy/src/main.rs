@@ -251,6 +251,8 @@ async fn run_config(
         .await?;
     }
 
+    validator.wait().await;
+
     output.flush().await?;
 
     eprintln!();

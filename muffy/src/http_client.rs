@@ -75,35 +75,36 @@ impl HttpClient {
 
     /// Sets a concurrency.
     pub fn set_concurrency(mut self, concurrency: &ConcurrencyConfig) -> Self {
-        let inner = Arc::get_mut(&mut self.0).unwrap();
-
-        inner.semaphore = Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency));
-        inner.site_semaphores = concurrency
-            .sites()
-            .iter()
-            .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
-            .collect();
+        if let Some(inner) = Arc::get_mut(&mut self.0) {
+            inner.semaphore =
+                Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency));
+            inner.site_semaphores = concurrency
+                .sites()
+                .iter()
+                .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
+                .collect();
+        }
 
         self
     }
 
     /// Sets a rate limit.
     pub fn set_rate_limit(mut self, rate_limit: &RateLimitConfig) -> Self {
-        let inner = Arc::get_mut(&mut self.0).unwrap();
-
-        inner.rate_limiter = rate_limit
-            .global()
-            .map(|limit| RateLimiter::new(limit.supply(), limit.window()));
-        inner.site_rate_limiters = rate_limit
-            .sites()
-            .iter()
-            .map(|(key, limit)| {
-                (
-                    key.to_owned(),
-                    RateLimiter::new(limit.supply(), limit.window()),
-                )
-            })
-            .collect();
+        if let Some(inner) = Arc::get_mut(&mut self.0) {
+            inner.rate_limiter = rate_limit
+                .global()
+                .map(|limit| RateLimiter::new(limit.supply(), limit.window()));
+            inner.site_rate_limiters = rate_limit
+                .sites()
+                .iter()
+                .map(|(key, limit)| {
+                    (
+                        key.to_owned(),
+                        RateLimiter::new(limit.supply(), limit.window()),
+                    )
+                })
+                .collect();
+        }
 
         self
     }
@@ -226,7 +227,9 @@ impl HttpClient {
     /// Re-fetches a stale response and refreshes the cache in the background.
     async fn revalidate(&self, request: &Request, robots: bool) -> Result<(), CacheError> {
         self.0.global_cache.remove(request.url().as_str()).await?;
-        self.0
+        // The re-fetched response is cached; its status is filtered on the next read.
+        let _ = self
+            .0
             .global_cache
             .get_with(
                 request.url().to_string(),
@@ -277,9 +280,9 @@ impl HttpClient {
     }
 
     async fn get_throttled(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let _global = self.semaphore.acquire().await.unwrap();
+        let _global = self.0.semaphore.acquire().await.unwrap();
         let _site = if let Some(id) = request.site_id()
-            && let Some(semaphore) = self.site_semaphores.get(id)
+            && let Some(semaphore) = self.0.site_semaphores.get(id)
         {
             Some(semaphore.acquire().await.unwrap())
         } else {
@@ -288,7 +291,7 @@ impl HttpClient {
 
         let future = self.get_once(request);
         let future = async {
-            if let Some(limiter) = &self.rate_limiter {
+            if let Some(limiter) = &self.0.rate_limiter {
                 limiter.run(future).await
             } else {
                 future.await
@@ -296,7 +299,7 @@ impl HttpClient {
         };
 
         if let Some(id) = request.site_id()
-            && let Some(limiter) = &self.site_rate_limiters.get(id)
+            && let Some(limiter) = &self.0.site_rate_limiters.get(id)
         {
             limiter.run(future).await
         } else {
@@ -305,10 +308,10 @@ impl HttpClient {
     }
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
-        let start = self.timer.now();
+        let start = self.0.timer.now();
         // TODO Use a custom timeout implementation that would be reliable on CI.
-        let response = timeout(request.timeout(), self.client.get(request.as_bare())).await??;
-        let duration = self.timer.now().duration_since(start);
+        let response = timeout(request.timeout(), self.0.client.get(request.as_bare())).await??;
+        let duration = self.0.timer.now().duration_since(start);
 
         Ok(Response::from_bare(response, duration))
     }
@@ -1043,6 +1046,93 @@ mod tests {
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn revalidate_stale_cache_in_background() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
+                    Ok(Arc::new(
+                        Response::from_bare(
+                            BareResponse {
+                                body: b"stale".to_vec(),
+                                ..response.clone()
+                            },
+                            Duration::default(),
+                        )
+                        .into(),
+                    ))
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+
+        let client = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        url.join("/robots.txt").unwrap().as_str(),
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (url.as_str().into(), Ok(response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(cache.clone()),
+        );
+
+        // A stale response is served without blocking on a re-fetch.
+        assert_eq!(
+            client
+                .get(
+                    &Request::new(url.clone(), Default::default())
+                        .set_stale_while_revalidate(CACHE_MAX_AGE)
+                )
+                .await
+                .unwrap(),
+            Some(
+                Response::from_bare(
+                    BareResponse {
+                        body: b"stale".to_vec(),
+                        ..response.clone()
+                    },
+                    Duration::from_millis(0)
+                )
+                .into()
+            )
+        );
+
+        client.wait().await;
+
+        // The background re-fetch has refreshed the cache.
+        assert_eq!(
+            cache
+                .get(url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(response, Duration::from_millis(0)).into()
         );
     }
 
