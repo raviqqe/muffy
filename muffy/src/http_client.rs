@@ -188,18 +188,18 @@ impl HttpClient {
             ) {
                 self.global_cache.remove(request.url().as_str()).await?;
 
-                get().await?
+                get().await??
             } else if response.is_expired(request.max_age()) {
                 // TODO Pass this to `TaskTracker`.
-                get().await?;
+                get().await??;
 
-                Ok(response)
+                response
             } else {
-                Ok(response)
+                response
             }
         } else {
-            get().await?
-        }?
+            get().await??
+        }
         .response()
         .clone())
     }
