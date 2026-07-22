@@ -20,6 +20,10 @@ impl<T> MemoryCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        Ok(self.map.read_async(key, |_, value| value.clone()).await)
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,

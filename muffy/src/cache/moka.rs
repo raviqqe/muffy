@@ -19,6 +19,10 @@ impl<T: Clone + Send + Sync + 'static> MokaCache<T> {
 
 #[async_trait]
 impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        Ok(self.cache.get(key).await)
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,

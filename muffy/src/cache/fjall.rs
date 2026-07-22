@@ -35,6 +35,14 @@ impl<T: Serialize> FjallCache<T> {
 
 #[async_trait]
 impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for FjallCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        Ok(if let Some(value) = self.keyspace.get(key.as_bytes())? {
+            bitcode::deserialize::<Option<T>>(&value)?
+        } else {
+            None
+        })
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,

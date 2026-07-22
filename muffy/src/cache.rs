@@ -37,6 +37,10 @@ pub trait Cache<T: Clone>: Send + Sync {
 
 #[async_trait]
 impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        (**self).get(key).await
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,

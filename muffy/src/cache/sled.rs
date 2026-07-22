@@ -36,6 +36,16 @@ impl<T: Serialize> SledCache<T> {
 
 #[async_trait]
 impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for SledCache<T> {
+    async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
+        trace!("reading cache at {key}");
+
+        Ok(if let Some(value) = self.tree.get(key)? {
+            bitcode::deserialize::<Option<T>>(&value)?
+        } else {
+            None
+        })
+    }
+
     async fn get_with<'a>(
         &self,
         key: String,
