@@ -13,8 +13,13 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
-    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
+    ConcurrencyConfig, MokaCache, RateLimitConfig,
+    cache::{Cache, CacheError},
+    default_concurrency,
+    rate_limiter::RateLimiter,
+    request::Request,
+    response::Response,
+    robot_list::RobotList,
     timer::Timer,
 };
 use alloc::sync::Arc;
@@ -27,12 +32,16 @@ use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
 };
+use tokio_util::task::TaskTracker;
 
 pub(crate) const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
 
 /// A full-featured HTTP client.
-pub struct HttpClient {
+#[derive(Clone)]
+pub struct HttpClient(Arc<HttpClientInner>);
+
+struct HttpClientInner {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
@@ -41,6 +50,7 @@ pub struct HttpClient {
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
     site_rate_limiters: HashMap<String, RateLimiter>,
+    tasks: TaskTracker,
 }
 
 impl HttpClient {
@@ -50,7 +60,7 @@ impl HttpClient {
         timer: impl Timer + 'static,
         cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
     ) -> Self {
-        Self {
+        Self(Arc::new(HttpClientInner {
             client: Box::new(client),
             timer: Box::new(timer),
             local_cache: MokaCache::new(INITIAL_CACHE_CAPACITY),
@@ -59,13 +69,16 @@ impl HttpClient {
             site_semaphores: Default::default(),
             rate_limiter: Default::default(),
             site_rate_limiters: Default::default(),
-        }
+            tasks: TaskTracker::new(),
+        }))
     }
 
     /// Sets a concurrency.
     pub fn set_concurrency(mut self, concurrency: &ConcurrencyConfig) -> Self {
-        self.semaphore = Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency));
-        self.site_semaphores = concurrency
+        let inner = Arc::get_mut(&mut self.0).unwrap();
+
+        inner.semaphore = Semaphore::new(concurrency.global().unwrap_or_else(default_concurrency));
+        inner.site_semaphores = concurrency
             .sites()
             .iter()
             .map(|(key, &value)| (key.to_owned(), Semaphore::new(value)))
@@ -76,10 +89,12 @@ impl HttpClient {
 
     /// Sets a rate limit.
     pub fn set_rate_limit(mut self, rate_limit: &RateLimitConfig) -> Self {
-        self.rate_limiter = rate_limit
+        let inner = Arc::get_mut(&mut self.0).unwrap();
+
+        inner.rate_limiter = rate_limit
             .global()
             .map(|limit| RateLimiter::new(limit.supply(), limit.window()));
-        self.site_rate_limiters = rate_limit
+        inner.site_rate_limiters = rate_limit
             .sites()
             .iter()
             .map(|(key, limit)| {
@@ -91,6 +106,12 @@ impl HttpClient {
             .collect();
 
         self
+    }
+
+    /// Waits for background revalidations to complete.
+    pub(crate) async fn wait(&self) {
+        self.0.tasks.close();
+        self.0.tasks.wait().await;
     }
 
     pub(crate) async fn get(
@@ -137,7 +158,8 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        self.local_cache
+        self.0
+            .local_cache
             .get_with(
                 request.url().to_string(),
                 Box::new(self.get_cached_globally(request, robots)),
@@ -151,13 +173,13 @@ impl HttpClient {
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || {
-            self.global_cache.get_with(
+            self.0.global_cache.get_with(
                 request.url().to_string(),
                 Box::new(self.get_filtered(request, robots)),
             )
         };
 
-        let result = self.global_cache.get(request.url().as_str()).await?;
+        let result = self.0.global_cache.get(request.url().as_str()).await?;
         let result = if let Some(result) = &result
             && match &result {
                 Ok(response) => request
@@ -166,7 +188,7 @@ impl HttpClient {
                     .contains(&response.response().status()),
                 Err(_) => true,
             } {
-            self.global_cache.remove(request.url().as_str()).await?;
+            self.0.global_cache.remove(request.url().as_str()).await?;
 
             None
         } else {
@@ -179,12 +201,16 @@ impl HttpClient {
                     .max_age()
                     .saturating_add(request.stale_while_revalidate()),
             ) {
-                self.global_cache.remove(request.url().as_str()).await?;
+                self.0.global_cache.remove(request.url().as_str()).await?;
 
                 get().await??
             } else if response.is_expired(request.max_age()) {
-                // TODO Pass this to `TaskTracker`.
-                get().await??;
+                let client = self.clone();
+                let request = request.clone();
+
+                self.0.tasks.spawn(async move {
+                    let _ = client.revalidate(&request, robots).await;
+                });
 
                 response
             } else {
@@ -195,6 +221,20 @@ impl HttpClient {
         }
         .response()
         .clone())
+    }
+
+    /// Re-fetches a stale response and refreshes the cache in the background.
+    async fn revalidate(&self, request: &Request, robots: bool) -> Result<(), CacheError> {
+        self.0.global_cache.remove(request.url().as_str()).await?;
+        self.0
+            .global_cache
+            .get_with(
+                request.url().to_string(),
+                Box::new(self.get_filtered(request, robots)),
+            )
+            .await?;
+
+        Ok(())
     }
 
     async fn get_filtered(
