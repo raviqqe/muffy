@@ -174,9 +174,7 @@ impl HttpClient {
         };
 
         Ok(if let Some(Ok(response)) = result {
-            if !response.is_expired(request.max_age()) {
-                response
-            } else {
+            if response.is_expired(request.max_age()) {
                 self.global_cache.remove(request.url().as_str()).await?;
 
                 let result = get().await?;
@@ -190,6 +188,8 @@ impl HttpClient {
                 } else {
                     response
                 }
+            } else {
+                response
             }
         } else {
             get().await??
