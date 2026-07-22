@@ -167,6 +167,7 @@ impl HttpClient {
                 }),
             )
         };
+
         let result = self.global_cache.get(request, robots).await?;
         let result = if let Some(Ok(response)) = &result
             && response.is_expired(
@@ -180,10 +181,8 @@ impl HttpClient {
         } else if let Some(Ok(response)) = &result
             && response.is_expired(request.max_age())
         {
-            self.stale_requests
-                .lock()
-                .await
-                .push((request.clone(), robots));
+            // TODO Pass this to `TaskTracker`.
+            get().await?;
 
             result
         } else {
