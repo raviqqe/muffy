@@ -184,8 +184,6 @@ impl HttpClient {
 
                     get().await??
                 } else {
-                    // Revalidate while keeping the stale entry so that it can still be
-                    // served if revalidation fails.
                     if let Ok(response) = self.get_filtered(request, robots).await {
                         self.global_cache.remove(request.url().as_str()).await?;
                         let _ = self
