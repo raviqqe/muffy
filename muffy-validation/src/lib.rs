@@ -186,6 +186,39 @@ mod tests {
         }
     }
 
+    mod mark {
+        use super::*;
+
+        #[test]
+        fn validate_valid_element() {
+            let element = create_element("mark", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_child() {
+            let element =
+                create_element("mark", vec![], vec![create_element("span", vec![], vec![])]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_child() {
+            let element =
+                create_element("mark", vec![], vec![create_element("div", vec![], vec![])]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                })
+            );
+        }
+    }
+
     mod html {
         use super::*;
 
@@ -362,6 +395,45 @@ mod tests {
         }
     }
 
+    mod picture {
+        use super::*;
+
+        #[test]
+        fn validate_valid_element() {
+            let element = create_element("picture", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_children() {
+            let element = create_element(
+                "picture",
+                vec![],
+                vec![
+                    create_element("source", vec![], vec![]),
+                    create_element("img", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_child() {
+            let element =
+                create_element("picture", vec![], vec![create_element("p", vec![], vec![])]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                })
+            );
+        }
+    }
+
     mod video {
         use super::*;
 
@@ -423,6 +495,39 @@ mod tests {
                 "link",
                 vec![("rel", "stylesheet"), ("href", "style.css")],
                 vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+    }
+
+    mod noscript {
+        use super::*;
+
+        #[test]
+        fn validate_valid_element() {
+            let element = create_element("noscript", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_flow_child() {
+            let element = create_element(
+                "noscript",
+                vec![],
+                vec![create_element("div", vec![], vec![])],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_head_child() {
+            let element = create_element(
+                "noscript",
+                vec![],
+                vec![create_element("link", vec![], vec![])],
             );
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));

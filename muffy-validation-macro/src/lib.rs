@@ -43,14 +43,11 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
 
     for pattern in definitions.values() {
-        let Pattern::Element { name_class, .. } = pattern else {
-            continue;
-        };
-        let Some(element) = get_name(name_class) else {
-            continue;
-        };
+        for (name_class, pattern) in collect_elements(pattern) {
+            let Some(element) = get_name(name_class) else {
+                continue;
+            };
 
-        if let Pattern::Element { pattern, .. } = pattern {
             let (attributes, children) = element_rules
                 .entry(element)
                 .or_insert_with(|| (vec![], vec![]));
@@ -262,6 +259,31 @@ fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
                 }
             }
         },
+    }
+}
+
+fn collect_elements(pattern: &Pattern) -> Vec<(&NameClass, &Pattern)> {
+    match pattern {
+        Pattern::Element {
+            name_class,
+            pattern,
+        } => vec![(name_class, pattern)],
+        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
+            patterns.iter().flat_map(collect_elements).collect()
+        }
+        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
+            collect_elements(pattern)
+        }
+        Pattern::Attribute { .. }
+        | Pattern::Data { .. }
+        | Pattern::Empty
+        | Pattern::External(_)
+        | Pattern::Grammar(_)
+        | Pattern::List(_)
+        | Pattern::Name(_)
+        | Pattern::NotAllowed
+        | Pattern::Text
+        | Pattern::Value { .. } => vec![],
     }
 }
 
