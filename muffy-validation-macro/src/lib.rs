@@ -136,8 +136,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
             match element.name() {
-                #(#element_matches)*
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
+                #(#element_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }

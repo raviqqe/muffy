@@ -131,6 +131,16 @@ mod tests {
         }
 
         #[test]
+        fn validate_ignored_known_tag_regex() {
+            let element = create_element("div", vec![("invalid", "foo")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[Regex::new("^div$").unwrap()]),
+                Ok(())
+            );
+        }
+
+        #[test]
         fn validate_valid_child() {
             let element = create_element("div", vec![], vec![create_element("p", vec![], vec![])]);
 
@@ -182,6 +192,16 @@ mod tests {
                     ]
                     .into(),
                 })
+            );
+        }
+
+        #[test]
+        fn validate_ignored_known_tag_regex() {
+            let element = create_element("p", vec![], vec![create_element("div", vec![], vec![])]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[Regex::new("^p$").unwrap()]),
+                Ok(())
             );
         }
     }
