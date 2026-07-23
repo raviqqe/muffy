@@ -40,14 +40,7 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
-        match self.map.entry_async(key).await {
-            Entry::Occupied(mut entry) => {
-                *entry.get_mut() = value;
-            }
-            Entry::Vacant(entry) => {
-                entry.insert_entry(value);
-            }
-        }
+        self.map.upsert_async(key, value).await;
 
         Ok(())
     }
