@@ -91,6 +91,13 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         }
     }
 
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        trace!("setting cache at {key}");
+        self.tree.insert(key, bitcode::serialize(&Some(&value))?)?;
+
+        Ok(())
+    }
+
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
         trace!("removing cache entry at {key}");
         self.tree.remove(key)?;
@@ -143,6 +150,19 @@ mod tests {
             .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn set() {
+        let file = TempDir::new().unwrap();
+        let cache =
+            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
+
+        cache.set("key".into(), 42).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+
+        cache.set("key".into(), 2).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(2));
     }
 
     #[tokio::test]

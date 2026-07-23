@@ -39,6 +39,12 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         })
     }
 
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        self.map.upsert_async(key, value).await;
+
+        Ok(())
+    }
+
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
         self.map.remove_async(key).await;
 
@@ -82,5 +88,16 @@ mod tests {
             .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn set() {
+        let cache = MemoryCache::new(1 << 10);
+
+        cache.set("key".into(), 42).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+
+        cache.set("key".into(), 2).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(2));
     }
 }
