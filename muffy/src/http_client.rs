@@ -175,17 +175,30 @@ impl HttpClient {
 
         Ok(if let Some(Ok(response)) = result {
             if response.is_expired(request.max_age()) {
-                let expired = response.is_expired(
+                if response.is_expired(
                     request
                         .max_age()
                         .saturating_add(request.stale_while_revalidate()),
-                );
+                ) {
+                    self.global_cache.remove(request.url().as_str()).await?;
 
-                self.global_cache.remove(request.url().as_str()).await?;
+                    get().await??
+                } else {
+                    // Revalidate while keeping the stale entry so that it can still be
+                    // served if revalidation fails.
+                    if let Ok(response) = self.get_filtered(request, robots).await {
+                        self.global_cache.remove(request.url().as_str()).await?;
+                        let _ = self
+                            .global_cache
+                            .get_with(
+                                request.url().to_string(),
+                                Box::new(async move { Ok(response) }),
+                            )
+                            .await?;
+                    }
 
-                let result = get().await?;
-
-                if expired { result? } else { response }
+                    response
+                }
             } else {
                 response
             }
@@ -1094,6 +1107,77 @@ mod tests {
             .await
             .unwrap(),
             Some(Response::from_bare(stale_response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn keep_stale_cache_on_failed_revalidation() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let stale_response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: b"stale".to_vec(),
+        };
+        let robots = build_stub_response(
+            url.join("/robots.txt").unwrap().as_str(),
+            StatusCode::OK,
+            Default::default(),
+            vec![],
+        );
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        cache
+            .get_with(
+                url.as_str().into(),
+                Box::new(async {
+                    Ok(Arc::new(
+                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
+                    ))
+                }),
+            )
+            .await
+            .unwrap()
+            .unwrap();
+
+        sleep(Duration::from_millis(10)).await;
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        robots,
+                        (
+                            url.as_str().into(),
+                            Err(HttpClientError::Http("boom".into())),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache.clone()),
+            )
+            .get(
+                &Request::new(url.clone(), Default::default())
+                    .set_stale_while_revalidate(CACHE_MAX_AGE),
+            )
+            .await
+            .unwrap(),
+            Some(Response::from_bare(stale_response.clone(), Duration::from_millis(0)).into())
+        );
+
+        // A failed revalidation must not destroy the still-valid stale entry.
+        assert_eq!(
+            cache
+                .get(url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(stale_response, Duration::from_millis(0)).into()
         );
     }
 
