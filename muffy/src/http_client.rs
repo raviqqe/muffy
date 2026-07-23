@@ -175,23 +175,23 @@ impl HttpClient {
 
         Ok(if let Some(Ok(response)) = result {
             if response.is_expired(request.max_age()) {
-                if response.is_expired(
+                let expired = response.is_expired(
                     request
                         .max_age()
                         .saturating_add(request.stale_while_revalidate()),
-                ) {
-                    self.global_cache.remove(request.url().as_str()).await?;
+                );
 
-                    get().await??
-                } else {
-                    if let Ok(response) = self.get_filtered(request, robots).await {
-                        self.global_cache
-                            .set(request.url().to_string(), Ok(response))
-                            .await?;
-                    }
+                self.global_cache.remove(request.url().as_str()).await?;
 
-                    response
+                let result = get().await?;
+
+                if result.is_err() {
+                    self.global_cache
+                        .set(request.url().to_string(), Ok(response.clone()))
+                        .await?;
                 }
+
+                if expired { result? } else { response }
             } else {
                 response
             }
