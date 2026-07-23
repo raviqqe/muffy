@@ -31,6 +31,9 @@ pub trait Cache<T: Clone>: Send + Sync {
         future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError>;
 
+    /// Sets a value.
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError>;
+
     /// Removes a cached value corresponding to the given key.
     async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
@@ -47,6 +50,10 @@ impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C>
         future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError> {
         (**self).get_with(key, future).await
+    }
+
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        (**self).set(key, value).await
     }
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
@@ -113,6 +120,15 @@ mod tests {
                 .unwrap(),
             42,
         );
+    }
+
+    #[tokio::test]
+    async fn set_with_shared_cache() {
+        let cache = Arc::new(MemoryCache::new(1 << 10));
+
+        cache.set("key".into(), 42).await.unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
     }
 
     #[tokio::test]

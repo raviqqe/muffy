@@ -39,6 +39,19 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
         })
     }
 
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        match self.map.entry_async(key).await {
+            Entry::Occupied(mut entry) => {
+                *entry.get_mut() = value;
+            }
+            Entry::Vacant(entry) => {
+                entry.insert_entry(value);
+            }
+        }
+
+        Ok(())
+    }
+
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
         self.map.remove_async(key).await;
 
@@ -82,5 +95,16 @@ mod tests {
             .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn set() {
+        let cache = MemoryCache::new(1 << 10);
+
+        cache.set("key".into(), 42).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+
+        cache.set("key".into(), 2).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(2));
     }
 }

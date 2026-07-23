@@ -82,6 +82,13 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
         }
     }
 
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        self.keyspace
+            .insert(key, bitcode::serialize(&Some(&value))?)?;
+
+        Ok(())
+    }
+
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
         self.keyspace.remove(key)?;
 
@@ -145,6 +152,25 @@ mod tests {
             .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
+    }
+
+    #[tokio::test]
+    async fn set() {
+        let directory = TempDir::new().unwrap();
+        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
+            .open()
+            .unwrap();
+        let cache = FjallCache::new(
+            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
+                .unwrap(),
+        )
+        .unwrap();
+
+        cache.set("key".into(), 42).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(42));
+
+        cache.set("key".into(), 2).await.unwrap();
+        assert_eq!(cache.get("key").await.unwrap(), Some(2));
     }
 
     #[tokio::test]

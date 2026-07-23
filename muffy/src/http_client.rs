@@ -185,13 +185,8 @@ impl HttpClient {
                     get().await??
                 } else {
                     if let Ok(response) = self.get_filtered(request, robots).await {
-                        self.global_cache.remove(request.url().as_str()).await?;
-                        let _ = self
-                            .global_cache
-                            .get_with(
-                                request.url().to_string(),
-                                Box::new(async move { Ok(response) }),
-                            )
+                        self.global_cache
+                            .set(request.url().to_string(), Ok(response))
                             .await?;
                     }
 
