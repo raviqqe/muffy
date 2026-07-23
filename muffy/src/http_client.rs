@@ -1206,7 +1206,8 @@ mod tests {
 
         sleep(Duration::from_millis(10)).await;
 
-        // Past the stale-while-revalidate period, a failed revalidation propagates the error.
+        // Past the stale-while-revalidate period, a failed revalidation propagates the
+        // error.
         assert!(
             HttpClient::new(
                 StubHttpClient::new(
