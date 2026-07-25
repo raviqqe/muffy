@@ -1,0 +1,409 @@
+use crate::error::MacroError;
+use alloc::collections::{BTreeMap, BTreeSet};
+use muffy_rnc::{Identifier, NameClass, Pattern};
+
+const VARIANT_LIMIT: usize = 64;
+
+/// A pattern compiled for name-based matching with references resolved,
+/// attribute values dropped, and not-allowed sub-patterns propagated.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum CompiledPattern {
+    Attribute(BTreeSet<String>),
+    Choice(Vec<Self>),
+    Element(BTreeSet<String>),
+    Empty,
+    Group(Vec<Self>),
+    Interleave(Vec<Self>),
+    Many0(Box<Self>),
+    Many1(Box<Self>),
+    NotAllowed,
+    Optional(Box<Self>),
+    Text,
+}
+
+impl CompiledPattern {
+    pub fn choice(patterns: impl IntoIterator<Item = Self>) -> Self {
+        let mut alternatives = BTreeSet::new();
+        let mut nullable = false;
+
+        for pattern in patterns {
+            match pattern {
+                Self::NotAllowed => {}
+                Self::Empty => nullable = true,
+                Self::Choice(patterns) => alternatives.extend(patterns),
+                pattern => {
+                    alternatives.insert(pattern);
+                }
+            }
+        }
+
+        let pattern = if alternatives.len() == 1 {
+            alternatives.pop_first().expect("alternative")
+        } else if alternatives.is_empty() {
+            Self::NotAllowed
+        } else {
+            Self::Choice(alternatives.into_iter().collect())
+        };
+
+        if nullable {
+            Self::optional(pattern)
+        } else {
+            pattern
+        }
+    }
+
+    pub fn group(patterns: impl IntoIterator<Item = Self>) -> Self {
+        let mut sequence = vec![];
+
+        for pattern in patterns {
+            match pattern {
+                Self::Empty => {}
+                Self::NotAllowed => return Self::NotAllowed,
+                Self::Group(patterns) => sequence.extend(patterns),
+                pattern => sequence.push(pattern),
+            }
+        }
+
+        if sequence.len() == 1 {
+            sequence.pop().expect("operand")
+        } else if sequence.is_empty() {
+            Self::Empty
+        } else {
+            Self::Group(sequence)
+        }
+    }
+
+    pub fn interleave(patterns: impl IntoIterator<Item = Self>) -> Self {
+        let mut operands = vec![];
+
+        for pattern in patterns {
+            match pattern {
+                Self::Empty => {}
+                Self::NotAllowed => return Self::NotAllowed,
+                Self::Interleave(patterns) => operands.extend(patterns),
+                pattern => operands.push(pattern),
+            }
+        }
+
+        operands.sort();
+
+        if operands.len() == 1 {
+            operands.pop().expect("operand")
+        } else if operands.is_empty() {
+            Self::Empty
+        } else {
+            Self::Interleave(operands)
+        }
+    }
+
+    pub fn many0(pattern: Self) -> Self {
+        match pattern {
+            Self::Empty | Self::NotAllowed => Self::Empty,
+            Self::Many0(pattern) | Self::Many1(pattern) | Self::Optional(pattern) => {
+                Self::Many0(pattern)
+            }
+            pattern => Self::Many0(pattern.into()),
+        }
+    }
+
+    pub fn many1(pattern: Self) -> Self {
+        match pattern {
+            Self::Empty => Self::Empty,
+            Self::NotAllowed => Self::NotAllowed,
+            Self::Many0(pattern) | Self::Optional(pattern) => Self::Many0(pattern),
+            Self::Many1(pattern) => Self::Many1(pattern),
+            pattern => Self::Many1(pattern.into()),
+        }
+    }
+
+    pub fn optional(pattern: Self) -> Self {
+        match pattern {
+            Self::Empty | Self::NotAllowed => Self::Empty,
+            Self::Many0(pattern) | Self::Many1(pattern) => Self::Many0(pattern),
+            Self::Optional(pattern) => Self::Optional(pattern),
+            pattern => Self::Optional(pattern.into()),
+        }
+    }
+
+    pub fn nullable(&self) -> bool {
+        match self {
+            Self::Empty | Self::Many0(_) | Self::Optional(_) | Self::Text => true,
+            Self::Attribute(_) | Self::Element(_) | Self::NotAllowed => false,
+            Self::Choice(patterns) => patterns.iter().any(Self::nullable),
+            Self::Group(patterns) | Self::Interleave(patterns) => {
+                patterns.iter().all(Self::nullable)
+            }
+            Self::Many1(pattern) => pattern.nullable(),
+        }
+    }
+}
+
+pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
+    match name_class {
+        NameClass::Name(name) => [identifier_string(&name.local)].into(),
+        NameClass::Choice(classes) => classes.iter().flat_map(class_names).collect(),
+        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
+            Default::default()
+        }
+    }
+}
+
+fn identifier_string(identifier: &Identifier) -> String {
+    identifier
+        .sub_components
+        .iter()
+        .fold(identifier.component.clone(), |string, component| {
+            string + "." + component
+        })
+}
+
+pub fn compile_pattern(
+    pattern: &Pattern,
+    definitions: &BTreeMap<Identifier, Pattern>,
+    cache: &mut BTreeMap<Identifier, CompiledPattern>,
+) -> Result<CompiledPattern, MacroError> {
+    compile_pattern_with_stack(pattern, definitions, cache, &mut vec![])
+}
+
+fn compile_pattern_with_stack(
+    pattern: &Pattern,
+    definitions: &BTreeMap<Identifier, Pattern>,
+    cache: &mut BTreeMap<Identifier, CompiledPattern>,
+    stack: &mut Vec<Identifier>,
+) -> Result<CompiledPattern, MacroError> {
+    Ok(match pattern {
+        Pattern::Attribute { name_class, .. } => {
+            let names = class_names(name_class);
+
+            if names.is_empty() {
+                CompiledPattern::NotAllowed
+            } else {
+                CompiledPattern::Attribute(names)
+            }
+        }
+        Pattern::Element { name_class, .. } => {
+            let names = class_names(name_class);
+
+            if names.is_empty() {
+                CompiledPattern::NotAllowed
+            } else {
+                CompiledPattern::Element(names)
+            }
+        }
+        Pattern::Choice(patterns) => CompiledPattern::choice(
+            patterns
+                .iter()
+                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .collect::<Result<Vec<_>, _>>()?,
+        ),
+        Pattern::Group(patterns) => CompiledPattern::group(
+            patterns
+                .iter()
+                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .collect::<Result<Vec<_>, _>>()?,
+        ),
+        Pattern::Interleave(patterns) => CompiledPattern::interleave(
+            patterns
+                .iter()
+                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .collect::<Result<Vec<_>, _>>()?,
+        ),
+        Pattern::Many0(pattern) => CompiledPattern::many0(compile_pattern_with_stack(
+            pattern,
+            definitions,
+            cache,
+            stack,
+        )?),
+        Pattern::Many1(pattern) => CompiledPattern::many1(compile_pattern_with_stack(
+            pattern,
+            definitions,
+            cache,
+            stack,
+        )?),
+        Pattern::Optional(pattern) => CompiledPattern::optional(compile_pattern_with_stack(
+            pattern,
+            definitions,
+            cache,
+            stack,
+        )?),
+        Pattern::Empty => CompiledPattern::Empty,
+        Pattern::NotAllowed => CompiledPattern::NotAllowed,
+        Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
+            CompiledPattern::Text
+        }
+        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+        Pattern::Name(name) => {
+            if let Some(compiled) = cache.get(&name.local) {
+                compiled.clone()
+            } else if stack.contains(&name.local) {
+                return Err(MacroError::CircularReference(identifier_string(&name.local)));
+            } else if let Some(definition) = definitions.get(&name.local) {
+                stack.push(name.local.clone());
+                let compiled =
+                    compile_pattern_with_stack(definition, definitions, cache, stack)?;
+                stack.pop();
+                cache.insert(name.local.clone(), compiled.clone());
+                compiled
+            } else {
+                return Err(MacroError::UndefinedReference(identifier_string(
+                    &name.local,
+                )));
+            }
+        }
+    })
+}
+
+/// Splits a compiled element pattern into alternatives of attribute and
+/// content patterns whose interleaved union is equivalent to the original.
+pub fn split_pattern(
+    pattern: &CompiledPattern,
+) -> Result<Vec<(CompiledPattern, CompiledPattern)>, MacroError> {
+    Ok(match pattern {
+        CompiledPattern::Attribute(_) => vec![(pattern.clone(), CompiledPattern::Empty)],
+        CompiledPattern::Element(_) | CompiledPattern::Text => {
+            vec![(CompiledPattern::Empty, pattern.clone())]
+        }
+        CompiledPattern::Empty => vec![(CompiledPattern::Empty, CompiledPattern::Empty)],
+        CompiledPattern::NotAllowed => vec![],
+        CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
+            let interleaved = matches!(pattern, CompiledPattern::Interleave(_));
+            let mut variants = vec![(CompiledPattern::Empty, CompiledPattern::Empty)];
+
+            for operand in patterns {
+                let operand_variants = split_pattern(operand)?;
+                variants = variants
+                    .iter()
+                    .flat_map(|(attribute, content)| {
+                        operand_variants
+                            .iter()
+                            .map(|(operand_attribute, operand_content)| {
+                                (
+                                    CompiledPattern::interleave([
+                                        attribute.clone(),
+                                        operand_attribute.clone(),
+                                    ]),
+                                    if interleaved {
+                                        CompiledPattern::interleave([
+                                            content.clone(),
+                                            operand_content.clone(),
+                                        ])
+                                    } else {
+                                        CompiledPattern::group([
+                                            content.clone(),
+                                            operand_content.clone(),
+                                        ])
+                                    },
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .collect();
+
+                if variants.len() > VARIANT_LIMIT {
+                    return Err(MacroError::PatternLimit("element pattern alternatives"));
+                }
+            }
+
+            variants
+        }
+        CompiledPattern::Choice(patterns) => {
+            let variants = patterns
+                .iter()
+                .map(split_pattern)
+                .collect::<Result<Vec<_>, _>>()?;
+
+            if variants
+                .iter()
+                .flatten()
+                .all(|(_, content)| *content == CompiledPattern::Empty)
+            {
+                vec![(
+                    CompiledPattern::choice(
+                        variants
+                            .into_iter()
+                            .flatten()
+                            .map(|(attribute, _)| attribute),
+                    ),
+                    CompiledPattern::Empty,
+                )]
+            } else if variants
+                .iter()
+                .flatten()
+                .all(|(attribute, _)| *attribute == CompiledPattern::Empty)
+            {
+                vec![(
+                    CompiledPattern::Empty,
+                    CompiledPattern::choice(
+                        variants.into_iter().flatten().map(|(_, content)| content),
+                    ),
+                )]
+            } else {
+                variants.into_iter().flatten().collect()
+            }
+        }
+        CompiledPattern::Optional(pattern) => {
+            let variants = split_pattern(pattern)?;
+
+            match variants.as_slice() {
+                [(attribute, content)] if *content == CompiledPattern::Empty => {
+                    vec![(
+                        CompiledPattern::optional(attribute.clone()),
+                        CompiledPattern::Empty,
+                    )]
+                }
+                [(attribute, content)] if *attribute == CompiledPattern::Empty => {
+                    vec![(
+                        CompiledPattern::Empty,
+                        CompiledPattern::optional(content.clone()),
+                    )]
+                }
+                _ => [(CompiledPattern::Empty, CompiledPattern::Empty)]
+                    .into_iter()
+                    .chain(variants)
+                    .collect(),
+            }
+        }
+        CompiledPattern::Many0(operand) | CompiledPattern::Many1(operand) => {
+            let at_least_once = matches!(pattern, CompiledPattern::Many1(_));
+            let variants = split_pattern(operand)?;
+
+            if variants
+                .iter()
+                .all(|(attribute, _)| *attribute == CompiledPattern::Empty)
+            {
+                let content =
+                    CompiledPattern::choice(variants.into_iter().map(|(_, content)| content));
+
+                vec![(
+                    CompiledPattern::Empty,
+                    if at_least_once {
+                        CompiledPattern::many1(content)
+                    } else {
+                        CompiledPattern::many0(content)
+                    },
+                )]
+            } else if variants
+                .iter()
+                .all(|(_, content)| *content == CompiledPattern::Empty)
+            {
+                // Attributes never repeat on an element, so a repetition
+                // degenerates to at most one occurrence.
+                let attribute = CompiledPattern::choice(
+                    variants.into_iter().map(|(attribute, _)| attribute),
+                );
+
+                vec![(
+                    if at_least_once {
+                        attribute
+                    } else {
+                        CompiledPattern::optional(attribute)
+                    },
+                    CompiledPattern::Empty,
+                )]
+            } else {
+                return Err(MacroError::RncPattern("repeated mixed pattern"));
+            }
+        }
+    })
+}

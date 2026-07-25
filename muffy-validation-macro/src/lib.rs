@@ -2,9 +2,17 @@
 
 extern crate alloc;
 
+mod attribute;
+mod content;
 mod error;
+mod pattern;
 
-use self::error::MacroError;
+use self::{
+    attribute::{AttributeTerm, compile_attribute_terms},
+    content::{ContentAutomaton, compile_content_automaton},
+    error::MacroError,
+    pattern::{class_names, compile_pattern, split_pattern},
+};
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
 use muffy_rnc::{
@@ -12,7 +20,7 @@ use muffy_rnc::{
 };
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
+use quote::{format_ident, quote};
 use std::{fs::read_to_string, path::Path};
 
 /// Generates HTML validation functions.
@@ -39,94 +47,124 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         )?;
     }
 
-    // element -> (attributes, children)
-    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
+    let mut cache = Default::default();
+    // element -> alternatives of attribute terms and a content automaton
+    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeTerm>, ContentAutomaton)>>::new();
 
-    for pattern in definitions.values() {
-        for (name_class, pattern) in collect_elements(pattern) {
-            let Some(element) = get_name(name_class) else {
+    for definition in definitions.values() {
+        for (name_class, inner) in collect_elements(definition) {
+            let names = class_names(name_class);
+
+            if names.is_empty() {
                 continue;
-            };
+            }
 
-            let (attributes, children) = element_rules
-                .entry(element)
-                .or_insert_with(|| (vec![], vec![]));
+            let compiled = compile_pattern(inner, &definitions, &mut cache)?;
 
-            attributes.extend(collect_attributes(pattern, &definitions)?);
-            children.extend(collect_children(pattern, &definitions)?);
+            for (attribute_pattern, content_pattern) in split_pattern(&compiled)? {
+                let terms = compile_attribute_terms(&attribute_pattern)?;
+
+                if terms.is_empty() {
+                    continue;
+                }
+
+                let automaton = compile_content_automaton(&content_pattern)?;
+
+                for name in &names {
+                    let variants = element_rules.entry(name.clone()).or_default();
+                    let variant = (terms.clone(), automaton.clone());
+
+                    if !variants.contains(&variant) {
+                        variants.push(variant);
+                    }
+                }
+            }
         }
     }
 
+    let mut term_indexes = BTreeMap::<Vec<AttributeTerm>, usize>::new();
+    let mut automaton_indexes = BTreeMap::<ContentAutomaton, usize>::new();
     let mut element_matches = vec![];
 
-    for (element, (mut attributes, mut children)) in element_rules {
-        attributes.sort();
-        attributes.dedup();
-        children.sort();
-        children.dedup();
+    for (element, variants) in &element_rules {
+        let attributes = variants
+            .iter()
+            .flat_map(|(terms, _)| terms)
+            .flat_map(|term| term.required.iter().chain(&term.optional))
+            .collect::<BTreeSet<_>>();
+        let children = variants
+            .iter()
+            .flat_map(|(_, automaton)| &automaton.transitions)
+            .flat_map(BTreeMap::keys)
+            .collect::<BTreeSet<_>>();
 
-        let attributes = attributes.iter().map(|attribute| quote!(#attribute));
-        let children = children.iter().map(|child| quote!(#child));
+        let variants = variants
+            .iter()
+            .map(|(terms, automaton)| {
+                let index = term_indexes.len();
+                let terms = format_ident!(
+                    "ATTRIBUTE_TERMS_{}",
+                    *term_indexes.entry(terms.clone()).or_insert(index)
+                );
+                let index = automaton_indexes.len();
+                let automaton = format_ident!(
+                    "CONTENT_MODEL_{}",
+                    *automaton_indexes.entry(automaton.clone()).or_insert(index)
+                );
+
+                quote!(Variant { attributes: #terms, content: &#automaton })
+            })
+            .collect::<Vec<_>>();
+        let attributes = attributes.iter().map(|name| quote!(#name));
+        let children = children.iter().map(|name| quote!(#name));
 
         element_matches.push(quote! {
             #element => {
-                let mut attributes = ::alloc::collections::BTreeMap::<
-                    String,
-                    ::alloc::collections::BTreeSet<AttributeError>,
-                >::new();
+                static RULES: Rules = Rules {
+                    attributes: &[#(#attributes),*],
+                    children: &[#(#children),*],
+                    variants: &[#(#variants),*],
+                };
 
-                for (attribute, _) in element.attributes() {
-                    if ignored_attributes.iter().any(|pattern| pattern.is_match(attribute)) {
-                        continue;
-                    }
-
-                    match attribute {
-                        #(#attributes |)* "_DUMMY_" => {}
-                        _ => {
-                            attributes
-                                .entry(attribute.into())
-                                .or_insert_with(Default::default)
-                                .insert(AttributeError::NotAllowed);
-                        }
-                    }
-                }
-
-                let mut children = ::alloc::collections::BTreeMap::<
-                    String,
-                    ::alloc::collections::BTreeSet<ChildError>,
-                >::new();
-
-                for child in element.children() {
-                    if let muffy_document::html::Node::Element(element) = child {
-                        let name = element.name();
-
-                        if ignored_elements.iter().any(|pattern| pattern.is_match(name)) {
-                            continue;
-                        }
-
-                        match name {
-                            #(#children |)* "_DUMMY_" => {}
-                            _ => {
-                                children
-                                    .entry(name.into())
-                                    .or_insert_with(Default::default)
-                                    .insert(ChildError::NotAllowed);
-                            }
-                        }
-                    }
-                }
-
-                if attributes.is_empty() && children.is_empty() {
-                    Ok(())
-                } else {
-                    Err(MarkupError::InvalidElement {
-                        attributes,
-                        children,
-                    })
-                }
+                validate_rules(element, ignored_attributes, ignored_elements, &RULES)
             }
         });
     }
+
+    let term_statics = sort_by_index(term_indexes).map(|(terms, index)| {
+        let identifier = format_ident!("ATTRIBUTE_TERMS_{index}");
+        let terms = terms.iter().map(|term| {
+            let required = term.required.iter().map(|name| quote!(#name));
+            let optional = term.optional.iter().map(|name| quote!(#name));
+
+            quote!(AttributeTerm {
+                required: &[#(#required),*],
+                optional: &[#(#optional),*],
+            })
+        });
+
+        quote!(static #identifier: &[AttributeTerm] = &[#(#terms),*];)
+    });
+    let automaton_statics = sort_by_index(automaton_indexes).map(|(automaton, index)| {
+        let identifier = format_ident!("CONTENT_MODEL_{index}");
+        let transitions = automaton.transitions.iter().map(|transitions| {
+            let transitions = transitions.iter().map(|(name, state)| quote!((#name, #state)));
+
+            quote!(&[#(#transitions),*])
+        });
+        let accepting = automaton.accepting.iter().map(|accepting| quote!(#accepting));
+        let expected = automaton.expected.iter().map(|names| {
+            let names = names.iter().map(|name| quote!(#name));
+
+            quote!(&[#(#names),*])
+        });
+
+        quote!(static #identifier: ContentAutomaton = ContentAutomaton {
+            transitions: &[#(#transitions),*],
+            accepting: &[#(#accepting),*],
+            expected: &[#(#expected),*],
+        };)
+    });
 
     Ok(quote! {
         /// Validates an HTML element.
@@ -135,6 +173,9 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
+            #(#term_statics)*
+            #(#automaton_statics)*
+
             match element.name() {
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
                 #(#element_matches)*
@@ -143,6 +184,14 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         }
     }
     .into())
+}
+
+fn sort_by_index<T>(indexes: BTreeMap<T, usize>) -> impl Iterator<Item = (T, usize)> {
+    let mut entries = indexes.into_iter().collect::<Vec<_>>();
+
+    entries.sort_by_key(|(_, index)| *index);
+
+    entries.into_iter()
 }
 
 fn load_schema(
@@ -285,119 +334,4 @@ fn collect_elements(pattern: &Pattern) -> Vec<(&NameClass, &Pattern)> {
         | Pattern::Text
         | Pattern::Value { .. } => vec![],
     }
-}
-
-fn get_name(name_class: &NameClass) -> Option<String> {
-    match name_class {
-        NameClass::Name(name) => Some(name.local.component.clone()),
-        NameClass::Choice(choices) => choices.iter().find_map(get_name),
-        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => None,
-    }
-}
-
-fn collect_attributes(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-) -> Result<BTreeSet<String>, MacroError> {
-    let mut attributes = Default::default();
-
-    collect_nested_attributes(
-        pattern,
-        definitions,
-        &mut attributes,
-        &mut Default::default(),
-    )?;
-
-    Ok(attributes)
-}
-
-fn collect_nested_attributes<'a>(
-    pattern: &'a Pattern,
-    definitions: &'a BTreeMap<Identifier, Pattern>,
-    attributes: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<&'a Identifier>,
-) -> Result<(), MacroError> {
-    match pattern {
-        Pattern::Attribute { name_class, .. } => {
-            if let Some(name) = get_name(name_class) {
-                attributes.insert(name);
-            }
-        }
-        Pattern::Name(name) => {
-            if !visited.contains(&name.local) {
-                visited.insert(&name.local);
-
-                if let Some(pattern) = definitions.get(&name.local) {
-                    collect_nested_attributes(pattern, definitions, attributes, visited)?;
-                }
-            }
-        }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_attributes(pattern, definitions, attributes, visited)?;
-            }
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
-            collect_nested_attributes(pattern, definitions, attributes, visited)?;
-        }
-        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
-        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
-        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Empty | Pattern::Element { .. } | Pattern::NotAllowed | Pattern::Text => {}
-    }
-
-    Ok(())
-}
-
-fn collect_children(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-) -> Result<BTreeSet<String>, MacroError> {
-    let mut children = Default::default();
-
-    collect_nested_children(pattern, definitions, &mut children, &mut Default::default())?;
-
-    Ok(children)
-}
-
-fn collect_nested_children<'a>(
-    pattern: &'a Pattern,
-    definitions: &'a BTreeMap<Identifier, Pattern>,
-    children: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<&'a Identifier>,
-) -> Result<(), MacroError> {
-    match pattern {
-        Pattern::Element { name_class, .. } => {
-            if let Some(name) = get_name(name_class) {
-                children.insert(name);
-            }
-        }
-        Pattern::Name(name) => {
-            if !visited.contains(&name.local) {
-                visited.insert(&name.local);
-
-                if let Some(pattern) = definitions.get(&name.local) {
-                    collect_nested_children(pattern, definitions, children, visited)?;
-                }
-            }
-        }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_children(pattern, definitions, children, visited)?;
-            }
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
-            collect_nested_children(pattern, definitions, children, visited)?;
-        }
-        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
-        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
-        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Attribute { .. } | Pattern::Empty | Pattern::NotAllowed | Pattern::Text => {}
-    }
-
-    Ok(())
 }
