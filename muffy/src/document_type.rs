@@ -3,4 +3,5 @@ pub enum DocumentType {
     Html,
     Robots,
     Sitemap,
+    Svg,
 }

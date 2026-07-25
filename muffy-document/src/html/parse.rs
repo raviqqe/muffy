@@ -103,6 +103,63 @@ mod tests {
     }
 
     #[test]
+    fn parse_svg_document() {
+        assert_eq!(
+            parse(concat!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">"#,
+                r#"<a href="/foo"><rect/></a>"#,
+                r#"<image xlink:href="/bar.png"/>"#,
+                "</svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![Arc::new(Node::Element(Element::new(
+                "html".to_string(),
+                vec![],
+                vec![
+                    Arc::new(Node::Element(Element::new(
+                        "head".to_string(),
+                        vec![],
+                        vec![]
+                    ))),
+                    Arc::new(Node::Element(Element::new(
+                        "body".to_string(),
+                        vec![],
+                        vec![Arc::new(Node::Element(Element::new(
+                            "svg".to_string(),
+                            vec![
+                                (
+                                    "xmlns".to_string(),
+                                    "http://www.w3.org/2000/svg".to_string()
+                                ),
+                                (
+                                    "xlink".to_string(),
+                                    "http://www.w3.org/1999/xlink".to_string()
+                                ),
+                            ],
+                            vec![
+                                Arc::new(Node::Element(Element::new(
+                                    "a".to_string(),
+                                    vec![("href".to_string(), "/foo".to_string())],
+                                    vec![Arc::new(Node::Element(Element::new(
+                                        "rect".to_string(),
+                                        vec![],
+                                        vec![]
+                                    )))],
+                                ))),
+                                Arc::new(Node::Element(Element::new(
+                                    "image".to_string(),
+                                    vec![("href".to_string(), "/bar.png".to_string())],
+                                    vec![],
+                                ))),
+                            ],
+                        )))],
+                    ))),
+                ],
+            )))])
+        );
+    }
+
+    #[test]
     fn ignore_comments() {
         assert_eq!(
             parse("<html><body><!-- comment --><p>Hello</p></body></html>").unwrap(),

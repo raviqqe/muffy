@@ -146,11 +146,11 @@ impl WebValidator {
         };
 
         if let Some(fragment) = url.fragment()
-            && document_type == DocumentType::Html
+            && matches!(document_type, DocumentType::Html | DocumentType::Svg)
             && !site.fragments_ignored()
-            && !self.has_html_element(&response, fragment).await?
+            && !self.has_element(&response, fragment).await?
         {
-            return Err(ItemError::HtmlElementNotFound(fragment.into()));
+            return Err(ItemError::ElementNotFound(fragment.into()));
         }
 
         if url
@@ -204,6 +204,7 @@ impl WebValidator {
             DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response),
+            DocumentType::Svg => self.validate_svg(&context, &response).await?,
         };
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
@@ -499,6 +500,50 @@ impl WebValidator {
         }
     }
 
+    async fn validate_svg(
+        &self,
+        context: &Arc<Context>,
+        response: &Arc<Response>,
+    ) -> Result<Vec<ElementFuture>, Error> {
+        let mut futures = vec![];
+        let base = Arc::new(response.url().clone());
+
+        for node in self.0.html_parser.parse(response).await?.children() {
+            self.validate_svg_element(context, &base, node, &mut futures);
+        }
+
+        Ok(futures)
+    }
+
+    fn validate_svg_element(
+        &self,
+        context: &Arc<Context>,
+        base: &Arc<Url>,
+        node: &Node,
+        futures: &mut Vec<ElementFuture>,
+    ) {
+        if let Node::Element(element) = node {
+            if let Some(value) = element
+                .attributes()
+                .find_map(|(name, value)| (name == "href").then_some(value))
+            {
+                futures.push((
+                    Element::new(element.name().into(), vec![("href".into(), value.into())]),
+                    vec![spawn(self.cloned().validate_element_link(
+                        context.clone(),
+                        value.into(),
+                        base.clone(),
+                        None,
+                    ))],
+                ));
+            }
+
+            for node in element.children() {
+                self.validate_svg_element(context, base, node, futures);
+            }
+        }
+    }
+
     fn validate_document_type(
         response: &Response,
         document_type: Option<DocumentType>,
@@ -542,32 +587,42 @@ impl WebValidator {
 
                 document_type
             }
-            None => (value == "text/html").then_some(DocumentType::Html),
+            Some(DocumentType::Svg) => {
+                if value != "image/svg+xml" {
+                    return Err(ItemError::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "image/svg+xml",
+                    });
+                }
+
+                document_type
+            }
+            None => match value {
+                "text/html" => Some(DocumentType::Html),
+                "image/svg+xml" => Some(DocumentType::Svg),
+                _ => None,
+            },
         })
     }
 
-    async fn has_html_element(
-        &self,
-        response: &Arc<Response>,
-        id: &str,
-    ) -> Result<bool, ItemError> {
+    async fn has_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, ItemError> {
         Ok(self
             .0
             .html_parser
             .parse(response)
             .await?
             .children()
-            .any(|node| Self::has_html_element_in_node(node, id)))
+            .any(|node| Self::has_element_in_node(node, id)))
     }
 
-    fn has_html_element_in_node(node: &Node, id: &str) -> bool {
+    fn has_element_in_node(node: &Node, id: &str) -> bool {
         if let Node::Element(element) = &node {
             element
                 .attributes()
                 .any(|(name, value)| FRAGMENT_ATTRIBUTES.contains(&name) && value == id)
                 || element
                     .children()
-                    .any(|node| Self::has_html_element_in_node(node, id))
+                    .any(|node| Self::has_element_in_node(node, id))
         } else {
             false
         }
@@ -2002,6 +2057,280 @@ mod tests {
         #[tokio::test]
         async fn validate_sitemap_index_in_application_xml() {
             validate_sitemap_index("application/xml").await;
+        }
+    }
+
+    mod svg {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[tokio::test]
+        async fn validate_svg_site() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <a href="https://foo.com/bar"><rect /></a>
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_links_in_svg() {
+            let html_headers = HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static("text/html"),
+            )]);
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            html_headers.clone(),
+                            r#"<a href="https://foo.com/foo.svg"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/foo.svg",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                    <a href="/bar"><rect /></a>
+                                    <image xlink:href="/baz.png" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            html_headers,
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/baz.png",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/png"),
+                            )]),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(4, 0), Metrics::new(3, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_fragment_for_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<a href="https://foo.com/sprite.svg#icon"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sprite.svg",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <symbol id="icon" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_missing_fragment_for_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<a href="https://foo.com/sprite.svg#foo"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sprite.svg",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <symbol id="icon" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[test]
+        fn validate_svg_document_type() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &Response::new(
+                        Url::parse("https://foo.com/foo.svg").unwrap(),
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("image/svg+xml"),
+                        )]),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    Some(DocumentType::Svg),
+                )
+                .unwrap(),
+                Some(DocumentType::Svg)
+            );
+        }
+
+        #[test]
+        fn report_invalid_content_type_for_svg() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &Response::new(
+                        Url::parse("https://foo.com/foo.svg").unwrap(),
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    Some(DocumentType::Svg),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "image/svg+xml",
+                    ..
+                })
+            ));
         }
     }
 
