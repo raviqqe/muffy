@@ -131,7 +131,7 @@ impl HttpClient {
                     .ok_or(HttpClientError::RedirectLocation)?
                     .as_bytes(),
             )?)?;
-            request = request.set_url(url);
+            request = request.redirect(url);
         }
 
         Err(HttpClientError::TooManyRedirects)
@@ -311,13 +311,14 @@ mod tests {
         timer::StubTimer,
     };
     use alloc::sync::Arc;
+    use async_trait::async_trait;
     use core::{
         sync::atomic::{AtomicUsize, Ordering},
         time::Duration,
     };
-    use http::{HeaderName, HeaderValue, StatusCode};
+    use http::{HeaderName, HeaderValue, StatusCode, header::AUTHORIZATION};
     use pretty_assertions::assert_eq;
-    use std::collections::HashSet;
+    use std::{collections::HashSet, sync::Mutex};
     use tokio::spawn;
     use url::Url;
 
@@ -608,6 +609,107 @@ mod tests {
             result.unwrap(),
             Some(Response::from_bare(page_response, Duration::from_millis(0)).into())
         );
+    }
+
+    #[derive(Debug)]
+    struct RecordingHttpClient {
+        responses: HashMap<String, BareResponse>,
+        requests: Arc<Mutex<Vec<BareRequest>>>,
+    }
+
+    #[async_trait]
+    impl BareHttpClient for RecordingHttpClient {
+        async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError> {
+            self.requests.lock().unwrap().push(request.clone());
+
+            Ok(self
+                .responses
+                .get(request.url.as_str())
+                .expect("stub response")
+                .clone())
+        }
+    }
+
+    fn stub_response(url: &str, location: Option<&str>) -> (String, BareResponse) {
+        let url = Url::parse(url).unwrap();
+
+        (
+            url.as_str().to_owned(),
+            BareResponse {
+                url: url.clone(),
+                status: if location.is_some() {
+                    StatusCode::MOVED_PERMANENTLY
+                } else {
+                    StatusCode::OK
+                },
+                headers: location
+                    .map(|location| {
+                        [(
+                            HeaderName::from_static("location"),
+                            HeaderValue::from_str(location).unwrap(),
+                        )]
+                        .into_iter()
+                        .collect()
+                    })
+                    .unwrap_or_default(),
+                body: vec![],
+            },
+        )
+    }
+
+    #[tokio::test]
+    async fn strip_credentials_from_cross_origin_redirect() {
+        let requests = Arc::new(Mutex::new(vec![]));
+        let client = HttpClient::new(
+            RecordingHttpClient {
+                responses: [
+                    stub_response("https://foo.com/robots.txt", None),
+                    stub_response("https://foo.com/page", Some("https://bar.com/page")),
+                    stub_response("https://bar.com/robots.txt", None),
+                    stub_response("https://bar.com/page", None),
+                ]
+                .into_iter()
+                .collect(),
+                requests: requests.clone(),
+            },
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        client
+            .get(
+                &Request::new(
+                    Url::parse("https://foo.com/page").unwrap(),
+                    [(AUTHORIZATION, HeaderValue::from_static("secret"))]
+                        .into_iter()
+                        .collect(),
+                )
+                .set_max_redirects(1),
+            )
+            .await
+            .unwrap();
+
+        let requests = requests.lock().unwrap();
+        let credential = |url: &str| {
+            requests
+                .iter()
+                .find(|request| request.url.as_str() == url)
+                .expect("recorded request")
+                .headers
+                .get(AUTHORIZATION)
+                .cloned()
+        };
+
+        assert_eq!(
+            credential("https://foo.com/page"),
+            Some(HeaderValue::from_static("secret"))
+        );
+        assert_eq!(
+            credential("https://foo.com/robots.txt"),
+            Some(HeaderValue::from_static("secret"))
+        );
+        assert_eq!(credential("https://bar.com/page"), None);
+        assert_eq!(credential("https://bar.com/robots.txt"), None);
     }
 
     #[tokio::test]
