@@ -727,6 +727,51 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn persist_response() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        url.join("/robots.txt").unwrap().as_str(),
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (url.as_str().into(), Ok(response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(cache.clone()),
+        )
+        .get(&Request::new(url.clone(), Default::default()))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            cache
+                .get(url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(response, Duration::from_millis(0)).into()
+        );
+    }
+
+    #[tokio::test]
     async fn do_not_persist_error() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
@@ -805,16 +850,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         let request = Request::new(url.clone(), Default::default())
@@ -860,16 +902,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         let request = Request::new(url.clone(), Default::default())
