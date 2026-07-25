@@ -4,8 +4,8 @@ use async_trait::async_trait;
 
 /// A global cache.
 ///
-/// It is shared across runs. Operations are optimistic; they never block on
-/// concurrent operations on the same keys, and the last write wins.
+/// It is shared across runs. Operations are optimistic, and the last write
+/// wins on concurrent writes to the same keys.
 #[async_trait]
 pub trait GlobalCache<T: Clone>: Send + Sync {
     /// Gets a value.
