@@ -160,8 +160,9 @@ impl HttpClient {
 
             self.global_cache
                 .set(request.url().to_string(), result.clone())
-                .await
-                .map(|()| result)
+                .await?;
+
+            result
         };
 
         let result = self.global_cache.get(request.url().as_str()).await?;
@@ -188,7 +189,7 @@ impl HttpClient {
                         .saturating_add(request.stale_while_revalidate()),
                 );
 
-                let result = get().await?;
+                let result = get().await;
 
                 if !expired && result.is_err() {
                     self.global_cache
@@ -201,7 +202,7 @@ impl HttpClient {
                 response
             }
         } else {
-            get().await??
+            get().await?
         }
         .response()
         .clone())
