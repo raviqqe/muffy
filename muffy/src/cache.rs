@@ -13,14 +13,26 @@ use core::{
 };
 use serde::{Deserialize, Serialize};
 
-/// A cache.
+/// A global cache shared across runs.
 ///
-/// Every operation against the cache is transactional.
+/// Operations are optimistic; they never block on concurrent operations on the
+/// same keys, and the last write wins.
 #[async_trait]
-pub trait Cache<T: Clone>: Send + Sync {
+pub trait GlobalCache<T: Clone>: Send + Sync {
     /// Gets a value.
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError>;
 
+    /// Sets a value.
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError>;
+
+    /// Removes a cached value corresponding to the given key.
+    async fn remove(&self, key: &str) -> Result<(), CacheError>;
+}
+
+/// A local cache that deduplicates concurrent operations on the same keys
+/// within a process.
+#[async_trait]
+pub trait LocalCache<T: Clone>: Send + Sync {
     /// Gets a cached value.
     ///
     /// If a cached value is not found, it awaits the given future and sets its
@@ -30,26 +42,12 @@ pub trait Cache<T: Clone>: Send + Sync {
         key: String,
         future: Box<dyn Future<Output = T> + Send + 'a>,
     ) -> Result<T, CacheError>;
-
-    /// Sets a value.
-    async fn set(&self, key: String, value: T) -> Result<(), CacheError>;
-
-    /// Removes a cached value corresponding to the given key.
-    async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C> {
+impl<T: Clone + Send + Sync + 'static, C: GlobalCache<T> + ?Sized> GlobalCache<T> for Arc<C> {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         (**self).get(key).await
-    }
-
-    async fn get_with<'a>(
-        &self,
-        key: String,
-        future: Box<dyn Future<Output = T> + Send + 'a>,
-    ) -> Result<T, CacheError> {
-        (**self).get_with(key, future).await
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
@@ -58,6 +56,17 @@ impl<T: Clone + Send + Sync + 'static, C: Cache<T> + ?Sized> Cache<T> for Arc<C>
 
     async fn remove(&self, key: &str) -> Result<(), CacheError> {
         (**self).remove(key).await
+    }
+}
+
+#[async_trait]
+impl<T: Clone + Send + Sync + 'static, C: LocalCache<T> + ?Sized> LocalCache<T> for Arc<C> {
+    async fn get_with<'a>(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
+    ) -> Result<T, CacheError> {
+        (**self).get_with(key, future).await
     }
 }
 
@@ -135,18 +144,9 @@ mod tests {
     async fn remove_with_shared_cache() {
         let cache = Arc::new(MemoryCache::new(1 << 10));
 
-        cache
-            .get_with("key".into(), Box::new(async { 42 }))
-            .await
-            .unwrap();
+        cache.set("key".into(), 42).await.unwrap();
         cache.remove("key").await.unwrap();
 
-        assert_eq!(
-            cache
-                .get_with("key".into(), Box::new(async { 0 }))
-                .await
-                .unwrap(),
-            0,
-        );
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 }

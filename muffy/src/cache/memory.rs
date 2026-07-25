@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{CacheError, GlobalCache, LocalCache};
 use async_trait::async_trait;
 use scc::{HashMap, hash_map::Entry};
 
@@ -19,11 +19,26 @@ impl<T> MemoryCache<T> {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
+impl<T: Clone + Send + Sync> GlobalCache<T> for MemoryCache<T> {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         Ok(self.map.read_async(key, |_, value| value.clone()).await)
     }
 
+    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
+        self.map.upsert_async(key, value).await;
+
+        Ok(())
+    }
+
+    async fn remove(&self, key: &str) -> Result<(), CacheError> {
+        self.map.remove_async(key).await;
+
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl<T: Clone + Send + Sync> LocalCache<T> for MemoryCache<T> {
     async fn get_with<'a>(
         &self,
         key: String,
@@ -37,18 +52,6 @@ impl<T: Clone + Send + Sync> Cache<T> for MemoryCache<T> {
                 value
             }
         })
-    }
-
-    async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
-        self.map.upsert_async(key, value).await;
-
-        Ok(())
-    }
-
-    async fn remove(&self, key: &str) -> Result<(), CacheError> {
-        self.map.remove_async(key).await;
-
-        Ok(())
     }
 }
 
@@ -99,5 +102,15 @@ mod tests {
 
         cache.set("key".into(), 2).await.unwrap();
         assert_eq!(cache.get("key").await.unwrap(), Some(2));
+    }
+
+    #[tokio::test]
+    async fn remove() {
+        let cache = MemoryCache::new(1 << 10);
+
+        cache.set("key".into(), 42).await.unwrap();
+        cache.remove("key").await.unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 }

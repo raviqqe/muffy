@@ -1,6 +1,15 @@
 use super::CacheError;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-pub(super) fn placeholder<T: Serialize>() -> Result<Vec<u8>, CacheError> {
-    Ok(bitcode::serialize(&None::<T>)?)
+// Values are wrapped in options for compatibility with caches written by older
+// versions that stored placeholder entries for in-flight operations.
+
+pub(super) fn serialize<T: Serialize>(value: &T) -> Result<Vec<u8>, CacheError> {
+    Ok(bitcode::serialize(&Some(value))?)
+}
+
+pub(super) fn deserialize<T: for<'a> Deserialize<'a>>(
+    bytes: &[u8],
+) -> Result<Option<T>, CacheError> {
+    Ok(bitcode::deserialize(bytes)?)
 }

@@ -13,8 +13,13 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
-    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
+    ConcurrencyConfig, MokaCache, RateLimitConfig,
+    cache::{GlobalCache, LocalCache},
+    default_concurrency,
+    rate_limiter::RateLimiter,
+    request::Request,
+    response::Response,
+    robot_list::RobotList,
     timer::Timer,
 };
 use alloc::sync::Arc;
@@ -36,7 +41,7 @@ pub struct HttpClient {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
-    global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+    global_cache: Box<dyn GlobalCache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
@@ -48,7 +53,7 @@ impl HttpClient {
     pub fn new(
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
-        cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+        cache: Box<dyn GlobalCache<Result<Arc<CachedResponse>, HttpClientError>>>,
     ) -> Self {
         Self {
             client: Box::new(client),
@@ -150,11 +155,13 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let get = || {
-            self.global_cache.get_with(
-                request.url().to_string(),
-                Box::new(self.get_filtered(request, robots)),
-            )
+        let get = || async {
+            let result = self.get_filtered(request, robots).await;
+
+            self.global_cache
+                .set(request.url().to_string(), result.clone())
+                .await
+                .map(|()| result)
         };
 
         let result = self.global_cache.get(request.url().as_str()).await?;
@@ -180,8 +187,6 @@ impl HttpClient {
                         .max_age()
                         .saturating_add(request.stale_while_revalidate()),
                 );
-
-                self.global_cache.remove(request.url().as_str()).await?;
 
                 let result = get().await?;
 
