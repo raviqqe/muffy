@@ -23,7 +23,7 @@ mod timer;
 mod web_validator;
 
 pub use self::{
-    cache::{Cache, FjallCache, MemoryCache, MokaCache, SledCache},
+    cache::{FjallCache, GlobalCache, LocalCache, MemoryCache, MokaCache, SledCache},
     config::*,
     document_output::DocumentOutput,
     error::{Error, ItemError},
