@@ -3,14 +3,9 @@ use alloc::sync::Arc;
 use async_trait::async_trait;
 
 /// A local cache.
-///
-/// It deduplicates concurrent operations on the same keys within a process.
 #[async_trait]
 pub trait LocalCache<T: Clone>: Send + Sync {
-    /// Gets a cached value.
-    ///
-    /// If a cached value is not found, it awaits the given future and sets its
-    /// resulting value into the cache and returns the value.
+    /// Gets a value.
     async fn get_with<'a>(
         &self,
         key: String,

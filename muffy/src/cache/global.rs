@@ -3,9 +3,6 @@ use alloc::sync::Arc;
 use async_trait::async_trait;
 
 /// A global cache.
-///
-/// It is shared across runs. Operations are optimistic, and the last write
-/// wins on concurrent writes to the same keys.
 #[async_trait]
 pub trait GlobalCache<T: Clone>: Send + Sync {
     /// Gets a value.
@@ -14,7 +11,7 @@ pub trait GlobalCache<T: Clone>: Send + Sync {
     /// Sets a value.
     async fn set(&self, key: String, value: T) -> Result<(), CacheError>;
 
-    /// Removes a cached value corresponding to the given key.
+    /// Removes a key.
     async fn remove(&self, key: &str) -> Result<(), CacheError>;
 }
 
