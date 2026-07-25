@@ -126,7 +126,7 @@ impl HttpClient {
                     .ok_or(HttpClientError::RedirectLocation)?
                     .as_bytes(),
             )?)?;
-            request = request.set_url(url);
+            request = request.redirect(url);
         }
 
         Err(HttpClientError::TooManyRedirects)
