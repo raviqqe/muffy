@@ -3,8 +3,6 @@ use alloc::collections::BTreeSet;
 
 const TERM_LIMIT: usize = 1024;
 
-/// One alternative of attribute names an element accepts: all required names
-/// must be present, and no name outside the required and optional ones may be.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct AttributeTerm {
     pub required: BTreeSet<String>,
