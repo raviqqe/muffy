@@ -1,12 +1,9 @@
-use super::{Cache, CacheError, utility};
+use super::{CacheError, GlobalCache, utility};
 use async_trait::async_trait;
-use core::{marker::PhantomData, time::Duration};
+use core::marker::PhantomData;
 use log::trace;
 use serde::{Deserialize, Serialize};
 use sled::Tree;
-use tokio::time::sleep;
-
-const DELAY: Duration = Duration::from_millis(10);
 
 /// A cache based on the Sled database.
 pub struct SledCache<T> {
@@ -14,86 +11,31 @@ pub struct SledCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T: Serialize> SledCache<T> {
+impl<T> SledCache<T> {
     /// Creates a cache.
-    pub fn new(tree: Tree) -> Result<Self, CacheError> {
-        let placeholder = utility::placeholder::<T>()?;
-
-        for result in tree.iter() {
-            let (key, value) = result?;
-
-            if value == placeholder {
-                tree.remove(key)?;
-            }
-        }
-
-        Ok(Self {
+    pub fn new(tree: Tree) -> Self {
+        Self {
             tree,
             phantom: Default::default(),
-        })
+        }
     }
 }
 
 #[async_trait]
-impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for SledCache<T> {
+impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> GlobalCache<T> for SledCache<T> {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         trace!("reading cache at {key}");
 
         Ok(if let Some(value) = self.tree.get(key)? {
-            bitcode::deserialize::<Option<T>>(&value)?
+            utility::deserialize(&value)?
         } else {
             None
         })
     }
 
-    async fn get_with<'a>(
-        &self,
-        key: String,
-        future: Box<dyn Future<Output = T> + Send + 'a>,
-    ) -> Result<T, CacheError> {
-        trace!("getting cache at {key}");
-
-        if self
-            .tree
-            .compare_and_swap::<_, Vec<u8>, Vec<u8>>(
-                &key,
-                None,
-                Some(utility::placeholder::<T>()?),
-            )?
-            .is_ok()
-        {
-            trace!("awaiting future for cache at {key}");
-            let value = Box::into_pin(future).await;
-            trace!("setting cache at {key}");
-            self.tree
-                .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
-            trace!("set cache at {key}");
-
-            return Ok(value);
-        }
-
-        // Wait for another thread to insert a key-value pair.
-        trace!("waiting for cache at {key}");
-
-        loop {
-            if let Some(value) = self.tree.get(&key)? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    trace!("waited for cache at {key}");
-                    return Ok(value);
-                }
-            } else {
-                // An entry was removed while we were waiting. Retry from the beginning. We
-                // assume that it ends within a finite number of retries.
-                return self.get_with(key, future).await;
-            }
-
-            sleep(DELAY).await;
-        }
-    }
-
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
         trace!("setting cache at {key}");
-        self.tree.insert(key, bitcode::serialize(&Some(&value))?)?;
+        self.tree.insert(key, utility::serialize(&value)?)?;
 
         Ok(())
     }
@@ -109,45 +51,16 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::sync::Arc;
-    use futures::future::join;
     use tempfile::TempDir;
-    use tokio::sync::Mutex;
-
-    #[tokio::test]
-    async fn get_or_set() {
-        let file = TempDir::new().unwrap();
-        let cache =
-            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
-
-        assert_eq!(
-            cache
-                .get_with("key".into(), Box::new(async { 42 }))
-                .await
-                .unwrap(),
-            42,
-        );
-        assert_eq!(
-            cache
-                .get_with("key".into(), Box::new(async { 0 }))
-                .await
-                .unwrap(),
-            42,
-        );
-    }
 
     #[tokio::test]
     async fn get() {
         let file = TempDir::new().unwrap();
-        let cache =
-            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
+        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
 
         assert_eq!(cache.get("key").await.unwrap(), None);
 
-        cache
-            .get_with("key".into(), Box::new(async { 42 }))
-            .await
-            .unwrap();
+        cache.set("key".into(), 42).await.unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
     }
@@ -155,8 +68,7 @@ mod tests {
     #[tokio::test]
     async fn set() {
         let file = TempDir::new().unwrap();
-        let cache =
-            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
+        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
 
         cache.set("key".into(), 42).await.unwrap();
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
@@ -166,108 +78,27 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_ignores_in_flight_marker() {
+    async fn remove() {
         let file = TempDir::new().unwrap();
-        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
-        let cache = SledCache::<i32>::new(tree.clone()).unwrap();
+        let cache = SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap());
 
-        // An in-flight marker left by another task is not a committed value.
-        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
-            .unwrap();
+        cache.set("key".into(), 42).await.unwrap();
+        cache.remove("key").await.unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), None);
     }
 
     #[tokio::test]
-    async fn recover_from_stale_marker() {
+    async fn ignore_placeholder_of_older_version() {
         let file = TempDir::new().unwrap();
         let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
+        let cache = SledCache::<i32>::new(tree.clone());
+
+        // A placeholder entry left by an older version is not a committed
+        // value.
         tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
             .unwrap();
 
-        let cache = SledCache::new(tree).unwrap();
-
-        assert_eq!(
-            tokio::time::timeout(
-                Duration::from_secs(10),
-                cache.get_with("key".into(), Box::new(async { 42 })),
-            )
-            .await
-            .expect("a stale in-flight marker must not make a reader spin forever")
-            .unwrap(),
-            42,
-        );
-    }
-
-    #[tokio::test]
-    async fn remove_while_set() {
-        let file = TempDir::new().unwrap();
-        let cache = Arc::new(
-            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap(),
-        );
-
-        assert_eq!(
-            cache
-                .clone()
-                .get_with(
-                    "key".into(),
-                    Box::new(async move {
-                        cache.remove("key").await.unwrap();
-                        42
-                    })
-                )
-                .await
-                .unwrap(),
-            42,
-        );
-    }
-
-    #[tokio::test]
-    async fn remove_while_get() {
-        let file = TempDir::new().unwrap();
-        let cache =
-            SledCache::new(sled::open(file.path()).unwrap().open_tree("foo").unwrap()).unwrap();
-
-        for _ in 0..10000 {
-            let mutex = Arc::new(Mutex::new(()));
-            let mutex1 = mutex.clone();
-            let lock = mutex1.lock().await;
-
-            let future = join(
-                {
-                    let mutex = mutex.clone();
-
-                    async {
-                        cache
-                            .get_with(
-                                "key".into(),
-                                Box::new(async move {
-                                    let _ = mutex.lock().await;
-                                    42
-                                }),
-                            )
-                            .await
-                            .unwrap();
-                        cache.remove("key").await.unwrap()
-                    }
-                },
-                async {
-                    cache
-                        .get_with(
-                            "key".into(),
-                            Box::new(async move {
-                                let _ = mutex.lock().await;
-                                42
-                            }),
-                        )
-                        .await
-                        .unwrap();
-                    cache.remove("key").await.unwrap()
-                },
-            );
-
-            drop(lock);
-            future.await;
-        }
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 }

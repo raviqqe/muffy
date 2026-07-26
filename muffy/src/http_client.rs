@@ -13,8 +13,13 @@ pub use self::{
     reqwest::ReqwestHttpClient,
 };
 use crate::{
-    ConcurrencyConfig, MokaCache, RateLimitConfig, cache::Cache, default_concurrency,
-    rate_limiter::RateLimiter, request::Request, response::Response, robot_list::RobotList,
+    ConcurrencyConfig, MokaCache, RateLimitConfig,
+    cache::{GlobalCache, LocalCache},
+    default_concurrency,
+    rate_limiter::RateLimiter,
+    request::Request,
+    response::Response,
+    robot_list::RobotList,
     timer::Timer,
 };
 use alloc::sync::Arc;
@@ -36,7 +41,7 @@ pub struct HttpClient {
     client: Box<dyn BareHttpClient>,
     timer: Box<dyn Timer>,
     local_cache: MokaCache<Result<Arc<Response>, HttpClientError>>,
-    global_cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+    global_cache: Box<dyn GlobalCache<Result<Arc<CachedResponse>, HttpClientError>>>,
     semaphore: Semaphore,
     site_semaphores: HashMap<String, Semaphore>,
     rate_limiter: Option<RateLimiter>,
@@ -48,7 +53,7 @@ impl HttpClient {
     pub fn new(
         client: impl BareHttpClient + 'static,
         timer: impl Timer + 'static,
-        cache: Box<dyn Cache<Result<Arc<CachedResponse>, HttpClientError>>>,
+        cache: Box<dyn GlobalCache<Result<Arc<CachedResponse>, HttpClientError>>>,
     ) -> Self {
         Self {
             client: Box::new(client),
@@ -150,11 +155,14 @@ impl HttpClient {
         request: &Request,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
-        let get = || {
-            self.global_cache.get_with(
-                request.url().to_string(),
-                Box::new(self.get_filtered(request, robots)),
-            )
+        let get = || async {
+            let result = self.get_filtered(request, robots).await;
+
+            self.global_cache
+                .set(request.url().to_string(), result.clone())
+                .await?;
+
+            result
         };
 
         let result = self.global_cache.get(request.url().as_str()).await?;
@@ -181,9 +189,7 @@ impl HttpClient {
                         .saturating_add(request.stale_while_revalidate()),
                 );
 
-                self.global_cache.remove(request.url().as_str()).await?;
-
-                let result = get().await?;
+                let result = get().await;
 
                 if !expired && result.is_err() {
                     self.global_cache
@@ -196,7 +202,7 @@ impl HttpClient {
                 response
             }
         } else {
-            get().await??
+            get().await?
         }
         .response()
         .clone())
@@ -719,23 +725,20 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..response.clone()
+                        },
+                        Duration::default(),
+                    )
+                    .into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         assert_eq!(
@@ -785,23 +788,20 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..response.clone()
+                        },
+                        Duration::default(),
+                    )
+                    .into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         assert_eq!(
@@ -826,6 +826,51 @@ mod tests {
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn persist_response() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        url.join("/robots.txt").unwrap().as_str(),
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    (url.as_str().into(), Ok(response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(cache.clone()),
+        )
+        .get(&Request::new(url.clone(), Default::default()))
+        .await
+        .unwrap();
+
+        assert_eq!(
+            cache
+                .get(url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(response, Duration::from_millis(0)).into()
         );
     }
 
@@ -908,16 +953,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         let request = Request::new(url.clone(), Default::default())
@@ -963,16 +1005,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(cached_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(cached_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         let request = Request::new(url.clone(), Default::default())
@@ -1035,16 +1074,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(stale_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         sleep(Duration::from_millis(10)).await;
@@ -1094,23 +1130,20 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(
-                            BareResponse {
-                                body: b"stale".to_vec(),
-                                ..response.clone()
-                            },
-                            Duration::default(),
-                        )
-                        .into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..response.clone()
+                        },
+                        Duration::default(),
+                    )
+                    .into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         sleep(Duration::from_millis(10)).await;
@@ -1161,16 +1194,13 @@ mod tests {
         let cache = MemoryCache::new(CACHE_CAPACITY);
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(stale_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         sleep(Duration::from_millis(10)).await;
@@ -1223,16 +1253,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(stale_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         sleep(Duration::from_millis(10)).await;
@@ -1294,16 +1321,13 @@ mod tests {
         let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
 
         cache
-            .get_with(
+            .set(
                 url.as_str().into(),
-                Box::new(async {
-                    Ok(Arc::new(
-                        Response::from_bare(stale_response.clone(), Duration::default()).into(),
-                    ))
-                }),
+                Ok(Arc::new(
+                    Response::from_bare(stale_response.clone(), Duration::default()).into(),
+                )),
             )
             .await
-            .unwrap()
             .unwrap();
 
         sleep(Duration::from_millis(10)).await;
