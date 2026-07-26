@@ -4,7 +4,7 @@ use clap::{Parser, crate_version};
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use duration_string::DurationString;
-use fjall::{KeyspaceCreateOptions, SingleWriterTxDatabase};
+use fjall::Database;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
@@ -213,7 +213,7 @@ async fn run_config(
     let mut output = stdout();
     let db = if config.persistent_cache() {
         create_dir_all(&*CACHE_DIRECTORY).await?;
-        Some(SingleWriterTxDatabase::builder(&*CACHE_DIRECTORY).open()?)
+        Some(Database::builder(&*CACHE_DIRECTORY).open()?)
     } else {
         None
     };
@@ -223,7 +223,7 @@ async fn run_config(
             ClockTimer::new(),
             if let Some(db) = &db {
                 Box::new(FjallCache::new(
-                    db.keyspace(RESPONSE_NAMESPACE, KeyspaceCreateOptions::default)?,
+                    db.keyspace(RESPONSE_NAMESPACE, Default::default)?,
                 ))
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
