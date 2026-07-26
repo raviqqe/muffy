@@ -136,6 +136,22 @@ mod tests {
                     Err(ItemError::HtmlValidation(
                         muffy_validation::MarkupError::UnknownTag("foo".into()),
                     )),
+                    Err(ItemError::HtmlValidation(
+                        muffy_validation::MarkupError::InvalidElement {
+                            attributes: [(
+                                "bar".into(),
+                                [muffy_validation::AttributeError::Conflicting].into(),
+                            )]
+                            .into(),
+                            children: [(
+                                "baz".into(),
+                                [muffy_validation::ChildError::Misplaced].into(),
+                            )]
+                            .into(),
+                            missing_attributes: ["qux".into()].into(),
+                            missing_children: ["quux".into()].into(),
+                        },
+                    )),
                 ],
             )],
         )

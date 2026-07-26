@@ -51,6 +51,13 @@ mod tests {
         use super::*;
 
         #[test]
+        fn validate_valid_attribute_name_prefix() {
+            let element = create_element("div", vec![("lang", "en"), ("xml:lang", "en")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_valid_element() {
             let element = create_element("div", vec![], vec![]);
 
@@ -175,6 +182,17 @@ mod tests {
         #[test]
         fn validate_valid_element() {
             let element = create_element("p", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_text() {
+            let element = Element::new(
+                "p".into(),
+                vec![],
+                vec![Arc::new(Node::Text("hello".into()))],
+            );
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
@@ -427,6 +445,42 @@ mod tests {
             let element = create_element("ul", vec![], vec![create_element("li", vec![], vec![])]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_whitespace_text() {
+            let element = Element::new(
+                "ul".into(),
+                vec![],
+                vec![
+                    Arc::new(Node::Text("\n    ".into())),
+                    Arc::new(Node::Element(create_element("li", vec![], vec![]))),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_text() {
+            let element = Element::new(
+                "ul".into(),
+                vec![],
+                vec![
+                    Arc::new(Node::Text("orphan".into())),
+                    Arc::new(Node::Element(create_element("li", vec![], vec![]))),
+                ],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    attributes: Default::default(),
+                    children: [("#text".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
 
         #[test]
@@ -756,14 +810,14 @@ mod tests {
         fn validate_missing_rel() {
             let element = create_element("link", vec![("href", "style.css")], vec![]);
 
-            // The schema alternatively allows the `itemprop` attribute for
-            // links in document bodies.
+            // The schema alternatively requires either the `rel` attribute or
+            // the `itemprop` attribute, and one minimal diagnosis is reported.
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: Default::default(),
-                    missing_attributes: ["itemprop".into(), "rel".into()].into(),
+                    missing_attributes: ["itemprop".into()].into(),
                     missing_children: Default::default(),
                 })
             );

@@ -5,6 +5,9 @@ use alloc::collections::{BTreeMap, BTreeSet};
 
 const STATE_LIMIT: usize = 512;
 
+/// A pseudo-name of text nodes in child sequences.
+pub const TEXT_TOKEN: &str = "#text";
+
 /// A deterministic automaton over child element names built from Brzozowski
 /// derivatives of a content pattern.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -20,7 +23,9 @@ pub struct ContentAutomaton {
 pub fn compile_content_automaton(
     pattern: &CompiledPattern,
 ) -> Result<ContentAutomaton, MacroError> {
-    let initial = erase_text(pattern)?;
+    check_content_pattern(pattern)?;
+
+    let initial = pattern.clone();
     let mut states = vec![initial.clone()];
     let mut indexes = BTreeMap::from([(initial, 0)]);
     let mut transitions = vec![];
@@ -30,7 +35,7 @@ pub fn compile_content_automaton(
         let state = states[index].clone();
         let mut state_transitions = BTreeMap::new();
 
-        for name in element_names(&state) {
+        for name in tokens(&state) {
             let next = derive(&state, &name);
 
             if next == CompiledPattern::NotAllowed {
@@ -65,35 +70,50 @@ pub fn compile_content_automaton(
     })
 }
 
-fn erase_text(pattern: &CompiledPattern) -> Result<CompiledPattern, MacroError> {
-    Ok(match pattern {
-        CompiledPattern::Text | CompiledPattern::Empty => CompiledPattern::Empty,
-        CompiledPattern::Element(_) | CompiledPattern::NotAllowed => pattern.clone(),
+fn check_content_pattern(pattern: &CompiledPattern) -> Result<(), MacroError> {
+    match pattern {
         CompiledPattern::Attribute(_) => {
-            return Err(MacroError::RncPattern("attribute in content pattern"));
+            Err(MacroError::RncPattern("attribute in content pattern"))
         }
-        CompiledPattern::Choice(patterns) => CompiledPattern::choice(
-            patterns
-                .iter()
-                .map(erase_text)
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        CompiledPattern::Group(patterns) => CompiledPattern::group(
-            patterns
-                .iter()
-                .map(erase_text)
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        CompiledPattern::Interleave(patterns) => CompiledPattern::interleave(
-            patterns
-                .iter()
-                .map(erase_text)
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        CompiledPattern::Many0(pattern) => CompiledPattern::many0(erase_text(pattern)?),
-        CompiledPattern::Many1(pattern) => CompiledPattern::many1(erase_text(pattern)?),
-        CompiledPattern::Optional(pattern) => CompiledPattern::optional(erase_text(pattern)?),
-    })
+        CompiledPattern::Element(_)
+        | CompiledPattern::Empty
+        | CompiledPattern::NotAllowed
+        | CompiledPattern::Text => Ok(()),
+        CompiledPattern::Choice(patterns)
+        | CompiledPattern::Group(patterns)
+        | CompiledPattern::Interleave(patterns) => {
+            patterns.iter().try_for_each(check_content_pattern)
+        }
+        CompiledPattern::Many0(pattern)
+        | CompiledPattern::Many1(pattern)
+        | CompiledPattern::Optional(pattern) => check_content_pattern(pattern),
+    }
+}
+
+fn tokens(pattern: &CompiledPattern) -> BTreeSet<String> {
+    let mut tokens = element_names(pattern);
+
+    if contains_text(pattern) {
+        tokens.insert(TEXT_TOKEN.into());
+    }
+
+    tokens
+}
+
+fn contains_text(pattern: &CompiledPattern) -> bool {
+    match pattern {
+        CompiledPattern::Text => true,
+        CompiledPattern::Attribute(_)
+        | CompiledPattern::Element(_)
+        | CompiledPattern::Empty
+        | CompiledPattern::NotAllowed => false,
+        CompiledPattern::Choice(patterns)
+        | CompiledPattern::Group(patterns)
+        | CompiledPattern::Interleave(patterns) => patterns.iter().any(contains_text),
+        CompiledPattern::Many0(pattern)
+        | CompiledPattern::Many1(pattern)
+        | CompiledPattern::Optional(pattern) => contains_text(pattern),
+    }
 }
 
 fn element_names(pattern: &CompiledPattern) -> BTreeSet<String> {
@@ -163,10 +183,17 @@ fn derive(pattern: &CompiledPattern, name: &str) -> CompiledPattern {
             ])
         }
         CompiledPattern::Optional(operand) => derive(operand, name),
-        CompiledPattern::Attribute(_)
-        | CompiledPattern::Empty
-        | CompiledPattern::NotAllowed
-        | CompiledPattern::Text => CompiledPattern::NotAllowed,
+        // A text pattern matches any number of text nodes.
+        CompiledPattern::Text => {
+            if name == TEXT_TOKEN {
+                CompiledPattern::Text
+            } else {
+                CompiledPattern::NotAllowed
+            }
+        }
+        CompiledPattern::Attribute(_) | CompiledPattern::Empty | CompiledPattern::NotAllowed => {
+            CompiledPattern::NotAllowed
+        }
     }
 }
 

@@ -6,7 +6,7 @@ const VARIANT_LIMIT: usize = 64;
 
 /// A pattern compiled for name-based matching with references resolved,
 /// attribute values dropped, and not-allowed sub-patterns propagated.
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum CompiledPattern {
     Attribute(BTreeSet<String>),
     Choice(Vec<Self>),
@@ -148,6 +148,45 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     }
 }
 
+// HTML parsers match a prefixed schema name (e.g. `xml:lang`) against its bare
+// local name while the literal prefixed spelling is also conforming, so an
+// attribute matches both names.
+fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
+    match name_class {
+        NameClass::Name(name) => {
+            let local = identifier_string(&name.local);
+
+            if let Some(prefix) = &name.prefix {
+                [format!("{}:{local}", identifier_string(prefix)), local].into()
+            } else {
+                [local].into()
+            }
+        }
+        NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
+        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
+            Default::default()
+        }
+    }
+}
+
+fn attribute_names(pattern: &CompiledPattern) -> BTreeSet<String> {
+    match pattern {
+        CompiledPattern::Attribute(names) => names.clone(),
+        CompiledPattern::Choice(patterns)
+        | CompiledPattern::Group(patterns)
+        | CompiledPattern::Interleave(patterns) => {
+            patterns.iter().flat_map(attribute_names).collect()
+        }
+        CompiledPattern::Many0(pattern)
+        | CompiledPattern::Many1(pattern)
+        | CompiledPattern::Optional(pattern) => attribute_names(pattern),
+        CompiledPattern::Element(_)
+        | CompiledPattern::Empty
+        | CompiledPattern::NotAllowed
+        | CompiledPattern::Text => Default::default(),
+    }
+}
+
 fn identifier_string(identifier: &Identifier) -> String {
     identifier
         .sub_components
@@ -173,7 +212,7 @@ fn compile_pattern_with_stack(
 ) -> Result<CompiledPattern, MacroError> {
     Ok(match pattern {
         Pattern::Attribute { name_class, .. } => {
-            let names = class_names(name_class);
+            let names = attribute_class_names(name_class);
 
             if names.is_empty() {
                 CompiledPattern::NotAllowed
@@ -388,17 +427,20 @@ pub fn split_pattern(
                 .iter()
                 .all(|(_, content)| *content == CompiledPattern::Empty)
             {
-                // Attributes never repeat on an element, so a repetition
-                // degenerates to at most one occurrence.
-                let attribute =
-                    CompiledPattern::choice(variants.into_iter().map(|(attribute, _)| attribute));
-
+                // Iterations of a repetition match alternatives independently
+                // while attribute names never repeat on an element, so a
+                // repetition accepts any combination of the attribute names.
                 vec![(
-                    if at_least_once {
-                        attribute
-                    } else {
-                        CompiledPattern::optional(attribute)
-                    },
+                    CompiledPattern::interleave(
+                        variants
+                            .iter()
+                            .flat_map(|(attribute, _)| attribute_names(attribute))
+                            .collect::<BTreeSet<_>>()
+                            .into_iter()
+                            .map(|name| {
+                                CompiledPattern::optional(CompiledPattern::Attribute([name].into()))
+                            }),
+                    ),
                     CompiledPattern::Empty,
                 )]
             } else {
@@ -453,10 +495,10 @@ mod tests {
         }
 
         #[test]
-        fn drop_attribute_name_prefix() {
+        fn compile_prefixed_attribute_names() {
             assert_eq!(
                 compile("root = attribute xml:lang { text }").unwrap(),
-                attribute("lang")
+                CompiledPattern::Attribute(["lang".into(), "xml:lang".into()].into())
             );
         }
 
@@ -580,6 +622,39 @@ mod tests {
                     CompiledPattern::many0(element("foo"))
                 )]
             );
+        }
+
+        #[test]
+        fn split_attribute_choice_repetition_into_optional_attributes() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::many1(CompiledPattern::choice([
+                    attribute("foo"),
+                    attribute("bar")
+                ])))
+                .unwrap(),
+                vec![(
+                    CompiledPattern::interleave([
+                        CompiledPattern::optional(attribute("bar")),
+                        CompiledPattern::optional(attribute("foo")),
+                    ]),
+                    CompiledPattern::Empty
+                )]
+            );
+        }
+
+        #[test]
+        fn fail_on_too_many_alternatives() {
+            assert!(matches!(
+                split_pattern(&CompiledPattern::Interleave(
+                    (0..7)
+                        .map(|index| CompiledPattern::choice([
+                            attribute(&format!("foo{index}")),
+                            element(&format!("bar{index}")),
+                        ]))
+                        .collect()
+                )),
+                Err(MacroError::PatternLimit(_))
+            ));
         }
 
         #[test]

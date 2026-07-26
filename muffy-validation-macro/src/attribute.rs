@@ -26,13 +26,22 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
     Ok(match pattern {
         CompiledPattern::Empty => vec![AttributeTerm::default()],
         CompiledPattern::NotAllowed => vec![],
-        CompiledPattern::Attribute(names) => names
-            .iter()
-            .map(|name| AttributeTerm {
-                required: [name.clone()].into(),
-                optional: Default::default(),
-            })
-            .collect(),
+        CompiledPattern::Attribute(names) => {
+            if let [name] = names.iter().collect::<Vec<_>>().as_slice() {
+                vec![AttributeTerm {
+                    required: [(*name).clone()].into(),
+                    optional: Default::default(),
+                }]
+            } else {
+                // Alternative names of one attribute (e.g. the bare and
+                // prefixed spellings of `xml:lang`) are weakened to an
+                // optional set as terms cannot express one-of requirements.
+                vec![AttributeTerm {
+                    required: Default::default(),
+                    optional: names.clone(),
+                }]
+            }
+        }
         CompiledPattern::Choice(patterns) => {
             let terms = patterns
                 .iter()
@@ -216,6 +225,32 @@ mod tests {
             compile_attribute_terms(&CompiledPattern::many1(attribute("foo"))).unwrap(),
             vec![term(&["foo"], &[])]
         );
+    }
+
+    #[test]
+    fn compile_alternative_attribute_names() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::Attribute(
+                ["foo".into(), "bar".into()].into()
+            ))
+            .unwrap(),
+            vec![term(&[], &["bar", "foo"])]
+        );
+    }
+
+    #[test]
+    fn fail_on_too_many_alternatives() {
+        assert!(matches!(
+            compile_attribute_terms(&CompiledPattern::Group(
+                (0..11)
+                    .map(|index| CompiledPattern::choice([
+                        attribute(&format!("foo{index}")),
+                        attribute(&format!("bar{index}")),
+                    ]))
+                    .collect()
+            )),
+            Err(MacroError::PatternLimit(_))
+        ));
     }
 
     #[test]
