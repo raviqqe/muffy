@@ -16,7 +16,7 @@ pub trait GlobalCache<T: Clone>: Send + Sync {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync + 'static, C: GlobalCache<T> + ?Sized> GlobalCache<T> for Arc<C> {
+impl<T: Clone + Send + 'static, C: GlobalCache<T> + ?Sized> GlobalCache<T> for Arc<C> {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         (**self).get(key).await
     }
