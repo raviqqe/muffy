@@ -226,8 +226,8 @@ impl WebValidator {
         document_type: Option<DocumentType>,
     ) -> Result<ItemOutput, ItemError> {
         let url = Url::parse(&url)
-            .or_else(|_| base.join(&url))
-            .or_else(|_| Url::parse(&Self::normalize_url(&url)))?;
+            .or_else(|_| Url::parse(&Self::normalize_url(&url)))
+            .or_else(|_| base.join(&url))?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
@@ -2411,8 +2411,11 @@ mod tests {
         #[test]
         fn accept_uppercase_html() {
             assert_eq!(
-                WebValidator::validate_document_type(&response("TEXT/HTML"), Some(DocumentType::Html))
-                    .unwrap(),
+                WebValidator::validate_document_type(
+                    &response("TEXT/HTML"),
+                    Some(DocumentType::Html)
+                )
+                .unwrap(),
                 Some(DocumentType::Html)
             );
         }
