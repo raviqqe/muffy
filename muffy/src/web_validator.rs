@@ -225,9 +225,7 @@ impl WebValidator {
         base: Arc<Url>,
         document_type: Option<DocumentType>,
     ) -> Result<ItemOutput, ItemError> {
-        let url = Url::parse(&url)
-            .or_else(|_| Url::parse(&Self::normalize_url(&url)))
-            .or_else(|_| base.join(&url))?;
+        let url = base.join(&url)?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
@@ -243,10 +241,6 @@ impl WebValidator {
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
-    }
-
-    fn normalize_url(url: &str) -> String {
-        url.split_whitespace().collect()
     }
 
     async fn validate_html(
@@ -1533,7 +1527,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_link_with_whitespaces() {
+    async fn resolve_link_with_ascii_tab() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -1551,7 +1545,7 @@ mod tests {
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
-                        r#"<a href="https:/  /foo. com/ bar"/>"#.as_bytes().to_vec(),
+                        "<a href=\"https://foo.com/ba\tr\"/>".as_bytes().to_vec(),
                     ),
                     build_stub_response(
                         "https://foo.com/bar",
@@ -1613,6 +1607,83 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn resolve_scheme_relative_link_within_origin() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https:/other.com/x"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/other.com/x",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn report_error_for_invalid_link() {
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        r#"<a href="http://[bad"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
