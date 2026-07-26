@@ -130,8 +130,8 @@ pub enum ItemError {
         /// An expected content type.
         expected: &'static str,
     },
-    /// An HTML element not found.
-    HtmlElementNotFound(String),
+    /// An element not found.
+    ElementNotFound(String),
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
     /// An HTML validation failure.
@@ -161,8 +161,8 @@ impl Display for ItemError {
                     "content type expected {expected} but got {actual}"
                 )
             }
-            Self::HtmlElementNotFound(name) => {
-                write!(formatter, "HTML element for #{name} not found")
+            Self::ElementNotFound(name) => {
+                write!(formatter, "element for #{name} not found")
             }
             Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HtmlValidation(error) => write!(formatter, "{error}"),
