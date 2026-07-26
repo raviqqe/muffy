@@ -108,11 +108,16 @@ window = "1s"
 
 [sites.flaky]
 extend = "external"
-roots = ["https://zsh.sourceforge.io/"]
+roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
 timeout = "20s"
 
 [sites.flaky.retry]
 count = 5
+
+[sites.fallible]
+extend = "external"
+roots = ["https://wiki.haskell.org/"]
+statuses = [200, 503]
 
 [sites.forbidden]
 extend = "external"
@@ -134,7 +139,6 @@ statuses = [200, 403]
 [sites.ignored]
 roots = [
   "https://aclanthology.org/",
-  "https://gitlab.haskell.org/",
   "https://goreportcard.com/",
   "https://r7rs.org/",
   "https://www.gnu.org/software/guile/",
