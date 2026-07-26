@@ -4,13 +4,14 @@ use clap::{Parser, crate_version};
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use duration_string::DurationString;
+use fjall::Database;
 use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    CacheConfig, ClockTimer, ConcurrencyConfig, Config, HtmlParser, HttpClient, MarkupConfig,
-    MokaCache, RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient, RetryConfig,
-    RetryDurationConfig, SchemeConfig, SiteConfig, SiteRateLimitConfig, SledCache, StatusConfig,
+    CacheConfig, ClockTimer, ConcurrencyConfig, Config, FjallCache, HtmlParser, HttpClient,
+    MarkupConfig, MokaCache, RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient,
+    RetryConfig, RetryDurationConfig, SchemeConfig, SiteConfig, SiteRateLimitConfig, StatusConfig,
     WebValidator,
 };
 use regex::Regex;
@@ -32,7 +33,7 @@ use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
 const DATABASE_DIRECTORY: &str = "muffy";
-const SLED_DIRECTORY: &str = "sled";
+const FJALL_DIRECTORY: &str = "fjall";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
@@ -41,7 +42,7 @@ static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
         .unwrap_or_else(temp_dir)
         .join(DATABASE_DIRECTORY)
         .join(crate_version!())
-        .join(SLED_DIRECTORY)
+        .join(FJALL_DIRECTORY)
 });
 
 #[derive(clap::Parser)]
@@ -212,7 +213,7 @@ async fn run_config(
     let mut output = stdout();
     let db = if config.persistent_cache() {
         create_dir_all(&*CACHE_DIRECTORY).await?;
-        Some(sled::open(&*CACHE_DIRECTORY)?)
+        Some(Database::builder(&*CACHE_DIRECTORY).open()?)
     } else {
         None
     };
@@ -221,7 +222,9 @@ async fn run_config(
             ReqwestHttpClient::new()?,
             ClockTimer::new(),
             if let Some(db) = &db {
-                Box::new(SledCache::new(db.open_tree(RESPONSE_NAMESPACE)?))
+                Box::new(FjallCache::new(
+                    db.keyspace(RESPONSE_NAMESPACE, Default::default)?,
+                ))
             } else {
                 Box::new(MokaCache::new(INITIAL_CACHE_CAPACITY))
             },
@@ -539,7 +542,7 @@ mod tests {
     fn check_cache_directory_suffix() {
         let expected = PathBuf::from(DATABASE_DIRECTORY)
             .join(crate_version!())
-            .join(SLED_DIRECTORY);
+            .join(FJALL_DIRECTORY);
 
         assert!(CACHE_DIRECTORY.ends_with(&expected));
     }
