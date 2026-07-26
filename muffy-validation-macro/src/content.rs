@@ -220,3 +220,117 @@ fn expected_names(
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    fn element(name: &str) -> CompiledPattern {
+        CompiledPattern::Element([name.into()].into())
+    }
+
+    fn accepts(pattern: &CompiledPattern, names: &[&str]) -> bool {
+        let automaton = compile_content_automaton(pattern).unwrap();
+        let mut state = 0;
+
+        for name in names {
+            let Some(&next) = automaton.transitions[state].get(*name) else {
+                return false;
+            };
+
+            state = next;
+        }
+
+        automaton.accepting[state]
+    }
+
+    #[test]
+    fn accept_ordered_group() {
+        let pattern = CompiledPattern::group([element("foo"), element("bar")]);
+
+        assert!(accepts(&pattern, &["foo", "bar"]));
+        assert!(!accepts(&pattern, &["bar", "foo"]));
+        assert!(!accepts(&pattern, &["foo"]));
+        assert!(!accepts(&pattern, &["foo", "bar", "foo"]));
+    }
+
+    #[test]
+    fn accept_optional_operand() {
+        let pattern =
+            CompiledPattern::group([CompiledPattern::optional(element("foo")), element("bar")]);
+
+        assert!(accepts(&pattern, &["bar"]));
+        assert!(accepts(&pattern, &["foo", "bar"]));
+        assert!(!accepts(&pattern, &["foo"]));
+    }
+
+    #[test]
+    fn accept_interleave_in_any_order() {
+        let pattern = CompiledPattern::interleave([element("foo"), element("bar")]);
+
+        assert!(accepts(&pattern, &["foo", "bar"]));
+        assert!(accepts(&pattern, &["bar", "foo"]));
+        assert!(!accepts(&pattern, &["foo"]));
+    }
+
+    #[test]
+    fn accept_repetition() {
+        let pattern = CompiledPattern::many0(element("foo"));
+
+        assert!(accepts(&pattern, &[]));
+        assert!(accepts(&pattern, &["foo", "foo", "foo"]));
+        assert!(!accepts(&pattern, &["bar"]));
+    }
+
+    #[test]
+    fn accept_repetition_interleaved_with_group() {
+        let pattern = CompiledPattern::interleave([
+            CompiledPattern::group([element("foo"), element("bar")]),
+            CompiledPattern::many0(element("baz")),
+        ]);
+
+        assert!(accepts(&pattern, &["baz", "foo", "baz", "bar", "baz"]));
+        assert!(accepts(&pattern, &["foo", "bar"]));
+        assert!(!accepts(&pattern, &["bar", "baz", "foo"]));
+    }
+
+    #[test]
+    fn erase_text() {
+        let pattern = CompiledPattern::many0(CompiledPattern::choice([
+            CompiledPattern::Text,
+            element("foo"),
+        ]));
+
+        assert!(accepts(&pattern, &[]));
+        assert!(accepts(&pattern, &["foo", "foo"]));
+    }
+
+    #[test]
+    fn expect_names_on_shortest_accepting_path() {
+        let automaton = compile_content_automaton(&CompiledPattern::interleave([
+            CompiledPattern::group([element("foo"), element("bar")]),
+            CompiledPattern::many0(element("baz")),
+        ]))
+        .unwrap();
+
+        assert_eq!(automaton.expected[0], ["foo".into()].into());
+
+        let state = automaton.transitions[0]["foo"];
+
+        assert_eq!(automaton.expected[state], ["bar".into()].into());
+
+        let state = automaton.transitions[state]["bar"];
+
+        assert!(automaton.accepting[state]);
+        assert_eq!(automaton.expected[state], [].into());
+    }
+
+    #[test]
+    fn fail_on_attribute() {
+        assert!(matches!(
+            compile_content_automaton(&CompiledPattern::Attribute(["foo".into()].into())),
+            Err(MacroError::RncPattern(_))
+        ));
+    }
+}

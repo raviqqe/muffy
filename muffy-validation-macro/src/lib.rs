@@ -148,11 +148,16 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     let automaton_statics = sort_by_index(automaton_indexes).map(|(automaton, index)| {
         let identifier = format_ident!("CONTENT_MODEL_{index}");
         let transitions = automaton.transitions.iter().map(|transitions| {
-            let transitions = transitions.iter().map(|(name, state)| quote!((#name, #state)));
+            let transitions = transitions
+                .iter()
+                .map(|(name, state)| quote!((#name, #state)));
 
             quote!(&[#(#transitions),*])
         });
-        let accepting = automaton.accepting.iter().map(|accepting| quote!(#accepting));
+        let accepting = automaton
+            .accepting
+            .iter()
+            .map(|accepting| quote!(#accepting));
         let expected = automaton.expected.iter().map(|names| {
             let names = names.iter().map(|name| quote!(#name));
 

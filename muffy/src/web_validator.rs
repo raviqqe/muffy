@@ -382,30 +382,52 @@ impl WebValidator {
                 muffy_validation::MarkupError::InvalidElement {
                     attributes,
                     children,
+                    missing_attributes,
+                    missing_children,
                 } => {
-                    for name in attributes.keys() {
+                    for (name, errors) in attributes {
                         items.push(spawn({
                             let error = muffy_validation::MarkupError::InvalidElement {
-                                attributes: [(
-                                    name.clone(),
-                                    [muffy_validation::AttributeError::NotAllowed].into(),
-                                )]
-                                .into(),
+                                attributes: [(name.clone(), errors.clone())].into(),
                                 children: Default::default(),
+                                missing_attributes: Default::default(),
+                                missing_children: Default::default(),
                             };
                             async move { Err(ItemError::HtmlValidation(error)) }
                         }));
                     }
 
-                    for name in children.keys() {
+                    for (name, errors) in children {
                         items.push(spawn({
                             let error = muffy_validation::MarkupError::InvalidElement {
                                 attributes: Default::default(),
-                                children: [(
-                                    name.clone(),
-                                    [muffy_validation::ChildError::NotAllowed].into(),
-                                )]
-                                .into(),
+                                children: [(name.clone(), errors.clone())].into(),
+                                missing_attributes: Default::default(),
+                                missing_children: Default::default(),
+                            };
+                            async move { Err(ItemError::HtmlValidation(error)) }
+                        }));
+                    }
+
+                    if !missing_attributes.is_empty() {
+                        items.push(spawn({
+                            let error = muffy_validation::MarkupError::InvalidElement {
+                                attributes: Default::default(),
+                                children: Default::default(),
+                                missing_attributes: missing_attributes.clone(),
+                                missing_children: Default::default(),
+                            };
+                            async move { Err(ItemError::HtmlValidation(error)) }
+                        }));
+                    }
+
+                    if !missing_children.is_empty() {
+                        items.push(spawn({
+                            let error = muffy_validation::MarkupError::InvalidElement {
+                                attributes: Default::default(),
+                                children: Default::default(),
+                                missing_attributes: Default::default(),
+                                missing_children: missing_children.clone(),
                             };
                             async move { Err(ItemError::HtmlValidation(error)) }
                         }));
@@ -612,6 +634,28 @@ mod tests {
         client: impl BareHttpClient + 'static,
         url: &str,
     ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        validate_with_site(client, url, SiteConfig::default()).await
+    }
+
+    async fn validate_html_content(
+        client: impl BareHttpClient + 'static,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        validate_with_site(
+            client,
+            url,
+            SiteConfig::default().set_validation(
+                crate::ValidationConfig::default().set_html(Some(MarkupConfig::default())),
+            ),
+        )
+        .await
+    }
+
+    async fn validate_with_site(
+        client: impl BareHttpClient + 'static,
+        url: &str,
+        site: SiteConfig,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
         let url = Url::parse(url).unwrap();
 
         WebValidator::new(
@@ -625,14 +669,7 @@ mod tests {
                 url.host_str().unwrap_or_default().into(),
                 [(
                     "".into(),
-                    SiteConfig::default()
-                        .set_recursive(true)
-                        .set_max_redirects(1 << 32)
-                        .set_validation(
-                            crate::ValidationConfig::default()
-                                .set_html(Some(MarkupConfig::default())),
-                        )
-                        .into(),
+                    site.set_recursive(true).set_max_redirects(1 << 32).into(),
                 )]
                 .into(),
             )]
@@ -921,6 +958,97 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_invalid_html_content() {
+        let mut documents = validate_html_content(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                </head>
+                                <body>
+                                    <div foo="bar"></div>
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 1), Metrics::new(0, 2))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_valid_html_content() {
+        let mut documents = validate_html_content(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <title>foo</title>
+                                </head>
+                                <body>
+                                    <div id="bar"></div>
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(0, 0))
         );
     }
 

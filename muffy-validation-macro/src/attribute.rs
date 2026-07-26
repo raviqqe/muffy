@@ -101,6 +101,128 @@ fn optional_terms(terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
     } else if terms.iter().any(|term| term.required.is_empty()) {
         terms
     } else {
-        [AttributeTerm::default()].into_iter().chain(terms).collect()
+        [AttributeTerm::default()]
+            .into_iter()
+            .chain(terms)
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    fn attribute(name: &str) -> CompiledPattern {
+        CompiledPattern::Attribute([name.into()].into())
+    }
+
+    fn term(required: &[&str], optional: &[&str]) -> AttributeTerm {
+        AttributeTerm {
+            required: required.iter().copied().map(Into::into).collect(),
+            optional: optional.iter().copied().map(Into::into).collect(),
+        }
+    }
+
+    #[test]
+    fn compile_empty() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::Empty).unwrap(),
+            vec![AttributeTerm::default()]
+        );
+    }
+
+    #[test]
+    fn compile_not_allowed() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::NotAllowed).unwrap(),
+            vec![]
+        );
+    }
+
+    #[test]
+    fn compile_required_attribute() {
+        assert_eq!(
+            compile_attribute_terms(&attribute("foo")).unwrap(),
+            vec![term(&["foo"], &[])]
+        );
+    }
+
+    #[test]
+    fn compile_optional_attribute() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::optional(attribute("foo"))).unwrap(),
+            vec![term(&[], &["foo"])]
+        );
+    }
+
+    #[test]
+    fn compile_interleave_of_optional_attributes() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::interleave([
+                CompiledPattern::optional(attribute("foo")),
+                CompiledPattern::optional(attribute("bar")),
+            ]))
+            .unwrap(),
+            vec![term(&[], &["bar", "foo"])]
+        );
+    }
+
+    #[test]
+    fn compile_choice_of_attributes() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::choice([
+                attribute("foo"),
+                attribute("bar")
+            ]))
+            .unwrap(),
+            vec![term(&["bar"], &[]), term(&["foo"], &[])]
+        );
+    }
+
+    #[test]
+    fn compile_group_product() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::group([
+                CompiledPattern::choice([attribute("foo"), attribute("bar")]),
+                attribute("baz"),
+            ]))
+            .unwrap(),
+            vec![term(&["bar", "baz"], &[]), term(&["baz", "foo"], &[])]
+        );
+    }
+
+    #[test]
+    fn compile_exclusive_attribute_pair() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::choice([
+                CompiledPattern::group([
+                    attribute("foo"),
+                    CompiledPattern::optional(attribute("bar"))
+                ]),
+                CompiledPattern::group([
+                    CompiledPattern::optional(attribute("foo")),
+                    attribute("bar")
+                ]),
+            ]))
+            .unwrap(),
+            vec![term(&["bar"], &["foo"]), term(&["foo"], &["bar"])]
+        );
+    }
+
+    #[test]
+    fn compile_at_least_one_attribute() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::many1(attribute("foo"))).unwrap(),
+            vec![term(&["foo"], &[])]
+        );
+    }
+
+    #[test]
+    fn fail_on_element() {
+        assert!(matches!(
+            compile_attribute_terms(&CompiledPattern::Element(["foo".into()].into())),
+            Err(MacroError::RncPattern(_))
+        ));
     }
 }

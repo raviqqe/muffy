@@ -237,11 +237,12 @@ fn compile_pattern_with_stack(
             if let Some(compiled) = cache.get(&name.local) {
                 compiled.clone()
             } else if stack.contains(&name.local) {
-                return Err(MacroError::CircularReference(identifier_string(&name.local)));
+                return Err(MacroError::CircularReference(identifier_string(
+                    &name.local,
+                )));
             } else if let Some(definition) = definitions.get(&name.local) {
                 stack.push(name.local.clone());
-                let compiled =
-                    compile_pattern_with_stack(definition, definitions, cache, stack)?;
+                let compiled = compile_pattern_with_stack(definition, definitions, cache, stack)?;
                 stack.pop();
                 cache.insert(name.local.clone(), compiled.clone());
                 compiled
@@ -389,9 +390,8 @@ pub fn split_pattern(
             {
                 // Attributes never repeat on an element, so a repetition
                 // degenerates to at most one occurrence.
-                let attribute = CompiledPattern::choice(
-                    variants.into_iter().map(|(attribute, _)| attribute),
-                );
+                let attribute =
+                    CompiledPattern::choice(variants.into_iter().map(|(attribute, _)| attribute));
 
                 vec![(
                     if at_least_once {
@@ -406,4 +406,185 @@ pub fn split_pattern(
             }
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use muffy_rnc::{SchemaBody, parse_schema};
+    use std::path::Path;
+
+    fn attribute(name: &str) -> CompiledPattern {
+        CompiledPattern::Attribute([name.into()].into())
+    }
+
+    fn element(name: &str) -> CompiledPattern {
+        CompiledPattern::Element([name.into()].into())
+    }
+
+    fn compile(source: &str) -> Result<CompiledPattern, MacroError> {
+        let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
+            panic!("grammar expected");
+        };
+        let mut definitions = BTreeMap::new();
+
+        crate::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
+
+        compile_pattern(
+            &definitions[&Identifier {
+                component: "root".into(),
+                sub_components: vec![],
+            }],
+            &definitions,
+            &mut Default::default(),
+        )
+    }
+
+    mod compile_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn compile_attribute() {
+            assert_eq!(
+                compile("root = attribute foo { text }").unwrap(),
+                attribute("foo")
+            );
+        }
+
+        #[test]
+        fn drop_attribute_name_prefix() {
+            assert_eq!(
+                compile("root = attribute xml:lang { text }").unwrap(),
+                attribute("lang")
+            );
+        }
+
+        #[test]
+        fn resolve_reference() {
+            assert_eq!(
+                compile("root = foo\nfoo = attribute bar { text }").unwrap(),
+                attribute("bar")
+            );
+        }
+
+        #[test]
+        fn evaluate_empty_flag() {
+            assert_eq!(
+                compile("root = attribute foo { text } & gate\ngate = empty").unwrap(),
+                attribute("foo")
+            );
+        }
+
+        #[test]
+        fn evaluate_not_allowed_flag() {
+            assert_eq!(
+                compile("root = attribute foo { text } & gate\ngate = notAllowed").unwrap(),
+                CompiledPattern::NotAllowed
+            );
+        }
+
+        #[test]
+        fn drop_wildcard_attribute_repetition() {
+            assert_eq!(
+                compile("root = attribute * { text }*").unwrap(),
+                CompiledPattern::Empty
+            );
+        }
+
+        #[test]
+        fn combine_choice_of_element_names() {
+            assert_eq!(
+                compile("root = element (foo | bar) { empty }").unwrap(),
+                CompiledPattern::Element(["bar".into(), "foo".into()].into())
+            );
+        }
+
+        #[test]
+        fn fail_on_undefined_reference() {
+            assert!(matches!(
+                compile("root = foo"),
+                Err(MacroError::UndefinedReference(_))
+            ));
+        }
+
+        #[test]
+        fn fail_on_circular_reference() {
+            assert!(matches!(
+                compile("root = foo\nfoo = (foo)"),
+                Err(MacroError::CircularReference(_))
+            ));
+        }
+    }
+
+    mod split_pattern {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn split_attribute_and_element() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::interleave([
+                    attribute("foo"),
+                    element("bar")
+                ]))
+                .unwrap(),
+                vec![(attribute("foo"), element("bar"))]
+            );
+        }
+
+        #[test]
+        fn keep_attribute_choice_in_one_alternative() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::choice([
+                    attribute("foo"),
+                    attribute("bar")
+                ]))
+                .unwrap(),
+                vec![(
+                    CompiledPattern::choice([attribute("foo"), attribute("bar")]),
+                    CompiledPattern::Empty
+                )]
+            );
+        }
+
+        #[test]
+        fn lift_mixed_choice_into_alternatives() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::choice([attribute("foo"), element("bar")]))
+                    .unwrap(),
+                vec![
+                    (attribute("foo"), CompiledPattern::Empty),
+                    (CompiledPattern::Empty, element("bar")),
+                ]
+            );
+        }
+
+        #[test]
+        fn split_optional_attribute() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::optional(attribute("foo"))).unwrap(),
+                vec![(
+                    CompiledPattern::optional(attribute("foo")),
+                    CompiledPattern::Empty
+                )]
+            );
+        }
+
+        #[test]
+        fn split_element_repetition() {
+            assert_eq!(
+                split_pattern(&CompiledPattern::many0(element("foo"))).unwrap(),
+                vec![(
+                    CompiledPattern::Empty,
+                    CompiledPattern::many0(element("foo"))
+                )]
+            );
+        }
+
+        #[test]
+        fn split_not_allowed_into_no_alternative() {
+            assert_eq!(split_pattern(&CompiledPattern::NotAllowed).unwrap(), vec![]);
+        }
+    }
 }

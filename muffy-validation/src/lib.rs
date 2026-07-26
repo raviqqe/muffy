@@ -746,15 +746,24 @@ mod tests {
         }
 
         #[test]
-        fn validate_missing_href() {
-            let element = create_element("link", vec![("rel", "stylesheet")], vec![]);
+        fn validate_valid_rel_without_href() {
+            let element = create_element("link", vec![("rel", "preload")], vec![]);
 
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_missing_rel() {
+            let element = create_element("link", vec![("href", "style.css")], vec![]);
+
+            // The schema alternatively allows the `itemprop` attribute for
+            // links in document bodies.
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     attributes: Default::default(),
                     children: Default::default(),
-                    missing_attributes: ["href".into()].into(),
+                    missing_attributes: ["itemprop".into(), "rel".into()].into(),
                     missing_children: Default::default(),
                 })
             );

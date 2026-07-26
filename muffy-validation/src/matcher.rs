@@ -40,18 +40,24 @@ struct VariantOutcome {
     missing_attributes: BTreeSet<&'static str>,
     misplaced: BTreeSet<&'static str>,
     missing_children: BTreeSet<&'static str>,
+    // The reported sets union alternative diagnoses, so scores are tracked
+    // separately from their sizes.
+    attribute_error_count: usize,
+    attribute_conflict_count: usize,
+    requirement_count: usize,
 }
 
 impl VariantOutcome {
     // Errors on present names break ties so that a variant missing a name is
-    // preferred over one conflicting with an equal number of present names.
-    fn error_count(&self) -> (usize, usize) {
+    // preferred over one conflicting with an equal number of present names,
+    // and the requirement count so that the simplest variant is reported.
+    fn error_count(&self) -> (usize, usize, usize) {
         (
-            self.conflicting.len()
-                + self.missing_attributes.len()
+            self.attribute_error_count
                 + self.misplaced.len()
                 + usize::from(!self.missing_children.is_empty()),
-            self.conflicting.len() + self.misplaced.len(),
+            self.attribute_conflict_count + self.misplaced.len(),
+            self.requirement_count,
         )
     }
 }
@@ -68,7 +74,10 @@ pub fn validate_rules(
     let mut attributes = vec![];
 
     for (name, _) in element.attributes() {
-        if ignored_attributes.iter().any(|pattern| pattern.is_match(name)) {
+        if ignored_attributes
+            .iter()
+            .any(|pattern| pattern.is_match(name))
+        {
             continue;
         }
 
@@ -91,7 +100,10 @@ pub fn validate_rules(
         if let Node::Element(child) = child {
             let name = child.name();
 
-            if ignored_elements.iter().any(|pattern| pattern.is_match(name)) {
+            if ignored_elements
+                .iter()
+                .any(|pattern| pattern.is_match(name))
+            {
                 continue;
             }
 
@@ -156,7 +168,7 @@ fn evaluate_variant(
     attributes: &[&'static str],
     children: &[&'static str],
 ) -> VariantOutcome {
-    let (conflicting, missing_attributes) = variant
+    let terms = variant
         .attributes
         .iter()
         .map(|term| {
@@ -174,17 +186,45 @@ fn evaluate_variant(
                     .filter(|name| attributes.binary_search(name).is_err())
                     .copied()
                     .collect::<BTreeSet<_>>(),
+                term.required.len(),
             )
         })
-        .min_by_key(|(conflicting, missing)| conflicting.len() + missing.len())
+        .collect::<Vec<_>>();
+    // Equally scored terms are alternative diagnoses, so report their union.
+    let minimum = terms
+        .iter()
+        .map(|(conflicting, missing, requirement_count)| {
+            (conflicting.len() + missing.len(), *requirement_count)
+        })
+        .min()
         .unwrap_or_default();
+    let tied = terms
+        .into_iter()
+        .filter(|(conflicting, missing, requirement_count)| {
+            (conflicting.len() + missing.len(), *requirement_count) == minimum
+        })
+        .collect::<Vec<_>>();
+    let attribute_conflict_count = tied
+        .iter()
+        .map(|(conflicting, _, _)| conflicting.len())
+        .min()
+        .unwrap_or_default();
+    let (conflicting, missing_attributes) = tied.into_iter().fold(
+        Default::default(),
+        |(all_conflicting, all_missing): (BTreeSet<_>, BTreeSet<_>), (conflicting, missing, _)| {
+            (
+                all_conflicting.into_iter().chain(conflicting).collect(),
+                all_missing.into_iter().chain(missing).collect(),
+            )
+        },
+    );
 
     let mut state = 0;
     let mut misplaced = BTreeSet::new();
 
     for name in children {
-        if let Ok(index) = variant.content.transitions[state]
-            .binary_search_by_key(name, |(name, _)| name)
+        if let Ok(index) =
+            variant.content.transitions[state].binary_search_by_key(name, |(name, _)| name)
         {
             state = variant.content.transitions[state][index].1;
         } else {
@@ -201,6 +241,9 @@ fn evaluate_variant(
             Default::default()
         },
         misplaced,
+        attribute_error_count: minimum.0,
+        attribute_conflict_count,
+        requirement_count: minimum.1,
     }
 }
 
@@ -244,11 +287,7 @@ mod tests {
         ],
     };
 
-    fn create_element(
-        name: &str,
-        attributes: Vec<(&str, &str)>,
-        children: Vec<&str>,
-    ) -> Element {
+    fn create_element(name: &str, attributes: Vec<(&str, &str)>, children: Vec<&str>) -> Element {
         Element::new(
             name.into(),
             attributes
