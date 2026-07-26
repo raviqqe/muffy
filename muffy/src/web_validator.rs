@@ -1569,6 +1569,48 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn resolve_link_with_newline() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        "<a href=\"https://foo.com/ba\nr\"/>".as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
     async fn validate_absolute_link_with_internal_whitespace() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
