@@ -14,4 +14,4 @@ runs:
       with:
         path: ~/.cache/muffy
         key: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.version }}-${{ github.run_id }}
-        restore-keys: muffy-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.version }}-
+        restore-keys: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.version }}-
