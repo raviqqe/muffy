@@ -1,5 +1,5 @@
 use crate::{
-    cache::{Cache, CacheError},
+    cache::{CacheError, LocalCache},
     response::Response,
 };
 use alloc::sync::Arc;
@@ -13,12 +13,12 @@ use std::io;
 
 /// An HTML parser.
 pub struct HtmlParser {
-    cache: Box<dyn Cache<Result<Arc<Document>, HtmlParseError>>>,
+    cache: Box<dyn LocalCache<Result<Arc<Document>, HtmlParseError>>>,
 }
 
 impl HtmlParser {
     /// Creates an HTML parser.
-    pub fn new(cache: impl Cache<Result<Arc<Document>, HtmlParseError>> + 'static) -> Self {
+    pub fn new(cache: impl LocalCache<Result<Arc<Document>, HtmlParseError>> + 'static) -> Self {
         Self {
             cache: Box::new(cache),
         }

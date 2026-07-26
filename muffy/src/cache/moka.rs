@@ -1,4 +1,4 @@
-use super::{Cache, CacheError};
+use super::{CacheError, GlobalCache, LocalCache};
 use async_trait::async_trait;
 
 /// An in-memory cache based on [`moka`].
@@ -18,17 +18,9 @@ impl<T: Clone + Send + Sync + 'static> MokaCache<T> {
 }
 
 #[async_trait]
-impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
+impl<T: Clone + Send + Sync + 'static> GlobalCache<T> for MokaCache<T> {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         Ok(self.cache.get(key).await)
-    }
-
-    async fn get_with<'a>(
-        &self,
-        key: String,
-        future: Box<dyn Future<Output = T> + Send + 'a>,
-    ) -> Result<T, CacheError> {
-        Ok(self.cache.get_with(key, Box::into_pin(future)).await)
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
@@ -41,6 +33,17 @@ impl<T: Clone + Send + Sync + 'static> Cache<T> for MokaCache<T> {
         self.cache.remove(key).await;
 
         Ok(())
+    }
+}
+
+#[async_trait]
+impl<T: Clone + Send + Sync + 'static> LocalCache<T> for MokaCache<T> {
+    async fn get_with<'a>(
+        &self,
+        key: String,
+        future: Box<dyn Future<Output = T> + Send + 'a>,
+    ) -> Result<T, CacheError> {
+        Ok(self.cache.get_with(key, Box::into_pin(future)).await)
     }
 }
 
@@ -91,5 +94,15 @@ mod tests {
 
         cache.set("key".into(), 2).await.unwrap();
         assert_eq!(cache.get("key").await.unwrap(), Some(2));
+    }
+
+    #[tokio::test]
+    async fn remove() {
+        let cache = MokaCache::new(1 << 10);
+
+        cache.set("key".into(), 42).await.unwrap();
+        cache.remove("key").await.unwrap();
+
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 }

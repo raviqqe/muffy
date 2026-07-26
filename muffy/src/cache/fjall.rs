@@ -1,11 +1,8 @@
-use super::{Cache, CacheError, utility};
+use super::{CacheError, GlobalCache};
 use async_trait::async_trait;
-use core::{marker::PhantomData, time::Duration};
+use core::marker::PhantomData;
 use fjall::SingleWriterTxKeyspace;
 use serde::{Deserialize, Serialize};
-use tokio::time::sleep;
-
-const DELAY: Duration = Duration::from_millis(10);
 
 /// A cache based on the Fjall database.
 pub struct FjallCache<T> {
@@ -13,78 +10,30 @@ pub struct FjallCache<T> {
     phantom: PhantomData<T>,
 }
 
-impl<T: Serialize> FjallCache<T> {
+impl<T> FjallCache<T> {
     /// Creates a cache.
-    pub fn new(keyspace: SingleWriterTxKeyspace) -> Result<Self, CacheError> {
-        let placeholder = utility::placeholder::<T>()?;
-
-        for guard in keyspace.inner().iter() {
-            let (key, value) = guard.into_inner()?;
-
-            if value == placeholder {
-                keyspace.remove(key)?;
-            }
-        }
-
-        Ok(Self {
+    pub fn new(keyspace: SingleWriterTxKeyspace) -> Self {
+        Self {
             keyspace,
             phantom: Default::default(),
-        })
+        }
     }
 }
 
 #[async_trait]
-impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for FjallCache<T> {
+impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> GlobalCache<T>
+    for FjallCache<T>
+{
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
-        Ok(if let Some(value) = self.keyspace.get(key.as_bytes())? {
-            bitcode::deserialize::<Option<T>>(&value)?
-        } else {
-            None
-        })
-    }
-
-    async fn get_with<'a>(
-        &self,
-        key: String,
-        future: Box<dyn Future<Output = T> + Send + 'a>,
-    ) -> Result<T, CacheError> {
-        let placeholder = utility::placeholder::<T>()?;
-
-        let previous = self.keyspace.fetch_update(key.clone(), |previous| {
-            Some(if let Some(value) = previous {
-                value.to_vec().into()
-            } else {
-                placeholder.clone().into()
-            })
-        })?;
-
-        if previous.is_none() {
-            let value = Box::into_pin(future).await;
-
-            self.keyspace
-                .insert(key.clone(), bitcode::serialize(&Some(&value))?)?;
-
-            return Ok(value);
-        }
-
-        loop {
-            if let Some(value) = self.keyspace.get(key.as_bytes())? {
-                if let Some(value) = bitcode::deserialize::<Option<T>>(&value)? {
-                    return Ok(value);
-                }
-            } else {
-                // An entry was removed while we were waiting. Retry from the beginning. We
-                // assume that it ends within a finite number of retries.
-                return self.get_with(key, future).await;
-            }
-
-            sleep(DELAY).await;
-        }
+        Ok(self
+            .keyspace
+            .get(key.as_bytes())?
+            .map(|value| bitcode::deserialize(&value))
+            .transpose()?)
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
-        self.keyspace
-            .insert(key, bitcode::serialize(&Some(&value))?)?;
+        self.keyspace.insert(key, bitcode::serialize(&value)?)?;
 
         Ok(())
     }
@@ -99,38 +48,7 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> Cache<T> for 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use alloc::sync::Arc;
-    use futures::future::join;
     use tempfile::TempDir;
-    use tokio::sync::Mutex;
-
-    #[tokio::test]
-    async fn get_or_set() {
-        let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let cache = FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        )
-        .unwrap();
-
-        assert_eq!(
-            cache
-                .get_with("key".into(), Box::new(async { 42 }))
-                .await
-                .unwrap(),
-            42,
-        );
-        assert_eq!(
-            cache
-                .get_with("key".into(), Box::new(async { 0 }))
-                .await
-                .unwrap(),
-            42,
-        );
-    }
 
     #[tokio::test]
     async fn get() {
@@ -141,15 +59,11 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        )
-        .unwrap();
+        );
 
         assert_eq!(cache.get("key").await.unwrap(), None);
 
-        cache
-            .get_with("key".into(), Box::new(async { 42 }))
-            .await
-            .unwrap();
+        cache.set("key".into(), 42).await.unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
     }
@@ -163,8 +77,7 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        )
-        .unwrap();
+        );
 
         cache.set("key".into(), 42).await.unwrap();
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
@@ -174,64 +87,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn recover_from_stale_marker() {
-        let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let keyspace = db
-            .keyspace("foo", fjall::KeyspaceCreateOptions::default)
-            .unwrap();
-        keyspace
-            .insert("key", bitcode::serialize(&None::<i32>).unwrap())
-            .unwrap();
-
-        let cache = FjallCache::new(keyspace).unwrap();
-
-        assert_eq!(
-            tokio::time::timeout(
-                Duration::from_secs(10),
-                cache.get_with("key".into(), Box::new(async { 42 })),
-            )
-            .await
-            .expect("a stale in-flight marker must not make a reader spin forever")
-            .unwrap(),
-            42,
-        );
-    }
-
-    #[tokio::test]
-    async fn remove_while_set() {
-        let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let cache = Arc::new(
-            FjallCache::new(
-                db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                    .unwrap(),
-            )
-            .unwrap(),
-        );
-
-        assert_eq!(
-            cache
-                .clone()
-                .get_with(
-                    "key".into(),
-                    Box::new(async move {
-                        cache.remove("key").await.unwrap();
-                        42
-                    }),
-                )
-                .await
-                .unwrap(),
-            42,
-        );
-    }
-
-    #[tokio::test]
-    async fn remove_while_get() {
+    async fn remove() {
         let directory = TempDir::new().unwrap();
         let db = fjall::SingleWriterTxDatabase::builder(directory.path())
             .open()
@@ -239,49 +95,11 @@ mod tests {
         let cache = FjallCache::new(
             db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
                 .unwrap(),
-        )
-        .unwrap();
+        );
 
-        for _ in 0..10000 {
-            let mutex = Arc::new(Mutex::new(()));
-            let mutex1 = mutex.clone();
-            let lock = mutex1.lock().await;
+        cache.set("key".into(), 42).await.unwrap();
+        cache.remove("key").await.unwrap();
 
-            let future = join(
-                {
-                    let mutex = mutex.clone();
-
-                    async {
-                        cache
-                            .get_with(
-                                "key".into(),
-                                Box::new(async move {
-                                    let _ = mutex.lock().await;
-                                    42
-                                }),
-                            )
-                            .await
-                            .unwrap();
-                        cache.remove("key").await.unwrap()
-                    }
-                },
-                async {
-                    cache
-                        .get_with(
-                            "key".into(),
-                            Box::new(async move {
-                                let _ = mutex.lock().await;
-                                42
-                            }),
-                        )
-                        .await
-                        .unwrap();
-                    cache.remove("key").await.unwrap()
-                },
-            );
-
-            drop(lock);
-            future.await;
-        }
+        assert_eq!(cache.get("key").await.unwrap(), None);
     }
 }
