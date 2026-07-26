@@ -1,4 +1,4 @@
-use super::{CacheError, GlobalCache, utility};
+use super::{CacheError, GlobalCache};
 use async_trait::async_trait;
 use core::marker::PhantomData;
 use log::trace;
@@ -26,16 +26,16 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> GlobalCache<T
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
         trace!("reading cache at {key}");
 
-        Ok(if let Some(value) = self.tree.get(key)? {
-            utility::deserialize(&value)?
-        } else {
-            None
-        })
+        Ok(self
+            .tree
+            .get(key)?
+            .map(|value| bitcode::deserialize(&value))
+            .transpose()?)
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
         trace!("setting cache at {key}");
-        self.tree.insert(key, utility::serialize(&value)?)?;
+        self.tree.insert(key, bitcode::serialize(&value)?)?;
 
         Ok(())
     }
@@ -84,20 +84,6 @@ mod tests {
 
         cache.set("key".into(), 42).await.unwrap();
         cache.remove("key").await.unwrap();
-
-        assert_eq!(cache.get("key").await.unwrap(), None);
-    }
-
-    #[tokio::test]
-    async fn ignore_placeholder_of_older_version() {
-        let file = TempDir::new().unwrap();
-        let tree = sled::open(file.path()).unwrap().open_tree("foo").unwrap();
-        let cache = SledCache::<i32>::new(tree.clone());
-
-        // A placeholder entry left by an older version is not a committed
-        // value.
-        tree.insert("key", bitcode::serialize(&None::<i32>).unwrap())
-            .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), None);
     }

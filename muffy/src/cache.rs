@@ -4,7 +4,6 @@ mod local;
 mod memory;
 mod moka;
 mod sled;
-mod utility;
 
 pub use self::{
     fjall::FjallCache, global::GlobalCache, local::LocalCache, memory::MemoryCache,

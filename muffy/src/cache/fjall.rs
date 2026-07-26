@@ -1,4 +1,4 @@
-use super::{CacheError, GlobalCache, utility};
+use super::{CacheError, GlobalCache};
 use async_trait::async_trait;
 use core::marker::PhantomData;
 use fjall::SingleWriterTxKeyspace;
@@ -25,15 +25,15 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> GlobalCache<T
     for FjallCache<T>
 {
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError> {
-        Ok(if let Some(value) = self.keyspace.get(key.as_bytes())? {
-            utility::deserialize(&value)?
-        } else {
-            None
-        })
+        Ok(self
+            .keyspace
+            .get(key.as_bytes())?
+            .map(|value| bitcode::deserialize(&value))
+            .transpose()?)
     }
 
     async fn set(&self, key: String, value: T) -> Result<(), CacheError> {
-        self.keyspace.insert(key, utility::serialize(&value)?)?;
+        self.keyspace.insert(key, bitcode::serialize(&value)?)?;
 
         Ok(())
     }
@@ -99,26 +99,6 @@ mod tests {
 
         cache.set("key".into(), 42).await.unwrap();
         cache.remove("key").await.unwrap();
-
-        assert_eq!(cache.get("key").await.unwrap(), None);
-    }
-
-    #[tokio::test]
-    async fn ignore_placeholder_of_older_version() {
-        let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let keyspace = db
-            .keyspace("foo", fjall::KeyspaceCreateOptions::default)
-            .unwrap();
-        let cache = FjallCache::<i32>::new(keyspace.clone());
-
-        // A placeholder entry left by an older version is not a committed
-        // value.
-        keyspace
-            .insert("key", bitcode::serialize(&None::<i32>).unwrap())
-            .unwrap();
 
         assert_eq!(cache.get("key").await.unwrap(), None);
     }
