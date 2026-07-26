@@ -1,6 +1,8 @@
 use crate::{error::MacroError, pattern::CompiledPattern};
 use alloc::collections::{BTreeMap, BTreeSet};
 
+// cspell: ignore brzozowski
+
 const STATE_LIMIT: usize = 512;
 
 /// A deterministic automaton over child element names built from Brzozowski
