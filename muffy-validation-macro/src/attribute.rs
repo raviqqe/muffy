@@ -22,7 +22,7 @@ pub fn compile_attribute_terms(
 
 fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> {
     Ok(match pattern {
-        CompiledPattern::Empty => vec![AttributeTerm::default()],
+        CompiledPattern::Empty => vec![Default::default()],
         CompiledPattern::NotAllowed => vec![],
         CompiledPattern::Attribute(names) => {
             if let [name] = names.iter().collect::<Vec<_>>().as_slice() {
