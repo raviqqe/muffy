@@ -88,7 +88,6 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
         CompiledPattern::Optional(pattern) | CompiledPattern::Many0(pattern) => {
             optional_terms(compile_terms(pattern)?)
         }
-        // Attributes never repeat on an element.
         CompiledPattern::Many1(pattern) => compile_terms(pattern)?,
         CompiledPattern::Element(_) | CompiledPattern::Text => {
             return Err(MacroError::RncPattern("content in attribute pattern"));
