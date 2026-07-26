@@ -225,7 +225,7 @@ impl WebValidator {
         base: Arc<Url>,
         document_type: Option<DocumentType>,
     ) -> Result<ItemOutput, ItemError> {
-        let url = Url::parse(&Self::normalize_url(&url)).or_else(|_| base.join(&url))?;
+        let url = base.join(&url)?;
 
         if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
@@ -241,10 +241,6 @@ impl WebValidator {
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
-    }
-
-    fn normalize_url(url: &str) -> String {
-        url.split_whitespace().collect()
     }
 
     async fn validate_html(
@@ -576,11 +572,12 @@ impl WebValidator {
         let Some(value) = value.as_bytes().split(|byte| *byte == b';').next() else {
             return Ok(document_type);
         };
-        let value = str::from_utf8(value)?;
+        let value = str::from_utf8(value)?.trim();
+        let media_type = value.to_ascii_lowercase();
 
         Ok(match document_type {
             Some(DocumentType::Html) => {
-                if value != "text/html" {
+                if media_type != "text/html" {
                     return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/html",
@@ -590,7 +587,7 @@ impl WebValidator {
                 document_type
             }
             Some(DocumentType::Robots) => {
-                if value != "text/plain" {
+                if media_type != "text/plain" {
                     return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "text/plain",
@@ -600,7 +597,7 @@ impl WebValidator {
                 document_type
             }
             Some(DocumentType::Sitemap) => {
-                if !value.ends_with("/xml") {
+                if !media_type.ends_with("/xml") {
                     return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "*/xml",
@@ -610,7 +607,7 @@ impl WebValidator {
                 document_type
             }
             Some(DocumentType::Svg) => {
-                if value != "image/svg+xml" {
+                if media_type != "image/svg+xml" {
                     return Err(ItemError::ContentTypeInvalid {
                         actual: value.into(),
                         expected: "image/svg+xml",
@@ -619,7 +616,7 @@ impl WebValidator {
 
                 document_type
             }
-            None => match value {
+            None => match media_type.as_str() {
                 "text/html" => Some(DocumentType::Html),
                 "image/svg+xml" => Some(DocumentType::Svg),
                 _ => None,
@@ -1658,7 +1655,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn validate_link_with_whitespaces() {
+    async fn resolve_link_with_ascii_tab() {
         let html_headers = HeaderMap::from_iter([(
             HeaderName::from_static("content-type"),
             HeaderValue::from_static("text/html"),
@@ -1676,7 +1673,7 @@ mod tests {
                         "https://foo.com",
                         StatusCode::OK,
                         html_headers.clone(),
-                        r#"<a href="https:/  /foo. com/ bar"/>"#.as_bytes().to_vec(),
+                        "<a href=\"https://foo.com/ba\tr\"/>".as_bytes().to_vec(),
                     ),
                     build_stub_response(
                         "https://foo.com/bar",
@@ -1696,6 +1693,167 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn resolve_link_with_newline() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        "<a href=\"https://foo.com/ba\nr\"/>".as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_absolute_link_with_internal_whitespace() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https://foo.com/foo bar"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo%20bar",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn resolve_scheme_relative_link_within_origin() {
+        let html_headers = HeaderMap::from_iter([(
+            HeaderName::from_static("content-type"),
+            HeaderValue::from_static("text/html"),
+        )]);
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        r#"<a href="https:/other.com/x"/>"#.as_bytes().to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/other.com/x",
+                        StatusCode::OK,
+                        html_headers.clone(),
+                        Default::default(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn report_error_for_invalid_link() {
+        let mut documents = validate(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        r#"<a href="http://[bad"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -2459,6 +2617,150 @@ mod tests {
                     ..
                 })
             ));
+        }
+    }
+
+    mod content_type {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        fn response(content_type: &'static str) -> Response {
+            Response::new(
+                Url::parse("https://foo.com").unwrap(),
+                StatusCode::OK,
+                HeaderMap::from_iter([(
+                    HeaderName::from_static("content-type"),
+                    HeaderValue::from_static(content_type),
+                )]),
+                Default::default(),
+                Default::default(),
+            )
+        }
+
+        #[test]
+        fn accept_html_with_charset_parameter() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &response("text/html; charset=utf-8"),
+                    Some(DocumentType::Html),
+                )
+                .unwrap(),
+                Some(DocumentType::Html)
+            );
+        }
+
+        #[test]
+        fn accept_uppercase_html() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &response("TEXT/HTML"),
+                    Some(DocumentType::Html)
+                )
+                .unwrap(),
+                Some(DocumentType::Html)
+            );
+        }
+
+        #[test]
+        fn accept_robots_with_charset_parameter() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &response("text/plain; charset=utf-8"),
+                    Some(DocumentType::Robots),
+                )
+                .unwrap(),
+                Some(DocumentType::Robots)
+            );
+        }
+
+        #[test]
+        fn accept_uppercase_sitemap_xml() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &response("Application/XML"),
+                    Some(DocumentType::Sitemap),
+                )
+                .unwrap(),
+                Some(DocumentType::Sitemap)
+            );
+        }
+
+        #[test]
+        fn accept_svg_with_surrounding_whitespace_and_charset() {
+            assert_eq!(
+                WebValidator::validate_document_type(
+                    &response("image/svg+xml ; charset=utf-8"),
+                    Some(DocumentType::Svg),
+                )
+                .unwrap(),
+                Some(DocumentType::Svg)
+            );
+        }
+
+        #[test]
+        fn sniff_uppercase_svg() {
+            assert_eq!(
+                WebValidator::validate_document_type(&response("Image/SVG+XML"), None).unwrap(),
+                Some(DocumentType::Svg)
+            );
+        }
+
+        #[test]
+        fn reject_non_html_for_html() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("application/json"),
+                    Some(DocumentType::Html),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "text/html",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn reject_non_plain_for_robots() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("text/html"),
+                    Some(DocumentType::Robots),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "text/plain",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn reject_non_xml_for_sitemap() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("text/html"),
+                    Some(DocumentType::Sitemap),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "*/xml",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn report_trimmed_original_case_media_type_on_mismatch() {
+            let ItemError::ContentTypeInvalid { actual, expected } =
+                WebValidator::validate_document_type(
+                    &response("  Application/JSON ; charset=utf-8"),
+                    Some(DocumentType::Html),
+                )
+                .unwrap_err()
+            else {
+                panic!("expected a content type error");
+            };
+
+            assert_eq!(actual, "Application/JSON");
+            assert_eq!(expected, "text/html");
         }
     }
 
