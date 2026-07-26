@@ -5,7 +5,7 @@ extern crate alloc;
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
-use fjall::{KeyspaceCreateOptions, SingleWriterTxDatabase};
+use fjall::{Database, KeyspaceCreateOptions};
 use futures::future::join_all;
 use muffy::{FjallCache, GlobalCache, SledCache};
 use tempfile::TempDir;
@@ -215,7 +215,7 @@ fn fjall_cache(criterion: &mut Criterion) {
         criterion,
         "fjall",
         &Arc::new(FjallCache::new(
-            SingleWriterTxDatabase::builder(directory.path())
+            Database::builder(directory.path())
                 .open()
                 .unwrap()
                 .keyspace("cache", KeyspaceCreateOptions::default)

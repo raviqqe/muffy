@@ -1,18 +1,18 @@
 use super::{CacheError, GlobalCache};
 use async_trait::async_trait;
 use core::marker::PhantomData;
-use fjall::SingleWriterTxKeyspace;
+use fjall::Keyspace;
 use serde::{Deserialize, Serialize};
 
 /// A cache based on the Fjall database.
 pub struct FjallCache<T> {
-    keyspace: SingleWriterTxKeyspace,
+    keyspace: Keyspace,
     phantom: PhantomData<T>,
 }
 
 impl<T> FjallCache<T> {
     /// Creates a cache.
-    pub fn new(keyspace: SingleWriterTxKeyspace) -> Self {
+    pub fn new(keyspace: Keyspace) -> Self {
         Self {
             keyspace,
             phantom: Default::default(),
@@ -48,18 +48,14 @@ impl<T: Clone + Serialize + for<'a> Deserialize<'a> + Send + Sync> GlobalCache<T
 #[cfg(test)]
 mod tests {
     use super::*;
+    use fjall::{Database, KeyspaceCreateOptions};
     use tempfile::TempDir;
 
     #[tokio::test]
     async fn get() {
         let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let cache = FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        );
+        let db = Database::builder(directory.path()).open().unwrap();
+        let cache = FjallCache::new(db.keyspace("foo", KeyspaceCreateOptions::default).unwrap());
 
         assert_eq!(cache.get("key").await.unwrap(), None);
 
@@ -71,13 +67,8 @@ mod tests {
     #[tokio::test]
     async fn set() {
         let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let cache = FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        );
+        let db = Database::builder(directory.path()).open().unwrap();
+        let cache = FjallCache::new(db.keyspace("foo", KeyspaceCreateOptions::default).unwrap());
 
         cache.set("key".into(), 42).await.unwrap();
         assert_eq!(cache.get("key").await.unwrap(), Some(42));
@@ -89,13 +80,8 @@ mod tests {
     #[tokio::test]
     async fn remove() {
         let directory = TempDir::new().unwrap();
-        let db = fjall::SingleWriterTxDatabase::builder(directory.path())
-            .open()
-            .unwrap();
-        let cache = FjallCache::new(
-            db.keyspace("foo", fjall::KeyspaceCreateOptions::default)
-                .unwrap(),
-        );
+        let db = Database::builder(directory.path()).open().unwrap();
+        let cache = FjallCache::new(db.keyspace("foo", KeyspaceCreateOptions::default).unwrap());
 
         cache.set("key".into(), 42).await.unwrap();
         cache.remove("key").await.unwrap();
