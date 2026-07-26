@@ -2463,6 +2463,64 @@ mod tests {
                 Some(DocumentType::Svg)
             );
         }
+
+        #[test]
+        fn reject_non_html_for_html() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("application/json"),
+                    Some(DocumentType::Html),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "text/html",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn reject_non_plain_for_robots() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("text/html"),
+                    Some(DocumentType::Robots),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "text/plain",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn reject_non_xml_for_sitemap() {
+            assert!(matches!(
+                WebValidator::validate_document_type(
+                    &response("text/html"),
+                    Some(DocumentType::Sitemap),
+                ),
+                Err(ItemError::ContentTypeInvalid {
+                    expected: "*/xml",
+                    ..
+                })
+            ));
+        }
+
+        #[test]
+        fn report_trimmed_original_case_media_type_on_mismatch() {
+            let ItemError::ContentTypeInvalid { actual, expected } =
+                WebValidator::validate_document_type(
+                    &response("  Application/JSON ; charset=utf-8"),
+                    Some(DocumentType::Html),
+                )
+                .unwrap_err()
+            else {
+                panic!("expected a content type error");
+            };
+
+            assert_eq!(actual, "Application/JSON");
+            assert_eq!(expected, "text/html");
+        }
     }
 
     mod robots {
