@@ -15,7 +15,7 @@ pub trait BareHttpClient: Send + Sync {
 pub struct BareRequest {
     /// A URL.
     pub url: Url,
-    /// Request headers.
+    /// Headers.
     pub headers: HeaderMap,
 }
 
