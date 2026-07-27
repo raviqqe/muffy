@@ -142,6 +142,7 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => [identifier_string(&name.local)].into(),
         NameClass::Choice(classes) => classes.iter().flat_map(class_names).collect(),
+        // TODO Support wildcard name classes (e.g. custom elements).
         NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
             Default::default()
         }
@@ -163,6 +164,8 @@ fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
             }
         }
         NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
+        // TODO Support wildcard name classes (e.g. arbitrary attributes of
+        // embed elements).
         NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
             Default::default()
         }
@@ -267,6 +270,8 @@ fn compile_pattern_with_stack(
         )?),
         Pattern::Empty => CompiledPattern::Empty,
         Pattern::NotAllowed => CompiledPattern::NotAllowed,
+        // TODO Validate texts and attribute values against data and value
+        // patterns.
         Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
             CompiledPattern::Text
         }
@@ -430,6 +435,8 @@ pub fn split_pattern(
                 // Iterations of a repetition match alternatives independently
                 // while attribute names never repeat on an element, so a
                 // repetition accepts any combination of the attribute names.
+                // TODO Require at least one attribute for one-or-more
+                // repetitions.
                 vec![(
                     CompiledPattern::interleave(
                         variants

@@ -1,8 +1,6 @@
 use crate::{error::MacroError, pattern::CompiledPattern};
 use alloc::collections::BTreeSet;
 
-const TERM_LIMIT: usize = 1024;
-
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 pub struct AttributeTerm {
     pub required: BTreeSet<String>,
@@ -33,26 +31,20 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
             } else {
                 // Alternative names of one attribute (e.g. the bare and
                 // prefixed spellings of `xml:lang`) are weakened to an
-                // optional set as terms cannot express one-of requirements.
+                // optional set.
+                // TODO Encode one-of requirements as multiple terms where
+                // alternative spellings must not exclude each other.
                 vec![AttributeTerm {
                     required: Default::default(),
                     optional: names.clone(),
                 }]
             }
         }
-        CompiledPattern::Choice(patterns) => {
-            let terms = patterns
-                .iter()
-                .map(compile_terms)
-                .collect::<Result<Vec<_>, _>>()?
-                .concat();
-
-            if terms.len() > TERM_LIMIT {
-                return Err(MacroError::PatternLimit("attribute alternatives"));
-            }
-
-            terms
-        }
+        CompiledPattern::Choice(patterns) => patterns
+            .iter()
+            .map(compile_terms)
+            .collect::<Result<Vec<_>, _>>()?
+            .concat(),
         CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
             let mut terms = vec![AttributeTerm::default()];
 
@@ -77,10 +69,6 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
                         })
                     })
                     .collect();
-
-                if terms.len() > TERM_LIMIT {
-                    return Err(MacroError::PatternLimit("attribute alternatives"));
-                }
             }
 
             terms
@@ -233,21 +221,6 @@ mod tests {
             .unwrap(),
             vec![term(&[], &["bar", "foo"])]
         );
-    }
-
-    #[test]
-    fn fail_on_too_many_alternatives() {
-        assert!(matches!(
-            compile_attribute_terms(&CompiledPattern::Group(
-                (0..11)
-                    .map(|index| CompiledPattern::choice([
-                        attribute(&format!("foo{index}")),
-                        attribute(&format!("bar{index}")),
-                    ]))
-                    .collect()
-            )),
-            Err(MacroError::PatternLimit(_))
-        ));
     }
 
     #[test]

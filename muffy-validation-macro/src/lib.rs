@@ -36,6 +36,7 @@ pub fn html(_input: TokenStream) -> TokenStream {
 fn generate_html() -> Result<TokenStream, MacroError> {
     let mut definitions = Default::default();
 
+    // TODO Include SVG and MathML schemas.
     for file in ["html5.rnc", "rdfa.rnc"] {
         load_schema(
             &Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -206,6 +207,7 @@ fn load_schema(
     let schema = parse_schema(&read_to_string(path)?)?;
 
     // We do not use the declarations.
+    // TODO Respect namespace declarations.
 
     match schema.body {
         SchemaBody::Grammar(grammar) => {
@@ -316,6 +318,7 @@ fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
     }
 }
 
+// TODO Skip element definitions gated by not-allowed flag conjuncts.
 fn collect_elements(pattern: &Pattern) -> Vec<(&NameClass, &Pattern)> {
     match pattern {
         Pattern::Element {
