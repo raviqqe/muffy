@@ -22,9 +22,6 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
     Ok(match pattern {
         CompiledPattern::Empty => vec![Default::default()],
         CompiledPattern::NotAllowed => vec![],
-        // Alternative names of one attribute (e.g. the bare and prefixed
-        // spellings of `xml:lang`) require at least one of the names and
-        // never exclude each other.
         CompiledPattern::Attribute(names) => choice_terms(names),
         CompiledPattern::Choice(patterns) => patterns
             .iter()
