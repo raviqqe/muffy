@@ -11,12 +11,12 @@ categories.workspace = true
 
 [[bench]]
 harness = false
-name = "crawl"
+name = "cache"
+required-features = ["integration-bench"]
 
 [[bench]]
 harness = false
-name = "main"
-required-features = ["integration-bench"]
+name = "crawl"
 
 [dependencies]
 async-recursion = "1.1.1"

@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Cache benchmarks.
 
 extern crate alloc;
 
