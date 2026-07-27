@@ -22,25 +22,10 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
     Ok(match pattern {
         CompiledPattern::Empty => vec![Default::default()],
         CompiledPattern::NotAllowed => vec![],
-        CompiledPattern::Attribute(names) => {
-            if let [name] = names.iter().collect::<Vec<_>>().as_slice() {
-                vec![AttributeTerm {
-                    required: [(*name).clone()].into(),
-                    optional: Default::default(),
-                }]
-            } else {
-                // Alternative names of one attribute (e.g. the bare and
-                // prefixed spellings of `xml:lang`) are weakened to an
-                // optional set.
-                //
-                // TODO Encode one-of requirements as multiple terms where
-                // alternative spellings must not exclude each other.
-                vec![AttributeTerm {
-                    required: Default::default(),
-                    optional: names.clone(),
-                }]
-            }
-        }
+        // Alternative names of one attribute (e.g. the bare and prefixed
+        // spellings of `xml:lang`) require at least one of the names and
+        // never exclude each other.
+        CompiledPattern::Attribute(names) => choice_terms(names),
         CompiledPattern::Choice(patterns) => patterns
             .iter()
             .map(compile_terms)
@@ -84,14 +69,23 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
     })
 }
 
-fn optional_terms(terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
-    if let [term] = terms.as_slice()
-        && term.optional.is_empty()
-        && term.required.len() == 1
-    {
+fn optional_terms(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
+    terms.sort();
+    terms.dedup();
+
+    let names = terms
+        .iter()
+        .flat_map(|term| term.required.iter().chain(&term.optional))
+        .cloned()
+        .collect::<BTreeSet<_>>();
+
+    // Optional at-least-one-of terms accept every combination of the names,
+    // which a single fully optional term encodes without any term blowup
+    // through products of optional attributes.
+    if terms == choice_terms(&names) {
         vec![AttributeTerm {
             required: Default::default(),
-            optional: term.required.clone(),
+            optional: names,
         }]
     } else if terms.iter().any(|term| term.required.is_empty()) {
         terms
@@ -101,6 +95,20 @@ fn optional_terms(terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
             .chain(terms)
             .collect()
     }
+}
+
+fn choice_terms(names: &BTreeSet<String>) -> Vec<AttributeTerm> {
+    names
+        .iter()
+        .map(|name| AttributeTerm {
+            required: [name.clone()].into(),
+            optional: names
+                .iter()
+                .filter(|other| *other != name)
+                .cloned()
+                .collect(),
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -220,7 +228,31 @@ mod tests {
                 ["foo".into(), "bar".into()].into()
             ))
             .unwrap(),
+            vec![term(&["bar"], &["foo"]), term(&["foo"], &["bar"])]
+        );
+    }
+
+    #[test]
+    fn compile_optional_alternative_attribute_names() {
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::optional(CompiledPattern::Attribute(
+                ["foo".into(), "bar".into()].into()
+            )))
+            .unwrap(),
             vec![term(&[], &["bar", "foo"])]
+        );
+    }
+
+    #[test]
+    fn compile_optional_choice_of_attributes() {
+        // Exactly one of the exclusive attributes may be present.
+        assert_eq!(
+            compile_attribute_terms(&CompiledPattern::optional(CompiledPattern::choice([
+                attribute("foo"),
+                attribute("bar")
+            ])))
+            .unwrap(),
+            vec![term(&[], &[]), term(&["bar"], &[]), term(&["foo"], &[])]
         );
     }
 
