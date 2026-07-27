@@ -224,5 +224,6 @@ fn fjall_cache(criterion: &mut Criterion) {
     );
 }
 
+#[allow(missing_docs)]
 criterion_group!(benches, sled_cache, fjall_cache);
 criterion_main!(benches);

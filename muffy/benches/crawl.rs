@@ -129,5 +129,6 @@ fn crawl(criterion: &mut Criterion) {
     benchmark_crawl(criterion, "crawl_validation", &runtime, true);
 }
 
+#[allow(missing_docs)]
 criterion_group!(benches, crawl);
 criterion_main!(benches);
