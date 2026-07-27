@@ -10,7 +10,7 @@ pub struct AttributeTerm {
 pub fn compile_attribute_terms(
     pattern: &CompiledPattern,
 ) -> Result<Vec<AttributeTerm>, MacroError> {
-    let mut terms = compile_terms(pattern)?;
+    let mut terms = compile(pattern)?;
 
     terms.sort();
     terms.dedup();
@@ -18,21 +18,21 @@ pub fn compile_attribute_terms(
     Ok(terms)
 }
 
-fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> {
+fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> {
     Ok(match pattern {
         CompiledPattern::Empty => vec![Default::default()],
         CompiledPattern::NotAllowed => vec![],
         CompiledPattern::Attribute(names) => choice_terms(names),
         CompiledPattern::Choice(patterns) => patterns
             .iter()
-            .map(compile_terms)
+            .map(compile)
             .collect::<Result<Vec<_>, _>>()?
             .concat(),
         CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
             let mut terms = vec![AttributeTerm::default()];
 
             for operand in patterns {
-                let operand_terms = compile_terms(operand)?;
+                let operand_terms = compile(operand)?;
                 terms = terms
                     .iter()
                     .flat_map(|term| {
@@ -57,9 +57,9 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
             terms
         }
         CompiledPattern::Optional(pattern) | CompiledPattern::Many0(pattern) => {
-            optional_terms(compile_terms(pattern)?)
+            optional_terms(compile(pattern)?)
         }
-        CompiledPattern::Many1(pattern) => compile_terms(pattern)?,
+        CompiledPattern::Many1(pattern) => compile(pattern)?,
         CompiledPattern::Element(_) | CompiledPattern::Text => {
             return Err(MacroError::RncPattern("content in attribute pattern"));
         }
