@@ -8,7 +8,7 @@ mod error;
 mod pattern;
 
 use self::{
-    attribute::{AttributeTerm, compile_attribute_terms},
+    attribute::{AttributeTerm, compile_attributes},
     content::{ContentAutomaton, compile_content_automaton},
     error::MacroError,
     pattern::{class_names, compile_pattern, split_pattern},
@@ -63,7 +63,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             let compiled = compile_pattern(inner, &definitions, &mut cache)?;
 
             for (attribute_pattern, content_pattern) in split_pattern(&compiled)? {
-                let terms = compile_attribute_terms(&attribute_pattern)?;
+                let terms = compile_attributes(&attribute_pattern)?;
 
                 if terms.is_empty() {
                     continue;

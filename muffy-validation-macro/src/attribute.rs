@@ -7,9 +7,7 @@ pub struct AttributeTerm {
     pub optional: BTreeSet<String>,
 }
 
-pub fn compile_attribute_terms(
-    pattern: &CompiledPattern,
-) -> Result<Vec<AttributeTerm>, MacroError> {
+pub fn compile_attributes(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> {
     let mut terms = compile(pattern)?;
 
     terms.sort();
@@ -124,7 +122,7 @@ mod tests {
     #[test]
     fn compile_empty() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::Empty).unwrap(),
+            compile_attributes(&CompiledPattern::Empty).unwrap(),
             vec![AttributeTerm::default()]
         );
     }
@@ -132,7 +130,7 @@ mod tests {
     #[test]
     fn compile_not_allowed() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::NotAllowed).unwrap(),
+            compile_attributes(&CompiledPattern::NotAllowed).unwrap(),
             vec![]
         );
     }
@@ -140,7 +138,7 @@ mod tests {
     #[test]
     fn compile_required_attribute() {
         assert_eq!(
-            compile_attribute_terms(&attribute("foo")).unwrap(),
+            compile_attributes(&attribute("foo")).unwrap(),
             vec![term(&["foo"], &[])]
         );
     }
@@ -148,7 +146,7 @@ mod tests {
     #[test]
     fn compile_optional_attribute() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::optional(attribute("foo"))).unwrap(),
+            compile_attributes(&CompiledPattern::optional(attribute("foo"))).unwrap(),
             vec![term(&[], &["foo"])]
         );
     }
@@ -156,7 +154,7 @@ mod tests {
     #[test]
     fn compile_interleave_of_optional_attributes() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::interleave([
+            compile_attributes(&CompiledPattern::interleave([
                 CompiledPattern::optional(attribute("foo")),
                 CompiledPattern::optional(attribute("bar")),
             ]))
@@ -168,7 +166,7 @@ mod tests {
     #[test]
     fn compile_choice_of_attributes() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::choice([
+            compile_attributes(&CompiledPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ]))
@@ -180,7 +178,7 @@ mod tests {
     #[test]
     fn compile_group_product() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::group([
+            compile_attributes(&CompiledPattern::group([
                 CompiledPattern::choice([attribute("foo"), attribute("bar")]),
                 attribute("baz"),
             ]))
@@ -192,7 +190,7 @@ mod tests {
     #[test]
     fn compile_exclusive_attribute_pair() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::choice([
+            compile_attributes(&CompiledPattern::choice([
                 CompiledPattern::group([
                     attribute("foo"),
                     CompiledPattern::optional(attribute("bar"))
@@ -210,7 +208,7 @@ mod tests {
     #[test]
     fn compile_at_least_one_attribute() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::many1(attribute("foo"))).unwrap(),
+            compile_attributes(&CompiledPattern::many1(attribute("foo"))).unwrap(),
             vec![term(&["foo"], &[])]
         );
     }
@@ -218,7 +216,7 @@ mod tests {
     #[test]
     fn compile_alternative_attribute_names() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::Attribute(
+            compile_attributes(&CompiledPattern::Attribute(
                 ["foo".into(), "bar".into()].into()
             ))
             .unwrap(),
@@ -229,7 +227,7 @@ mod tests {
     #[test]
     fn compile_optional_alternative_attribute_names() {
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::optional(CompiledPattern::Attribute(
+            compile_attributes(&CompiledPattern::optional(CompiledPattern::Attribute(
                 ["foo".into(), "bar".into()].into()
             )))
             .unwrap(),
@@ -241,7 +239,7 @@ mod tests {
     fn compile_optional_choice_of_attributes() {
         // Exactly one of the exclusive attributes may be present.
         assert_eq!(
-            compile_attribute_terms(&CompiledPattern::optional(CompiledPattern::choice([
+            compile_attributes(&CompiledPattern::optional(CompiledPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ])))
@@ -253,7 +251,7 @@ mod tests {
     #[test]
     fn fail_on_element() {
         assert!(matches!(
-            compile_attribute_terms(&CompiledPattern::Element(["foo".into()].into())),
+            compile_attributes(&CompiledPattern::Element(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }
