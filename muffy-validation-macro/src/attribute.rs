@@ -76,9 +76,6 @@ fn optional_terms(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
         .cloned()
         .collect::<BTreeSet<_>>();
 
-    // Optional at-least-one-of terms accept every combination of the names,
-    // which a single fully optional term encodes without any term blowup
-    // through products of optional attributes.
     if terms == choice_terms(&names) {
         vec![AttributeTerm {
             required: Default::default(),
