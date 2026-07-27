@@ -10,17 +10,25 @@ pub trait BareHttpClient: Send + Sync {
     async fn get(&self, request: &BareRequest) -> Result<BareResponse, HttpClientError>;
 }
 
+/// A bare HTTP request.
 #[derive(Clone, Debug)]
 pub struct BareRequest {
+    /// A URL.
     pub url: Url,
+    /// Request headers.
     pub headers: HeaderMap,
 }
 
+/// A bare HTTP response.
 #[derive(Debug)]
 #[cfg_attr(test, derive(Clone))]
 pub struct BareResponse {
+    /// A URL.
     pub url: Url,
+    /// A status code.
     pub status: StatusCode,
+    /// Response headers.
     pub headers: HeaderMap,
+    /// A response body.
     pub body: Vec<u8>,
 }

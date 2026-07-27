@@ -28,7 +28,9 @@ pub use self::{
     document_output::DocumentOutput,
     error::{Error, ItemError},
     html_parser::HtmlParser,
-    http_client::{BareHttpClient, HttpClient, ReqwestHttpClient},
+    http_client::{
+        BareHttpClient, BareRequest, BareResponse, HttpClient, HttpClientError, ReqwestHttpClient,
+    },
     metrics::Metrics,
     rate_limiter::RateLimiter,
     render::{RenderFormat, RenderOptions, render_document},

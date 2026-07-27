@@ -168,11 +168,7 @@ impl WebValidator {
                     .unwrap_or_default()
             })
             .unwrap_or_default()
-            && context
-                .documents()
-                .insert_async(response.url().to_string())
-                .await
-                .is_ok()
+            && context.insert_document(response.url().to_string())
         {
             let handle = spawn({
                 let context = context.clone();

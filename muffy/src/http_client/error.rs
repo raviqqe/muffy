@@ -7,16 +7,26 @@ use core::{
 };
 use serde::{Deserialize, Serialize};
 
+/// An HTTP client error.
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum HttpClientError {
+    /// A cache error.
     Cache(CacheError),
+    /// A host not defined in a URL.
     HostNotDefined,
+    /// An HTTP error.
     Http(Arc<str>),
+    /// A missing location header on a redirect.
     RedirectLocation,
+    /// A rejection by robots.txt.
     RobotsTxt,
+    /// A timeout of a request.
     Timeout(Arc<str>),
+    /// Too many redirects.
     TooManyRedirects,
+    /// A URL parse error.
     UrlParse(Arc<str>),
+    /// A UTF-8 error.
     Utf8(Arc<str>),
 }
 
