@@ -2,6 +2,8 @@ use crate::{Config, document_output::DocumentOutput, error::Error};
 use scc::HashSet;
 use tokio::sync::mpsc::Sender;
 
+const INITIAL_DOCUMENT_CAPACITY: usize = 1 << 10;
+
 pub struct Context {
     documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
@@ -14,7 +16,7 @@ impl Context {
         config: Config,
     ) -> Self {
         Self {
-            documents: HashSet::with_capacity(1 << 10),
+            documents: HashSet::with_capacity(INITIAL_DOCUMENT_CAPACITY),
             job_sender,
             config,
         }
@@ -24,13 +26,41 @@ impl Context {
         &self.config
     }
 
-    pub const fn documents(&self) -> &HashSet<String> {
-        &self.documents
+    pub async fn insert_document(&self, url: String) -> bool {
+        self.documents.insert_async(url).await.is_ok()
     }
 
     pub const fn job_sender(
         &self,
     ) -> &Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>> {
         &self.job_sender
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::sync::mpsc::channel;
+
+    #[tokio::test]
+    async fn insert_document() {
+        let context = Context::new(
+            channel(1).0,
+            Config::new(vec![], Default::default(), Default::default()),
+        );
+
+        assert!(context.insert_document("https://foo.com/".into()).await);
+        assert!(!context.insert_document("https://foo.com/".into()).await);
+    }
+
+    #[tokio::test]
+    async fn insert_different_documents() {
+        let context = Context::new(
+            channel(1).0,
+            Config::new(vec![], Default::default(), Default::default()),
+        );
+
+        assert!(context.insert_document("https://foo.com/".into()).await);
+        assert!(context.insert_document("https://foo.com/bar".into()).await);
     }
 }
