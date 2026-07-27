@@ -1,9 +1,11 @@
 use crate::{Config, document_output::DocumentOutput, error::Error};
-use std::collections::HashSet;
-use tokio::sync::{Mutex, mpsc::Sender};
+use scc::HashSet;
+use tokio::sync::mpsc::Sender;
+
+const INITIAL_DOCUMENT_CAPACITY: usize = 1 << 10;
 
 pub struct Context {
-    documents: Mutex<HashSet<String>>,
+    documents: HashSet<String>,
     job_sender: Sender<Box<dyn Future<Output = Result<DocumentOutput, Error>> + Send>>,
     config: Config,
 }
@@ -14,7 +16,7 @@ impl Context {
         config: Config,
     ) -> Self {
         Self {
-            documents: Mutex::new(HashSet::with_capacity(1 << 10)),
+            documents: HashSet::with_capacity(INITIAL_DOCUMENT_CAPACITY),
             job_sender,
             config,
         }
@@ -25,7 +27,7 @@ impl Context {
     }
 
     pub async fn insert_document(&self, url: String) -> bool {
-        self.documents.lock().await.insert(url)
+        self.documents.insert_async(url).await.is_ok()
     }
 
     pub const fn job_sender(
