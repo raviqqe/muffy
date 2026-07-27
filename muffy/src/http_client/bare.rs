@@ -27,8 +27,8 @@ pub struct BareResponse {
     pub url: Url,
     /// A status code.
     pub status: StatusCode,
-    /// Response headers.
+    /// Headers.
     pub headers: HeaderMap,
-    /// A response body.
+    /// A body.
     pub body: Vec<u8>,
 }
