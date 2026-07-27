@@ -32,6 +32,7 @@ fn compile_terms(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroE
                 // Alternative names of one attribute (e.g. the bare and
                 // prefixed spellings of `xml:lang`) are weakened to an
                 // optional set.
+                //
                 // TODO Encode one-of requirements as multiple terms where
                 // alternative spellings must not exclude each other.
                 vec![AttributeTerm {

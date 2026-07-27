@@ -435,6 +435,7 @@ pub fn split_pattern(
                 // Iterations of a repetition match alternatives independently
                 // while attribute names never repeat on an element, so a
                 // repetition accepts any combination of the attribute names.
+                //
                 // TODO Require at least one attribute for one-or-more
                 // repetitions.
                 vec![(
