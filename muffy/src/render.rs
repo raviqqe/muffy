@@ -138,12 +138,12 @@ mod tests {
                     )),
                     Err(ItemError::HtmlValidation(
                         muffy_validation::MarkupError::InvalidElement {
-                            attributes: [(
+                            invalid_attributes: [(
                                 "bar".into(),
                                 [muffy_validation::AttributeError::Conflicting].into(),
                             )]
                             .into(),
-                            children: [(
+                            invalid_children: [(
                                 "baz".into(),
                                 [muffy_validation::ChildError::Misplaced].into(),
                             )]

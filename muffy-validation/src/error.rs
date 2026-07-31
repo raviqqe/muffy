@@ -8,13 +8,13 @@ pub enum MarkupError {
     UnknownTag(String),
     /// Invalid element.
     InvalidElement {
-        /// Invalid attributes.
-        attributes: BTreeMap<String, BTreeSet<AttributeError>>,
-        /// Invalid children.
-        children: BTreeMap<String, BTreeSet<ChildError>>,
-        /// Missing required attributes.
+        /// Invalid invalid_attributes.
+        invalid_attributes: BTreeMap<String, BTreeSet<AttributeError>>,
+        /// Invalid invalid_children.
+        invalid_children: BTreeMap<String, BTreeSet<ChildError>>,
+        /// Missing required invalid_attributes.
         missing_attributes: BTreeSet<String>,
-        /// Missing required children.
+        /// Missing required invalid_children.
         missing_children: BTreeSet<String>,
     },
 }
@@ -24,8 +24,8 @@ impl Display for MarkupError {
         match self {
             Self::UnknownTag(tag) => write!(formatter, "unknown tag \"{tag}\""),
             Self::InvalidElement {
-                attributes,
-                children,
+                invalid_attributes,
+                invalid_children,
                 missing_attributes,
                 missing_children,
             } => write!(
@@ -132,8 +132,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 }
@@ -148,8 +148,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: [("foo".into(), [AttributeError::Conflicting].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("foo".into(), [AttributeError::Conflicting].into())].into(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 }
@@ -164,8 +164,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 }
@@ -180,8 +180,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("foo".into(), [ChildError::Misplaced].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("foo".into(), [ChildError::Misplaced].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 }
@@ -196,8 +196,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: ["bar".into(), "foo".into()].into(),
                     missing_children: Default::default(),
                 }
@@ -212,8 +212,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: ["title".into()].into(),
                 }
@@ -228,8 +228,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 }

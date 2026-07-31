@@ -182,8 +182,8 @@ pub fn validate_rules(
         Ok(())
     } else {
         Err(MarkupError::InvalidElement {
-            attributes: attribute_errors,
-            children: child_errors,
+            invalid_attributes: attribute_errors,
+            invalid_children: child_errors,
             missing_attributes,
             missing_children,
         })
@@ -348,8 +348,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: [("unknown".into(), [AttributeError::NotAllowed].into())].into(),
-                children: Default::default(),
+                invalid_attributes: [("unknown".into(), [AttributeError::NotAllowed].into())].into(),
+                invalid_children: Default::default(),
                 missing_attributes: Default::default(),
                 missing_children: Default::default(),
             })
@@ -366,8 +366,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: [("bar".into(), [AttributeError::Conflicting].into())].into(),
-                children: Default::default(),
+                invalid_attributes: [("bar".into(), [AttributeError::Conflicting].into())].into(),
+                invalid_children: Default::default(),
                 missing_attributes: Default::default(),
                 missing_children: Default::default(),
             })
@@ -384,8 +384,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: Default::default(),
-                children: Default::default(),
+                invalid_attributes: Default::default(),
+                invalid_children: Default::default(),
                 missing_attributes: ["foo".into()].into(),
                 missing_children: Default::default(),
             })
@@ -402,8 +402,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: Default::default(),
-                children: [("two".into(), [ChildError::Misplaced].into())].into(),
+                invalid_attributes: Default::default(),
+                invalid_children: [("two".into(), [ChildError::Misplaced].into())].into(),
                 missing_attributes: Default::default(),
                 missing_children: Default::default(),
             })
@@ -420,8 +420,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: Default::default(),
-                children: Default::default(),
+                invalid_attributes: Default::default(),
+                invalid_children: Default::default(),
                 missing_attributes: Default::default(),
                 missing_children: ["one".into()].into(),
             })
@@ -531,8 +531,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                attributes: Default::default(),
-                children: Default::default(),
+                invalid_attributes: Default::default(),
+                invalid_children: Default::default(),
                 missing_attributes: ["foo".into()].into(),
                 missing_children: ["one".into()].into(),
             })

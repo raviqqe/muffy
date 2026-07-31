@@ -78,8 +78,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -97,12 +97,12 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [
+                    invalid_attributes: [
                         ("invalid-one".into(), [AttributeError::NotAllowed].into()),
                         ("invalid-two".into(), [AttributeError::NotAllowed].into()),
                     ]
                     .into(),
-                    children: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -160,8 +160,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[Regex::new("^span$").unwrap()]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -204,8 +204,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -226,8 +226,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [
+                    invalid_attributes: Default::default(),
+                    invalid_children: [
                         ("div".into(), [ChildError::NotAllowed].into()),
                         ("table".into(), [ChildError::NotAllowed].into()),
                     ]
@@ -273,8 +273,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: ["href".into()].into(),
                     missing_children: Default::default(),
                 })
@@ -308,8 +308,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -327,8 +327,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: ["head".into()].into(),
                 })
@@ -363,8 +363,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("body".into(), [ChildError::Misplaced].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("body".into(), [ChildError::Misplaced].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -393,8 +393,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: ["title".into()].into(),
                 })
@@ -408,8 +408,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: ["title".into()].into(),
                 })
@@ -428,8 +428,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -475,8 +475,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("#text".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("#text".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -490,8 +490,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -540,8 +540,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("thead".into(), [ChildError::Misplaced].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("thead".into(), [ChildError::Misplaced].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -556,8 +556,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -630,8 +630,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: ["img".into()].into(),
                 })
@@ -666,8 +666,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("source".into(), [ChildError::Misplaced].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("source".into(), [ChildError::Misplaced].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -682,8 +682,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: ["img".into()].into(),
                 })
@@ -753,8 +753,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: ["content".into()].into(),
                     missing_children: Default::default(),
                 })
@@ -776,8 +776,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [("charset".into(), [AttributeError::Conflicting].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("charset".into(), [AttributeError::Conflicting].into())].into(),
+                    invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
@@ -815,8 +815,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: Default::default(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
                     missing_attributes: ["itemprop".into()].into(),
                     missing_children: Default::default(),
                 })
@@ -867,8 +867,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("title".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("title".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
                 })
