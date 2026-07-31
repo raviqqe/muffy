@@ -121,7 +121,7 @@ pub fn validate_rules(
             attribute_errors
                 .entry((*name).into())
                 .or_default()
-                .insert(AttributeError::Conflicting);
+                .insert(AttributeError::Conflict);
         }
 
         let mut state = 0;
@@ -348,7 +348,8 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                invalid_attributes: [("unknown".into(), [AttributeError::NotAllowed].into())].into(),
+                invalid_attributes: [("unknown".into(), [AttributeError::NotAllowed].into())]
+                    .into(),
                 invalid_children: Default::default(),
                 missing_attributes: Default::default(),
                 missing_children: Default::default(),
@@ -366,7 +367,7 @@ mod tests {
                 &RULES,
             ),
             Err(MarkupError::InvalidElement {
-                invalid_attributes: [("bar".into(), [AttributeError::Conflicting].into())].into(),
+                invalid_attributes: [("bar".into(), [AttributeError::Conflict].into())].into(),
                 invalid_children: Default::default(),
                 missing_attributes: Default::default(),
                 missing_children: Default::default(),

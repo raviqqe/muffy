@@ -140,7 +140,7 @@ mod tests {
                         muffy_validation::MarkupError::InvalidElement {
                             invalid_attributes: [(
                                 "bar".into(),
-                                [muffy_validation::AttributeError::Conflicting].into(),
+                                [muffy_validation::AttributeError::Conflict].into(),
                             )]
                             .into(),
                             invalid_children: [(

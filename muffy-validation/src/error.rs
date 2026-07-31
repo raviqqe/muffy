@@ -8,13 +8,13 @@ pub enum MarkupError {
     UnknownTag(String),
     /// Invalid element.
     InvalidElement {
-        /// Invalid invalid_attributes.
+        /// Invalid attributes.
         invalid_attributes: BTreeMap<String, BTreeSet<AttributeError>>,
-        /// Invalid invalid_children.
+        /// Invalid children.
         invalid_children: BTreeMap<String, BTreeSet<ChildError>>,
-        /// Missing required invalid_attributes.
+        /// Missing required attributes.
         missing_attributes: BTreeSet<String>,
-        /// Missing required invalid_children.
+        /// Missing required children.
         missing_children: BTreeSet<String>,
     },
 }
@@ -32,8 +32,8 @@ impl Display for MarkupError {
                 formatter,
                 "{}",
                 [
-                    format_errors("invalid attributes", attributes),
-                    format_errors("invalid children", children),
+                    format_errors("invalid attributes", invalid_attributes),
+                    format_errors("invalid children", invalid_children),
                     format_names("missing attributes", missing_attributes),
                     format_names("missing children", missing_children),
                 ]
@@ -82,7 +82,7 @@ fn format_names(label: &str, names: &BTreeSet<String>) -> Option<String> {
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
     /// Conflicting with other attributes.
-    Conflicting,
+    Conflict,
     /// Not allowed.
     NotAllowed,
 }
@@ -90,7 +90,7 @@ pub enum AttributeError {
 impl Display for AttributeError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Conflicting => write!(formatter, "conflicting"),
+            Self::Conflict => write!(formatter, "conflicting"),
             Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
@@ -132,7 +132,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
@@ -148,7 +149,7 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    invalid_attributes: [("foo".into(), [AttributeError::Conflicting].into())].into(),
+                    invalid_attributes: [("foo".into(), [AttributeError::Conflict].into())].into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
@@ -228,7 +229,8 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
                     invalid_children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),

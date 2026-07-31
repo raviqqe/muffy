@@ -382,7 +382,7 @@ impl WebValidator {
                     missing_attributes,
                     missing_children,
                 } => {
-                    for (name, errors) in attributes {
+                    for (name, errors) in invalid_attributes {
                         items.push(spawn({
                             let error = muffy_validation::MarkupError::InvalidElement {
                                 invalid_attributes: [(name.clone(), errors.clone())].into(),
@@ -394,7 +394,7 @@ impl WebValidator {
                         }));
                     }
 
-                    for (name, errors) in children {
+                    for (name, errors) in invalid_children {
                         items.push(spawn({
                             let error = muffy_validation::MarkupError::InvalidElement {
                                 invalid_attributes: Default::default(),
@@ -448,7 +448,10 @@ impl WebValidator {
                                 ..
                             }) = &validation_result
                             {
-                                attributes.keys().map(AsRef::as_ref).collect::<Vec<_>>()
+                                invalid_attributes
+                                    .keys()
+                                    .map(AsRef::as_ref)
+                                    .collect::<Vec<_>>()
                             } else {
                                 Default::default()
                             },

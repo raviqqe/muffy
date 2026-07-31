@@ -78,7 +78,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
@@ -160,7 +161,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[Regex::new("^span$").unwrap()]),
                 Err(MarkupError::InvalidElement {
-                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
@@ -776,7 +778,8 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    invalid_attributes: [("charset".into(), [AttributeError::Conflicting].into())].into(),
+                    invalid_attributes: [("charset".into(), [AttributeError::Conflict].into())]
+                        .into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),
