@@ -5,14 +5,12 @@ use regex::Regex;
 
 const TEXT_TOKEN: &str = "#text";
 
-const EMPTY_TERM: AttributeTerm = AttributeTerm {
+const EMPTY_SET: AttributeSet = AttributeSet {
     required: &[],
     optional: &[],
 };
 
-/// One alternative of attribute names an element accepts: all required names
-/// must be present, and no name outside the required and optional ones may be.
-pub struct AttributeTerm {
+pub struct AttributeSet {
     pub required: &'static [&'static str],
     pub optional: &'static [&'static str],
 }
@@ -34,7 +32,7 @@ pub enum Content {
 
 /// One variant definition of an element in a schema.
 pub struct Variant {
-    pub attributes: &'static [AttributeTerm],
+    pub attributes: &'static [AttributeSet],
     pub content: &'static Content,
 }
 
@@ -354,14 +352,14 @@ pub fn validate_rule(
         .iter()
         .min_by_key(|variant| score_variant(variant, &attributes, &exempt_attributes, &children))
     {
-        let term = variant
+        let set = variant
             .attributes
             .iter()
-            .min_by_key(|term| term_score(term, &attributes, &exempt_attributes))
-            .unwrap_or(&EMPTY_TERM);
+            .min_by_key(|set| set_score(set, &attributes, &exempt_attributes))
+            .unwrap_or(&EMPTY_SET);
 
         for name in attributes.iter().filter(|name| {
-            term.required.binary_search(name).is_err() && term.optional.binary_search(name).is_err()
+            set.required.binary_search(name).is_err() && set.optional.binary_search(name).is_err()
         }) {
             attribute_errors
                 .entry((*name).into())
@@ -379,7 +377,7 @@ pub fn validate_rule(
         }
 
         (
-            term.required
+            set.required
                 .iter()
                 .filter(|name| {
                     attributes.binary_search(name).is_err()
@@ -437,7 +435,7 @@ fn score_variant(
     let (attribute_error_count, requirement_count, conflict_count) = variant
         .attributes
         .iter()
-        .map(|term| term_score(term, attributes, exempt_attributes))
+        .map(|set| set_score(set, attributes, exempt_attributes))
         .min()
         .unwrap_or_default();
 
@@ -452,20 +450,20 @@ fn score_variant(
     )
 }
 
-// Terms are ordered by the error count first and the requirement count second
+// Sets are ordered by the error count first and the requirement count second
 // so that the simplest of equally scored alternatives is diagnosed.
-fn term_score(
-    term: &AttributeTerm,
+fn set_score(
+    set: &AttributeSet,
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
 ) -> (usize, usize, usize) {
     let conflict_count = attributes
         .iter()
         .filter(|name| {
-            term.required.binary_search(name).is_err() && term.optional.binary_search(name).is_err()
+            set.required.binary_search(name).is_err() && set.optional.binary_search(name).is_err()
         })
         .count();
-    let missing_count = term
+    let missing_count = set
         .required
         .iter()
         .filter(|name| {
@@ -476,7 +474,7 @@ fn term_score(
 
     (
         conflict_count + missing_count,
-        term.required.len(),
+        set.required.len(),
         conflict_count,
     )
 }
@@ -496,7 +494,7 @@ mod tests {
         children: &["one", "two"],
         variants: &[
             Variant {
-                attributes: &[AttributeTerm {
+                attributes: &[AttributeSet {
                     required: &["foo"],
                     optional: &["bar"],
                 }],
@@ -506,7 +504,7 @@ mod tests {
                 ]),
             },
             Variant {
-                attributes: &[AttributeTerm {
+                attributes: &[AttributeSet {
                     required: &["baz"],
                     optional: &[],
                 }],

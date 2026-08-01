@@ -1,12 +1,12 @@
 use alloc::collections::BTreeSet;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
-pub struct AttributeTerm {
+pub struct AttributeSet {
     pub required: BTreeSet<String>,
     pub optional: BTreeSet<String>,
 }
 
-impl AttributeTerm {
+impl AttributeSet {
     pub fn merge(&self, other: &Self) -> Self {
         Self {
             required: self.required.union(&other.required).cloned().collect(),
@@ -21,17 +21,17 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn merge_terms() {
+    fn merge_sets() {
         assert_eq!(
-            AttributeTerm {
+            AttributeSet {
                 required: ["foo".into()].into(),
                 optional: ["bar".into()].into(),
             }
-            .merge(&AttributeTerm {
+            .merge(&AttributeSet {
                 required: ["baz".into()].into(),
                 optional: ["bar".into(), "qux".into()].into(),
             }),
-            AttributeTerm {
+            AttributeSet {
                 required: ["baz".into(), "foo".into()].into(),
                 optional: ["bar".into(), "qux".into()].into(),
             }

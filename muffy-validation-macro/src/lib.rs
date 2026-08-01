@@ -8,7 +8,7 @@ mod error;
 mod pattern;
 
 use self::{
-    attribute::{AttributeTerm, compile_attributes},
+    attribute::{AttributeSet, compile_attributes},
     content::{children, compile_content},
     error::MacroError,
     pattern::{CompiledPattern, class_names, compile_pattern, split_pattern},
@@ -50,7 +50,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     let mut cache = Default::default();
     // element -> (attributes, children)
-    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeTerm>, CompiledPattern)>>::new();
+    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, CompiledPattern)>>::new();
 
     for definition in definitions.values() {
         for (name_class, inner) in collect_elements(definition) {
@@ -63,15 +63,15 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             let compiled = compile_pattern(inner, &definitions, &mut cache)?;
 
             for (attribute_pattern, content_pattern) in split_pattern(&compiled)? {
-                let terms = compile_attributes(&attribute_pattern)?;
+                let sets = compile_attributes(&attribute_pattern)?;
 
-                if terms.is_empty() || content_pattern == CompiledPattern::NotAllowed {
+                if sets.is_empty() || content_pattern == CompiledPattern::NotAllowed {
                     continue;
                 }
 
                 for name in &names {
                     let variants = element_rules.entry(name.clone()).or_default();
-                    let variant = (terms.clone(), content_pattern.clone());
+                    let variant = (sets.clone(), content_pattern.clone());
 
                     if !variants.contains(&variant) {
                         variants.push(variant);
@@ -81,15 +81,15 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         }
     }
 
-    let mut term_indexes = BTreeMap::<Vec<AttributeTerm>, usize>::new();
+    let mut set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
     let mut content_indexes = BTreeMap::<CompiledPattern, usize>::new();
     let mut element_matches = vec![];
 
     for (element, variants) in &element_rules {
         let attributes = variants
             .iter()
-            .flat_map(|(terms, _)| terms)
-            .flat_map(|term| term.required.iter().chain(&term.optional))
+            .flat_map(|(sets, _)| sets)
+            .flat_map(|set| set.required.iter().chain(&set.optional))
             .collect::<BTreeSet<_>>();
         let children = variants
             .iter()
@@ -98,11 +98,11 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         let variants = variants
             .iter()
-            .map(|(terms, content)| {
-                let index = term_indexes.len();
-                let terms = format_ident!(
-                    "ATTRIBUTE_TERMS_{}",
-                    *term_indexes.entry(terms.clone()).or_insert(index)
+            .map(|(sets, content)| {
+                let index = set_indexes.len();
+                let sets = format_ident!(
+                    "ATTRIBUTE_SETS_{}",
+                    *set_indexes.entry(sets.clone()).or_insert(index)
                 );
                 let index = content_indexes.len();
                 let content = format_ident!(
@@ -110,7 +110,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     *content_indexes.entry(content.clone()).or_insert(index)
                 );
 
-                quote!(Variant { attributes: #terms, content: &#content })
+                quote!(Variant { attributes: #sets, content: &#content })
             })
             .collect::<Vec<_>>();
         let attributes = attributes.iter().map(|name| quote!(#name));
@@ -129,19 +129,19 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         });
     }
 
-    let term_statics = sort_by_index(term_indexes).map(|(terms, index)| {
-        let identifier = format_ident!("ATTRIBUTE_TERMS_{index}");
-        let terms = terms.iter().map(|term| {
-            let required = term.required.iter().map(|name| quote!(#name));
-            let optional = term.optional.iter().map(|name| quote!(#name));
+    let set_statics = sort_by_index(set_indexes).map(|(sets, index)| {
+        let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
+        let sets = sets.iter().map(|set| {
+            let required = set.required.iter().map(|name| quote!(#name));
+            let optional = set.optional.iter().map(|name| quote!(#name));
 
-            quote!(AttributeTerm {
+            quote!(AttributeSet {
                 required: &[#(#required),*],
                 optional: &[#(#optional),*],
             })
         });
 
-        quote!(static #identifier: &[AttributeTerm] = &[#(#terms),*];)
+        quote!(static #identifier: &[AttributeSet] = &[#(#sets),*];)
     });
     let content_statics = sort_by_index(content_indexes)
         .map(|(content, index)| {
@@ -159,7 +159,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
-            #(#term_statics)*
+            #(#set_statics)*
             #(#content_statics)*
 
             match element.name() {
