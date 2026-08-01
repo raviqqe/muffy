@@ -421,6 +421,7 @@ pub fn validate_rule(
     }
 }
 
+// (error count, conflict count, requirement count)
 fn score_variant(
     variant: &Variant,
     attributes: &[&'static str],
@@ -442,6 +443,7 @@ fn score_variant(
     )
 }
 
+// (error count, requirement count, conflict count)
 fn score_attribute_set(
     set: &AttributeSet,
     attributes: &[&'static str],
