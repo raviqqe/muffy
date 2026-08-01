@@ -63,8 +63,10 @@ impl State {
             }
         }
 
-        if alternatives.len() == 1 {
-            alternatives.pop_first().expect("alternative")
+        if alternatives.len() == 1
+            && let Some(alternative) = alternatives.pop_first()
+        {
+            alternative
         } else if alternatives.is_empty() {
             Self::NotAllowed
         } else {
