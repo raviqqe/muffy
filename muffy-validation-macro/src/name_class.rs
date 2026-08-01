@@ -6,10 +6,7 @@ pub fn class_names(name_class: &NameClass, prefix: bool) -> BTreeSet<String> {
         NameClass::Name(name) => {
             let local = identifier_string(&name.local);
 
-            // HTML parsers match a prefixed schema name (e.g. `xml:lang`)
-            // against its bare local name while the literal prefixed spelling
-            // is also conforming, so an attribute matches both names.
-            if let (true, Some(prefix)) = (prefix, &name.prefix) {
+            if prefix && let Some(prefix) = &name.prefix {
                 [format!("{}:{local}", identifier_string(prefix)), local].into()
             } else {
                 [local].into()
