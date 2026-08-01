@@ -1,20 +1,11 @@
+mod compile;
 mod resolve;
 mod resolved_pattern;
 mod split;
 
-pub use self::resolved_pattern::ResolvedPattern;
-use self::{resolve::resolve_pattern, split::split_pattern};
-use crate::error::MacroError;
-use alloc::collections::{BTreeMap, BTreeSet};
-use muffy_rnc::{Identifier, NameClass, Pattern};
-
-pub fn compile_pattern(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-    cache: &mut BTreeMap<Identifier, ResolvedPattern>,
-) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
-    split_pattern(&resolve_pattern(pattern, definitions, cache)?)
-}
+pub use self::{compile::Compiler, resolved_pattern::ResolvedPattern};
+use alloc::collections::BTreeSet;
+use muffy_rnc::{Identifier, NameClass};
 
 pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {

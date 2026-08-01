@@ -11,7 +11,7 @@ use self::{
     attribute::{AttributeSet, compile_attributes},
     content::{children, compile_content},
     error::MacroError,
-    pattern::{ResolvedPattern, class_names, compile_pattern},
+    pattern::{Compiler, ResolvedPattern, class_names},
 };
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
@@ -48,21 +48,19 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         )?;
     }
 
-    let mut cache = Default::default();
+    let mut compiler = Compiler::new(&definitions);
     // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, ResolvedPattern)>>::new();
 
     for definition in definitions.values() {
-        for (name_class, inner) in collect_elements(definition) {
+        for (name_class, pattern) in collect_elements(definition) {
             let names = class_names(name_class);
 
             if names.is_empty() {
                 continue;
             }
 
-            for (attribute_pattern, content_pattern) in
-                compile_pattern(inner, &definitions, &mut cache)?
-            {
+            for (attribute_pattern, content_pattern) in compiler.compile(pattern)? {
                 let sets = compile_attributes(&attribute_pattern)?;
 
                 if sets.is_empty() || content_pattern == ResolvedPattern::NotAllowed {
