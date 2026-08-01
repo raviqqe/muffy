@@ -103,18 +103,20 @@ impl State {
         for state in states {
             match state {
                 Self::Empty => {}
-                Self::NotAllowed => return Self::NotAllowed,
                 Self::Interleave(states) => operands.extend(states),
+                Self::NotAllowed => return Self::NotAllowed,
                 state => operands.push(state),
             }
         }
 
         operands.sort();
 
-        if operands.len() == 1 {
-            operands.pop().expect("operand")
-        } else if operands.is_empty() {
+        if operands.is_empty() {
             Self::Empty
+        } else if operands.len() == 1
+            && let Some(state) = operands.pop()
+        {
+            state
         } else {
             Self::Interleave(operands)
         }
