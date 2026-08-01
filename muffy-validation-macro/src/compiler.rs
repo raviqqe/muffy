@@ -5,15 +5,15 @@ use crate::{
     pattern::{ResolvedPattern, normalize_pattern},
 };
 use alloc::collections::BTreeMap;
-use muffy_rnc::{Identifier, Pattern};
+use muffy_rnc::{Identifier, Pattern as RncPattern};
 
 pub struct Compiler<'a> {
-    definitions: &'a BTreeMap<Identifier, Pattern>,
+    definitions: &'a BTreeMap<Identifier, RncPattern>,
     cache: BTreeMap<Identifier, ResolvedPattern>,
 }
 
 impl<'a> Compiler<'a> {
-    pub fn new(definitions: &'a BTreeMap<Identifier, Pattern>) -> Self {
+    pub fn new(definitions: &'a BTreeMap<Identifier, RncPattern>) -> Self {
         Self {
             definitions,
             cache: Default::default(),
@@ -22,7 +22,7 @@ impl<'a> Compiler<'a> {
 
     pub fn compile(
         &mut self,
-        pattern: &Pattern,
+        pattern: &RncPattern,
     ) -> Result<Vec<(Vec<AttributeSet>, ResolvedPattern)>, MacroError> {
         normalize_pattern(&self.resolve(pattern)?)?
             .into_iter()
@@ -41,9 +41,9 @@ impl<'a> Compiler<'a> {
             .collect()
     }
 
-    fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
+    fn resolve(&mut self, pattern: &RncPattern) -> Result<ResolvedPattern, MacroError> {
         Ok(match pattern {
-            Pattern::Attribute { name_class, .. } => {
+            RncPattern::Attribute { name_class, .. } => {
                 let names = class_names(name_class, true);
 
                 if names.is_empty() {
@@ -52,13 +52,13 @@ impl<'a> Compiler<'a> {
                     ResolvedPattern::Attribute(names)
                 }
             }
-            Pattern::Choice(patterns) => ResolvedPattern::choice(
+            RncPattern::Choice(patterns) => ResolvedPattern::choice(
                 patterns
                     .iter()
                     .map(|pattern| self.resolve(pattern))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            Pattern::Element { name_class, .. } => {
+            RncPattern::Element { name_class, .. } => {
                 let names = class_names(name_class, false);
 
                 if names.is_empty() {
@@ -67,32 +67,32 @@ impl<'a> Compiler<'a> {
                     ResolvedPattern::Element(names)
                 }
             }
-            Pattern::Empty => ResolvedPattern::Empty,
-            Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-            Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-            Pattern::Group(patterns) => ResolvedPattern::group(
+            RncPattern::Empty => ResolvedPattern::Empty,
+            RncPattern::External(_) => return Err(MacroError::RncPattern("external")),
+            RncPattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+            RncPattern::Group(patterns) => ResolvedPattern::group(
                 patterns
                     .iter()
                     .map(|pattern| self.resolve(pattern))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            Pattern::Interleave(patterns) => ResolvedPattern::interleave(
+            RncPattern::Interleave(patterns) => ResolvedPattern::interleave(
                 patterns
                     .iter()
                     .map(|pattern| self.resolve(pattern))
                     .collect::<Result<Vec<_>, _>>()?,
             ),
-            Pattern::Many0(pattern) => ResolvedPattern::many0(self.resolve(pattern)?),
-            Pattern::Many1(pattern) => ResolvedPattern::many1(self.resolve(pattern)?),
-            Pattern::NotAllowed => ResolvedPattern::NotAllowed,
-            Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
-            Pattern::Name(name) => {
-                if let Some(resolved) = self.cache.get(&name.local) {
-                    resolved.clone()
+            RncPattern::Many0(pattern) => ResolvedPattern::many0(self.resolve(pattern)?),
+            RncPattern::Many1(pattern) => ResolvedPattern::many1(self.resolve(pattern)?),
+            RncPattern::NotAllowed => ResolvedPattern::NotAllowed,
+            RncPattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
+            RncPattern::Name(name) => {
+                if let Some(pattern) = self.cache.get(&name.local) {
+                    pattern.clone()
                 } else if let Some(definition) = self.definitions.get(&name.local) {
-                    let resolved = self.resolve(definition)?;
-                    self.cache.insert(name.local.clone(), resolved.clone());
-                    resolved
+                    let pattern = self.resolve(definition)?;
+                    self.cache.insert(name.local.clone(), pattern.clone());
+                    pattern
                 } else {
                     return Err(MacroError::UndefinedReference(identifier_string(
                         &name.local,
@@ -100,9 +100,10 @@ impl<'a> Compiler<'a> {
                 }
             }
             // TODO Validate texts and attribute values against data and value patterns.
-            Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
-                ResolvedPattern::Text
-            }
+            RncPattern::Text
+            | RncPattern::Data { .. }
+            | RncPattern::List(_)
+            | RncPattern::Value { .. } => ResolvedPattern::Text,
         })
     }
 }
