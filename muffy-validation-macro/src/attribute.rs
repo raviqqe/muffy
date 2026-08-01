@@ -1,4 +1,4 @@
-mod compile;
+mod dnf;
 mod set;
 
-pub use self::{compile::compile_attributes, set::AttributeSet};
+pub use self::{dnf::normalize_attributes, set::AttributeSet};

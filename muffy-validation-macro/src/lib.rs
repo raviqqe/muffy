@@ -10,7 +10,7 @@ mod name;
 mod pattern;
 
 use self::{
-    attribute::{AttributeSet, compile_attributes},
+    attribute::{AttributeSet, normalize_attributes},
     compiler::Compiler,
     content::{children, compile_content},
     error::MacroError,
@@ -64,7 +64,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             }
 
             for (attribute_pattern, content_pattern) in compiler.compile(pattern)? {
-                let sets = compile_attributes(&attribute_pattern)?;
+                let sets = normalize_attributes(&attribute_pattern)?;
 
                 if sets.is_empty() || content_pattern == ResolvedPattern::NotAllowed {
                     continue;
