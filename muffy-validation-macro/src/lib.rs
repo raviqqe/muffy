@@ -49,7 +49,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut cache = Default::default();
-    // element -> alternatives of attribute terms and a content pattern
+    // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeTerm>, CompiledPattern)>>::new();
 
     for definition in definitions.values() {
