@@ -1,65 +1,65 @@
-use super::{CompiledPattern, class_names, identifier_string};
+use super::{ResolvedPattern, class_names, identifier_string};
 use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
 
-pub fn compile_pattern(
+pub fn resolve_pattern(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
-    cache: &mut BTreeMap<Identifier, CompiledPattern>,
-) -> Result<CompiledPattern, MacroError> {
+    cache: &mut BTreeMap<Identifier, ResolvedPattern>,
+) -> Result<ResolvedPattern, MacroError> {
     Ok(match pattern {
         Pattern::Attribute { name_class, .. } => {
             let names = attribute_class_names(name_class);
 
             if names.is_empty() {
-                CompiledPattern::NotAllowed
+                ResolvedPattern::NotAllowed
             } else {
-                CompiledPattern::Attribute(names)
+                ResolvedPattern::Attribute(names)
             }
         }
         Pattern::Element { name_class, .. } => {
             let names = class_names(name_class);
 
             if names.is_empty() {
-                CompiledPattern::NotAllowed
+                ResolvedPattern::NotAllowed
             } else {
-                CompiledPattern::Element(names)
+                ResolvedPattern::Element(names)
             }
         }
-        Pattern::Choice(patterns) => CompiledPattern::choice(
+        Pattern::Choice(patterns) => ResolvedPattern::choice(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern(pattern, definitions, cache))
+                .map(|pattern| resolve_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
-        Pattern::Group(patterns) => CompiledPattern::group(
+        Pattern::Group(patterns) => ResolvedPattern::group(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern(pattern, definitions, cache))
+                .map(|pattern| resolve_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
-        Pattern::Interleave(patterns) => CompiledPattern::interleave(
+        Pattern::Interleave(patterns) => ResolvedPattern::interleave(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern(pattern, definitions, cache))
+                .map(|pattern| resolve_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
         Pattern::Many0(pattern) => {
-            CompiledPattern::many0(compile_pattern(pattern, definitions, cache)?)
+            ResolvedPattern::many0(resolve_pattern(pattern, definitions, cache)?)
         }
         Pattern::Many1(pattern) => {
-            CompiledPattern::many1(compile_pattern(pattern, definitions, cache)?)
+            ResolvedPattern::many1(resolve_pattern(pattern, definitions, cache)?)
         }
         Pattern::Optional(pattern) => {
-            CompiledPattern::optional(compile_pattern(pattern, definitions, cache)?)
+            ResolvedPattern::optional(resolve_pattern(pattern, definitions, cache)?)
         }
-        Pattern::Empty => CompiledPattern::Empty,
-        Pattern::NotAllowed => CompiledPattern::NotAllowed,
+        Pattern::Empty => ResolvedPattern::Empty,
+        Pattern::NotAllowed => ResolvedPattern::NotAllowed,
         // TODO Validate texts and attribute values against data and value
         // patterns.
         Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
-            CompiledPattern::Text
+            ResolvedPattern::Text
         }
         Pattern::External(_) => return Err(MacroError::RncPattern("external")),
         Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
@@ -67,7 +67,7 @@ pub fn compile_pattern(
             if let Some(compiled) = cache.get(&name.local) {
                 compiled.clone()
             } else if let Some(definition) = definitions.get(&name.local) {
-                let compiled = compile_pattern(definition, definitions, cache)?;
+                let compiled = resolve_pattern(definition, definitions, cache)?;
                 cache.insert(name.local.clone(), compiled.clone());
                 compiled
             } else {
@@ -106,11 +106,11 @@ mod tests {
     use pretty_assertions::assert_eq;
     use std::path::Path;
 
-    fn attribute(name: &str) -> CompiledPattern {
-        CompiledPattern::Attribute([name.into()].into())
+    fn attribute(name: &str) -> ResolvedPattern {
+        ResolvedPattern::Attribute([name.into()].into())
     }
 
-    fn compile(source: &str) -> Result<CompiledPattern, MacroError> {
+    fn resolve(source: &str) -> Result<ResolvedPattern, MacroError> {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
@@ -118,7 +118,7 @@ mod tests {
 
         crate::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
 
-        compile_pattern(
+        resolve_pattern(
             &definitions[&Identifier {
                 component: "root".into(),
                 sub_components: vec![],
@@ -129,25 +129,25 @@ mod tests {
     }
 
     #[test]
-    fn compile_attribute() {
+    fn resolve_attribute() {
         assert_eq!(
-            compile("root = attribute foo { text }").unwrap(),
+            resolve("root = attribute foo { text }").unwrap(),
             attribute("foo")
         );
     }
 
     #[test]
-    fn compile_prefixed_attribute_names() {
+    fn resolve_prefixed_attribute_names() {
         assert_eq!(
-            compile("root = attribute xml:lang { text }").unwrap(),
-            CompiledPattern::Attribute(["lang".into(), "xml:lang".into()].into())
+            resolve("root = attribute xml:lang { text }").unwrap(),
+            ResolvedPattern::Attribute(["lang".into(), "xml:lang".into()].into())
         );
     }
 
     #[test]
     fn resolve_reference() {
         assert_eq!(
-            compile("root = foo\nfoo = attribute bar { text }").unwrap(),
+            resolve("root = foo\nfoo = attribute bar { text }").unwrap(),
             attribute("bar")
         );
     }
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn evaluate_empty_flag() {
         assert_eq!(
-            compile("root = attribute foo { text } & gate\ngate = empty").unwrap(),
+            resolve("root = attribute foo { text } & gate\ngate = empty").unwrap(),
             attribute("foo")
         );
     }
@@ -163,31 +163,31 @@ mod tests {
     #[test]
     fn evaluate_not_allowed_flag() {
         assert_eq!(
-            compile("root = attribute foo { text } & gate\ngate = notAllowed").unwrap(),
-            CompiledPattern::NotAllowed
+            resolve("root = attribute foo { text } & gate\ngate = notAllowed").unwrap(),
+            ResolvedPattern::NotAllowed
         );
     }
 
     #[test]
     fn drop_wildcard_attribute_repetition() {
         assert_eq!(
-            compile("root = attribute * { text }*").unwrap(),
-            CompiledPattern::Empty
+            resolve("root = attribute * { text }*").unwrap(),
+            ResolvedPattern::Empty
         );
     }
 
     #[test]
     fn combine_choice_of_element_names() {
         assert_eq!(
-            compile("root = element (foo | bar) { empty }").unwrap(),
-            CompiledPattern::Element(["bar".into(), "foo".into()].into())
+            resolve("root = element (foo | bar) { empty }").unwrap(),
+            ResolvedPattern::Element(["bar".into(), "foo".into()].into())
         );
     }
 
     #[test]
     fn fail_on_undefined_reference() {
         assert!(matches!(
-            compile("root = foo"),
+            resolve("root = foo"),
             Err(MacroError::UndefinedReference(_))
         ));
     }

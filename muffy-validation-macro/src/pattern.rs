@@ -1,13 +1,13 @@
-mod compile;
+mod resolve;
 
-pub use self::compile::compile_pattern;
+pub use self::resolve::resolve_pattern;
 use crate::error::MacroError;
 use alloc::collections::BTreeSet;
 use muffy_rnc::{Identifier, NameClass};
 
 // TODO Support attribute value schemas.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum CompiledPattern {
+pub enum ResolvedPattern {
     Attribute(BTreeSet<String>),
     Choice(Vec<Self>),
     Element(BTreeSet<String>),
@@ -21,7 +21,7 @@ pub enum CompiledPattern {
     Text,
 }
 
-impl CompiledPattern {
+impl ResolvedPattern {
     pub fn choice(patterns: impl IntoIterator<Item = Self>) -> Self {
         let mut alternatives = BTreeSet::new();
         let mut nullable = false;
@@ -137,21 +137,21 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     }
 }
 
-fn attribute_names(pattern: &CompiledPattern) -> BTreeSet<String> {
+fn attribute_names(pattern: &ResolvedPattern) -> BTreeSet<String> {
     match pattern {
-        CompiledPattern::Attribute(names) => names.clone(),
-        CompiledPattern::Choice(patterns)
-        | CompiledPattern::Group(patterns)
-        | CompiledPattern::Interleave(patterns) => {
+        ResolvedPattern::Attribute(names) => names.clone(),
+        ResolvedPattern::Choice(patterns)
+        | ResolvedPattern::Group(patterns)
+        | ResolvedPattern::Interleave(patterns) => {
             patterns.iter().flat_map(attribute_names).collect()
         }
-        CompiledPattern::Many0(pattern)
-        | CompiledPattern::Many1(pattern)
-        | CompiledPattern::Optional(pattern) => attribute_names(pattern),
-        CompiledPattern::Element(_)
-        | CompiledPattern::Empty
-        | CompiledPattern::NotAllowed
-        | CompiledPattern::Text => Default::default(),
+        ResolvedPattern::Many0(pattern)
+        | ResolvedPattern::Many1(pattern)
+        | ResolvedPattern::Optional(pattern) => attribute_names(pattern),
+        ResolvedPattern::Element(_)
+        | ResolvedPattern::Empty
+        | ResolvedPattern::NotAllowed
+        | ResolvedPattern::Text => Default::default(),
     }
 }
 
@@ -165,18 +165,18 @@ fn identifier_string(identifier: &Identifier) -> String {
 }
 
 pub fn split_pattern(
-    pattern: &CompiledPattern,
-) -> Result<Vec<(CompiledPattern, CompiledPattern)>, MacroError> {
+    pattern: &ResolvedPattern,
+) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
     Ok(match pattern {
-        CompiledPattern::Attribute(_) => vec![(pattern.clone(), CompiledPattern::Empty)],
-        CompiledPattern::Element(_) | CompiledPattern::Text => {
-            vec![(CompiledPattern::Empty, pattern.clone())]
+        ResolvedPattern::Attribute(_) => vec![(pattern.clone(), ResolvedPattern::Empty)],
+        ResolvedPattern::Element(_) | ResolvedPattern::Text => {
+            vec![(ResolvedPattern::Empty, pattern.clone())]
         }
-        CompiledPattern::Empty => vec![(CompiledPattern::Empty, CompiledPattern::Empty)],
-        CompiledPattern::NotAllowed => vec![],
-        CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
-            let interleaved = matches!(pattern, CompiledPattern::Interleave(_));
-            let mut variants = vec![(CompiledPattern::Empty, CompiledPattern::Empty)];
+        ResolvedPattern::Empty => vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)],
+        ResolvedPattern::NotAllowed => vec![],
+        ResolvedPattern::Group(patterns) | ResolvedPattern::Interleave(patterns) => {
+            let interleaved = matches!(pattern, ResolvedPattern::Interleave(_));
+            let mut variants = vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)];
 
             for operand in patterns {
                 let operand_variants = split_pattern(operand)?;
@@ -187,17 +187,17 @@ pub fn split_pattern(
                             .iter()
                             .map(|(operand_attribute, operand_content)| {
                                 (
-                                    CompiledPattern::interleave([
+                                    ResolvedPattern::interleave([
                                         attribute.clone(),
                                         operand_attribute.clone(),
                                     ]),
                                     if interleaved {
-                                        CompiledPattern::interleave([
+                                        ResolvedPattern::interleave([
                                             content.clone(),
                                             operand_content.clone(),
                                         ])
                                     } else {
-                                        CompiledPattern::group([
+                                        ResolvedPattern::group([
                                             content.clone(),
                                             operand_content.clone(),
                                         ])
@@ -211,7 +211,7 @@ pub fn split_pattern(
 
             variants
         }
-        CompiledPattern::Choice(patterns) => {
+        ResolvedPattern::Choice(patterns) => {
             let variants = patterns
                 .iter()
                 .map(split_pattern)
@@ -220,25 +220,25 @@ pub fn split_pattern(
             if variants
                 .iter()
                 .flatten()
-                .all(|(_, content)| *content == CompiledPattern::Empty)
+                .all(|(_, content)| *content == ResolvedPattern::Empty)
             {
                 vec![(
-                    CompiledPattern::choice(
+                    ResolvedPattern::choice(
                         variants
                             .into_iter()
                             .flatten()
                             .map(|(attribute, _)| attribute),
                     ),
-                    CompiledPattern::Empty,
+                    ResolvedPattern::Empty,
                 )]
             } else if variants
                 .iter()
                 .flatten()
-                .all(|(attribute, _)| *attribute == CompiledPattern::Empty)
+                .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
             {
                 vec![(
-                    CompiledPattern::Empty,
-                    CompiledPattern::choice(
+                    ResolvedPattern::Empty,
+                    ResolvedPattern::choice(
                         variants.into_iter().flatten().map(|(_, content)| content),
                     ),
                 )]
@@ -246,50 +246,50 @@ pub fn split_pattern(
                 variants.into_iter().flatten().collect()
             }
         }
-        CompiledPattern::Optional(pattern) => {
+        ResolvedPattern::Optional(pattern) => {
             let variants = split_pattern(pattern)?;
 
             match variants.as_slice() {
-                [(attribute, content)] if *content == CompiledPattern::Empty => {
+                [(attribute, content)] if *content == ResolvedPattern::Empty => {
                     vec![(
-                        CompiledPattern::optional(attribute.clone()),
-                        CompiledPattern::Empty,
+                        ResolvedPattern::optional(attribute.clone()),
+                        ResolvedPattern::Empty,
                     )]
                 }
-                [(attribute, content)] if *attribute == CompiledPattern::Empty => {
+                [(attribute, content)] if *attribute == ResolvedPattern::Empty => {
                     vec![(
-                        CompiledPattern::Empty,
-                        CompiledPattern::optional(content.clone()),
+                        ResolvedPattern::Empty,
+                        ResolvedPattern::optional(content.clone()),
                     )]
                 }
-                _ => [(CompiledPattern::Empty, CompiledPattern::Empty)]
+                _ => [(ResolvedPattern::Empty, ResolvedPattern::Empty)]
                     .into_iter()
                     .chain(variants)
                     .collect(),
             }
         }
-        CompiledPattern::Many0(operand) | CompiledPattern::Many1(operand) => {
-            let at_least_once = matches!(pattern, CompiledPattern::Many1(_));
+        ResolvedPattern::Many0(operand) | ResolvedPattern::Many1(operand) => {
+            let at_least_once = matches!(pattern, ResolvedPattern::Many1(_));
             let variants = split_pattern(operand)?;
 
             if variants
                 .iter()
-                .all(|(attribute, _)| *attribute == CompiledPattern::Empty)
+                .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
             {
                 let content =
-                    CompiledPattern::choice(variants.into_iter().map(|(_, content)| content));
+                    ResolvedPattern::choice(variants.into_iter().map(|(_, content)| content));
 
                 vec![(
-                    CompiledPattern::Empty,
+                    ResolvedPattern::Empty,
                     if at_least_once {
-                        CompiledPattern::many1(content)
+                        ResolvedPattern::many1(content)
                     } else {
-                        CompiledPattern::many0(content)
+                        ResolvedPattern::many0(content)
                     },
                 )]
             } else if variants
                 .iter()
-                .all(|(_, content)| *content == CompiledPattern::Empty)
+                .all(|(_, content)| *content == ResolvedPattern::Empty)
             {
                 // Iterations of a repetition match alternatives independently
                 // while attribute names never repeat on an element, so a
@@ -297,17 +297,17 @@ pub fn split_pattern(
                 //
                 // TODO Require at least one attribute for one-or-more repetitions.
                 vec![(
-                    CompiledPattern::interleave(
+                    ResolvedPattern::interleave(
                         variants
                             .iter()
                             .flat_map(|(attribute, _)| attribute_names(attribute))
                             .collect::<BTreeSet<_>>()
                             .into_iter()
                             .map(|name| {
-                                CompiledPattern::optional(CompiledPattern::Attribute([name].into()))
+                                ResolvedPattern::optional(ResolvedPattern::Attribute([name].into()))
                             }),
                     ),
-                    CompiledPattern::Empty,
+                    ResolvedPattern::Empty,
                 )]
             } else {
                 return Err(MacroError::RncPattern("repeated mixed pattern"));
@@ -320,12 +320,12 @@ pub fn split_pattern(
 mod tests {
     use super::*;
 
-    fn attribute(name: &str) -> CompiledPattern {
-        CompiledPattern::Attribute([name.into()].into())
+    fn attribute(name: &str) -> ResolvedPattern {
+        ResolvedPattern::Attribute([name.into()].into())
     }
 
-    fn element(name: &str) -> CompiledPattern {
-        CompiledPattern::Element([name.into()].into())
+    fn element(name: &str) -> ResolvedPattern {
+        ResolvedPattern::Element([name.into()].into())
     }
 
     mod split_pattern {
@@ -335,7 +335,7 @@ mod tests {
         #[test]
         fn split_attribute_and_element() {
             assert_eq!(
-                split_pattern(&CompiledPattern::interleave([
+                split_pattern(&ResolvedPattern::interleave([
                     attribute("foo"),
                     element("bar")
                 ]))
@@ -347,14 +347,14 @@ mod tests {
         #[test]
         fn keep_attribute_choice_in_one_alternative() {
             assert_eq!(
-                split_pattern(&CompiledPattern::choice([
+                split_pattern(&ResolvedPattern::choice([
                     attribute("foo"),
                     attribute("bar")
                 ]))
                 .unwrap(),
                 vec![(
-                    CompiledPattern::choice([attribute("foo"), attribute("bar")]),
-                    CompiledPattern::Empty
+                    ResolvedPattern::choice([attribute("foo"), attribute("bar")]),
+                    ResolvedPattern::Empty
                 )]
             );
         }
@@ -362,11 +362,11 @@ mod tests {
         #[test]
         fn lift_mixed_choice_into_alternatives() {
             assert_eq!(
-                split_pattern(&CompiledPattern::choice([attribute("foo"), element("bar")]))
+                split_pattern(&ResolvedPattern::choice([attribute("foo"), element("bar")]))
                     .unwrap(),
                 vec![
-                    (attribute("foo"), CompiledPattern::Empty),
-                    (CompiledPattern::Empty, element("bar")),
+                    (attribute("foo"), ResolvedPattern::Empty),
+                    (ResolvedPattern::Empty, element("bar")),
                 ]
             );
         }
@@ -374,10 +374,10 @@ mod tests {
         #[test]
         fn split_optional_attribute() {
             assert_eq!(
-                split_pattern(&CompiledPattern::optional(attribute("foo"))).unwrap(),
+                split_pattern(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
                 vec![(
-                    CompiledPattern::optional(attribute("foo")),
-                    CompiledPattern::Empty
+                    ResolvedPattern::optional(attribute("foo")),
+                    ResolvedPattern::Empty
                 )]
             );
         }
@@ -385,10 +385,10 @@ mod tests {
         #[test]
         fn split_element_repetition() {
             assert_eq!(
-                split_pattern(&CompiledPattern::many0(element("foo"))).unwrap(),
+                split_pattern(&ResolvedPattern::many0(element("foo"))).unwrap(),
                 vec![(
-                    CompiledPattern::Empty,
-                    CompiledPattern::many0(element("foo"))
+                    ResolvedPattern::Empty,
+                    ResolvedPattern::many0(element("foo"))
                 )]
             );
         }
@@ -396,24 +396,24 @@ mod tests {
         #[test]
         fn split_attribute_choice_repetition_into_optional_attributes() {
             assert_eq!(
-                split_pattern(&CompiledPattern::many1(CompiledPattern::choice([
+                split_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
                     attribute("foo"),
                     attribute("bar")
                 ])))
                 .unwrap(),
                 vec![(
-                    CompiledPattern::interleave([
-                        CompiledPattern::optional(attribute("bar")),
-                        CompiledPattern::optional(attribute("foo")),
+                    ResolvedPattern::interleave([
+                        ResolvedPattern::optional(attribute("bar")),
+                        ResolvedPattern::optional(attribute("foo")),
                     ]),
-                    CompiledPattern::Empty
+                    ResolvedPattern::Empty
                 )]
             );
         }
 
         #[test]
         fn split_not_allowed_into_no_alternative() {
-            assert_eq!(split_pattern(&CompiledPattern::NotAllowed).unwrap(), vec![]);
+            assert_eq!(split_pattern(&ResolvedPattern::NotAllowed).unwrap(), vec![]);
         }
     }
 }

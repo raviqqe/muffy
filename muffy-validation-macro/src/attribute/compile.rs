@@ -1,8 +1,8 @@
 use super::set::AttributeSet;
-use crate::{error::MacroError, pattern::CompiledPattern};
+use crate::{error::MacroError, pattern::ResolvedPattern};
 use alloc::collections::BTreeSet;
 
-pub fn compile_attributes(pattern: &CompiledPattern) -> Result<Vec<AttributeSet>, MacroError> {
+pub fn compile_attributes(pattern: &ResolvedPattern) -> Result<Vec<AttributeSet>, MacroError> {
     let mut sets = compile(pattern)?;
 
     sets.sort();
@@ -11,17 +11,17 @@ pub fn compile_attributes(pattern: &CompiledPattern) -> Result<Vec<AttributeSet>
     Ok(sets)
 }
 
-fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeSet>, MacroError> {
+fn compile(pattern: &ResolvedPattern) -> Result<Vec<AttributeSet>, MacroError> {
     Ok(match pattern {
-        CompiledPattern::Empty => vec![Default::default()],
-        CompiledPattern::NotAllowed => vec![],
-        CompiledPattern::Attribute(names) => name_choice(names),
-        CompiledPattern::Choice(patterns) => patterns
+        ResolvedPattern::Empty => vec![Default::default()],
+        ResolvedPattern::NotAllowed => vec![],
+        ResolvedPattern::Attribute(names) => name_choice(names),
+        ResolvedPattern::Choice(patterns) => patterns
             .iter()
             .map(compile)
             .collect::<Result<Vec<_>, _>>()?
             .concat(),
-        CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
+        ResolvedPattern::Group(patterns) | ResolvedPattern::Interleave(patterns) => {
             let mut sets = vec![AttributeSet::default()];
 
             for pattern in patterns {
@@ -35,11 +35,11 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeSet>, MacroError> {
 
             sets
         }
-        CompiledPattern::Optional(pattern) | CompiledPattern::Many0(pattern) => {
+        ResolvedPattern::Optional(pattern) | ResolvedPattern::Many0(pattern) => {
             optional(compile(pattern)?)
         }
-        CompiledPattern::Many1(pattern) => compile(pattern)?,
-        CompiledPattern::Element(_) | CompiledPattern::Text => {
+        ResolvedPattern::Many1(pattern) => compile(pattern)?,
+        ResolvedPattern::Element(_) | ResolvedPattern::Text => {
             return Err(MacroError::RncPattern("content in attribute pattern"));
         }
     })
@@ -86,8 +86,8 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    fn attribute(name: &str) -> CompiledPattern {
-        CompiledPattern::Attribute([name.into()].into())
+    fn attribute(name: &str) -> ResolvedPattern {
+        ResolvedPattern::Attribute([name.into()].into())
     }
 
     fn set(required: &[&str], optional: &[&str]) -> AttributeSet {
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn compile_empty() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::Empty).unwrap(),
+            compile_attributes(&ResolvedPattern::Empty).unwrap(),
             vec![AttributeSet::default()]
         );
     }
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn compile_not_allowed() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::NotAllowed).unwrap(),
+            compile_attributes(&ResolvedPattern::NotAllowed).unwrap(),
             vec![]
         );
     }
@@ -124,7 +124,7 @@ mod tests {
     #[test]
     fn compile_optional_attribute() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::optional(attribute("foo"))).unwrap(),
+            compile_attributes(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
             vec![set(&[], &["foo"])]
         );
     }
@@ -132,9 +132,9 @@ mod tests {
     #[test]
     fn compile_interleave_of_optional_attributes() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::interleave([
-                CompiledPattern::optional(attribute("foo")),
-                CompiledPattern::optional(attribute("bar")),
+            compile_attributes(&ResolvedPattern::interleave([
+                ResolvedPattern::optional(attribute("foo")),
+                ResolvedPattern::optional(attribute("bar")),
             ]))
             .unwrap(),
             vec![set(&[], &["bar", "foo"])]
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn compile_choice_of_attributes() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::choice([
+            compile_attributes(&ResolvedPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ]))
@@ -156,8 +156,8 @@ mod tests {
     #[test]
     fn compile_group_product() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::group([
-                CompiledPattern::choice([attribute("foo"), attribute("bar")]),
+            compile_attributes(&ResolvedPattern::group([
+                ResolvedPattern::choice([attribute("foo"), attribute("bar")]),
                 attribute("baz"),
             ]))
             .unwrap(),
@@ -168,13 +168,13 @@ mod tests {
     #[test]
     fn compile_exclusive_attribute_pair() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::choice([
-                CompiledPattern::group([
+            compile_attributes(&ResolvedPattern::choice([
+                ResolvedPattern::group([
                     attribute("foo"),
-                    CompiledPattern::optional(attribute("bar"))
+                    ResolvedPattern::optional(attribute("bar"))
                 ]),
-                CompiledPattern::group([
-                    CompiledPattern::optional(attribute("foo")),
+                ResolvedPattern::group([
+                    ResolvedPattern::optional(attribute("foo")),
                     attribute("bar")
                 ]),
             ]))
@@ -186,7 +186,7 @@ mod tests {
     #[test]
     fn compile_at_least_one_attribute() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::many1(attribute("foo"))).unwrap(),
+            compile_attributes(&ResolvedPattern::many1(attribute("foo"))).unwrap(),
             vec![set(&["foo"], &[])]
         );
     }
@@ -194,7 +194,7 @@ mod tests {
     #[test]
     fn compile_alternative_attribute_names() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::Attribute(
+            compile_attributes(&ResolvedPattern::Attribute(
                 ["foo".into(), "bar".into()].into()
             ))
             .unwrap(),
@@ -205,7 +205,7 @@ mod tests {
     #[test]
     fn compile_optional_alternative_attribute_names() {
         assert_eq!(
-            compile_attributes(&CompiledPattern::optional(CompiledPattern::Attribute(
+            compile_attributes(&ResolvedPattern::optional(ResolvedPattern::Attribute(
                 ["foo".into(), "bar".into()].into()
             )))
             .unwrap(),
@@ -217,7 +217,7 @@ mod tests {
     fn compile_optional_choice_of_attributes() {
         // Exactly one of the exclusive attributes may be present.
         assert_eq!(
-            compile_attributes(&CompiledPattern::optional(CompiledPattern::choice([
+            compile_attributes(&ResolvedPattern::optional(ResolvedPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ])))
@@ -229,7 +229,7 @@ mod tests {
     #[test]
     fn fail_on_element() {
         assert!(matches!(
-            compile_attributes(&CompiledPattern::Element(["foo".into()].into())),
+            compile_attributes(&ResolvedPattern::Element(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }

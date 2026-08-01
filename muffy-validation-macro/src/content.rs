@@ -1,63 +1,63 @@
-use crate::{error::MacroError, pattern::CompiledPattern};
+use crate::{error::MacroError, pattern::ResolvedPattern};
 use alloc::collections::BTreeSet;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 const TEXT_TOKEN: &str = "#text";
 
-pub fn compile_content(pattern: &CompiledPattern) -> Result<TokenStream, MacroError> {
+pub fn compile_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroError> {
     Ok(match pattern {
-        CompiledPattern::Attribute(_) => {
+        ResolvedPattern::Attribute(_) => {
             return Err(MacroError::RncPattern("attribute in content pattern"));
         }
-        CompiledPattern::NotAllowed => {
+        ResolvedPattern::NotAllowed => {
             return Err(MacroError::RncPattern("not-allowed content pattern"));
         }
-        CompiledPattern::Choice(patterns) => {
+        ResolvedPattern::Choice(patterns) => {
             let patterns = compile_contents(patterns)?;
 
             quote!(Content::Choice(&[#(#patterns),*]))
         }
-        CompiledPattern::Element(names) => {
+        ResolvedPattern::Element(names) => {
             let names = names.iter().map(|name| quote!(#name));
 
             quote!(Content::Element(&[#(#names),*]))
         }
-        CompiledPattern::Empty => quote!(Content::Empty),
-        CompiledPattern::Group(patterns) => {
+        ResolvedPattern::Empty => quote!(Content::Empty),
+        ResolvedPattern::Group(patterns) => {
             let patterns = compile_contents(patterns)?;
 
             quote!(Content::Group(&[#(#patterns),*]))
         }
-        CompiledPattern::Interleave(patterns) => {
+        ResolvedPattern::Interleave(patterns) => {
             let patterns = compile_contents(patterns)?;
 
             quote!(Content::Interleave(&[#(#patterns),*]))
         }
-        CompiledPattern::Many0(pattern) => {
+        ResolvedPattern::Many0(pattern) => {
             let pattern = compile_content(pattern)?;
 
             quote!(Content::Many0(&#pattern))
         }
-        CompiledPattern::Many1(pattern) => {
+        ResolvedPattern::Many1(pattern) => {
             let pattern = compile_content(pattern)?;
 
             quote!(Content::Many1(&#pattern))
         }
-        CompiledPattern::Optional(pattern) => {
+        ResolvedPattern::Optional(pattern) => {
             let pattern = compile_content(pattern)?;
 
             quote!(Content::Optional(&#pattern))
         }
-        CompiledPattern::Text => quote!(Content::Text),
+        ResolvedPattern::Text => quote!(Content::Text),
     })
 }
 
-fn compile_contents(patterns: &[CompiledPattern]) -> Result<Vec<TokenStream>, MacroError> {
+fn compile_contents(patterns: &[ResolvedPattern]) -> Result<Vec<TokenStream>, MacroError> {
     patterns.iter().map(compile_content).collect()
 }
 
-pub fn children(pattern: &CompiledPattern) -> BTreeSet<String> {
+pub fn children(pattern: &ResolvedPattern) -> BTreeSet<String> {
     let mut children = element_names(pattern);
 
     if contains_text(pattern) {
@@ -67,37 +67,37 @@ pub fn children(pattern: &CompiledPattern) -> BTreeSet<String> {
     children
 }
 
-fn contains_text(pattern: &CompiledPattern) -> bool {
+fn contains_text(pattern: &ResolvedPattern) -> bool {
     match pattern {
-        CompiledPattern::Text => true,
-        CompiledPattern::Attribute(_)
-        | CompiledPattern::Element(_)
-        | CompiledPattern::Empty
-        | CompiledPattern::NotAllowed => false,
-        CompiledPattern::Choice(patterns)
-        | CompiledPattern::Group(patterns)
-        | CompiledPattern::Interleave(patterns) => patterns.iter().any(contains_text),
-        CompiledPattern::Many0(pattern)
-        | CompiledPattern::Many1(pattern)
-        | CompiledPattern::Optional(pattern) => contains_text(pattern),
+        ResolvedPattern::Text => true,
+        ResolvedPattern::Attribute(_)
+        | ResolvedPattern::Element(_)
+        | ResolvedPattern::Empty
+        | ResolvedPattern::NotAllowed => false,
+        ResolvedPattern::Choice(patterns)
+        | ResolvedPattern::Group(patterns)
+        | ResolvedPattern::Interleave(patterns) => patterns.iter().any(contains_text),
+        ResolvedPattern::Many0(pattern)
+        | ResolvedPattern::Many1(pattern)
+        | ResolvedPattern::Optional(pattern) => contains_text(pattern),
     }
 }
 
-fn element_names(pattern: &CompiledPattern) -> BTreeSet<String> {
+fn element_names(pattern: &ResolvedPattern) -> BTreeSet<String> {
     match pattern {
-        CompiledPattern::Element(names) => names.clone(),
-        CompiledPattern::Choice(patterns)
-        | CompiledPattern::Group(patterns)
-        | CompiledPattern::Interleave(patterns) => {
+        ResolvedPattern::Element(names) => names.clone(),
+        ResolvedPattern::Choice(patterns)
+        | ResolvedPattern::Group(patterns)
+        | ResolvedPattern::Interleave(patterns) => {
             patterns.iter().flat_map(element_names).collect()
         }
-        CompiledPattern::Many0(pattern)
-        | CompiledPattern::Many1(pattern)
-        | CompiledPattern::Optional(pattern) => element_names(pattern),
-        CompiledPattern::Attribute(_)
-        | CompiledPattern::Empty
-        | CompiledPattern::NotAllowed
-        | CompiledPattern::Text => Default::default(),
+        ResolvedPattern::Many0(pattern)
+        | ResolvedPattern::Many1(pattern)
+        | ResolvedPattern::Optional(pattern) => element_names(pattern),
+        ResolvedPattern::Attribute(_)
+        | ResolvedPattern::Empty
+        | ResolvedPattern::NotAllowed
+        | ResolvedPattern::Text => Default::default(),
     }
 }
 
@@ -106,14 +106,14 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    fn element(name: &str) -> CompiledPattern {
-        CompiledPattern::Element([name.into()].into())
+    fn element(name: &str) -> ResolvedPattern {
+        ResolvedPattern::Element([name.into()].into())
     }
 
     #[test]
     fn compile_ordered_group() {
         assert_eq!(
-            compile_content(&CompiledPattern::group([element("foo"), element("bar")]))
+            compile_content(&ResolvedPattern::group([element("foo"), element("bar")]))
                 .unwrap()
                 .to_string(),
             quote!(Content::Group(&[
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn compile_repetition() {
         assert_eq!(
-            compile_content(&CompiledPattern::many0(element("foo")))
+            compile_content(&ResolvedPattern::many0(element("foo")))
                 .unwrap()
                 .to_string(),
             quote!(Content::Many0(&Content::Element(&["foo"]))).to_string()
@@ -137,8 +137,8 @@ mod tests {
     #[test]
     fn collect_children_with_text() {
         assert_eq!(
-            children(&CompiledPattern::many0(CompiledPattern::choice([
-                CompiledPattern::Text,
+            children(&ResolvedPattern::many0(ResolvedPattern::choice([
+                ResolvedPattern::Text,
                 element("foo"),
             ]))),
             ["#text".into(), "foo".into()].into()
@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn fail_on_attribute() {
         assert!(matches!(
-            compile_content(&CompiledPattern::Attribute(["foo".into()].into())),
+            compile_content(&ResolvedPattern::Attribute(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }
