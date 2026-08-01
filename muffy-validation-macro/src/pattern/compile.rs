@@ -3,26 +3,6 @@ use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
 
-fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
-    match name_class {
-        NameClass::Name(name) => {
-            let local = identifier_string(&name.local);
-
-            if let Some(prefix) = &name.prefix {
-                [format!("{}:{local}", identifier_string(prefix)), local].into()
-            } else {
-                [local].into()
-            }
-        }
-        NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
-        // TODO Support wildcard name classes (e.g. arbitrary attributes of
-        // embed elements).
-        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
-            Default::default()
-        }
-    }
-}
-
 pub fn compile_pattern(
     pattern: &Pattern,
     definitions: &BTreeMap<Identifier, Pattern>,
@@ -97,6 +77,26 @@ pub fn compile_pattern(
             }
         }
     })
+}
+
+fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
+    match name_class {
+        NameClass::Name(name) => {
+            let local = identifier_string(&name.local);
+
+            if let Some(prefix) = &name.prefix {
+                [format!("{}:{local}", identifier_string(prefix)), local].into()
+            } else {
+                [local].into()
+            }
+        }
+        NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
+        // TODO Support wildcard name classes (e.g. arbitrary attributes of
+        // embed elements).
+        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
+            Default::default()
+        }
+    }
 }
 
 #[cfg(test)]
