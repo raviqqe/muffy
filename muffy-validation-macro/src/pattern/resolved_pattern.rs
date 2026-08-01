@@ -34,8 +34,10 @@ impl ResolvedPattern {
 
         let pattern = if alternatives.is_empty() {
             Self::NotAllowed
-        } else if alternatives.len() == 1 {
-            alternatives.pop_first().expect("alternative")
+        } else if alternatives.len() == 1
+            && let Some(alternative) = alternatives.pop_first()
+        {
+            alternative
         } else {
             Self::Choice(alternatives.into_iter().collect())
         };
