@@ -17,8 +17,9 @@ use self::{
     name::class_names,
     pattern::ResolvedPattern,
 };
-use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::collections::BTreeMap;
 use core::mem::replace;
+use itertools::Itertools;
 use muffy_rnc::{
     Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
 };
@@ -85,11 +86,15 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             .iter()
             .flat_map(|(sets, _)| sets)
             .flat_map(|set| set.required.iter().chain(&set.optional))
-            .collect::<BTreeSet<_>>();
+            .unique()
+            .sorted()
+            .map(|name| quote!(#name));
         let children = variants
             .iter()
             .flat_map(|(_, content)| children(content))
-            .collect::<BTreeSet<_>>();
+            .unique()
+            .sorted()
+            .map(|name| quote!(#name));
 
         let variants = variants
             .iter()
@@ -109,8 +114,6 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 quote!(Variant { attributes: #sets, content: &#content })
             })
             .collect::<Vec<_>>();
-        let attributes = attributes.iter().map(|name| quote!(#name));
-        let children = children.iter().map(|name| quote!(#name));
 
         element_matches.push(quote! {
             #name => {
