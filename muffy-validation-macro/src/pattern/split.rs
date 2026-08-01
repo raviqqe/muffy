@@ -31,16 +31,13 @@ pub fn split_pattern(
                                         other_attribute.clone(),
                                     ]),
                                     if interleaved {
-                                        ResolvedPattern::interleave([
-                                            content.clone(),
-                                            other_content.clone(),
-                                        ])
+                                        ResolvedPattern::interleave
                                     } else {
-                                        ResolvedPattern::group([
-                                            content.clone(),
-                                            other_content.clone(),
-                                        ])
-                                    },
+                                        ResolvedPattern::group
+                                    }([
+                                        content.clone(),
+                                        other_content.clone(),
+                                    ]),
                                 )
                             })
                             .collect::<Vec<_>>()
