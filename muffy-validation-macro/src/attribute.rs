@@ -1,4 +1,4 @@
-mod dnf;
+mod normal;
 mod set;
 
-pub use self::{dnf::normalize_attributes, set::AttributeSet};
+pub use self::{normal::normalize_attributes, set::AttributeSet};
