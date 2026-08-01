@@ -1,11 +1,8 @@
+mod term;
+
+pub use self::term::AttributeTerm;
 use crate::{error::MacroError, pattern::CompiledPattern};
 use alloc::collections::BTreeSet;
-
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
-pub struct AttributeTerm {
-    pub required: BTreeSet<String>,
-    pub optional: BTreeSet<String>,
-}
 
 pub fn compile_attributes(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> {
     let mut terms = compile(pattern)?;
@@ -35,20 +32,9 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
                 terms = terms
                     .iter()
                     .flat_map(|term| {
-                        operand_terms.iter().map(|operand_term| AttributeTerm {
-                            required: term
-                                .required
-                                .iter()
-                                .chain(&operand_term.required)
-                                .cloned()
-                                .collect(),
-                            optional: term
-                                .optional
-                                .iter()
-                                .chain(&operand_term.optional)
-                                .cloned()
-                                .collect(),
-                        })
+                        operand_terms
+                            .iter()
+                            .map(|operand_term| term.merge(operand_term))
                     })
                     .collect();
             }
