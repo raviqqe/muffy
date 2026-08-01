@@ -28,57 +28,9 @@ pub fn validate_rule(
     let mut attribute_errors = BTreeMap::<String, BTreeSet<AttributeError>>::new();
     let mut child_errors = BTreeMap::<String, BTreeSet<ChildError>>::new();
 
-    let mut attributes = vec![];
-    let mut exempt_attributes = vec![];
-
-    for (name, _) in element.attributes() {
-        let ignored = ignored_attributes
-            .iter()
-            .any(|pattern| pattern.is_match(name));
-
-        if let Ok(index) = rule.attributes.binary_search(&name) {
-            if ignored {
-                exempt_attributes.push(rule.attributes[index]);
-            } else {
-                attributes.push(rule.attributes[index]);
-            }
-        } else if !ignored {
-            attribute_errors
-                .entry(name.into())
-                .or_default()
-                .insert(AttributeError::NotAllowed);
-        }
-    }
-
-    attributes.sort();
-    exempt_attributes.sort();
-
-    let mut children = vec![];
-
-    for child in element.children() {
-        let name = match child {
-            Node::Element(child) => child.name(),
-            Node::Text(text) => {
-                if text.chars().all(char::is_whitespace) {
-                    continue;
-                }
-
-                TEXT_TOKEN
-            }
-        };
-        let ignored = ignored_elements
-            .iter()
-            .any(|pattern| pattern.is_match(name));
-
-        if let Ok(index) = rule.children.binary_search(&name) {
-            children.push((rule.children[index], ignored));
-        } else if !ignored {
-            child_errors
-                .entry(name.into())
-                .or_default()
-                .insert(ChildError::NotAllowed);
-        }
-    }
+    let (attributes, exempt_attributes) =
+        classify_attributes(element, ignored_attributes, rule, &mut attribute_errors);
+    let children = classify_children(element, ignored_elements, rule, &mut child_errors);
 
     let (missing_attributes, missing_children) = if let Some(variant) = rule
         .variants
@@ -288,6 +240,76 @@ fn expected_names(state: &State, names: &[&'static str]) -> BTreeSet<&'static st
 
         frontier = next_frontier;
     }
+}
+
+fn classify_attributes(
+    element: &Element,
+    ignored_attributes: &[Regex],
+    rule: &Rule,
+    errors: &mut BTreeMap<String, BTreeSet<AttributeError>>,
+) -> (Vec<&'static str>, Vec<&'static str>) {
+    let mut attributes = vec![];
+    let mut exempt_attributes = vec![];
+
+    for (name, _) in element.attributes() {
+        let ignored = ignored_attributes
+            .iter()
+            .any(|pattern| pattern.is_match(name));
+
+        if let Ok(index) = rule.attributes.binary_search(&name) {
+            if ignored {
+                exempt_attributes.push(rule.attributes[index]);
+            } else {
+                attributes.push(rule.attributes[index]);
+            }
+        } else if !ignored {
+            errors
+                .entry(name.into())
+                .or_default()
+                .insert(AttributeError::NotAllowed);
+        }
+    }
+
+    attributes.sort();
+    exempt_attributes.sort();
+
+    (attributes, exempt_attributes)
+}
+
+fn classify_children(
+    element: &Element,
+    ignored_elements: &[Regex],
+    rule: &Rule,
+    errors: &mut BTreeMap<String, BTreeSet<ChildError>>,
+) -> Vec<(&'static str, bool)> {
+    let mut children = vec![];
+
+    for child in element.children() {
+        let name = match child {
+            Node::Element(child) => child.name(),
+            Node::Text(text) => {
+                if text.chars().all(char::is_whitespace) {
+                    continue;
+                }
+
+                TEXT_TOKEN
+            }
+        };
+        let ignored = ignored_elements
+            .iter()
+            .any(|pattern| pattern.is_match(name));
+
+        if let Ok(index) = rule.children.binary_search(&name) {
+            children.push((rule.children[index], ignored));
+        } else if !ignored {
+            errors
+                .entry(name.into())
+                .or_default()
+                .insert(ChildError::NotAllowed);
+        }
+    }
+
+    children
 }
 
 // (error count, conflict count, requirement count)
