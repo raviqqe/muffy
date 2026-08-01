@@ -29,7 +29,6 @@ pub fn validate_rule(
     let mut child_errors = BTreeMap::<String, BTreeSet<ChildError>>::new();
 
     let mut attributes = vec![];
-    // Ignored names satisfy schema requirements but never produce errors.
     let mut exempt_attributes = vec![];
 
     for (name, _) in element.attributes() {
