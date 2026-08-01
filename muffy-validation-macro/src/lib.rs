@@ -127,7 +127,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         });
     }
 
-    let set_statics = sort_by_index(set_indexes).map(|(sets, index)| {
+    let set_definitions = sort_by_index(set_indexes).map(|(sets, index)| {
         let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
         let sets = sets.iter().map(|set| {
             let required = set.required.iter().map(|name| quote!(#name));
@@ -141,7 +141,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         quote!(static #identifier: &[AttributeSet] = &[#(#sets),*];)
     });
-    let content_statics = sort_by_index(content_indexes)
+    let content_definitions = sort_by_index(content_indexes)
         .map(|(content, index)| {
             let identifier = format_ident!("CONTENT_{index}");
             let content = compile_content(&content)?;
@@ -157,8 +157,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
-            #(#set_statics)*
-            #(#content_statics)*
+            #(#set_definitions)*
+            #(#content_definitions)*
 
             match element.name() {
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
