@@ -16,9 +16,10 @@ use crate::{
     robot_list::RobotList,
     sitemap,
 };
-use alloc::{collections::BTreeSet, sync::Arc};
+use alloc::sync::Arc;
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
+use itertools::Itertools;
 use muffy_document::html::Node;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -452,13 +453,13 @@ impl WebValidator {
                                 Default::default()
                             },
                         )
-                        .collect::<BTreeSet<_>>()
-                        .into_iter()
+                        .unique()
                         .filter_map(|name| {
                             attributes
                                 .get(name)
                                 .map(|value| (name.to_string(), value.to_string()))
                         })
+                        .sorted()
                         .collect(),
                 ),
                 items,
