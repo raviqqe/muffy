@@ -3,9 +3,6 @@ use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
 
-// HTML parsers match a prefixed schema name (e.g. `xml:lang`) against its bare
-// local name while the literal prefixed spelling is also conforming, so an
-// attribute matches both names.
 fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => {
