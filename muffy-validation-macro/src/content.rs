@@ -11,7 +11,7 @@ pub fn compile_content(pattern: &CompiledPattern) -> Result<TokenStream, MacroEr
             return Err(MacroError::RncPattern("attribute in content pattern"));
         }
         CompiledPattern::NotAllowed => {
-            return Err(MacroError::RncPattern("not-allowed content pattern"));
+            return Err(MacroError::RncPattern("disallowed content pattern"));
         }
         CompiledPattern::Choice(patterns) => {
             let patterns = compile_contents(patterns)?;
