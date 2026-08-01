@@ -61,10 +61,12 @@ impl ResolvedPattern {
             }
         }
 
-        if sequence.len() == 1 {
-            sequence.pop().expect("operand")
-        } else if sequence.is_empty() {
+        if sequence.is_empty() {
             Self::Empty
+        } else if sequence.len() == 1
+            && let Some(pattern) = sequence.pop()
+        {
+            pattern
         } else {
             Self::Group(sequence)
         }
