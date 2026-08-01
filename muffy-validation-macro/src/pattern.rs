@@ -164,6 +164,8 @@ fn identifier_string(identifier: &Identifier) -> String {
         })
 }
 
+/// Splits a compiled element pattern into alternatives of attribute and
+/// content patterns whose interleaved union is equivalent to the original.
 pub fn split_pattern(
     pattern: &CompiledPattern,
 ) -> Result<Vec<(CompiledPattern, CompiledPattern)>, MacroError> {

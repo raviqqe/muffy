@@ -31,15 +31,6 @@ pub fn compile_pattern(
     definitions: &BTreeMap<Identifier, Pattern>,
     cache: &mut BTreeMap<Identifier, CompiledPattern>,
 ) -> Result<CompiledPattern, MacroError> {
-    compile_pattern_with_stack(pattern, definitions, cache, &mut vec![])
-}
-
-fn compile_pattern_with_stack(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-    cache: &mut BTreeMap<Identifier, CompiledPattern>,
-    stack: &mut Vec<Identifier>,
-) -> Result<CompiledPattern, MacroError> {
     Ok(match pattern {
         Pattern::Attribute { name_class, .. } => {
             let names = attribute_class_names(name_class);
@@ -62,39 +53,30 @@ fn compile_pattern_with_stack(
         Pattern::Choice(patterns) => CompiledPattern::choice(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .map(|pattern| compile_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
         Pattern::Group(patterns) => CompiledPattern::group(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .map(|pattern| compile_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
         Pattern::Interleave(patterns) => CompiledPattern::interleave(
             patterns
                 .iter()
-                .map(|pattern| compile_pattern_with_stack(pattern, definitions, cache, stack))
+                .map(|pattern| compile_pattern(pattern, definitions, cache))
                 .collect::<Result<Vec<_>, _>>()?,
         ),
-        Pattern::Many0(pattern) => CompiledPattern::many0(compile_pattern_with_stack(
-            pattern,
-            definitions,
-            cache,
-            stack,
-        )?),
-        Pattern::Many1(pattern) => CompiledPattern::many1(compile_pattern_with_stack(
-            pattern,
-            definitions,
-            cache,
-            stack,
-        )?),
-        Pattern::Optional(pattern) => CompiledPattern::optional(compile_pattern_with_stack(
-            pattern,
-            definitions,
-            cache,
-            stack,
-        )?),
+        Pattern::Many0(pattern) => {
+            CompiledPattern::many0(compile_pattern(pattern, definitions, cache)?)
+        }
+        Pattern::Many1(pattern) => {
+            CompiledPattern::many1(compile_pattern(pattern, definitions, cache)?)
+        }
+        Pattern::Optional(pattern) => {
+            CompiledPattern::optional(compile_pattern(pattern, definitions, cache)?)
+        }
         Pattern::Empty => CompiledPattern::Empty,
         Pattern::NotAllowed => CompiledPattern::NotAllowed,
         // TODO Validate texts and attribute values against data and value
@@ -107,14 +89,8 @@ fn compile_pattern_with_stack(
         Pattern::Name(name) => {
             if let Some(compiled) = cache.get(&name.local) {
                 compiled.clone()
-            } else if stack.contains(&name.local) {
-                return Err(MacroError::CircularReference(identifier_string(
-                    &name.local,
-                )));
             } else if let Some(definition) = definitions.get(&name.local) {
-                stack.push(name.local.clone());
-                let compiled = compile_pattern_with_stack(definition, definitions, cache, stack)?;
-                stack.pop();
+                let compiled = compile_pattern(definition, definitions, cache)?;
                 cache.insert(name.local.clone(), compiled.clone());
                 compiled
             } else {
@@ -125,9 +101,6 @@ fn compile_pattern_with_stack(
         }
     })
 }
-
-/// Splits a compiled element pattern into alternatives of attribute and
-/// content patterns whose interleaved union is equivalent to the original.
 
 #[cfg(test)]
 mod tests {
@@ -219,14 +192,6 @@ mod tests {
         assert!(matches!(
             compile("root = foo"),
             Err(MacroError::UndefinedReference(_))
-        ));
-    }
-
-    #[test]
-    fn fail_on_circular_reference() {
-        assert!(matches!(
-            compile("root = foo\nfoo = (foo)"),
-            Err(MacroError::CircularReference(_))
         ));
     }
 }
