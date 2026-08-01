@@ -20,7 +20,7 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
     Ok(match pattern {
         CompiledPattern::Empty => vec![Default::default()],
         CompiledPattern::NotAllowed => vec![],
-        CompiledPattern::Attribute(names) => choice_terms(names),
+        CompiledPattern::Attribute(names) => name_choice(names),
         CompiledPattern::Choice(patterns) => patterns
             .iter()
             .map(compile)
@@ -74,7 +74,7 @@ fn optional_terms(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
         .cloned()
         .collect::<BTreeSet<_>>();
 
-    if terms == choice_terms(&names) {
+    if terms == name_choice(&names) {
         vec![AttributeTerm {
             required: Default::default(),
             optional: names,
@@ -89,7 +89,7 @@ fn optional_terms(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
     }
 }
 
-fn choice_terms(names: &BTreeSet<String>) -> Vec<AttributeTerm> {
+fn name_choice(names: &BTreeSet<String>) -> Vec<AttributeTerm> {
     names
         .iter()
         .map(|name| AttributeTerm {
