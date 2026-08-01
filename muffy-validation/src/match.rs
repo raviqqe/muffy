@@ -427,19 +427,16 @@ fn score_variant(
     exempt_attributes: &[&'static str],
     children: &[(&'static str, bool)],
 ) -> (usize, usize, usize) {
-    let (attribute_error_count, requirement_count, conflict_count) = variant
+    let (error_count, requirement_count, conflict_count) = variant
         .attributes
         .iter()
         .map(|set| score_attribute_set(set, attributes, exempt_attributes))
         .min()
         .unwrap_or_default();
-
     let (misplaced, state) = match_children(variant.content, children);
 
     (
-        attribute_error_count
-            + misplaced.len()
-            + usize::from(misplaced.is_empty() && !state.nullable()),
+        error_count + misplaced.len() + usize::from(misplaced.is_empty() && !state.nullable()),
         conflict_count + misplaced.len(),
         requirement_count,
     )
