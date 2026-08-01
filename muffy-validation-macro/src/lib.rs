@@ -15,13 +15,14 @@ use self::{
     content::{children, generate_content},
     error::MacroError,
     name::class_names,
-    pattern::ResolvedPattern,
+    pattern::Pattern,
 };
 use alloc::collections::BTreeMap;
 use core::mem::replace;
 use itertools::Itertools;
 use muffy_rnc::{
-    Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
+    Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern as RncPattern, SchemaBody,
+    parse_schema,
 };
 use proc_macro::TokenStream;
 use proc_macro2::Span;
@@ -54,7 +55,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut compiler = Compiler::new(&definitions);
-    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, ResolvedPattern)>>::new();
+    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, Pattern)>>::new();
 
     for definition in definitions.values() {
         for (name_class, pattern) in collect_elements(definition) {
@@ -78,7 +79,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut attribute_set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
-    let mut content_indexes = BTreeMap::<ResolvedPattern, usize>::new();
+    let mut content_indexes = BTreeMap::<Pattern, usize>::new();
     let mut element_matches = vec![];
 
     for (name, variants) in &element_rules {
@@ -181,7 +182,7 @@ fn sort_by_index<T>(indexes: BTreeMap<T, usize>) -> impl Iterator<Item = (T, usi
 
 fn load_schema(
     path: &Path,
-    definitions: &mut BTreeMap<Identifier, Pattern>,
+    definitions: &mut BTreeMap<Identifier, RncPattern>,
 ) -> Result<(), MacroError> {
     let schema = parse_schema(&read_to_string(path)?)?;
 
@@ -204,7 +205,7 @@ fn load_schema(
 
 fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut BTreeMap<Identifier, Pattern>,
+    definitions: &mut BTreeMap<Identifier, RncPattern>,
     directory: &Path,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
@@ -215,7 +216,7 @@ fn load_grammar(
 
                 if let Some(combine) = definition.combine {
                     combine_patterns(
-                        definitions.entry(name).or_insert(Pattern::NotAllowed),
+                        definitions.entry(name).or_insert(RncPattern::NotAllowed),
                         pattern,
                         combine,
                     );
@@ -240,55 +241,55 @@ fn load_grammar(
     Ok(())
 }
 
-fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
+fn combine_patterns(existing: &mut RncPattern, new: RncPattern, combine: Combine) {
     match combine {
         Combine::Choice => match existing {
-            Pattern::Choice(choices) => choices.push(new),
-            Pattern::NotAllowed => *existing = new,
-            Pattern::Attribute { .. }
-            | Pattern::Data { .. }
-            | Pattern::Element { .. }
-            | Pattern::Empty
-            | Pattern::External(_)
-            | Pattern::Grammar(_)
-            | Pattern::Group(_)
-            | Pattern::Interleave(_)
-            | Pattern::List(_)
-            | Pattern::Many0(_)
-            | Pattern::Many1(_)
-            | Pattern::Name(_)
-            | Pattern::Optional(_)
-            | Pattern::Text
-            | Pattern::Value { .. } => {
-                let old = replace(existing, Pattern::Choice(vec![]));
+            RncPattern::Choice(choices) => choices.push(new),
+            RncPattern::NotAllowed => *existing = new,
+            RncPattern::Attribute { .. }
+            | RncPattern::Data { .. }
+            | RncPattern::Element { .. }
+            | RncPattern::Empty
+            | RncPattern::External(_)
+            | RncPattern::Grammar(_)
+            | RncPattern::Group(_)
+            | RncPattern::Interleave(_)
+            | RncPattern::List(_)
+            | RncPattern::Many0(_)
+            | RncPattern::Many1(_)
+            | RncPattern::Name(_)
+            | RncPattern::Optional(_)
+            | RncPattern::Text
+            | RncPattern::Value { .. } => {
+                let old = replace(existing, RncPattern::Choice(vec![]));
 
-                if let Pattern::Choice(choices) = existing {
+                if let RncPattern::Choice(choices) = existing {
                     choices.push(old);
                     choices.push(new);
                 }
             }
         },
         Combine::Interleave => match existing {
-            Pattern::Interleave(patterns) => patterns.push(new),
-            Pattern::NotAllowed => *existing = new,
-            Pattern::Attribute { .. }
-            | Pattern::Choice(_)
-            | Pattern::Data { .. }
-            | Pattern::Element { .. }
-            | Pattern::Empty
-            | Pattern::External(_)
-            | Pattern::Grammar(_)
-            | Pattern::Group(_)
-            | Pattern::List(_)
-            | Pattern::Many0(_)
-            | Pattern::Many1(_)
-            | Pattern::Name(_)
-            | Pattern::Optional(_)
-            | Pattern::Text
-            | Pattern::Value { .. } => {
-                let old = replace(existing, Pattern::Interleave(vec![]));
+            RncPattern::Interleave(patterns) => patterns.push(new),
+            RncPattern::NotAllowed => *existing = new,
+            RncPattern::Attribute { .. }
+            | RncPattern::Choice(_)
+            | RncPattern::Data { .. }
+            | RncPattern::Element { .. }
+            | RncPattern::Empty
+            | RncPattern::External(_)
+            | RncPattern::Grammar(_)
+            | RncPattern::Group(_)
+            | RncPattern::List(_)
+            | RncPattern::Many0(_)
+            | RncPattern::Many1(_)
+            | RncPattern::Name(_)
+            | RncPattern::Optional(_)
+            | RncPattern::Text
+            | RncPattern::Value { .. } => {
+                let old = replace(existing, RncPattern::Interleave(vec![]));
 
-                if let Pattern::Interleave(patterns) = existing {
+                if let RncPattern::Interleave(patterns) = existing {
                     patterns.push(old);
                     patterns.push(new);
                 }
@@ -298,27 +299,27 @@ fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
 }
 
 // TODO Skip element definitions gated by not-allowed flag conjuncts.
-fn collect_elements(pattern: &Pattern) -> Vec<(&NameClass, &Pattern)> {
+fn collect_elements(pattern: &RncPattern) -> Vec<(&NameClass, &RncPattern)> {
     match pattern {
-        Pattern::Element {
+        RncPattern::Element {
             name_class,
             pattern,
         } => vec![(name_class, pattern)],
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            patterns.iter().flat_map(collect_elements).collect()
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
+        RncPattern::Choice(patterns)
+        | RncPattern::Group(patterns)
+        | RncPattern::Interleave(patterns) => patterns.iter().flat_map(collect_elements).collect(),
+        RncPattern::Many0(pattern) | RncPattern::Many1(pattern) | RncPattern::Optional(pattern) => {
             collect_elements(pattern)
         }
-        Pattern::Attribute { .. }
-        | Pattern::Data { .. }
-        | Pattern::Empty
-        | Pattern::External(_)
-        | Pattern::Grammar(_)
-        | Pattern::List(_)
-        | Pattern::Name(_)
-        | Pattern::NotAllowed
-        | Pattern::Text
-        | Pattern::Value { .. } => vec![],
+        RncPattern::Attribute { .. }
+        | RncPattern::Data { .. }
+        | RncPattern::Empty
+        | RncPattern::External(_)
+        | RncPattern::Grammar(_)
+        | RncPattern::List(_)
+        | RncPattern::Name(_)
+        | RncPattern::NotAllowed
+        | RncPattern::Text
+        | RncPattern::Value { .. } => vec![],
     }
 }

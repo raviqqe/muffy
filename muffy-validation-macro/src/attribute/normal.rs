@@ -1,8 +1,8 @@
 use super::set::AttributeSet;
-use crate::{error::MacroError, pattern::ResolvedPattern};
+use crate::{error::MacroError, pattern::Pattern};
 use alloc::collections::BTreeSet;
 
-pub fn normalize_attributes(pattern: &ResolvedPattern) -> Result<Vec<AttributeSet>, MacroError> {
+pub fn normalize_attributes(pattern: &Pattern) -> Result<Vec<AttributeSet>, MacroError> {
     let mut sets = normalize(pattern)?;
 
     sets.sort();
@@ -11,17 +11,17 @@ pub fn normalize_attributes(pattern: &ResolvedPattern) -> Result<Vec<AttributeSe
     Ok(sets)
 }
 
-fn normalize(pattern: &ResolvedPattern) -> Result<Vec<AttributeSet>, MacroError> {
+fn normalize(pattern: &Pattern) -> Result<Vec<AttributeSet>, MacroError> {
     Ok(match pattern {
-        ResolvedPattern::Empty => vec![Default::default()],
-        ResolvedPattern::NotAllowed => vec![],
-        ResolvedPattern::Attribute(names) => name_choice(names),
-        ResolvedPattern::Choice(patterns) => patterns
+        Pattern::Empty => vec![Default::default()],
+        Pattern::NotAllowed => vec![],
+        Pattern::Attribute(names) => name_choice(names),
+        Pattern::Choice(patterns) => patterns
             .iter()
             .map(normalize)
             .collect::<Result<Vec<_>, _>>()?
             .concat(),
-        ResolvedPattern::Group(patterns) | ResolvedPattern::Interleave(patterns) => {
+        Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             let mut sets = vec![AttributeSet::default()];
 
             for pattern in patterns {
@@ -35,11 +35,9 @@ fn normalize(pattern: &ResolvedPattern) -> Result<Vec<AttributeSet>, MacroError>
 
             sets
         }
-        ResolvedPattern::Optional(pattern) | ResolvedPattern::Many0(pattern) => {
-            optional(normalize(pattern)?)
-        }
-        ResolvedPattern::Many1(pattern) => normalize(pattern)?,
-        ResolvedPattern::Element(_) | ResolvedPattern::Text => {
+        Pattern::Optional(pattern) | Pattern::Many0(pattern) => optional(normalize(pattern)?),
+        Pattern::Many1(pattern) => normalize(pattern)?,
+        Pattern::Element(_) | Pattern::Text => {
             return Err(MacroError::RncPattern("content in attribute pattern"));
         }
     })
@@ -86,8 +84,8 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    fn attribute(name: &str) -> ResolvedPattern {
-        ResolvedPattern::Attribute([name.into()].into())
+    fn attribute(name: &str) -> Pattern {
+        Pattern::Attribute([name.into()].into())
     }
 
     fn set(required: &[&str], optional: &[&str]) -> AttributeSet {
@@ -100,17 +98,14 @@ mod tests {
     #[test]
     fn normalize_empty() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::Empty).unwrap(),
+            normalize_attributes(&Pattern::Empty).unwrap(),
             vec![AttributeSet::default()]
         );
     }
 
     #[test]
     fn normalize_not_allowed() {
-        assert_eq!(
-            normalize_attributes(&ResolvedPattern::NotAllowed).unwrap(),
-            vec![]
-        );
+        assert_eq!(normalize_attributes(&Pattern::NotAllowed).unwrap(), vec![]);
     }
 
     #[test]
@@ -124,7 +119,7 @@ mod tests {
     #[test]
     fn normalize_optional_attribute() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
+            normalize_attributes(&Pattern::optional(attribute("foo"))).unwrap(),
             vec![set(&[], &["foo"])]
         );
     }
@@ -132,9 +127,9 @@ mod tests {
     #[test]
     fn normalize_interleave_of_optional_attributes() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::interleave([
-                ResolvedPattern::optional(attribute("foo")),
-                ResolvedPattern::optional(attribute("bar")),
+            normalize_attributes(&Pattern::interleave([
+                Pattern::optional(attribute("foo")),
+                Pattern::optional(attribute("bar")),
             ]))
             .unwrap(),
             vec![set(&[], &["bar", "foo"])]
@@ -144,11 +139,7 @@ mod tests {
     #[test]
     fn normalize_choice_of_attributes() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::choice([
-                attribute("foo"),
-                attribute("bar")
-            ]))
-            .unwrap(),
+            normalize_attributes(&Pattern::choice([attribute("foo"), attribute("bar")])).unwrap(),
             vec![set(&["bar"], &[]), set(&["foo"], &[])]
         );
     }
@@ -156,8 +147,8 @@ mod tests {
     #[test]
     fn normalize_group_product() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::group([
-                ResolvedPattern::choice([attribute("foo"), attribute("bar")]),
+            normalize_attributes(&Pattern::group([
+                Pattern::choice([attribute("foo"), attribute("bar")]),
                 attribute("baz"),
             ]))
             .unwrap(),
@@ -168,15 +159,9 @@ mod tests {
     #[test]
     fn normalize_exclusive_attribute_pair() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::choice([
-                ResolvedPattern::group([
-                    attribute("foo"),
-                    ResolvedPattern::optional(attribute("bar"))
-                ]),
-                ResolvedPattern::group([
-                    ResolvedPattern::optional(attribute("foo")),
-                    attribute("bar")
-                ]),
+            normalize_attributes(&Pattern::choice([
+                Pattern::group([attribute("foo"), Pattern::optional(attribute("bar"))]),
+                Pattern::group([Pattern::optional(attribute("foo")), attribute("bar")]),
             ]))
             .unwrap(),
             vec![set(&["bar"], &["foo"]), set(&["foo"], &["bar"])]
@@ -186,7 +171,7 @@ mod tests {
     #[test]
     fn normalize_at_least_one_attribute() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::many1(attribute("foo"))).unwrap(),
+            normalize_attributes(&Pattern::many1(attribute("foo"))).unwrap(),
             vec![set(&["foo"], &[])]
         );
     }
@@ -194,10 +179,7 @@ mod tests {
     #[test]
     fn normalize_alternative_attribute_names() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::Attribute(
-                ["foo".into(), "bar".into()].into()
-            ))
-            .unwrap(),
+            normalize_attributes(&Pattern::Attribute(["foo".into(), "bar".into()].into())).unwrap(),
             vec![set(&["bar"], &["foo"]), set(&["foo"], &["bar"])]
         );
     }
@@ -205,7 +187,7 @@ mod tests {
     #[test]
     fn normalize_optional_alternative_attribute_names() {
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::optional(ResolvedPattern::Attribute(
+            normalize_attributes(&Pattern::optional(Pattern::Attribute(
                 ["foo".into(), "bar".into()].into()
             )))
             .unwrap(),
@@ -217,7 +199,7 @@ mod tests {
     fn normalize_optional_choice_of_attributes() {
         // Exactly one of the exclusive attributes may be present.
         assert_eq!(
-            normalize_attributes(&ResolvedPattern::optional(ResolvedPattern::choice([
+            normalize_attributes(&Pattern::optional(Pattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ])))
@@ -229,7 +211,7 @@ mod tests {
     #[test]
     fn fail_on_element() {
         assert!(matches!(
-            normalize_attributes(&ResolvedPattern::Element(["foo".into()].into())),
+            normalize_attributes(&Pattern::Element(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }

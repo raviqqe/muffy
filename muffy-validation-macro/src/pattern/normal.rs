@@ -1,19 +1,17 @@
-use super::ResolvedPattern;
+use super::Pattern;
 use crate::error::MacroError;
 
-pub fn normalize_pattern(
-    pattern: &ResolvedPattern,
-) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
+pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, MacroError> {
     Ok(match pattern {
-        ResolvedPattern::Attribute(_) => vec![(pattern.clone(), ResolvedPattern::Empty)],
-        ResolvedPattern::Element(_) | ResolvedPattern::Text => {
-            vec![(ResolvedPattern::Empty, pattern.clone())]
+        Pattern::Attribute(_) => vec![(pattern.clone(), Pattern::Empty)],
+        Pattern::Element(_) | Pattern::Text => {
+            vec![(Pattern::Empty, pattern.clone())]
         }
-        ResolvedPattern::Empty => vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)],
-        ResolvedPattern::NotAllowed => vec![],
-        ResolvedPattern::Group(patterns) | ResolvedPattern::Interleave(patterns) => {
-            let interleaved = matches!(pattern, ResolvedPattern::Interleave(_));
-            let mut variants = vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)];
+        Pattern::Empty => vec![(Pattern::Empty, Pattern::Empty)],
+        Pattern::NotAllowed => vec![],
+        Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
+            let interleaved = matches!(pattern, Pattern::Interleave(_));
+            let mut variants = vec![(Pattern::Empty, Pattern::Empty)];
 
             for pattern in patterns {
                 let others = normalize_pattern(pattern)?;
@@ -23,14 +21,11 @@ pub fn normalize_pattern(
                     .flat_map(|(attribute, content)| {
                         others.iter().map(|(other_attribute, other_content)| {
                             (
-                                ResolvedPattern::interleave([
-                                    attribute.clone(),
-                                    other_attribute.clone(),
-                                ]),
+                                Pattern::interleave([attribute.clone(), other_attribute.clone()]),
                                 if interleaved {
-                                    ResolvedPattern::interleave
+                                    Pattern::interleave
                                 } else {
-                                    ResolvedPattern::group
+                                    Pattern::group
                                 }([
                                     content.clone(),
                                     other_content.clone(),
@@ -43,7 +38,7 @@ pub fn normalize_pattern(
 
             variants
         }
-        ResolvedPattern::Choice(patterns) => {
+        Pattern::Choice(patterns) => {
             let variants = patterns
                 .iter()
                 .map(normalize_pattern)
@@ -52,72 +47,64 @@ pub fn normalize_pattern(
             if variants
                 .iter()
                 .flatten()
-                .all(|(_, content)| *content == ResolvedPattern::Empty)
+                .all(|(_, content)| *content == Pattern::Empty)
             {
                 vec![(
-                    ResolvedPattern::choice(
+                    Pattern::choice(
                         variants
                             .into_iter()
                             .flatten()
                             .map(|(attribute, _)| attribute),
                     ),
-                    ResolvedPattern::Empty,
+                    Pattern::Empty,
                 )]
             } else if variants
                 .iter()
                 .flatten()
-                .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
+                .all(|(attribute, _)| *attribute == Pattern::Empty)
             {
                 vec![(
-                    ResolvedPattern::Empty,
-                    ResolvedPattern::choice(
-                        variants.into_iter().flatten().map(|(_, content)| content),
-                    ),
+                    Pattern::Empty,
+                    Pattern::choice(variants.into_iter().flatten().map(|(_, content)| content)),
                 )]
             } else {
                 variants.into_iter().flatten().collect()
             }
         }
-        ResolvedPattern::Optional(pattern) => {
+        Pattern::Optional(pattern) => {
             let variants = normalize_pattern(pattern)?;
 
             match variants.as_slice() {
-                [(attribute, content)] if *content == ResolvedPattern::Empty => {
-                    vec![(
-                        ResolvedPattern::optional(attribute.clone()),
-                        ResolvedPattern::Empty,
-                    )]
+                [(attribute, content)] if *content == Pattern::Empty => {
+                    vec![(Pattern::optional(attribute.clone()), Pattern::Empty)]
                 }
-                [(attribute, content)] if *attribute == ResolvedPattern::Empty => {
-                    vec![(
-                        ResolvedPattern::Empty,
-                        ResolvedPattern::optional(content.clone()),
-                    )]
+                [(attribute, content)] if *attribute == Pattern::Empty => {
+                    vec![(Pattern::Empty, Pattern::optional(content.clone()))]
                 }
-                _ => [(ResolvedPattern::Empty, ResolvedPattern::Empty)]
+                _ => [(Pattern::Empty, Pattern::Empty)]
                     .into_iter()
                     .chain(variants)
                     .collect(),
             }
         }
-        ResolvedPattern::Many0(operand) | ResolvedPattern::Many1(operand) => {
+        Pattern::Many0(operand) | Pattern::Many1(operand) => {
             let variants = normalize_pattern(operand)?;
 
             if !variants
                 .iter()
-                .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
+                .all(|(attribute, _)| *attribute == Pattern::Empty)
             {
                 // TODO Support attribute patterns in repetitions.
                 return Err(MacroError::RncPattern("repeated attribute pattern"));
             }
 
             vec![(
-                ResolvedPattern::Empty,
-                if matches!(pattern, ResolvedPattern::Many1(_)) {
-                    ResolvedPattern::many1
+                Pattern::Empty,
+                if matches!(pattern, Pattern::Many1(_)) {
+                    Pattern::many1
                 } else {
-                    ResolvedPattern::many0
-                }(ResolvedPattern::choice(
+                    Pattern::many0
+                }(Pattern::choice(
                     variants.into_iter().map(|(_, content)| content),
                 )),
             )]
@@ -130,22 +117,18 @@ mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
 
-    fn attribute(name: &str) -> ResolvedPattern {
-        ResolvedPattern::Attribute([name.into()].into())
+    fn attribute(name: &str) -> Pattern {
+        Pattern::Attribute([name.into()].into())
     }
 
-    fn element(name: &str) -> ResolvedPattern {
-        ResolvedPattern::Element([name.into()].into())
+    fn element(name: &str) -> Pattern {
+        Pattern::Element([name.into()].into())
     }
 
     #[test]
     fn split_attribute_and_element() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::interleave([
-                attribute("foo"),
-                element("bar")
-            ]))
-            .unwrap(),
+            normalize_pattern(&Pattern::interleave([attribute("foo"), element("bar")])).unwrap(),
             vec![(attribute("foo"), element("bar"))]
         );
     }
@@ -153,14 +136,10 @@ mod tests {
     #[test]
     fn keep_attribute_choice_in_one_alternative() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::choice([
-                attribute("foo"),
-                attribute("bar")
-            ]))
-            .unwrap(),
+            normalize_pattern(&Pattern::choice([attribute("foo"), attribute("bar")])).unwrap(),
             vec![(
-                ResolvedPattern::choice([attribute("foo"), attribute("bar")]),
-                ResolvedPattern::Empty
+                Pattern::choice([attribute("foo"), attribute("bar")]),
+                Pattern::Empty
             )]
         );
     }
@@ -168,11 +147,10 @@ mod tests {
     #[test]
     fn lift_mixed_choice_into_alternatives() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::choice([attribute("foo"), element("bar")]))
-                .unwrap(),
+            normalize_pattern(&Pattern::choice([attribute("foo"), element("bar")])).unwrap(),
             vec![
-                (attribute("foo"), ResolvedPattern::Empty),
-                (ResolvedPattern::Empty, element("bar")),
+                (attribute("foo"), Pattern::Empty),
+                (Pattern::Empty, element("bar")),
             ]
         );
     }
@@ -180,40 +158,31 @@ mod tests {
     #[test]
     fn split_optional_attribute() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
-            vec![(
-                ResolvedPattern::optional(attribute("foo")),
-                ResolvedPattern::Empty
-            )]
+            normalize_pattern(&Pattern::optional(attribute("foo"))).unwrap(),
+            vec![(Pattern::optional(attribute("foo")), Pattern::Empty)]
         );
     }
 
     #[test]
     fn split_element_repetition() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::many0(element("foo"))).unwrap(),
-            vec![(
-                ResolvedPattern::Empty,
-                ResolvedPattern::many0(element("foo"))
-            )]
+            normalize_pattern(&Pattern::many0(element("foo"))).unwrap(),
+            vec![(Pattern::Empty, Pattern::many0(element("foo")))]
         );
     }
 
     #[test]
     fn split_at_least_one_element_repetition() {
         assert_eq!(
-            normalize_pattern(&ResolvedPattern::many1(element("foo"))).unwrap(),
-            vec![(
-                ResolvedPattern::Empty,
-                ResolvedPattern::many1(element("foo"))
-            )]
+            normalize_pattern(&Pattern::many1(element("foo"))).unwrap(),
+            vec![(Pattern::Empty, Pattern::many1(element("foo")))]
         );
     }
 
     #[test]
     fn fail_on_attribute_repetition() {
         assert!(matches!(
-            normalize_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
+            normalize_pattern(&Pattern::many1(Pattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ]))),
@@ -223,9 +192,6 @@ mod tests {
 
     #[test]
     fn split_not_allowed_into_no_alternative() {
-        assert_eq!(
-            normalize_pattern(&ResolvedPattern::NotAllowed).unwrap(),
-            vec![]
-        );
+        assert_eq!(normalize_pattern(&Pattern::NotAllowed).unwrap(), vec![]);
     }
 }
