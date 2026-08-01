@@ -1,6 +1,7 @@
 use super::ResolvedPattern;
 use crate::error::MacroError;
 use alloc::collections::BTreeSet;
+use itertools::Itertools;
 
 pub fn normalize_pattern(
     pattern: &ResolvedPattern,
@@ -132,8 +133,8 @@ pub fn normalize_pattern(
                         variants
                             .iter()
                             .flat_map(|(attribute, _)| attribute_names(attribute))
-                            .collect::<BTreeSet<_>>()
-                            .into_iter()
+                            .sorted()
+                            .unique()
                             .map(|name| {
                                 ResolvedPattern::optional(ResolvedPattern::Attribute([name].into()))
                             }),
