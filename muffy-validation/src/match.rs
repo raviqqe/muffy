@@ -63,12 +63,12 @@ impl State {
             }
         }
 
-        if alternatives.len() == 1
+        if alternatives.is_empty() {
+            Self::NotAllowed
+        } else if alternatives.len() == 1
             && let Some(alternative) = alternatives.pop_first()
         {
             alternative
-        } else if alternatives.is_empty() {
-            Self::NotAllowed
         } else {
             Self::Choice(alternatives.into_iter().collect())
         }
