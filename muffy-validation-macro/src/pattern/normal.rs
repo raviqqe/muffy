@@ -1,7 +1,5 @@
 use super::ResolvedPattern;
 use crate::error::MacroError;
-use alloc::collections::BTreeSet;
-use itertools::Itertools;
 
 pub fn normalize_pattern(
     pattern: &ResolvedPattern,
@@ -105,65 +103,26 @@ pub fn normalize_pattern(
         ResolvedPattern::Many0(operand) | ResolvedPattern::Many1(operand) => {
             let variants = normalize_pattern(operand)?;
 
-            if variants
+            if !variants
                 .iter()
                 .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
             {
-                vec![(
-                    ResolvedPattern::Empty,
-                    if matches!(pattern, ResolvedPattern::Many1(_)) {
-                        ResolvedPattern::many1
-                    } else {
-                        ResolvedPattern::many0
-                    }(ResolvedPattern::choice(
-                        variants.into_iter().map(|(_, content)| content),
-                    )),
-                )]
-            } else if variants
-                .iter()
-                .all(|(_, content)| *content == ResolvedPattern::Empty)
-            {
-                // Iterations of a repetition match alternatives independently
-                // while attribute names never repeat on an element, so a
-                // repetition accepts any combination of the attribute names.
-                //
-                // TODO Require at least one attribute for one-or-more repetitions.
-                vec![(
-                    ResolvedPattern::interleave(
-                        variants
-                            .iter()
-                            .flat_map(|(attribute, _)| attribute_names(attribute))
-                            .sorted()
-                            .unique()
-                            .map(|name| {
-                                ResolvedPattern::optional(ResolvedPattern::Attribute([name].into()))
-                            }),
-                    ),
-                    ResolvedPattern::Empty,
-                )]
-            } else {
-                return Err(MacroError::RncPattern("repeated mixed pattern"));
+                // TODO Support attribute patterns in repetitions.
+                return Err(MacroError::RncPattern("repeated attribute pattern"));
             }
+
+            vec![(
+                ResolvedPattern::Empty,
+                if matches!(pattern, ResolvedPattern::Many1(_)) {
+                    ResolvedPattern::many1
+                } else {
+                    ResolvedPattern::many0
+                }(ResolvedPattern::choice(
+                    variants.into_iter().map(|(_, content)| content),
+                )),
+            )]
         }
     })
-}
-
-fn attribute_names(pattern: &ResolvedPattern) -> BTreeSet<String> {
-    match pattern {
-        ResolvedPattern::Attribute(names) => names.clone(),
-        ResolvedPattern::Choice(patterns)
-        | ResolvedPattern::Group(patterns)
-        | ResolvedPattern::Interleave(patterns) => {
-            patterns.iter().flat_map(attribute_names).collect()
-        }
-        ResolvedPattern::Many0(pattern)
-        | ResolvedPattern::Many1(pattern)
-        | ResolvedPattern::Optional(pattern) => attribute_names(pattern),
-        ResolvedPattern::Element(_)
-        | ResolvedPattern::Empty
-        | ResolvedPattern::NotAllowed
-        | ResolvedPattern::Text => Default::default(),
-    }
 }
 
 #[cfg(test)]
@@ -241,21 +200,14 @@ mod tests {
     }
 
     #[test]
-    fn split_attribute_choice_repetition_into_optional_attributes() {
-        assert_eq!(
+    fn fail_on_attribute_repetition() {
+        assert!(matches!(
             normalize_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
                 attribute("foo"),
                 attribute("bar")
-            ])))
-            .unwrap(),
-            vec![(
-                ResolvedPattern::interleave([
-                    ResolvedPattern::optional(attribute("bar")),
-                    ResolvedPattern::optional(attribute("foo")),
-                ]),
-                ResolvedPattern::Empty
-            )]
-        );
+            ]))),
+            Err(MacroError::RncPattern(_))
+        ));
     }
 
     #[test]
