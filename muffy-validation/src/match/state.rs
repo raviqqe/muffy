@@ -1,4 +1,4 @@
-use crate::content::Content;
+use crate::content::{Content, TEXT_TOKEN};
 use alloc::collections::BTreeSet;
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -12,7 +12,51 @@ pub enum State {
 }
 
 impl State {
-    pub fn choice(states: impl IntoIterator<Item = Self>) -> Self {
+    pub fn step(&self, name: &str) -> Self {
+        match self {
+            Self::Choice(states) => Self::choice(states.iter().map(|state| state.step(name))),
+            Self::Content(content) => step_content(content, name),
+            Self::Group(states) => {
+                let mut alternatives = vec![];
+
+                for (index, operand) in states.iter().enumerate() {
+                    alternatives.push(Self::group(
+                        [operand.step(name)]
+                            .into_iter()
+                            .chain(states[index + 1..].iter().cloned()),
+                    ));
+
+                    if !operand.is_nullable() {
+                        break;
+                    }
+                }
+
+                Self::choice(alternatives)
+            }
+            Self::Interleave(states) => Self::choice((0..states.len()).map(|index| {
+                Self::interleave(states.iter().enumerate().map(|(other, operand)| {
+                    if other == index {
+                        operand.step(name)
+                    } else {
+                        operand.clone()
+                    }
+                }))
+            })),
+            Self::Empty | Self::NotAllowed => Self::NotAllowed,
+        }
+    }
+
+    pub fn is_nullable(&self) -> bool {
+        match self {
+            Self::Choice(states) => states.iter().any(Self::is_nullable),
+            Self::Content(content) => content.nullable(),
+            Self::Empty => true,
+            Self::Group(states) | Self::Interleave(states) => states.iter().all(Self::is_nullable),
+            Self::NotAllowed => false,
+        }
+    }
+
+    fn choice(states: impl IntoIterator<Item = Self>) -> Self {
         let mut alternatives = BTreeSet::new();
 
         for state in states {
@@ -36,7 +80,7 @@ impl State {
         }
     }
 
-    pub fn group(states: impl IntoIterator<Item = Self>) -> Self {
+    fn group(states: impl IntoIterator<Item = Self>) -> Self {
         let mut sequence = vec![];
 
         for state in states {
@@ -59,7 +103,7 @@ impl State {
         }
     }
 
-    pub fn interleave(states: impl IntoIterator<Item = Self>) -> Self {
+    fn interleave(states: impl IntoIterator<Item = Self>) -> Self {
         let mut operands = vec![];
 
         for state in states {
@@ -83,14 +127,43 @@ impl State {
             Self::Interleave(operands)
         }
     }
+}
 
-    pub fn nullable(&self) -> bool {
-        match self {
-            Self::Choice(states) => states.iter().any(Self::nullable),
-            Self::Content(content) => content.nullable(),
-            Self::Empty => true,
-            Self::Group(states) | Self::Interleave(states) => states.iter().all(Self::nullable),
-            Self::NotAllowed => false,
+fn step_content(content: &'static Content, name: &str) -> State {
+    match content {
+        Content::Choice(patterns) => {
+            State::choice(patterns.iter().map(|pattern| step_content(pattern, name)))
+        }
+        Content::Element(names) => {
+            if names.binary_search(&name).is_ok() {
+                State::Empty
+            } else {
+                State::NotAllowed
+            }
+        }
+        Content::Empty => State::NotAllowed,
+        Content::Group(patterns) => {
+            State::Group(patterns.iter().map(State::Content).collect()).step(name)
+        }
+        Content::Interleave(patterns) => {
+            State::Interleave(patterns.iter().map(State::Content).collect()).step(name)
+        }
+        Content::Many0(operand) => {
+            State::group([step_content(operand, name), State::Content(content)])
+        }
+        // The rest of a repetition matched once is a zero-or-more repetition.
+        Content::Many1(operand) => State::group([
+            step_content(operand, name),
+            State::choice([State::Empty, State::Content(content)]),
+        ]),
+        Content::Optional(operand) => step_content(operand, name),
+        // A text pattern matches any number of text nodes.
+        Content::Text => {
+            if name == TEXT_TOKEN {
+                State::Content(content)
+            } else {
+                State::NotAllowed
+            }
         }
     }
 }

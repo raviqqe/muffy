@@ -1,3 +1,5 @@
+pub const TEXT_TOKEN: &str = "#text";
+
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Content {
     Choice(&'static [Self]),
