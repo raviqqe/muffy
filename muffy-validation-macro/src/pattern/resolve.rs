@@ -1,13 +1,12 @@
-use super::{ResolvedPattern, compile::Compiler, element_class_names, identifier_string};
+use super::{ResolvedPattern, class_names, compile::Compiler, identifier_string};
 use crate::error::MacroError;
-use alloc::collections::BTreeSet;
-use muffy_rnc::{NameClass, Pattern};
+use muffy_rnc::Pattern;
 
 impl Compiler<'_> {
     pub(super) fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
         Ok(match pattern {
             Pattern::Attribute { name_class, .. } => {
-                let names = attribute_class_names(name_class);
+                let names = class_names(name_class, true);
 
                 if names.is_empty() {
                     ResolvedPattern::NotAllowed
@@ -22,7 +21,7 @@ impl Compiler<'_> {
                     .collect::<Result<Vec<_>, _>>()?,
             ),
             Pattern::Element { name_class, .. } => {
-                let names = element_class_names(name_class);
+                let names = class_names(name_class, false);
 
                 if names.is_empty() {
                     ResolvedPattern::NotAllowed
@@ -67,25 +66,6 @@ impl Compiler<'_> {
                 ResolvedPattern::Text
             }
         })
-    }
-}
-
-fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
-    match name_class {
-        NameClass::Name(name) => {
-            let local = identifier_string(&name.local);
-
-            if let Some(prefix) = &name.prefix {
-                [format!("{}:{local}", identifier_string(prefix)), local].into()
-            } else {
-                [local].into()
-            }
-        }
-        NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
-        // TODO Support wildcard name classes. (e.g. arbitrary attributes of embed elements)
-        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
-            Default::default()
-        }
     }
 }
 
