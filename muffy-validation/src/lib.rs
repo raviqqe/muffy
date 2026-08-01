@@ -2,11 +2,18 @@
 
 extern crate alloc;
 
+mod attribute_set;
+mod content;
 mod error;
 mod r#match;
+mod rule;
+mod variant;
 
 pub use self::error::*;
-use self::r#match::{AttributeSet, Content, Rule, Variant, validate_rule};
+use self::{
+    attribute_set::AttributeSet, content::Content, r#match::validate_rule, rule::Rule,
+    variant::Variant,
+};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 

@@ -1,4 +1,10 @@
-use crate::error::{AttributeError, ChildError, MarkupError};
+use crate::{
+    attribute_set::AttributeSet,
+    content::Content,
+    error::{AttributeError, ChildError, MarkupError},
+    rule::Rule,
+    variant::Variant,
+};
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_document::html::{Element, Node};
 use regex::Regex;
@@ -9,35 +15,6 @@ const EMPTY_ATTRIBUTE_SET: AttributeSet = AttributeSet {
     required: &[],
     optional: &[],
 };
-
-pub struct AttributeSet {
-    pub required: &'static [&'static str],
-    pub optional: &'static [&'static str],
-}
-
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub enum Content {
-    Choice(&'static [Self]),
-    Element(&'static [&'static str]),
-    Empty,
-    Group(&'static [Self]),
-    Interleave(&'static [Self]),
-    Many0(&'static Self),
-    Many1(&'static Self),
-    Optional(&'static Self),
-    Text,
-}
-
-pub struct Variant {
-    pub attributes: &'static [AttributeSet],
-    pub content: &'static Content,
-}
-
-pub struct Rule {
-    pub attributes: &'static [&'static str],
-    pub children: &'static [&'static str],
-    pub variants: &'static [Variant],
-}
 
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 enum State {
@@ -129,20 +106,6 @@ impl State {
             Self::Empty => true,
             Self::Group(states) | Self::Interleave(states) => states.iter().all(Self::nullable),
             Self::NotAllowed => false,
-        }
-    }
-}
-
-impl Content {
-    fn nullable(&self) -> bool {
-        match self {
-            Self::Choice(patterns) => patterns.iter().any(Self::nullable),
-            Self::Element(_) => false,
-            Self::Empty | Self::Many0(_) | Self::Optional(_) | Self::Text => true,
-            Self::Group(patterns) | Self::Interleave(patterns) => {
-                patterns.iter().all(Self::nullable)
-            }
-            Self::Many1(pattern) => pattern.nullable(),
         }
     }
 }
