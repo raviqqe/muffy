@@ -3,7 +3,6 @@ use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_document::html::{Element, Node};
 use regex::Regex;
 
-/// A pseudo-name of text nodes in child sequences.
 const TEXT_TOKEN: &str = "#text";
 
 const EMPTY_TERM: AttributeTerm = AttributeTerm {
