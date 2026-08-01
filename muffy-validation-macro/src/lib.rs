@@ -5,14 +5,14 @@ extern crate alloc;
 mod attribute;
 mod content;
 mod error;
-mod name_class;
+mod name;
 mod pattern;
 
 use self::{
     attribute::{AttributeSet, compile_attributes},
     content::{children, compile_content},
     error::MacroError,
-    name_class::class_names,
+    name::class_names,
     pattern::{Compiler, ResolvedPattern},
 };
 use alloc::collections::{BTreeMap, BTreeSet};

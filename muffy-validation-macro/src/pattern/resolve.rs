@@ -1,7 +1,7 @@
 use super::{ResolvedPattern, compile::Compiler};
 use crate::{
     error::MacroError,
-    name_class::{class_names, identifier_string},
+    name::{class_names, identifier_string},
 };
 use muffy_rnc::Pattern;
 
