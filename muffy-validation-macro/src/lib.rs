@@ -10,9 +10,9 @@ mod name;
 mod pattern;
 
 use self::{
-    attribute::{AttributeSet, normalize_attributes},
+    attribute::AttributeSet,
     compiler::Compiler,
-    content::{children, compile_content},
+    content::{children, generate_content},
     error::MacroError,
     name::class_names,
     pattern::ResolvedPattern,
@@ -63,13 +63,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                 continue;
             }
 
-            for (attribute_pattern, content_pattern) in compiler.compile(pattern)? {
-                let attribute_sets = normalize_attributes(&attribute_pattern)?;
-
-                if attribute_sets.is_empty() || content_pattern == ResolvedPattern::NotAllowed {
-                    continue;
-                }
-
+            for (attribute_sets, content_pattern) in compiler.compile(pattern)? {
                 for name in &names {
                     let variants = element_rules.entry(name.clone()).or_default();
                     let variant = (attribute_sets.clone(), content_pattern.clone());
@@ -148,7 +142,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     let content_definitions = sort_by_index(content_indexes)
         .map(|(content, index)| {
             let identifier = format_ident!("CONTENT_{index}");
-            let content = compile_content(&content)?;
+            let content = generate_content(&content)?;
 
             Ok(quote!(const #identifier: Content = #content;))
         })

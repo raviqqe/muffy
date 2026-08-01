@@ -5,7 +5,7 @@ use quote::quote;
 
 const TEXT_TOKEN: &str = "#text";
 
-pub fn compile_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroError> {
+pub fn generate_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroError> {
     Ok(match pattern {
         ResolvedPattern::Attribute(_) => {
             return Err(MacroError::RncPattern("attribute in content pattern"));
@@ -35,17 +35,17 @@ pub fn compile_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroEr
             quote!(Content::Interleave(&[#(#patterns),*]))
         }
         ResolvedPattern::Many0(pattern) => {
-            let pattern = compile_content(pattern)?;
+            let pattern = generate_content(pattern)?;
 
             quote!(Content::Many0(&#pattern))
         }
         ResolvedPattern::Many1(pattern) => {
-            let pattern = compile_content(pattern)?;
+            let pattern = generate_content(pattern)?;
 
             quote!(Content::Many1(&#pattern))
         }
         ResolvedPattern::Optional(pattern) => {
-            let pattern = compile_content(pattern)?;
+            let pattern = generate_content(pattern)?;
 
             quote!(Content::Optional(&#pattern))
         }
@@ -54,7 +54,7 @@ pub fn compile_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroEr
 }
 
 fn compile_contents(patterns: &[ResolvedPattern]) -> Result<Vec<TokenStream>, MacroError> {
-    patterns.iter().map(compile_content).collect()
+    patterns.iter().map(generate_content).collect()
 }
 
 pub fn children(pattern: &ResolvedPattern) -> BTreeSet<String> {
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn compile_ordered_group() {
         assert_eq!(
-            compile_content(&ResolvedPattern::group([element("foo"), element("bar")]))
+            generate_content(&ResolvedPattern::group([element("foo"), element("bar")]))
                 .unwrap()
                 .to_string(),
             quote!(Content::Group(&[
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn compile_repetition() {
         assert_eq!(
-            compile_content(&ResolvedPattern::many0(element("foo")))
+            generate_content(&ResolvedPattern::many0(element("foo")))
                 .unwrap()
                 .to_string(),
             quote!(Content::Many0(&Content::Element(&["foo"]))).to_string()
@@ -148,7 +148,7 @@ mod tests {
     #[test]
     fn fail_on_attribute() {
         assert!(matches!(
-            compile_content(&ResolvedPattern::Attribute(["foo".into()].into())),
+            generate_content(&ResolvedPattern::Attribute(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }

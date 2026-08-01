@@ -1,4 +1,5 @@
 use crate::{
+    attribute::{AttributeSet, normalize_attributes},
     error::MacroError,
     name::{class_names, identifier_string},
     pattern::{ResolvedPattern, normalize_pattern},
@@ -22,8 +23,22 @@ impl<'a> Compiler<'a> {
     pub fn compile(
         &mut self,
         pattern: &Pattern,
-    ) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
-        normalize_pattern(&self.resolve(pattern)?)
+    ) -> Result<Vec<(Vec<AttributeSet>, ResolvedPattern)>, MacroError> {
+        normalize_pattern(&self.resolve(pattern)?)?
+            .into_iter()
+            .filter_map(|(attribute_pattern, content_pattern)| {
+                match normalize_attributes(&attribute_pattern) {
+                    Ok(attribute_sets)
+                        if attribute_sets.is_empty()
+                            || content_pattern == ResolvedPattern::NotAllowed =>
+                    {
+                        None
+                    }
+                    Ok(attribute_sets) => Some(Ok((attribute_sets, content_pattern))),
+                    Err(error) => Some(Err(error)),
+                }
+            })
+            .collect()
     }
 
     fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
