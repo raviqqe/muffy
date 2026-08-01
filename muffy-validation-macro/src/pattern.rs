@@ -297,8 +297,7 @@ pub fn split_pattern(
                 // while attribute names never repeat on an element, so a
                 // repetition accepts any combination of the attribute names.
                 //
-                // TODO Require at least one attribute for one-or-more
-                // repetitions.
+                // TODO Require at least one attribute for one-or-more repetitions.
                 vec![(
                     CompiledPattern::interleave(
                         variants
