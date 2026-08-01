@@ -11,7 +11,7 @@ use self::{
     attribute::{AttributeSet, compile_attributes},
     content::{children, compile_content},
     error::MacroError,
-    pattern::{Compiler, ResolvedPattern, class_names},
+    pattern::{Compiler, ResolvedPattern, element_class_names},
 };
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
@@ -53,7 +53,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
     for definition in definitions.values() {
         for (name_class, pattern) in collect_elements(definition) {
-            let names = class_names(name_class);
+            let names = element_class_names(name_class);
 
             if names.is_empty() {
                 continue;

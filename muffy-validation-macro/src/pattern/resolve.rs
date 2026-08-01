@@ -1,4 +1,4 @@
-use super::{ResolvedPattern, class_names, identifier_string};
+use super::{ResolvedPattern, element_class_names, identifier_string};
 use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
@@ -19,7 +19,7 @@ pub fn resolve_pattern(
             }
         }
         Pattern::Element { name_class, .. } => {
-            let names = class_names(name_class);
+            let names = element_class_names(name_class);
 
             if names.is_empty() {
                 ResolvedPattern::NotAllowed
