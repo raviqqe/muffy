@@ -226,9 +226,7 @@ fn load_grammar(
             }
             GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory)?,
             GrammarContent::Include(include) => {
-                let include_path = directory.join(&include.uri);
-
-                load_schema(&include_path, definitions)?;
+                load_schema(&directory.join(&include.uri), definitions)?;
 
                 if let Some(grammar) = &include.grammar {
                     load_grammar(grammar, definitions, directory)?;
