@@ -78,7 +78,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         }
     }
 
-    let mut set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
+    let mut attribute_set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
     let mut content_indexes = BTreeMap::<ResolvedPattern, usize>::new();
     let mut element_matches = vec![];
 
@@ -96,10 +96,10 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         let variants = variants
             .iter()
             .map(|(sets, content)| {
-                let index = set_indexes.len();
+                let index = attribute_set_indexes.len();
                 let sets = format_ident!(
                     "ATTRIBUTE_SETS_{}",
-                    *set_indexes.entry(sets.clone()).or_insert(index)
+                    *attribute_set_indexes.entry(sets.clone()).or_insert(index)
                 );
 
                 let index = content_indexes.len();
@@ -127,7 +127,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         });
     }
 
-    let set_definitions = sort_by_index(set_indexes).map(|(sets, index)| {
+    let attribute_set_definitions = sort_by_index(attribute_set_indexes).map(|(sets, index)| {
         let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
         let sets = sets.iter().map(|set| {
             let required = set.required.iter().map(|name| quote!(#name));
@@ -157,7 +157,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
-            #(#set_definitions)*
+            #(#attribute_set_definitions)*
             #(#content_definitions)*
 
             match element.name() {
