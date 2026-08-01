@@ -244,7 +244,6 @@ fn match_children(
     (misplaced, state)
 }
 
-// Names on shortest paths from a state to acceptance.
 fn expected_names(state: &State, names: &[&'static str]) -> BTreeSet<&'static str> {
     if state.nullable() {
         return Default::default();
