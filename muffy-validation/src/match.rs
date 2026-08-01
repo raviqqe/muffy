@@ -36,65 +36,66 @@ pub fn validate_rule(
         .map(|name| (name.into(), [ChildError::NotAllowed].into()))
         .collect::<BTreeMap<String, BTreeSet<ChildError>>>();
 
-    let (missing_attributes, missing_children) =
-        if let Some(variant) = rule.variants.iter().min_by_key(|variant| {
-            score_variant(variant, &attributes, &exempt_attributes, &children)
+    let mut missing_attributes = BTreeSet::new();
+    let mut missing_children = BTreeSet::new();
+
+    if let Some(variant) = rule
+        .variants
+        .iter()
+        .min_by_key(|variant| score_variant(variant, &attributes, &exempt_attributes, &children))
+    {
+        let attribute_set = variant
+            .attributes
+            .iter()
+            .min_by_key(|set| score_attribute_set(set, &attributes, &exempt_attributes))
+            .unwrap_or(&EMPTY_ATTRIBUTE_SET);
+
+        for name in attributes.iter().filter(|name| {
+            attribute_set.required.binary_search(name).is_err()
+                && attribute_set.optional.binary_search(name).is_err()
         }) {
-            let attribute_set = variant
-                .attributes
+            attribute_errors
+                .entry((*name).into())
+                .or_default()
+                .insert(AttributeError::Conflict);
+        }
+
+        let (misplaced, state) = match_children(variant.content, &children);
+
+        for name in &misplaced {
+            child_errors
+                .entry((*name).into())
+                .or_default()
+                .insert(ChildError::Misplaced);
+        }
+
+        missing_attributes.extend(
+            attribute_set
+                .required
                 .iter()
-                .min_by_key(|set| score_attribute_set(set, &attributes, &exempt_attributes))
-                .unwrap_or(&EMPTY_ATTRIBUTE_SET);
-
-            for name in attributes.iter().filter(|name| {
-                attribute_set.required.binary_search(name).is_err()
-                    && attribute_set.optional.binary_search(name).is_err()
-            }) {
-                attribute_errors
-                    .entry((*name).into())
-                    .or_default()
-                    .insert(AttributeError::Conflict);
-            }
-
-            let (misplaced, state) = match_children(variant.content, &children);
-
-            for name in &misplaced {
-                child_errors
-                    .entry((*name).into())
-                    .or_default()
-                    .insert(ChildError::Misplaced);
-            }
-
-            (
-                attribute_set
-                    .required
-                    .iter()
-                    .filter(|name| {
-                        attributes.binary_search(name).is_err()
-                            && exempt_attributes.binary_search(name).is_err()
-                            && !ignored_attributes
-                                .iter()
-                                .any(|pattern| pattern.is_match(name))
-                    })
-                    .map(|&name| name.into())
-                    .collect::<BTreeSet<String>>(),
-                if misplaced.is_empty() && !state.is_nullable() {
-                    expected_names(&state, rule.children)
+                .filter(|name| {
+                    attributes.binary_search(name).is_err()
+                        && exempt_attributes.binary_search(name).is_err()
+                        && !ignored_attributes
+                            .iter()
+                            .any(|pattern| pattern.is_match(name))
+                })
+                .map(|&name| name.into()),
+        );
+        missing_children.extend(if misplaced.is_empty() && !state.is_nullable() {
+            expected_names(&state, rule.children)
+                .iter()
+                .filter(|name| {
+                    !ignored_elements
                         .iter()
-                        .filter(|name| {
-                            !ignored_elements
-                                .iter()
-                                .any(|pattern| pattern.is_match(name))
-                        })
-                        .map(|&name| name.into())
-                        .collect::<BTreeSet<String>>()
-                } else {
-                    Default::default()
-                },
-            )
+                        .any(|pattern| pattern.is_match(name))
+                })
+                .map(|&name| name.into())
+                .collect::<BTreeSet<String>>()
         } else {
             Default::default()
-        };
+        });
+    }
 
     if attribute_errors.is_empty()
         && child_errors.is_empty()
