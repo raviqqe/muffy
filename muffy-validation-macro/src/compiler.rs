@@ -88,14 +88,16 @@ impl<'a> Compiler<'a> {
             RncPattern::Name(name) => {
                 if let Some(pattern) = self.cache.get(&name.local) {
                     pattern.clone()
-                } else if let Some(definition) = self.definitions.get(&name.local) {
+                } else {
+                    let Some(definition) = self.definitions.get(&name.local) else {
+                        return Err(MacroError::UndefinedReference(identifier_string(
+                            &name.local,
+                        )));
+                    };
+
                     let pattern = self.resolve(definition)?;
                     self.cache.insert(name.local.clone(), pattern.clone());
                     pattern
-                } else {
-                    return Err(MacroError::UndefinedReference(identifier_string(
-                        &name.local,
-                    )));
                 }
             }
             // TODO Validate texts and attribute values against data and value patterns.
