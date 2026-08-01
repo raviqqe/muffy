@@ -102,23 +102,21 @@ pub fn normalize_pattern(
             }
         }
         ResolvedPattern::Many0(operand) | ResolvedPattern::Many1(operand) => {
-            let at_least_once = matches!(pattern, ResolvedPattern::Many1(_));
             let variants = normalize_pattern(operand)?;
 
             if variants
                 .iter()
                 .all(|(attribute, _)| *attribute == ResolvedPattern::Empty)
             {
-                let content =
-                    ResolvedPattern::choice(variants.into_iter().map(|(_, content)| content));
-
                 vec![(
                     ResolvedPattern::Empty,
-                    if at_least_once {
-                        ResolvedPattern::many1(content)
+                    if matches!(pattern, ResolvedPattern::Many1(_)) {
+                        ResolvedPattern::many1
                     } else {
-                        ResolvedPattern::many0(content)
-                    },
+                        ResolvedPattern::many0
+                    }(ResolvedPattern::choice(
+                        variants.into_iter().map(|(_, content)| content),
+                    )),
                 )]
             } else if variants
                 .iter()
