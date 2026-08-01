@@ -16,29 +16,29 @@ pub fn split_pattern(
             let interleaved = matches!(pattern, ResolvedPattern::Interleave(_));
             let mut variants = vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)];
 
-            for operand in patterns {
-                let operand_variants = split_pattern(operand)?;
+            for pattern in patterns {
+                let others = split_pattern(pattern)?;
 
                 variants = variants
                     .iter()
                     .flat_map(|(attribute, content)| {
-                        operand_variants
+                        others
                             .iter()
-                            .map(|(operand_attribute, operand_content)| {
+                            .map(|(other_attribute, other_content)| {
                                 (
                                     ResolvedPattern::interleave([
                                         attribute.clone(),
-                                        operand_attribute.clone(),
+                                        other_attribute.clone(),
                                     ]),
                                     if interleaved {
                                         ResolvedPattern::interleave([
                                             content.clone(),
-                                            operand_content.clone(),
+                                            other_content.clone(),
                                         ])
                                     } else {
                                         ResolvedPattern::group([
                                             content.clone(),
-                                            operand_content.clone(),
+                                            other_content.clone(),
                                         ])
                                     },
                                 )
