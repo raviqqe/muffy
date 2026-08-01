@@ -92,8 +92,7 @@ pub fn validate_rule(
                             .iter()
                             .any(|pattern| pattern.is_match(name))
                     })
-                    .map(|&name| name.into())
-                    .collect::<BTreeSet<String>>(),
+                    .map(|&name| name.into()),
             );
         }
     }
