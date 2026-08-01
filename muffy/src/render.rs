@@ -115,6 +115,7 @@ mod tests {
     };
     use core::str;
     use insta::assert_snapshot;
+    use muffy_validation::{AttributeError, ChildError, MarkupError};
     use url::Url;
 
     fn mixed_document_output() -> DocumentOutput {
@@ -134,18 +135,18 @@ mod tests {
                         .into(),
                     )),
                     Err(ItemError::HtmlValidation(
-                        muffy_validation::MarkupError::UnknownTag("foo".into()),
+                        MarkupError::UnknownTag("foo".into()),
                     )),
                     Err(ItemError::HtmlValidation(
-                        muffy_validation::MarkupError::InvalidElement {
+                        MarkupError::InvalidElement {
                             invalid_attributes: [(
                                 "bar".into(),
-                                [muffy_validation::AttributeError::Conflict].into(),
+                                [AttributeError::Conflict].into(),
                             )]
                             .into(),
                             invalid_children: [(
                                 "baz".into(),
-                                [muffy_validation::ChildError::Misplaced].into(),
+                                [ChildError::Misplaced].into(),
                             )]
                             .into(),
                             missing_attributes: ["qux".into()].into(),

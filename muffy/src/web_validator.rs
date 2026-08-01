@@ -21,6 +21,7 @@ use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
 use muffy_document::html::Node;
+use muffy_validation::MarkupError;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
 use tokio_stream::wrappers::ReceiverStream;
@@ -367,13 +368,13 @@ impl WebValidator {
 
         if let Err(error) = &validation_result {
             match error {
-                muffy_validation::MarkupError::UnknownTag(_) => {
+                MarkupError::UnknownTag(_) => {
                     items.push(spawn({
                         let error = error.clone();
                         async move { Err(ItemError::HtmlValidation(error)) }
                     }));
                 }
-                muffy_validation::MarkupError::InvalidElement {
+                MarkupError::InvalidElement {
                     invalid_attributes,
                     invalid_children,
                     missing_attributes,
@@ -381,7 +382,7 @@ impl WebValidator {
                 } => {
                     for (name, errors) in invalid_attributes {
                         items.push(spawn({
-                            let error = muffy_validation::MarkupError::InvalidElement {
+                            let error = MarkupError::InvalidElement {
                                 invalid_attributes: [(name.clone(), errors.clone())].into(),
                                 invalid_children: Default::default(),
                                 missing_attributes: Default::default(),
@@ -393,7 +394,7 @@ impl WebValidator {
 
                     for (name, errors) in invalid_children {
                         items.push(spawn({
-                            let error = muffy_validation::MarkupError::InvalidElement {
+                            let error = MarkupError::InvalidElement {
                                 invalid_attributes: Default::default(),
                                 invalid_children: [(name.clone(), errors.clone())].into(),
                                 missing_attributes: Default::default(),
@@ -405,7 +406,7 @@ impl WebValidator {
 
                     if !missing_attributes.is_empty() {
                         items.push(spawn({
-                            let error = muffy_validation::MarkupError::InvalidElement {
+                            let error = MarkupError::InvalidElement {
                                 invalid_attributes: Default::default(),
                                 invalid_children: Default::default(),
                                 missing_attributes: missing_attributes.clone(),
@@ -417,7 +418,7 @@ impl WebValidator {
 
                     if !missing_children.is_empty() {
                         items.push(spawn({
-                            let error = muffy_validation::MarkupError::InvalidElement {
+                            let error = MarkupError::InvalidElement {
                                 invalid_attributes: Default::default(),
                                 invalid_children: Default::default(),
                                 missing_attributes: Default::default(),
@@ -440,7 +441,7 @@ impl WebValidator {
                         .iter()
                         .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
                         .chain(
-                            if let Err(muffy_validation::MarkupError::InvalidElement {
+                            if let Err(MarkupError::InvalidElement {
                                 invalid_attributes,
                                 ..
                             }) = &validation_result
