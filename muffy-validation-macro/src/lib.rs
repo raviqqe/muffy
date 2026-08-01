@@ -64,15 +64,15 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             }
 
             for (attribute_pattern, content_pattern) in compiler.compile(pattern)? {
-                let sets = normalize_attributes(&attribute_pattern)?;
+                let attribute_sets = normalize_attributes(&attribute_pattern)?;
 
-                if sets.is_empty() || content_pattern == ResolvedPattern::NotAllowed {
+                if attribute_sets.is_empty() || content_pattern == ResolvedPattern::NotAllowed {
                     continue;
                 }
 
                 for name in &names {
                     let variants = element_rules.entry(name.clone()).or_default();
-                    let variant = (sets.clone(), content_pattern.clone());
+                    let variant = (attribute_sets.clone(), content_pattern.clone());
 
                     if !variants.contains(&variant) {
                         variants.push(variant);

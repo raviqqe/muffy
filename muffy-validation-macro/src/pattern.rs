@@ -1,4 +1,4 @@
+mod normal;
 mod resolved_pattern;
-mod split;
 
-pub use self::{resolved_pattern::ResolvedPattern, split::split_pattern};
+pub use self::{normal::normalize_pattern, resolved_pattern::ResolvedPattern};

@@ -1,7 +1,7 @@
 use crate::{
     error::MacroError,
     name::{class_names, identifier_string},
-    pattern::{ResolvedPattern, split_pattern},
+    pattern::{ResolvedPattern, normalize_pattern},
 };
 use alloc::collections::BTreeMap;
 use muffy_rnc::{Identifier, Pattern};
@@ -23,7 +23,7 @@ impl<'a> Compiler<'a> {
         &mut self,
         pattern: &Pattern,
     ) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
-        split_pattern(&self.resolve(pattern)?)
+        normalize_pattern(&self.resolve(pattern)?)
     }
 
     fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {

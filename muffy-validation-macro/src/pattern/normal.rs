@@ -2,7 +2,7 @@ use super::ResolvedPattern;
 use crate::error::MacroError;
 use alloc::collections::BTreeSet;
 
-pub fn split_pattern(
+pub fn normalize_pattern(
     pattern: &ResolvedPattern,
 ) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
     Ok(match pattern {
@@ -17,7 +17,7 @@ pub fn split_pattern(
             let mut variants = vec![(ResolvedPattern::Empty, ResolvedPattern::Empty)];
 
             for pattern in patterns {
-                let others = split_pattern(pattern)?;
+                let others = normalize_pattern(pattern)?;
 
                 variants = variants
                     .iter()
@@ -47,7 +47,7 @@ pub fn split_pattern(
         ResolvedPattern::Choice(patterns) => {
             let variants = patterns
                 .iter()
-                .map(split_pattern)
+                .map(normalize_pattern)
                 .collect::<Result<Vec<_>, _>>()?;
 
             if variants
@@ -80,7 +80,7 @@ pub fn split_pattern(
             }
         }
         ResolvedPattern::Optional(pattern) => {
-            let variants = split_pattern(pattern)?;
+            let variants = normalize_pattern(pattern)?;
 
             match variants.as_slice() {
                 [(attribute, content)] if *content == ResolvedPattern::Empty => {
@@ -103,7 +103,7 @@ pub fn split_pattern(
         }
         ResolvedPattern::Many0(operand) | ResolvedPattern::Many1(operand) => {
             let at_least_once = matches!(pattern, ResolvedPattern::Many1(_));
-            let variants = split_pattern(operand)?;
+            let variants = normalize_pattern(operand)?;
 
             if variants
                 .iter()
@@ -183,7 +183,7 @@ mod tests {
     #[test]
     fn split_attribute_and_element() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::interleave([
+            normalize_pattern(&ResolvedPattern::interleave([
                 attribute("foo"),
                 element("bar")
             ]))
@@ -195,7 +195,7 @@ mod tests {
     #[test]
     fn keep_attribute_choice_in_one_alternative() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::choice([
+            normalize_pattern(&ResolvedPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ]))
@@ -210,7 +210,8 @@ mod tests {
     #[test]
     fn lift_mixed_choice_into_alternatives() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::choice([attribute("foo"), element("bar")])).unwrap(),
+            normalize_pattern(&ResolvedPattern::choice([attribute("foo"), element("bar")]))
+                .unwrap(),
             vec![
                 (attribute("foo"), ResolvedPattern::Empty),
                 (ResolvedPattern::Empty, element("bar")),
@@ -221,7 +222,7 @@ mod tests {
     #[test]
     fn split_optional_attribute() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
+            normalize_pattern(&ResolvedPattern::optional(attribute("foo"))).unwrap(),
             vec![(
                 ResolvedPattern::optional(attribute("foo")),
                 ResolvedPattern::Empty
@@ -232,7 +233,7 @@ mod tests {
     #[test]
     fn split_element_repetition() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::many0(element("foo"))).unwrap(),
+            normalize_pattern(&ResolvedPattern::many0(element("foo"))).unwrap(),
             vec![(
                 ResolvedPattern::Empty,
                 ResolvedPattern::many0(element("foo"))
@@ -243,7 +244,7 @@ mod tests {
     #[test]
     fn split_attribute_choice_repetition_into_optional_attributes() {
         assert_eq!(
-            split_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
+            normalize_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
                 attribute("foo"),
                 attribute("bar")
             ])))
@@ -260,6 +261,9 @@ mod tests {
 
     #[test]
     fn split_not_allowed_into_no_alternative() {
-        assert_eq!(split_pattern(&ResolvedPattern::NotAllowed).unwrap(), vec![]);
+        assert_eq!(
+            normalize_pattern(&ResolvedPattern::NotAllowed).unwrap(),
+            vec![]
+        );
     }
 }
