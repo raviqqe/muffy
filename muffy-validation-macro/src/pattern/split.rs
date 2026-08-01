@@ -2,24 +2,6 @@ use super::ResolvedPattern;
 use crate::error::MacroError;
 use alloc::collections::BTreeSet;
 
-fn attribute_names(pattern: &ResolvedPattern) -> BTreeSet<String> {
-    match pattern {
-        ResolvedPattern::Attribute(names) => names.clone(),
-        ResolvedPattern::Choice(patterns)
-        | ResolvedPattern::Group(patterns)
-        | ResolvedPattern::Interleave(patterns) => {
-            patterns.iter().flat_map(attribute_names).collect()
-        }
-        ResolvedPattern::Many0(pattern)
-        | ResolvedPattern::Many1(pattern)
-        | ResolvedPattern::Optional(pattern) => attribute_names(pattern),
-        ResolvedPattern::Element(_)
-        | ResolvedPattern::Empty
-        | ResolvedPattern::NotAllowed
-        | ResolvedPattern::Text => Default::default(),
-    }
-}
-
 pub fn split_pattern(
     pattern: &ResolvedPattern,
 ) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
@@ -170,6 +152,24 @@ pub fn split_pattern(
             }
         }
     })
+}
+
+fn attribute_names(pattern: &ResolvedPattern) -> BTreeSet<String> {
+    match pattern {
+        ResolvedPattern::Attribute(names) => names.clone(),
+        ResolvedPattern::Choice(patterns)
+        | ResolvedPattern::Group(patterns)
+        | ResolvedPattern::Interleave(patterns) => {
+            patterns.iter().flat_map(attribute_names).collect()
+        }
+        ResolvedPattern::Many0(pattern)
+        | ResolvedPattern::Many1(pattern)
+        | ResolvedPattern::Optional(pattern) => attribute_names(pattern),
+        ResolvedPattern::Element(_)
+        | ResolvedPattern::Empty
+        | ResolvedPattern::NotAllowed
+        | ResolvedPattern::Text => Default::default(),
+    }
 }
 
 #[cfg(test)]

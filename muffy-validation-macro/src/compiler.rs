@@ -1,12 +1,32 @@
-use super::{ResolvedPattern, compile::Compiler};
 use crate::{
     error::MacroError,
     name::{class_names, identifier_string},
+    pattern::{ResolvedPattern, split_pattern},
 };
-use muffy_rnc::Pattern;
+use alloc::collections::BTreeMap;
+use muffy_rnc::{Identifier, Pattern};
 
-impl Compiler<'_> {
-    pub(super) fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
+pub struct Compiler<'a> {
+    definitions: &'a BTreeMap<Identifier, Pattern>,
+    cache: BTreeMap<Identifier, ResolvedPattern>,
+}
+
+impl<'a> Compiler<'a> {
+    pub fn new(definitions: &'a BTreeMap<Identifier, Pattern>) -> Self {
+        Self {
+            definitions,
+            cache: Default::default(),
+        }
+    }
+
+    pub fn compile(
+        &mut self,
+        pattern: &Pattern,
+    ) -> Result<Vec<(ResolvedPattern, ResolvedPattern)>, MacroError> {
+        split_pattern(&self.resolve(pattern)?)
+    }
+
+    fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
         Ok(match pattern {
             Pattern::Attribute { name_class, .. } => {
                 let names = class_names(name_class, true);
