@@ -2,8 +2,6 @@ use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
 
-/// A pattern compiled for name-based matching with references resolved,
-/// attribute values dropped, and not-allowed sub-patterns propagated.
 // TODO Support attribute value schemas.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum CompiledPattern {
