@@ -5,13 +5,15 @@ extern crate alloc;
 mod attribute;
 mod content;
 mod error;
+mod name_class;
 mod pattern;
 
 use self::{
     attribute::{AttributeSet, compile_attributes},
     content::{children, compile_content},
     error::MacroError,
-    pattern::{Compiler, ResolvedPattern, class_names},
+    name_class::class_names,
+    pattern::{Compiler, ResolvedPattern},
 };
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;

@@ -1,5 +1,8 @@
-use super::{ResolvedPattern, class_names, compile::Compiler, name_class::identifier_string};
-use crate::error::MacroError;
+use super::{ResolvedPattern, compile::Compiler};
+use crate::{
+    error::MacroError,
+    name_class::{class_names, identifier_string},
+};
 use muffy_rnc::Pattern;
 
 impl Compiler<'_> {
