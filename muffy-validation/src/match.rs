@@ -355,7 +355,7 @@ pub fn validate_rule(
         let set = variant
             .attributes
             .iter()
-            .min_by_key(|set| set_score(set, &attributes, &exempt_attributes))
+            .min_by_key(|set| score_attribute_set(set, &attributes, &exempt_attributes))
             .unwrap_or(&EMPTY_ATTRIBUTE_SET);
 
         for name in attributes.iter().filter(|name| {
@@ -422,10 +422,6 @@ pub fn validate_rule(
     }
 }
 
-// Variants are scored by the total error count, then by errors on present
-// names so that a variant missing a name is preferred over one conflicting
-// with an equal number of present names, and then by the requirement count so
-// that the simplest variant is reported.
 fn score_variant(
     variant: &Variant,
     attributes: &[&'static str],
@@ -435,7 +431,7 @@ fn score_variant(
     let (attribute_error_count, requirement_count, conflict_count) = variant
         .attributes
         .iter()
-        .map(|set| set_score(set, attributes, exempt_attributes))
+        .map(|set| score_attribute_set(set, attributes, exempt_attributes))
         .min()
         .unwrap_or_default();
 
@@ -450,9 +446,7 @@ fn score_variant(
     )
 }
 
-// Sets are ordered by the error count first and the requirement count second
-// so that the simplest of equally scored alternatives is diagnosed.
-fn set_score(
+fn score_attribute_set(
     set: &AttributeSet,
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
