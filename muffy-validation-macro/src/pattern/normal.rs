@@ -200,6 +200,17 @@ mod tests {
     }
 
     #[test]
+    fn split_at_least_one_element_repetition() {
+        assert_eq!(
+            normalize_pattern(&ResolvedPattern::many1(element("foo"))).unwrap(),
+            vec![(
+                ResolvedPattern::Empty,
+                ResolvedPattern::many1(element("foo"))
+            )]
+        );
+    }
+
+    #[test]
     fn fail_on_attribute_repetition() {
         assert!(matches!(
             normalize_pattern(&ResolvedPattern::many1(ResolvedPattern::choice([
