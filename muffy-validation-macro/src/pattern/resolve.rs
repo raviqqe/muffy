@@ -69,6 +69,7 @@ impl Compiler<'_> {
         })
     }
 }
+
 fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => {
