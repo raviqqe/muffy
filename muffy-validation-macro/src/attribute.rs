@@ -56,7 +56,7 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
             terms
         }
         CompiledPattern::Optional(pattern) | CompiledPattern::Many0(pattern) => {
-            optional_terms(compile(pattern)?)
+            optional(compile(pattern)?)
         }
         CompiledPattern::Many1(pattern) => compile(pattern)?,
         CompiledPattern::Element(_) | CompiledPattern::Text => {
@@ -65,7 +65,7 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
     })
 }
 
-fn optional_terms(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
+fn optional(mut terms: Vec<AttributeTerm>) -> Vec<AttributeTerm> {
     terms.sort();
     terms.dedup();
 
