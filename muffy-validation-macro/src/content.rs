@@ -3,8 +3,6 @@ use alloc::collections::{BTreeMap, BTreeSet};
 
 // cspell: ignore brzozowski
 
-const STATE_LIMIT: usize = 512;
-
 /// A pseudo-name of text nodes in child sequences.
 pub const TEXT_TOKEN: &str = "#text";
 
@@ -48,10 +46,6 @@ pub fn compile_content_automaton(
             });
 
             state_transitions.insert(name, next_index);
-        }
-
-        if states.len() > STATE_LIMIT {
-            return Err(MacroError::PatternLimit("content model states"));
         }
 
         transitions.push(state_transitions);
