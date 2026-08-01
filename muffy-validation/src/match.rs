@@ -19,143 +19,6 @@ const EMPTY_ATTRIBUTE_SET: AttributeSet = AttributeSet {
     optional: &[],
 };
 
-fn step(state: &State, name: &str) -> State {
-    match state {
-        State::Choice(states) => State::choice(states.iter().map(|state| step(state, name))),
-        State::Content(content) => step_content(content, name),
-        State::Group(states) => {
-            let mut alternatives = vec![];
-
-            for (index, operand) in states.iter().enumerate() {
-                alternatives.push(State::group(
-                    [step(operand, name)]
-                        .into_iter()
-                        .chain(states[index + 1..].iter().cloned()),
-                ));
-
-                if !operand.nullable() {
-                    break;
-                }
-            }
-
-            State::choice(alternatives)
-        }
-        State::Interleave(states) => State::choice((0..states.len()).map(|index| {
-            State::interleave(states.iter().enumerate().map(|(other, operand)| {
-                if other == index {
-                    step(operand, name)
-                } else {
-                    operand.clone()
-                }
-            }))
-        })),
-        State::Empty | State::NotAllowed => State::NotAllowed,
-    }
-}
-
-fn step_content(content: &'static Content, name: &str) -> State {
-    match content {
-        Content::Choice(patterns) => {
-            State::choice(patterns.iter().map(|pattern| step_content(pattern, name)))
-        }
-        Content::Element(names) => {
-            if names.binary_search(&name).is_ok() {
-                State::Empty
-            } else {
-                State::NotAllowed
-            }
-        }
-        Content::Empty => State::NotAllowed,
-        Content::Group(patterns) => step(
-            &State::Group(patterns.iter().map(State::Content).collect()),
-            name,
-        ),
-        Content::Interleave(patterns) => step(
-            &State::Interleave(patterns.iter().map(State::Content).collect()),
-            name,
-        ),
-        Content::Many0(operand) => {
-            State::group([step_content(operand, name), State::Content(content)])
-        }
-        // The rest of a repetition matched once is a zero-or-more repetition.
-        Content::Many1(operand) => State::group([
-            step_content(operand, name),
-            State::choice([State::Empty, State::Content(content)]),
-        ]),
-        Content::Optional(operand) => step_content(operand, name),
-        // A text pattern matches any number of text nodes.
-        Content::Text => {
-            if name == TEXT_TOKEN {
-                State::Content(content)
-            } else {
-                State::NotAllowed
-            }
-        }
-    }
-}
-
-fn match_children(
-    content: &'static Content,
-    children: &[(&'static str, bool)],
-) -> (BTreeSet<&'static str>, State) {
-    let mut state = State::Content(content);
-    let mut misplaced = BTreeSet::new();
-
-    for (name, exempt) in children {
-        let next = step(&state, name);
-
-        if next == State::NotAllowed {
-            if !exempt {
-                misplaced.insert(*name);
-            }
-        } else {
-            state = next;
-        }
-    }
-
-    (misplaced, state)
-}
-
-fn expected_names(state: &State, names: &[&'static str]) -> BTreeSet<&'static str> {
-    if state.nullable() {
-        return Default::default();
-    }
-
-    let mut visited = BTreeSet::from([state.clone()]);
-    let mut frontier = vec![(state.clone(), None)];
-
-    loop {
-        let mut expected = BTreeSet::new();
-        let mut next_frontier = vec![];
-
-        for (state, first) in &frontier {
-            for name in names {
-                let next = step(state, name);
-
-                if next == State::NotAllowed {
-                    continue;
-                }
-
-                let first = first.unwrap_or(name);
-
-                if next.nullable() {
-                    expected.insert(*first);
-                }
-
-                if visited.insert(next.clone()) {
-                    next_frontier.push((next, Some(first)));
-                }
-            }
-        }
-
-        if !expected.is_empty() || next_frontier.is_empty() {
-            return expected;
-        }
-
-        frontier = next_frontier;
-    }
-}
-
 pub fn validate_rule(
     element: &Element,
     ignored_attributes: &[Regex],
@@ -290,6 +153,143 @@ pub fn validate_rule(
             missing_attributes,
             missing_children,
         })
+    }
+}
+
+fn step(state: &State, name: &str) -> State {
+    match state {
+        State::Choice(states) => State::choice(states.iter().map(|state| step(state, name))),
+        State::Content(content) => step_content(content, name),
+        State::Group(states) => {
+            let mut alternatives = vec![];
+
+            for (index, operand) in states.iter().enumerate() {
+                alternatives.push(State::group(
+                    [step(operand, name)]
+                        .into_iter()
+                        .chain(states[index + 1..].iter().cloned()),
+                ));
+
+                if !operand.nullable() {
+                    break;
+                }
+            }
+
+            State::choice(alternatives)
+        }
+        State::Interleave(states) => State::choice((0..states.len()).map(|index| {
+            State::interleave(states.iter().enumerate().map(|(other, operand)| {
+                if other == index {
+                    step(operand, name)
+                } else {
+                    operand.clone()
+                }
+            }))
+        })),
+        State::Empty | State::NotAllowed => State::NotAllowed,
+    }
+}
+
+fn step_content(content: &'static Content, name: &str) -> State {
+    match content {
+        Content::Choice(patterns) => {
+            State::choice(patterns.iter().map(|pattern| step_content(pattern, name)))
+        }
+        Content::Element(names) => {
+            if names.binary_search(&name).is_ok() {
+                State::Empty
+            } else {
+                State::NotAllowed
+            }
+        }
+        Content::Empty => State::NotAllowed,
+        Content::Group(patterns) => step(
+            &State::Group(patterns.iter().map(State::Content).collect()),
+            name,
+        ),
+        Content::Interleave(patterns) => step(
+            &State::Interleave(patterns.iter().map(State::Content).collect()),
+            name,
+        ),
+        Content::Many0(operand) => {
+            State::group([step_content(operand, name), State::Content(content)])
+        }
+        // The rest of a repetition matched once is a zero-or-more repetition.
+        Content::Many1(operand) => State::group([
+            step_content(operand, name),
+            State::choice([State::Empty, State::Content(content)]),
+        ]),
+        Content::Optional(operand) => step_content(operand, name),
+        // A text pattern matches any number of text nodes.
+        Content::Text => {
+            if name == TEXT_TOKEN {
+                State::Content(content)
+            } else {
+                State::NotAllowed
+            }
+        }
+    }
+}
+
+fn match_children(
+    content: &'static Content,
+    children: &[(&'static str, bool)],
+) -> (BTreeSet<&'static str>, State) {
+    let mut state = State::Content(content);
+    let mut misplaced = BTreeSet::new();
+
+    for (name, exempt) in children {
+        let next = step(&state, name);
+
+        if next == State::NotAllowed {
+            if !exempt {
+                misplaced.insert(*name);
+            }
+        } else {
+            state = next;
+        }
+    }
+
+    (misplaced, state)
+}
+
+fn expected_names(state: &State, names: &[&'static str]) -> BTreeSet<&'static str> {
+    if state.nullable() {
+        return Default::default();
+    }
+
+    let mut visited = BTreeSet::from([state.clone()]);
+    let mut frontier = vec![(state.clone(), None)];
+
+    loop {
+        let mut expected = BTreeSet::new();
+        let mut next_frontier = vec![];
+
+        for (state, first) in &frontier {
+            for name in names {
+                let next = step(state, name);
+
+                if next == State::NotAllowed {
+                    continue;
+                }
+
+                let first = first.unwrap_or(name);
+
+                if next.nullable() {
+                    expected.insert(*first);
+                }
+
+                if visited.insert(next.clone()) {
+                    next_frontier.push((next, Some(first)));
+                }
+            }
+        }
+
+        if !expected.is_empty() || next_frontier.is_empty() {
+            return expected;
+        }
+
+        frontier = next_frontier;
     }
 }
 
