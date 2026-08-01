@@ -240,12 +240,10 @@ fn match_children(
     for (name, exempt) in children {
         let next = step(&state, name);
 
-        if next == State::NotAllowed {
-            if !exempt {
-                misplaced.insert(*name);
-            }
-        } else {
+        if next != State::NotAllowed {
             state = next;
+        } else if !exempt {
+            misplaced.insert(*name);
         }
     }
 
