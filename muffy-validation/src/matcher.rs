@@ -4,7 +4,7 @@ use muffy_document::html::{Element, Node};
 use regex::Regex;
 
 /// A pseudo-name of text nodes in child sequences.
-pub const TEXT_TOKEN: &str = "#text";
+const TEXT_TOKEN: &str = "#text";
 
 const EMPTY_TERM: AttributeTerm = AttributeTerm {
     required: &[],
