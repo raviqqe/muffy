@@ -222,13 +222,13 @@ fn classify_children<'a>(
                 TEXT_TOKEN
             }
         };
-        let ignored = ignored_elements
+        let exempt = ignored_elements
             .iter()
             .any(|pattern| pattern.is_match(name));
 
         if let Ok(index) = rule.children.binary_search(&name) {
-            children.push((rule.children[index], ignored));
-        } else if !ignored {
+            children.push((rule.children[index], exempt));
+        } else if !exempt {
             disallowed_children.push(name);
         }
     }
