@@ -50,8 +50,8 @@ pub fn validate_rule(
         }
     }
 
-    attributes.sort_unstable();
-    exempt_attributes.sort_unstable();
+    attributes.sort();
+    exempt_attributes.sort();
 
     let mut children = vec![];
 
