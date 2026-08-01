@@ -49,10 +49,6 @@ impl Compiler<'_> {
             Pattern::Many1(pattern) => ResolvedPattern::many1(self.resolve(pattern)?),
             Pattern::NotAllowed => ResolvedPattern::NotAllowed,
             Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
-            // TODO Validate texts and attribute values against data and value patterns.
-            Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
-                ResolvedPattern::Text
-            }
             Pattern::Name(name) => {
                 if let Some(resolved) = self.cache.get(&name.local) {
                     resolved.clone()
@@ -65,6 +61,10 @@ impl Compiler<'_> {
                         &name.local,
                     )));
                 }
+            }
+            // TODO Validate texts and attribute values against data and value patterns.
+            Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
+                ResolvedPattern::Text
             }
         })
     }
