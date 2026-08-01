@@ -1,84 +1,75 @@
-use super::{ResolvedPattern, element_class_names, identifier_string};
+use super::{ResolvedPattern, compile::Compiler, element_class_names, identifier_string};
 use crate::error::MacroError;
-use alloc::collections::{BTreeMap, BTreeSet};
-use muffy_rnc::{Identifier, NameClass, Pattern};
+use alloc::collections::BTreeSet;
+use muffy_rnc::{NameClass, Pattern};
 
-pub fn resolve_pattern(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-    cache: &mut BTreeMap<Identifier, ResolvedPattern>,
-) -> Result<ResolvedPattern, MacroError> {
-    Ok(match pattern {
-        Pattern::Attribute { name_class, .. } => {
-            let names = attribute_class_names(name_class);
+impl Compiler<'_> {
+    pub(super) fn resolve(&mut self, pattern: &Pattern) -> Result<ResolvedPattern, MacroError> {
+        Ok(match pattern {
+            Pattern::Attribute { name_class, .. } => {
+                let names = attribute_class_names(name_class);
 
-            if names.is_empty() {
-                ResolvedPattern::NotAllowed
-            } else {
-                ResolvedPattern::Attribute(names)
+                if names.is_empty() {
+                    ResolvedPattern::NotAllowed
+                } else {
+                    ResolvedPattern::Attribute(names)
+                }
             }
-        }
-        Pattern::Element { name_class, .. } => {
-            let names = element_class_names(name_class);
+            Pattern::Element { name_class, .. } => {
+                let names = element_class_names(name_class);
 
-            if names.is_empty() {
-                ResolvedPattern::NotAllowed
-            } else {
-                ResolvedPattern::Element(names)
+                if names.is_empty() {
+                    ResolvedPattern::NotAllowed
+                } else {
+                    ResolvedPattern::Element(names)
+                }
             }
-        }
-        Pattern::Choice(patterns) => ResolvedPattern::choice(
-            patterns
-                .iter()
-                .map(|pattern| resolve_pattern(pattern, definitions, cache))
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        Pattern::Group(patterns) => ResolvedPattern::group(
-            patterns
-                .iter()
-                .map(|pattern| resolve_pattern(pattern, definitions, cache))
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        Pattern::Interleave(patterns) => ResolvedPattern::interleave(
-            patterns
-                .iter()
-                .map(|pattern| resolve_pattern(pattern, definitions, cache))
-                .collect::<Result<Vec<_>, _>>()?,
-        ),
-        Pattern::Many0(pattern) => {
-            ResolvedPattern::many0(resolve_pattern(pattern, definitions, cache)?)
-        }
-        Pattern::Many1(pattern) => {
-            ResolvedPattern::many1(resolve_pattern(pattern, definitions, cache)?)
-        }
-        Pattern::Optional(pattern) => {
-            ResolvedPattern::optional(resolve_pattern(pattern, definitions, cache)?)
-        }
-        Pattern::Empty => ResolvedPattern::Empty,
-        Pattern::NotAllowed => ResolvedPattern::NotAllowed,
-        // TODO Validate texts and attribute values against data and value
-        // patterns.
-        Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
-            ResolvedPattern::Text
-        }
-        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-        Pattern::Name(name) => {
-            if let Some(compiled) = cache.get(&name.local) {
-                compiled.clone()
-            } else if let Some(definition) = definitions.get(&name.local) {
-                let compiled = resolve_pattern(definition, definitions, cache)?;
-                cache.insert(name.local.clone(), compiled.clone());
-                compiled
-            } else {
-                return Err(MacroError::UndefinedReference(identifier_string(
-                    &name.local,
-                )));
+            Pattern::Choice(patterns) => ResolvedPattern::choice(
+                patterns
+                    .iter()
+                    .map(|pattern| self.resolve(pattern))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            Pattern::Group(patterns) => ResolvedPattern::group(
+                patterns
+                    .iter()
+                    .map(|pattern| self.resolve(pattern))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            Pattern::Interleave(patterns) => ResolvedPattern::interleave(
+                patterns
+                    .iter()
+                    .map(|pattern| self.resolve(pattern))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
+            Pattern::Many0(pattern) => ResolvedPattern::many0(self.resolve(pattern)?),
+            Pattern::Many1(pattern) => ResolvedPattern::many1(self.resolve(pattern)?),
+            Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
+            Pattern::Empty => ResolvedPattern::Empty,
+            Pattern::NotAllowed => ResolvedPattern::NotAllowed,
+            // TODO Validate texts and attribute values against data and value
+            // patterns.
+            Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
+                ResolvedPattern::Text
             }
-        }
-    })
+            Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+            Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
+            Pattern::Name(name) => {
+                if let Some(resolved) = self.cache.get(&name.local) {
+                    resolved.clone()
+                } else if let Some(definition) = self.definitions.get(&name.local) {
+                    let resolved = self.resolve(definition)?;
+                    self.cache.insert(name.local.clone(), resolved.clone());
+                    resolved
+                } else {
+                    return Err(MacroError::UndefinedReference(identifier_string(
+                        &name.local,
+                    )));
+                }
+            }
+        })
+    }
 }
-
 fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => {
@@ -101,7 +92,8 @@ fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use muffy_rnc::{SchemaBody, parse_schema};
+    use alloc::collections::BTreeMap;
+    use muffy_rnc::{Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
     use std::path::Path;
 
@@ -117,13 +109,11 @@ mod tests {
 
         crate::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
 
-        resolve_pattern(
+        Compiler::new(&definitions).resolve(
             &definitions[&Identifier {
                 component: "root".into(),
                 sub_components: vec![],
             }],
-            &definitions,
-            &mut Default::default(),
         )
     }
 
