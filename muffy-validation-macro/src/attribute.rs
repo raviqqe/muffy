@@ -26,16 +26,12 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
         CompiledPattern::Group(patterns) | CompiledPattern::Interleave(patterns) => {
             let mut terms = vec![AttributeTerm::default()];
 
-            for operand in patterns {
-                let operand_terms = compile(operand)?;
+            for pattern in patterns {
+                let others = compile(pattern)?;
 
                 terms = terms
                     .iter()
-                    .flat_map(|term| {
-                        operand_terms
-                            .iter()
-                            .map(|operand_term| term.merge(operand_term))
-                    })
+                    .flat_map(|term| others.iter().map(|other| term.merge(other)))
                     .collect();
             }
 
