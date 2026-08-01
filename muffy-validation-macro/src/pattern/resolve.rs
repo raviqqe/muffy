@@ -15,6 +15,12 @@ impl Compiler<'_> {
                     ResolvedPattern::Attribute(names)
                 }
             }
+            Pattern::Choice(patterns) => ResolvedPattern::choice(
+                patterns
+                    .iter()
+                    .map(|pattern| self.resolve(pattern))
+                    .collect::<Result<Vec<_>, _>>()?,
+            ),
             Pattern::Element { name_class, .. } => {
                 let names = element_class_names(name_class);
 
@@ -24,12 +30,9 @@ impl Compiler<'_> {
                     ResolvedPattern::Element(names)
                 }
             }
-            Pattern::Choice(patterns) => ResolvedPattern::choice(
-                patterns
-                    .iter()
-                    .map(|pattern| self.resolve(pattern))
-                    .collect::<Result<Vec<_>, _>>()?,
-            ),
+            Pattern::Empty => ResolvedPattern::Empty,
+            Pattern::External(_) => return Err(MacroError::RncPattern("external")),
+            Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
             Pattern::Group(patterns) => ResolvedPattern::group(
                 patterns
                     .iter()
@@ -44,15 +47,12 @@ impl Compiler<'_> {
             ),
             Pattern::Many0(pattern) => ResolvedPattern::many0(self.resolve(pattern)?),
             Pattern::Many1(pattern) => ResolvedPattern::many1(self.resolve(pattern)?),
-            Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
-            Pattern::Empty => ResolvedPattern::Empty,
             Pattern::NotAllowed => ResolvedPattern::NotAllowed,
+            Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
             // TODO Validate texts and attribute values against data and value patterns.
             Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
                 ResolvedPattern::Text
             }
-            Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-            Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
             Pattern::Name(name) => {
                 if let Some(resolved) = self.cache.get(&name.local) {
                     resolved.clone()
