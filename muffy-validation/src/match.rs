@@ -55,8 +55,8 @@ impl State {
 
         for state in states {
             match state {
-                Self::NotAllowed => {}
                 Self::Choice(states) => alternatives.extend(states),
+                Self::NotAllowed => {}
                 state => {
                     alternatives.insert(state);
                 }
@@ -80,16 +80,18 @@ impl State {
         for state in states {
             match state {
                 Self::Empty => {}
-                Self::NotAllowed => return Self::NotAllowed,
                 Self::Group(states) => sequence.extend(states),
+                Self::NotAllowed => return Self::NotAllowed,
                 state => sequence.push(state),
             }
         }
 
-        if sequence.len() == 1 {
-            sequence.pop().expect("operand")
-        } else if sequence.is_empty() {
+        if sequence.is_empty() {
             Self::Empty
+        } else if sequence.len() == 1
+            && let Some(state) = sequence.pop()
+        {
+            state
         } else {
             Self::Group(sequence)
         }
