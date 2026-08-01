@@ -84,10 +84,12 @@ impl ResolvedPattern {
 
         operands.sort();
 
-        if operands.len() == 1 {
-            operands.pop().expect("operand")
-        } else if operands.is_empty() {
+        if operands.is_empty() {
             Self::Empty
+        } else if operands.len() == 1
+            && let Some(operand) = operands.pop()
+        {
+            operand
         } else {
             Self::Interleave(operands)
         }
