@@ -82,19 +82,20 @@ pub fn validate_rule(
                 })
                 .map(|&name| name.into()),
         );
-        missing_children.extend(if misplaced.is_empty() && !state.is_nullable() {
-            expected_names(&state, rule.children)
-                .iter()
-                .filter(|name| {
-                    !ignored_elements
-                        .iter()
-                        .any(|pattern| pattern.is_match(name))
-                })
-                .map(|&name| name.into())
-                .collect::<BTreeSet<String>>()
-        } else {
-            Default::default()
-        });
+
+        if misplaced.is_empty() && !state.is_nullable() {
+            missing_children.extend(
+                expected_names(&state, rule.children)
+                    .iter()
+                    .filter(|name| {
+                        !ignored_elements
+                            .iter()
+                            .any(|pattern| pattern.is_match(name))
+                    })
+                    .map(|&name| name.into())
+                    .collect::<BTreeSet<String>>(),
+            );
+        }
     }
 
     if attribute_errors.is_empty()
