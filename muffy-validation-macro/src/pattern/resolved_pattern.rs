@@ -19,12 +19,12 @@ pub enum ResolvedPattern {
 impl ResolvedPattern {
     pub fn choice(patterns: impl IntoIterator<Item = Self>) -> Self {
         let mut alternatives = BTreeSet::new();
-        let mut nullable = false;
+        let mut empty = false;
 
         for pattern in patterns {
             match pattern {
                 Self::NotAllowed => {}
-                Self::Empty => nullable = true,
+                Self::Empty => empty = true,
                 Self::Choice(patterns) => alternatives.extend(patterns),
                 pattern => {
                     alternatives.insert(pattern);
@@ -42,7 +42,7 @@ impl ResolvedPattern {
             Self::Choice(alternatives.into_iter().collect())
         };
 
-        if nullable {
+        if empty {
             Self::optional(pattern)
         } else {
             pattern
