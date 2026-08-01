@@ -37,10 +37,10 @@ impl CompiledPattern {
             }
         }
 
-        let pattern = if alternatives.len() == 1 {
-            alternatives.pop_first().expect("alternative")
-        } else if alternatives.is_empty() {
+        let pattern = if alternatives.is_empty() {
             Self::NotAllowed
+        } else if alternatives.len() == 1 {
+            alternatives.pop_first().expect("alternative")
         } else {
             Self::Choice(alternatives.into_iter().collect())
         };
