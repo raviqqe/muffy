@@ -18,6 +18,7 @@ pub fn split_pattern(
 
             for operand in patterns {
                 let operand_variants = split_pattern(operand)?;
+
                 variants = variants
                     .iter()
                     .flat_map(|(attribute, content)| {
