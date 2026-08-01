@@ -39,7 +39,6 @@ pub struct Rule {
     pub variants: &'static [Variant],
 }
 
-/// A residual content pattern after matching a prefix of children.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 enum State {
     Choice(Vec<Self>),
