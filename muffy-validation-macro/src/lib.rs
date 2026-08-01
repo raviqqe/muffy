@@ -82,7 +82,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     let mut content_indexes = BTreeMap::<ResolvedPattern, usize>::new();
     let mut element_matches = vec![];
 
-    for (element, variants) in &element_rules {
+    for (name, variants) in &element_rules {
         let attributes = variants
             .iter()
             .flat_map(|(sets, _)| sets)
@@ -115,7 +115,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         let children = children.iter().map(|name| quote!(#name));
 
         element_matches.push(quote! {
-            #element => {
+            #name => {
                 static RULE: Rule = Rule {
                     attributes: &[#(#attributes),*],
                     children: &[#(#children),*],
