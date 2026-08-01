@@ -2,8 +2,6 @@ use crate::error::MacroError;
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{Identifier, NameClass, Pattern};
 
-const VARIANT_LIMIT: usize = 64;
-
 /// A pattern compiled for name-based matching with references resolved,
 /// attribute values dropped, and not-allowed sub-patterns propagated.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -344,10 +342,6 @@ pub fn split_pattern(
                             .collect::<Vec<_>>()
                     })
                     .collect();
-
-                if variants.len() > VARIANT_LIMIT {
-                    return Err(MacroError::PatternLimit("element pattern alternatives"));
-                }
             }
 
             variants
@@ -648,21 +642,6 @@ mod tests {
                     CompiledPattern::Empty
                 )]
             );
-        }
-
-        #[test]
-        fn fail_on_too_many_alternatives() {
-            assert!(matches!(
-                split_pattern(&CompiledPattern::Interleave(
-                    (0..7)
-                        .map(|index| CompiledPattern::choice([
-                            attribute(&format!("foo{index}")),
-                            element(&format!("bar{index}")),
-                        ]))
-                        .collect()
-                )),
-                Err(MacroError::PatternLimit(_))
-            ));
         }
 
         #[test]
