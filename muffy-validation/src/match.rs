@@ -25,12 +25,18 @@ pub fn validate_rule(
     ignored_elements: &[Regex],
     rule: &Rule,
 ) -> Result<(), MarkupError> {
-    let mut attribute_errors = BTreeMap::<String, BTreeSet<AttributeError>>::new();
-    let mut child_errors = BTreeMap::<String, BTreeSet<ChildError>>::new();
+    let (attributes, exempt_attributes, disallowed_attributes) =
+        classify_attributes(element, ignored_attributes, rule);
+    let (children, disallowed_children) = classify_children(element, ignored_elements, rule);
 
-    let (attributes, exempt_attributes) =
-        classify_attributes(element, ignored_attributes, rule, &mut attribute_errors);
-    let children = classify_children(element, ignored_elements, rule, &mut child_errors);
+    let mut attribute_errors = disallowed_attributes
+        .into_iter()
+        .map(|name| (name.into(), [AttributeError::NotAllowed].into()))
+        .collect::<BTreeMap<String, BTreeSet<AttributeError>>>();
+    let mut child_errors = disallowed_children
+        .into_iter()
+        .map(|name| (name.into(), [ChildError::NotAllowed].into()))
+        .collect::<BTreeMap<String, BTreeSet<ChildError>>>();
 
     let (missing_attributes, missing_children) = if let Some(variant) = rule
         .variants
@@ -242,14 +248,14 @@ fn expected_names(state: &State, names: &[&'static str]) -> BTreeSet<&'static st
     }
 }
 
-fn classify_attributes(
-    element: &Element,
+fn classify_attributes<'a>(
+    element: &'a Element,
     ignored_attributes: &[Regex],
     rule: &Rule,
-    errors: &mut BTreeMap<String, BTreeSet<AttributeError>>,
-) -> (Vec<&'static str>, Vec<&'static str>) {
+) -> (Vec<&'static str>, Vec<&'static str>, Vec<&'a str>) {
     let mut attributes = vec![];
     let mut exempt_attributes = vec![];
+    let mut disallowed_attributes = vec![];
 
     for (name, _) in element.attributes() {
         let ignored = ignored_attributes
@@ -263,26 +269,23 @@ fn classify_attributes(
                 attributes.push(rule.attributes[index]);
             }
         } else if !ignored {
-            errors
-                .entry(name.into())
-                .or_default()
-                .insert(AttributeError::NotAllowed);
+            disallowed_attributes.push(name);
         }
     }
 
     attributes.sort();
     exempt_attributes.sort();
 
-    (attributes, exempt_attributes)
+    (attributes, exempt_attributes, disallowed_attributes)
 }
 
-fn classify_children(
-    element: &Element,
+fn classify_children<'a>(
+    element: &'a Element,
     ignored_elements: &[Regex],
     rule: &Rule,
-    errors: &mut BTreeMap<String, BTreeSet<ChildError>>,
-) -> Vec<(&'static str, bool)> {
+) -> (Vec<(&'static str, bool)>, Vec<&'a str>) {
     let mut children = vec![];
+    let mut disallowed_children = vec![];
 
     for child in element.children() {
         let name = match child {
@@ -302,14 +305,11 @@ fn classify_children(
         if let Ok(index) = rule.children.binary_search(&name) {
             children.push((rule.children[index], ignored));
         } else if !ignored {
-            errors
-                .entry(name.into())
-                .or_default()
-                .insert(ChildError::NotAllowed);
+            disallowed_children.push(name);
         }
     }
 
-    children
+    (children, disallowed_children)
 }
 
 // (error count, conflict count, requirement count)
