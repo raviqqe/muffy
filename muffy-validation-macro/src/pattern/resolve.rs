@@ -47,8 +47,7 @@ impl Compiler<'_> {
             Pattern::Optional(pattern) => ResolvedPattern::optional(self.resolve(pattern)?),
             Pattern::Empty => ResolvedPattern::Empty,
             Pattern::NotAllowed => ResolvedPattern::NotAllowed,
-            // TODO Validate texts and attribute values against data and value
-            // patterns.
+            // TODO Validate texts and attribute values against data and value patterns.
             Pattern::Text | Pattern::Data { .. } | Pattern::List(_) | Pattern::Value { .. } => {
                 ResolvedPattern::Text
             }
