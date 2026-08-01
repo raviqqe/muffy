@@ -1,4 +1,4 @@
-use super::{ResolvedPattern, class_names, compile::Compiler, identifier_string};
+use super::{ResolvedPattern, class_names, compile::Compiler, name_class::identifier_string};
 use crate::error::MacroError;
 use muffy_rnc::Pattern;
 
