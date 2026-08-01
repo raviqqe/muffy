@@ -14,7 +14,7 @@ pub fn generate_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroE
             return Err(MacroError::RncPattern("not-allowed content pattern"));
         }
         ResolvedPattern::Choice(patterns) => {
-            let patterns = compile_contents(patterns)?;
+            let patterns = generate_contents(patterns)?;
 
             quote!(Content::Choice(&[#(#patterns),*]))
         }
@@ -25,12 +25,12 @@ pub fn generate_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroE
         }
         ResolvedPattern::Empty => quote!(Content::Empty),
         ResolvedPattern::Group(patterns) => {
-            let patterns = compile_contents(patterns)?;
+            let patterns = generate_contents(patterns)?;
 
             quote!(Content::Group(&[#(#patterns),*]))
         }
         ResolvedPattern::Interleave(patterns) => {
-            let patterns = compile_contents(patterns)?;
+            let patterns = generate_contents(patterns)?;
 
             quote!(Content::Interleave(&[#(#patterns),*]))
         }
@@ -53,7 +53,7 @@ pub fn generate_content(pattern: &ResolvedPattern) -> Result<TokenStream, MacroE
     })
 }
 
-fn compile_contents(patterns: &[ResolvedPattern]) -> Result<Vec<TokenStream>, MacroError> {
+fn generate_contents(patterns: &[ResolvedPattern]) -> Result<Vec<TokenStream>, MacroError> {
     patterns.iter().map(generate_content).collect()
 }
 
