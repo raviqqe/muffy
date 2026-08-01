@@ -101,6 +101,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     "ATTRIBUTE_SETS_{}",
                     *set_indexes.entry(sets.clone()).or_insert(index)
                 );
+
                 let index = content_indexes.len();
                 let content = format_ident!(
                     "CONTENT_{}",
