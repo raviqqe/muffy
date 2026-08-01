@@ -118,7 +118,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #name => {
-                static RULE: Rule = Rule {
+                const RULE: Rule = Rule {
                     attributes: &[#(#attributes),*],
                     children: &[#(#children),*],
                     variants: &[#(#variants),*],
@@ -141,14 +141,14 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             })
         });
 
-        quote!(static #identifier: &[AttributeSet] = &[#(#sets),*];)
+        quote!(const #identifier: &[AttributeSet] = &[#(#sets),*];)
     });
     let content_definitions = sort_by_index(content_indexes)
         .map(|(content, index)| {
             let identifier = format_ident!("CONTENT_{index}");
             let content = compile_content(&content)?;
 
-            Ok(quote!(static #identifier: Content = #content;))
+            Ok(quote!(const #identifier: Content = #content;))
         })
         .collect::<Result<Vec<_>, MacroError>>()?;
 
