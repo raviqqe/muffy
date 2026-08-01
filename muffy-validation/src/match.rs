@@ -145,7 +145,7 @@ fn expected_children(state: &State, names: &[&'static str]) -> BTreeSet<&'static
         let mut expected = BTreeSet::new();
         let mut next_frontier = vec![];
 
-        for (state, first) in &frontier {
+        for (state, initial_name) in &frontier {
             for name in names {
                 let next = state.step(name);
 
@@ -153,14 +153,14 @@ fn expected_children(state: &State, names: &[&'static str]) -> BTreeSet<&'static
                     continue;
                 }
 
-                let first = first.unwrap_or(name);
+                let name = initial_name.unwrap_or(name);
 
                 if next.is_nullable() {
-                    expected.insert(*first);
+                    expected.insert(*name);
                 }
 
                 if visited.insert(next.clone()) {
-                    next_frontier.push((next, Some(first)));
+                    next_frontier.push((next, Some(name)));
                 }
             }
         }
