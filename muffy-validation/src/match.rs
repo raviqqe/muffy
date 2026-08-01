@@ -5,7 +5,7 @@ use regex::Regex;
 
 const TEXT_TOKEN: &str = "#text";
 
-const EMPTY_SET: AttributeSet = AttributeSet {
+const EMPTY_ATTRIBUTE_SET: AttributeSet = AttributeSet {
     required: &[],
     optional: &[],
 };
@@ -351,7 +351,7 @@ pub fn validate_rule(
             .attributes
             .iter()
             .min_by_key(|set| set_score(set, &attributes, &exempt_attributes))
-            .unwrap_or(&EMPTY_SET);
+            .unwrap_or(&EMPTY_ATTRIBUTE_SET);
 
         for name in attributes.iter().filter(|name| {
             set.required.binary_search(name).is_err() && set.optional.binary_search(name).is_err()
