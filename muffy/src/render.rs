@@ -134,25 +134,16 @@ mod tests {
                         )
                         .into(),
                     )),
-                    Err(ItemError::HtmlValidation(
-                        MarkupError::UnknownTag("foo".into()),
-                    )),
-                    Err(ItemError::HtmlValidation(
-                        MarkupError::InvalidElement {
-                            invalid_attributes: [(
-                                "bar".into(),
-                                [AttributeError::Conflict].into(),
-                            )]
+                    Err(ItemError::HtmlValidation(MarkupError::UnknownTag(
+                        "foo".into(),
+                    ))),
+                    Err(ItemError::HtmlValidation(MarkupError::InvalidElement {
+                        invalid_attributes: [("bar".into(), [AttributeError::Conflict].into())]
                             .into(),
-                            invalid_children: [(
-                                "baz".into(),
-                                [ChildError::Misplaced].into(),
-                            )]
-                            .into(),
-                            missing_attributes: ["qux".into()].into(),
-                            missing_children: ["quux".into()].into(),
-                        },
-                    )),
+                        invalid_children: [("baz".into(), [ChildError::Misplaced].into())].into(),
+                        missing_attributes: ["qux".into()].into(),
+                        missing_children: ["quux".into()].into(),
+                    })),
                 ],
             )],
         )

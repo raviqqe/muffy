@@ -442,8 +442,7 @@ impl WebValidator {
                         .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
                         .chain(
                             if let Err(MarkupError::InvalidElement {
-                                invalid_attributes,
-                                ..
+                                invalid_attributes, ..
                             }) = &validation_result
                             {
                                 invalid_attributes
