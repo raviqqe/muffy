@@ -9,9 +9,9 @@ mod pattern;
 
 use self::{
     attribute::{AttributeTerm, compile_attributes},
-    content::{ContentAutomaton, compile_content},
+    content::{children, compile_content},
     error::MacroError,
-    pattern::{class_names, compile_pattern, split_pattern},
+    pattern::{CompiledPattern, class_names, compile_pattern, split_pattern},
 };
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
@@ -49,8 +49,8 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut cache = Default::default();
-    // element -> alternatives of attribute terms and a content automaton
-    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeTerm>, ContentAutomaton)>>::new();
+    // element -> alternatives of attribute terms and a content pattern
+    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeTerm>, CompiledPattern)>>::new();
 
     for definition in definitions.values() {
         for (name_class, inner) in collect_elements(definition) {
@@ -65,15 +65,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             for (attribute_pattern, content_pattern) in split_pattern(&compiled)? {
                 let terms = compile_attributes(&attribute_pattern)?;
 
-                if terms.is_empty() {
+                if terms.is_empty() || content_pattern == CompiledPattern::NotAllowed {
                     continue;
                 }
 
-                let automaton = compile_content(&content_pattern)?;
-
                 for name in &names {
                     let variants = element_rules.entry(name.clone()).or_default();
-                    let variant = (terms.clone(), automaton.clone());
+                    let variant = (terms.clone(), content_pattern.clone());
 
                     if !variants.contains(&variant) {
                         variants.push(variant);
@@ -84,7 +82,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut term_indexes = BTreeMap::<Vec<AttributeTerm>, usize>::new();
-    let mut automaton_indexes = BTreeMap::<ContentAutomaton, usize>::new();
+    let mut content_indexes = BTreeMap::<CompiledPattern, usize>::new();
     let mut element_matches = vec![];
 
     for (element, variants) in &element_rules {
@@ -95,25 +93,24 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             .collect::<BTreeSet<_>>();
         let children = variants
             .iter()
-            .flat_map(|(_, automaton)| &automaton.transitions)
-            .flat_map(BTreeMap::keys)
+            .flat_map(|(_, content)| children(content))
             .collect::<BTreeSet<_>>();
 
         let variants = variants
             .iter()
-            .map(|(terms, automaton)| {
+            .map(|(terms, content)| {
                 let index = term_indexes.len();
                 let terms = format_ident!(
                     "ATTRIBUTE_TERMS_{}",
                     *term_indexes.entry(terms.clone()).or_insert(index)
                 );
-                let index = automaton_indexes.len();
-                let automaton = format_ident!(
-                    "CONTENT_MODEL_{}",
-                    *automaton_indexes.entry(automaton.clone()).or_insert(index)
+                let index = content_indexes.len();
+                let content = format_ident!(
+                    "CONTENT_{}",
+                    *content_indexes.entry(content.clone()).or_insert(index)
                 );
 
-                quote!(Variant { attributes: #terms, content: &#automaton })
+                quote!(Variant { attributes: #terms, content: &#content })
             })
             .collect::<Vec<_>>();
         let attributes = attributes.iter().map(|name| quote!(#name));
@@ -121,13 +118,13 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         element_matches.push(quote! {
             #element => {
-                static RULES: Rules = Rules {
+                static RULE: Rule = Rule {
                     attributes: &[#(#attributes),*],
                     children: &[#(#children),*],
                     variants: &[#(#variants),*],
                 };
 
-                validate_rules(element, ignored_attributes, ignored_elements, &RULES)
+                validate_rule(element, ignored_attributes, ignored_elements, &RULE)
             }
         });
     }
@@ -146,31 +143,14 @@ fn generate_html() -> Result<TokenStream, MacroError> {
 
         quote!(static #identifier: &[AttributeTerm] = &[#(#terms),*];)
     });
-    let automaton_statics = sort_by_index(automaton_indexes).map(|(automaton, index)| {
-        let identifier = format_ident!("CONTENT_MODEL_{index}");
-        let transitions = automaton.transitions.iter().map(|transitions| {
-            let transitions = transitions
-                .iter()
-                .map(|(name, state)| quote!((#name, #state)));
+    let content_statics = sort_by_index(content_indexes)
+        .map(|(content, index)| {
+            let identifier = format_ident!("CONTENT_{index}");
+            let content = compile_content(&content)?;
 
-            quote!(&[#(#transitions),*])
-        });
-        let accepting = automaton
-            .accepting
-            .iter()
-            .map(|accepting| quote!(#accepting));
-        let expected = automaton.expected.iter().map(|names| {
-            let names = names.iter().map(|name| quote!(#name));
-
-            quote!(&[#(#names),*])
-        });
-
-        quote!(static #identifier: ContentAutomaton = ContentAutomaton {
-            transitions: &[#(#transitions),*],
-            accepting: &[#(#accepting),*],
-            expected: &[#(#expected),*],
-        };)
-    });
+            Ok(quote!(static #identifier: Content = #content;))
+        })
+        .collect::<Result<Vec<_>, MacroError>>()?;
 
     Ok(quote! {
         /// Validates an HTML element.
@@ -180,7 +160,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
             #(#term_statics)*
-            #(#automaton_statics)*
+            #(#content_statics)*
 
             match element.name() {
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),

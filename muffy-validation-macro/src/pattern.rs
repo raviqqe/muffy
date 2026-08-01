@@ -122,18 +122,6 @@ impl CompiledPattern {
             pattern => Self::Optional(pattern.into()),
         }
     }
-
-    pub fn nullable(&self) -> bool {
-        match self {
-            Self::Empty | Self::Many0(_) | Self::Optional(_) | Self::Text => true,
-            Self::Attribute(_) | Self::Element(_) | Self::NotAllowed => false,
-            Self::Choice(patterns) => patterns.iter().any(Self::nullable),
-            Self::Group(patterns) | Self::Interleave(patterns) => {
-                patterns.iter().all(Self::nullable)
-            }
-            Self::Many1(pattern) => pattern.nullable(),
-        }
-    }
 }
 
 pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {

@@ -6,7 +6,7 @@ mod error;
 mod matcher;
 
 pub use self::error::*;
-use self::matcher::{AttributeTerm, ContentAutomaton, Rules, Variant, validate_rules};
+use self::matcher::{AttributeTerm, Content, Rule, Variant, validate_rule};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
