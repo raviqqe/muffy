@@ -22,25 +22,22 @@ pub fn split_pattern(
                 variants = variants
                     .iter()
                     .flat_map(|(attribute, content)| {
-                        others
-                            .iter()
-                            .map(|(other_attribute, other_content)| {
-                                (
-                                    ResolvedPattern::interleave([
-                                        attribute.clone(),
-                                        other_attribute.clone(),
-                                    ]),
-                                    if interleaved {
-                                        ResolvedPattern::interleave
-                                    } else {
-                                        ResolvedPattern::group
-                                    }([
-                                        content.clone(),
-                                        other_content.clone(),
-                                    ]),
-                                )
-                            })
-                            .collect::<Vec<_>>()
+                        others.iter().map(|(other_attribute, other_content)| {
+                            (
+                                ResolvedPattern::interleave([
+                                    attribute.clone(),
+                                    other_attribute.clone(),
+                                ]),
+                                if interleaved {
+                                    ResolvedPattern::interleave
+                                } else {
+                                    ResolvedPattern::group
+                                }([
+                                    content.clone(),
+                                    other_content.clone(),
+                                ]),
+                            )
+                        })
                     })
                     .collect();
             }
