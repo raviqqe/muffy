@@ -31,6 +31,7 @@ fn compile(pattern: &CompiledPattern) -> Result<Vec<AttributeTerm>, MacroError> 
 
             for operand in patterns {
                 let operand_terms = compile(operand)?;
+
                 terms = terms
                     .iter()
                     .flat_map(|term| {
