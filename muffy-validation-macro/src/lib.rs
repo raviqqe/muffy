@@ -49,7 +49,6 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     }
 
     let mut compiler = Compiler::new(&definitions);
-    // element -> (attributes, children)
     let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, ResolvedPattern)>>::new();
 
     for definition in definitions.values() {
