@@ -1,20 +1,12 @@
 use crate::{error::MacroError, pattern::CompiledPattern};
 use alloc::collections::{BTreeMap, BTreeSet};
 
-// cspell: ignore brzozowski
+const TEXT_TOKEN: &str = "#text";
 
-/// A pseudo-name of text nodes in child sequences.
-pub const TEXT_TOKEN: &str = "#text";
-
-/// A deterministic automaton over child element names built from Brzozowski
-/// derivatives of a content pattern.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct ContentAutomaton {
-    /// Transitions by child element name for each state.
     pub transitions: Vec<BTreeMap<String, usize>>,
-    /// Whether each state accepts the end of content.
     pub accepting: Vec<bool>,
-    /// Child element names on shortest paths from each state to acceptance.
     pub expected: Vec<BTreeSet<String>>,
 }
 
