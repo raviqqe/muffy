@@ -10,9 +10,7 @@ pub struct ContentAutomaton {
     pub expected: Vec<BTreeSet<String>>,
 }
 
-pub fn compile_content_automaton(
-    pattern: &CompiledPattern,
-) -> Result<ContentAutomaton, MacroError> {
+pub fn compile_content(pattern: &CompiledPattern) -> Result<ContentAutomaton, MacroError> {
     check_content_pattern(pattern)?;
 
     let initial = pattern.clone();
@@ -246,7 +244,7 @@ mod tests {
     }
 
     fn accepts(pattern: &CompiledPattern, names: &[&str]) -> bool {
-        let automaton = compile_content_automaton(pattern).unwrap();
+        let automaton = compile_content(pattern).unwrap();
         let mut state = 0;
 
         for name in names {
@@ -323,7 +321,7 @@ mod tests {
 
     #[test]
     fn expect_names_on_shortest_accepting_path() {
-        let automaton = compile_content_automaton(&CompiledPattern::interleave([
+        let automaton = compile_content(&CompiledPattern::interleave([
             CompiledPattern::group([element("foo"), element("bar")]),
             CompiledPattern::many0(element("baz")),
         ]))
@@ -344,7 +342,7 @@ mod tests {
     #[test]
     fn fail_on_attribute() {
         assert!(matches!(
-            compile_content_automaton(&CompiledPattern::Attribute(["foo".into()].into())),
+            compile_content(&CompiledPattern::Attribute(["foo".into()].into())),
             Err(MacroError::RncPattern(_))
         ));
     }

@@ -9,7 +9,7 @@ mod pattern;
 
 use self::{
     attribute::{AttributeTerm, compile_attributes},
-    content::{ContentAutomaton, compile_content_automaton},
+    content::{ContentAutomaton, compile_content},
     error::MacroError,
     pattern::{class_names, compile_pattern, split_pattern},
 };
@@ -69,7 +69,7 @@ fn generate_html() -> Result<TokenStream, MacroError> {
                     continue;
                 }
 
-                let automaton = compile_content_automaton(&content_pattern)?;
+                let automaton = compile_content(&content_pattern)?;
 
                 for name in &names {
                     let variants = element_rules.entry(name.clone()).or_default();
