@@ -15,11 +15,9 @@ pub struct AttributeSet {
     pub optional: &'static [&'static str],
 }
 
-/// A content pattern over child element names and text tokens.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Content {
     Choice(&'static [Self]),
-    /// Sorted alternative names of an element.
     Element(&'static [&'static str]),
     Empty,
     Group(&'static [Self]),
@@ -30,14 +28,11 @@ pub enum Content {
     Text,
 }
 
-/// One variant definition of an element in a schema.
 pub struct Variant {
     pub attributes: &'static [AttributeSet],
     pub content: &'static Content,
 }
 
-/// A validation rule of an element: unions of allowed names for coarse checks
-/// and per-variant rules for co-occurrence and ordering checks.
 pub struct Rule {
     pub attributes: &'static [&'static str],
     pub children: &'static [&'static str],
