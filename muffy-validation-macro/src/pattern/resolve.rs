@@ -91,8 +91,7 @@ fn attribute_class_names(name_class: &NameClass) -> BTreeSet<String> {
             }
         }
         NameClass::Choice(classes) => classes.iter().flat_map(attribute_class_names).collect(),
-        // TODO Support wildcard name classes (e.g. arbitrary attributes of
-        // embed elements).
+        // TODO Support wildcard name classes. (e.g. arbitrary attributes of embed elements)
         NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => {
             Default::default()
         }
