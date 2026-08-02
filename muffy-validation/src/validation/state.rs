@@ -275,17 +275,26 @@ mod tests {
 
         #[test]
         fn annihilate_on_not_allowed() {
-            assert_eq!(State::interleave([a(), State::NotAllowed]), State::NotAllowed);
+            assert_eq!(
+                State::interleave([a(), State::NotAllowed]),
+                State::NotAllowed
+            );
         }
 
         #[test]
         fn sort_operands() {
-            assert_eq!(State::interleave([b(), a()]), State::Interleave(vec![a(), b()]));
+            assert_eq!(
+                State::interleave([b(), a()]),
+                State::Interleave(vec![a(), b()])
+            );
         }
 
         #[test]
         fn keep_duplicates() {
-            assert_eq!(State::interleave([a(), a()]), State::Interleave(vec![a(), a()]));
+            assert_eq!(
+                State::interleave([a(), a()]),
+                State::Interleave(vec![a(), a()])
+            );
         }
 
         #[test]
@@ -324,7 +333,10 @@ mod tests {
 
         #[test]
         fn group_accepts_if_all_operands_do() {
-            assert!(State::Group(vec![State::Content(&NULLABLE), State::Content(&NULLABLE)]).is_nullable());
+            assert!(
+                State::Group(vec![State::Content(&NULLABLE), State::Content(&NULLABLE)])
+                    .is_nullable()
+            );
             assert!(!State::Group(vec![State::Content(&NULLABLE), a()]).is_nullable());
         }
 
