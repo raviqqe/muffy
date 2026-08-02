@@ -117,7 +117,7 @@ pub fn validate_rule(
     }
 }
 
-fn match_children(
+fn validate_children(
     content: &'static Content,
     children: &[(&'static str, bool)],
 ) -> (BTreeSet<&'static str>, State) {
@@ -253,7 +253,7 @@ fn evaluate_variant(
         .map(|set| evaluate_attribute_set(set, attributes, exempt_attributes))
         .min()
         .unwrap_or_default();
-    let (misplaced, state) = match_children(variant.content, children);
+    let (misplaced, state) = validate_children(variant.content, children);
 
     // (error count, conflict count, requirement count)
     let score = (
@@ -343,7 +343,7 @@ mod tests {
     }
 
     fn accepts(content: &'static Content, names: &'static [&'static str]) -> bool {
-        let (misplaced, state) = match_children(
+        let (misplaced, state) = validate_children(
             content,
             &names.iter().map(|&name| (name, false)).collect::<Vec<_>>(),
         );
