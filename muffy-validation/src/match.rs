@@ -450,10 +450,9 @@ mod tests {
         fn expect_alternative_children() {
             const CONTENT: Content =
                 Content::Choice(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
-            let names = ["bar", "foo"];
 
             assert_eq!(
-                collect_missing_children(&State::Content(&CONTENT), &names),
+                collect_missing_children(&State::Content(&CONTENT), &["bar", "foo"]),
                 ["bar", "foo"].into()
             );
         }
@@ -462,10 +461,9 @@ mod tests {
         fn expect_all_required_children() {
             const CONTENT: Content =
                 Content::Interleave(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
-            let names = ["bar", "foo"];
 
             assert_eq!(
-                collect_missing_children(&State::Content(&CONTENT), &names),
+                collect_missing_children(&State::Content(&CONTENT), &["bar", "foo"]),
                 ["bar", "foo"].into()
             );
         }
@@ -477,12 +475,11 @@ mod tests {
                 Content::Element(&["baz"]),
                 Content::Element(&["foo"]),
             ]);
-            let names = ["bar", "baz", "foo"];
 
             let state = State::Content(&CONTENT).step("foo");
 
             assert_eq!(
-                collect_missing_children(&state, &names),
+                collect_missing_children(&state, &["bar", "baz", "foo"]),
                 ["bar", "baz"].into()
             );
         }
