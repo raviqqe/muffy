@@ -126,16 +126,8 @@ mod tests {
                         vec![],
                         vec![Arc::new(Node::Element(Element::new(
                             "svg".to_string(),
-                            vec![
-                                (
-                                    "xmlns".to_string(),
-                                    "http://www.w3.org/2000/svg".to_string()
-                                ),
-                                (
-                                    "xlink".to_string(),
-                                    "http://www.w3.org/1999/xlink".to_string()
-                                ),
-                            ],
+                            // Namespace declarations are not attributes.
+                            vec![],
                             vec![
                                 Arc::new(Node::Element(Element::new(
                                     "a".to_string(),

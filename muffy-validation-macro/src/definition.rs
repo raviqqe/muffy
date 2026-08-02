@@ -2,30 +2,30 @@ use crate::error::MacroError;
 use alloc::collections::BTreeMap;
 use core::mem::replace;
 use muffy_rnc::{
-    Combine, Grammar, GrammarContent, Identifier, Pattern as RncPattern, SchemaBody, parse_schema,
+    Combine, Definition, Grammar, GrammarContent, Identifier, Pattern as RncPattern, SchemaBody,
+    parse_schema,
 };
 use std::{fs::read_to_string, path::Path};
 
+pub type Definitions = BTreeMap<Identifier, (Option<Combine>, RncPattern)>;
+
 pub fn load_definitions(files: &[&str]) -> Result<BTreeMap<Identifier, RncPattern>, MacroError> {
-    let mut definitions = Default::default();
+    let mut definitions = Definitions::default();
 
     for file in files {
         load_schema(
-            &Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("src")
-                .join("schema")
-                .join(file),
+            &Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(file),
             &mut definitions,
         )?;
     }
 
-    Ok(definitions)
+    Ok(definitions
+        .into_iter()
+        .map(|(name, (_, pattern))| (name, pattern))
+        .collect())
 }
 
-fn load_schema(
-    path: &Path,
-    definitions: &mut BTreeMap<Identifier, RncPattern>,
-) -> Result<(), MacroError> {
+fn load_schema(path: &Path, definitions: &mut Definitions) -> Result<(), MacroError> {
     let schema = parse_schema(&read_to_string(path)?)?;
 
     // We do not use the declarations.
@@ -37,6 +37,7 @@ fn load_schema(
                 &grammar,
                 definitions,
                 path.parent().ok_or(MacroError::NoParentDirectory)?,
+                false,
             )?;
         }
         SchemaBody::Pattern(_) => return Err(MacroError::RncSyntax("top-level pattern")),
@@ -47,31 +48,21 @@ fn load_schema(
 
 pub fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut BTreeMap<Identifier, RncPattern>,
+    definitions: &mut Definitions,
     directory: &Path,
+    replace: bool,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(definition) => {
-                let name = definition.name.clone();
-                let pattern = definition.pattern.clone();
-
-                if let Some(combine) = definition.combine {
-                    combine_patterns(
-                        definitions.entry(name).or_insert(RncPattern::NotAllowed),
-                        pattern,
-                        combine,
-                    );
-                } else {
-                    definitions.insert(name, pattern);
-                }
+                load_definition(definition, definitions, replace);
             }
-            GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory)?,
+            GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory, replace)?,
             GrammarContent::Include(include) => {
                 load_schema(&directory.join(&include.uri), definitions)?;
 
                 if let Some(grammar) = &include.grammar {
-                    load_grammar(grammar, definitions, directory)?;
+                    load_grammar(grammar, definitions, directory, true)?;
                 }
             }
             GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
@@ -79,6 +70,28 @@ pub fn load_grammar(
     }
 
     Ok(())
+}
+
+// A name can be defined once without a combine operator and multiple times
+// with a consistent one, in any order across schema files. Definitions in
+// include blocks replace included ones instead.
+fn load_definition(definition: &Definition, definitions: &mut Definitions, replace: bool) {
+    let pattern = definition.pattern.clone();
+
+    if let Some(combine) = definition.combine {
+        if let Some((operator, existing)) = definitions.get_mut(&definition.name) {
+            combine_patterns(existing, pattern, combine);
+            operator.get_or_insert(combine);
+        } else {
+            definitions.insert(definition.name.clone(), (Some(combine), pattern));
+        }
+    } else if !replace
+        && let Some((Some(operator), existing)) = definitions.get_mut(&definition.name)
+    {
+        combine_patterns(existing, pattern, *operator);
+    } else {
+        definitions.insert(definition.name.clone(), (None, pattern));
+    }
 }
 
 fn combine_patterns(existing: &mut RncPattern, new: RncPattern, combine: Combine) {

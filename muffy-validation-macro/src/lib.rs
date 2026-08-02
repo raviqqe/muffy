@@ -30,17 +30,18 @@ use quote::{format_ident, quote};
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
     // TODO Include SVG and MathML schemas for foreign elements.
-    generate_validation("html", &["html5/html5.rnc", "html5/rdfa.rnc"]).unwrap_or_else(|error| {
-        syn::Error::new(Span::call_site(), error)
-            .to_compile_error()
-            .into()
-    })
+    generate_validation("html", &["schema/html5/html5.rnc", "schema/html5/rdfa.rnc"])
+        .unwrap_or_else(|error| {
+            syn::Error::new(Span::call_site(), error)
+                .to_compile_error()
+                .into()
+        })
 }
 
 /// Generates SVG validation functions.
 #[proc_macro]
 pub fn svg(_input: TokenStream) -> TokenStream {
-    generate_validation("svg", &["svg11/svg11.rnc", "html5/aria.rnc"]).unwrap_or_else(|error| {
+    generate_validation("svg", &["svg.rnc"]).unwrap_or_else(|error| {
         syn::Error::new(Span::call_site(), error)
             .to_compile_error()
             .into()

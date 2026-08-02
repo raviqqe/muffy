@@ -145,6 +145,8 @@ pub enum ItemError {
     InvalidScheme(String),
     /// A sitemap parse error.
     Sitemap(SitemapError),
+    /// An SVG validation failure.
+    SvgValidation(MarkupError),
     /// A URL parse error.
     UrlParse(ParseError),
     /// A UTF-8 error.
@@ -171,6 +173,7 @@ impl Display for ItemError {
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Sitemap(error) => write!(formatter, "{error}"),
+            Self::SvgValidation(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -217,6 +220,17 @@ mod tests {
             format!(
                 "{}",
                 ItemError::HtmlValidation(MarkupError::UnknownTag("foo".into()))
+            ),
+            "unknown tag \"foo\""
+        );
+    }
+
+    #[test]
+    fn display_item_svg_validation_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::SvgValidation(MarkupError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
         );

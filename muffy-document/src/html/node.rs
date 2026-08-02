@@ -1,5 +1,6 @@
 use super::element::Element;
 use alloc::sync::Arc;
+use html5ever::ns;
 use markup5ever_rcdom::NodeData;
 
 /// A node.
@@ -19,6 +20,9 @@ impl Node {
                 attrs
                     .borrow()
                     .iter()
+                    // Namespace declarations on foreign elements are not
+                    // semantic attributes.
+                    .filter(|attribute| attribute.name.ns != ns!(xmlns))
                     .map(|attribute| {
                         (
                             attribute.name.local.to_string(),
