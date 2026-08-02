@@ -567,25 +567,25 @@ impl WebValidator {
         inside_svg: bool,
         futures: &mut Vec<ElementFuture>,
     ) {
-        if let Node::Element(element) = node {
-            // HTML parsers wrap an SVG document in HTML elements, which we
-            // should not validate as SVG.
-            let inside_svg = inside_svg || element.name() == "svg";
-            let attributes = HashMap::<_, _>::from_iter(element.attributes());
-            let mut items = vec![];
+        let Node::Element(element) = node else { return };
 
-            if let Some(value) = attributes.get("href") {
-                items.push(spawn(self.cloned().validate_element_link(
-                    context.clone(),
-                    value.to_string(),
-                    base.clone(),
-                    None,
-                )));
-            }
+        // HTML parsers wrap an SVG document in HTML elements, which we
+        // should not validate as SVG.
+        let inside_svg = inside_svg || element.name() == "svg";
+        let attributes = HashMap::<_, _>::from_iter(element.attributes());
+        let mut items = vec![];
 
-            let validation_result = if inside_svg
-                && let Some(config) = context.config().site(base).validation().svg()
-            {
+        if let Some(value) = attributes.get("href") {
+            items.push(spawn(self.cloned().validate_element_link(
+                context.clone(),
+                value.to_string(),
+                base.clone(),
+                None,
+            )));
+        }
+
+        let validation_result =
+            if inside_svg && let Some(config) = context.config().site(base).validation().svg() {
                 muffy_validation::validate_svg_element(
                     element,
                     config.ignored_attributes(),
@@ -595,25 +595,24 @@ impl WebValidator {
                 Ok(())
             };
 
-            if let Err(error) = &validation_result {
-                items.extend(Self::spawn_markup_errors(error, ItemError::SvgValidation));
-            }
+        if let Err(error) = &validation_result {
+            items.extend(Self::spawn_markup_errors(error, ItemError::SvgValidation));
+        }
 
-            if !items.is_empty() {
-                futures.push((
-                    Self::create_output_element(
-                        element,
-                        &attributes,
-                        attributes.contains_key("href").then_some("href"),
-                        &validation_result,
-                    ),
-                    items,
-                ));
-            }
+        if !items.is_empty() {
+            futures.push((
+                Self::create_output_element(
+                    element,
+                    &attributes,
+                    attributes.contains_key("href").then_some("href"),
+                    &validation_result,
+                ),
+                items,
+            ));
+        }
 
-            for node in element.children() {
-                self.validate_svg_element(context, base, node, inside_svg, futures);
-            }
+        for node in element.children() {
+            self.validate_svg_element(context, base, node, inside_svg, futures);
         }
     }
 
