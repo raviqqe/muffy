@@ -39,15 +39,21 @@ pub fn validate_rule(
     let mut missing_attributes = BTreeSet::new();
     let mut missing_children = BTreeSet::new();
 
-    if let Some(variant) = rule
+    if let Some((_, variant, misplaced, state)) = rule
         .variants
         .iter()
-        .min_by_key(|variant| score_variant(variant, &attributes, &exempt_attributes, &children))
+        .map(|variant| {
+            let (score, misplaced, state) =
+                evaluate_variant(variant, &attributes, &exempt_attributes, &children);
+
+            (score, variant, misplaced, state)
+        })
+        .min_by_key(|(score, ..)| *score)
     {
         let attribute_set = variant
             .attributes
             .iter()
-            .min_by_key(|set| score_attribute_set(set, &attributes, &exempt_attributes))
+            .min_by_key(|set| evaluate_attribute_set(set, &attributes, &exempt_attributes))
             .unwrap_or(&EMPTY_ATTRIBUTE_SET);
 
         for name in attributes.iter().filter(|name| {
@@ -59,8 +65,6 @@ pub fn validate_rule(
                 .or_default()
                 .insert(AttributeError::Conflict);
         }
-
-        let (misplaced, state) = match_children(variant.content, &children);
 
         for name in &misplaced {
             child_errors
@@ -237,30 +241,32 @@ fn classify_children<'a>(
     (children, disallowed_children)
 }
 
-// (error count, conflict count, requirement count)
-fn score_variant(
+fn evaluate_variant(
     variant: &Variant,
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
     children: &[(&'static str, bool)],
-) -> (usize, usize, usize) {
+) -> ((usize, usize, usize), BTreeSet<&'static str>, State) {
     let (error_count, requirement_count, conflict_count) = variant
         .attributes
         .iter()
-        .map(|set| score_attribute_set(set, attributes, exempt_attributes))
+        .map(|set| evaluate_attribute_set(set, attributes, exempt_attributes))
         .min()
         .unwrap_or_default();
     let (misplaced, state) = match_children(variant.content, children);
 
-    (
+    // (error count, conflict count, requirement count)
+    let score = (
         error_count + misplaced.len() + usize::from(misplaced.is_empty() && !state.is_nullable()),
         conflict_count + misplaced.len(),
         requirement_count,
-    )
+    );
+
+    (score, misplaced, state)
 }
 
 // (error count, requirement count, conflict count)
-fn score_attribute_set(
+fn evaluate_attribute_set(
     set: &AttributeSet,
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
