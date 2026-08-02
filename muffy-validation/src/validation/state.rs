@@ -165,3 +165,174 @@ fn step_content(content: &'static Content, name: &str) -> State {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    const A: Content = Content::Element(&["a"]);
+    const B: Content = Content::Element(&["b"]);
+    const C: Content = Content::Element(&["c"]);
+    const NULLABLE: Content = Content::Text;
+
+    fn a() -> State {
+        State::Content(&A)
+    }
+
+    fn b() -> State {
+        State::Content(&B)
+    }
+
+    fn c() -> State {
+        State::Content(&C)
+    }
+
+    mod choice {
+        use super::*;
+
+        #[test]
+        fn collapse_singleton() {
+            assert_eq!(State::choice([a()]), a());
+        }
+
+        #[test]
+        fn reduce_empty_to_not_allowed() {
+            assert_eq!(State::choice(Vec::new()), State::NotAllowed);
+        }
+
+        #[test]
+        fn drop_not_allowed() {
+            assert_eq!(State::choice([a(), State::NotAllowed]), a());
+            assert_eq!(State::choice([State::NotAllowed]), State::NotAllowed);
+        }
+
+        #[test]
+        fn flatten_and_deduplicate() {
+            assert_eq!(
+                State::choice([State::choice([a(), b()]), a()]),
+                State::Choice(vec![a(), b()])
+            );
+        }
+    }
+
+    mod group {
+        use super::*;
+
+        #[test]
+        fn collapse_singleton() {
+            assert_eq!(State::group([a()]), a());
+        }
+
+        #[test]
+        fn reduce_empty_to_empty() {
+            assert_eq!(State::group(Vec::new()), State::Empty);
+        }
+
+        #[test]
+        fn drop_empty() {
+            assert_eq!(State::group([State::Empty, a()]), a());
+        }
+
+        #[test]
+        fn annihilate_on_not_allowed() {
+            assert_eq!(State::group([a(), State::NotAllowed]), State::NotAllowed);
+        }
+
+        #[test]
+        fn preserve_order() {
+            assert_eq!(State::group([b(), a()]), State::Group(vec![b(), a()]));
+        }
+
+        #[test]
+        fn flatten() {
+            assert_eq!(
+                State::group([State::group([a(), b()]), c()]),
+                State::Group(vec![a(), b(), c()])
+            );
+        }
+    }
+
+    mod interleave {
+        use super::*;
+
+        #[test]
+        fn collapse_singleton() {
+            assert_eq!(State::interleave([a()]), a());
+        }
+
+        #[test]
+        fn reduce_empty_to_empty() {
+            assert_eq!(State::interleave(Vec::new()), State::Empty);
+        }
+
+        #[test]
+        fn drop_empty() {
+            assert_eq!(State::interleave([State::Empty, a()]), a());
+        }
+
+        #[test]
+        fn annihilate_on_not_allowed() {
+            assert_eq!(State::interleave([a(), State::NotAllowed]), State::NotAllowed);
+        }
+
+        #[test]
+        fn sort_operands() {
+            assert_eq!(State::interleave([b(), a()]), State::Interleave(vec![a(), b()]));
+        }
+
+        #[test]
+        fn keep_duplicates() {
+            assert_eq!(State::interleave([a(), a()]), State::Interleave(vec![a(), a()]));
+        }
+
+        #[test]
+        fn flatten() {
+            assert_eq!(
+                State::interleave([State::interleave([a(), c()]), b()]),
+                State::Interleave(vec![a(), b(), c()])
+            );
+        }
+    }
+
+    mod is_nullable {
+        use super::*;
+
+        #[test]
+        fn empty_accepts_end() {
+            assert!(State::Empty.is_nullable());
+        }
+
+        #[test]
+        fn not_allowed_rejects_end() {
+            assert!(!State::NotAllowed.is_nullable());
+        }
+
+        #[test]
+        fn content_follows_pattern() {
+            assert!(!a().is_nullable());
+            assert!(State::Content(&NULLABLE).is_nullable());
+        }
+
+        #[test]
+        fn choice_accepts_if_any_operand_does() {
+            assert!(State::Choice(vec![a(), State::Empty]).is_nullable());
+            assert!(!State::Choice(vec![a(), b()]).is_nullable());
+        }
+
+        #[test]
+        fn group_accepts_if_all_operands_do() {
+            assert!(State::Group(vec![State::Content(&NULLABLE), State::Content(&NULLABLE)]).is_nullable());
+            assert!(!State::Group(vec![State::Content(&NULLABLE), a()]).is_nullable());
+        }
+
+        #[test]
+        fn interleave_accepts_if_all_operands_do() {
+            assert!(
+                State::Interleave(vec![State::Content(&NULLABLE), State::Content(&NULLABLE)])
+                    .is_nullable()
+            );
+            assert!(!State::Interleave(vec![a(), State::Content(&NULLABLE)]).is_nullable());
+        }
+    }
+}
