@@ -448,7 +448,7 @@ mod tests {
 
         #[test]
         fn expect_alternative_children() {
-            static CONTENT: Content =
+            const CONTENT: Content =
                 Content::Choice(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
             let names = ["bar", "foo"];
 
@@ -460,7 +460,7 @@ mod tests {
 
         #[test]
         fn expect_all_required_children() {
-            static CONTENT: Content =
+            const CONTENT: Content =
                 Content::Interleave(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
             let names = ["bar", "foo"];
 
