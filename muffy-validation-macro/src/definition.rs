@@ -6,16 +6,14 @@ use muffy_rnc::{
 };
 use std::{fs::read_to_string, path::Path};
 
-pub fn load_definitions() -> Result<BTreeMap<Identifier, RncPattern>, MacroError> {
+pub fn load_definitions(files: &[&str]) -> Result<BTreeMap<Identifier, RncPattern>, MacroError> {
     let mut definitions = Default::default();
 
-    // TODO Include SVG and MathML schemas.
-    for file in ["html5.rnc", "rdfa.rnc"] {
+    for file in files {
         load_schema(
             &Path::new(env!("CARGO_MANIFEST_DIR"))
                 .join("src")
                 .join("schema")
-                .join("html5")
                 .join(file),
             &mut definitions,
         )?;
@@ -34,7 +32,7 @@ fn load_schema(
     // TODO Respect namespace declarations.
 
     match schema.body {
-        SchemaBody::Grammar(grammar) => {
+        SchemaBody::Grammar(grammar) | SchemaBody::Pattern(RncPattern::Grammar(grammar)) => {
             load_grammar(
                 &grammar,
                 definitions,

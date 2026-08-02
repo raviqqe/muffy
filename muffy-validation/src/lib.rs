@@ -15,9 +15,11 @@ use self::{
     variant::Variant,
 };
 use muffy_document::html::Element;
-use muffy_validation_macro::html;
+use muffy_validation_macro::{html, svg};
 
 html! {}
+
+svg! {}
 
 #[cfg(test)]
 mod tests {
