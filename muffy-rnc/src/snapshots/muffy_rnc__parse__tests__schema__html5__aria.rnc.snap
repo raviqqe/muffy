@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -1581,6 +1581,62 @@ Schema {
                                                 sub_components: [
                                                     "state",
                                                     "expanded",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "colindex",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "rowindex",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "posinset",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "setsize",
                                                 ],
                                             },
                                         },
@@ -11005,17 +11061,63 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "aria",
-                                    sub_components: [
-                                        "role",
-                                        "menuitemcheckbox",
-                                    ],
-                                },
-                            },
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: Identifier {
+                                            component: "aria",
+                                            sub_components: [
+                                                "role",
+                                                "menuitemcheckbox",
+                                            ],
+                                        },
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "state",
+                                                    "expanded",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "posinset",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "setsize",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),
@@ -11273,6 +11375,20 @@ Schema {
                                             ],
                                         },
                                     },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "state",
+                                                    "expanded",
+                                                ],
+                                            },
+                                        },
+                                    ),
                                 ),
                                 Optional(
                                     Name(
@@ -15198,17 +15314,63 @@ Schema {
                             ],
                         },
                         combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "aria",
-                                    sub_components: [
-                                        "role",
-                                        "switch",
-                                    ],
-                                },
-                            },
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: Identifier {
+                                            component: "aria",
+                                            sub_components: [
+                                                "role",
+                                                "switch",
+                                            ],
+                                        },
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "state",
+                                                    "expanded",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "readonly",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "aria",
+                                                sub_components: [
+                                                    "prop",
+                                                    "required",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
                     },
                 ),

@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -1709,6 +1709,30 @@ Schema {
                                                 },
                                             },
                                         ),
+                                    ),
+                                    Optional(
+                                        Attribute {
+                                            name_class: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "transform",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            pattern: Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "TransformList",
+                                                        sub_components: [
+                                                            "datatype",
+                                                        ],
+                                                    },
+                                                },
+                                            ),
+                                        },
                                     ),
                                     Optional(
                                         Attribute {

@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -193,6 +193,20 @@ Schema {
                                                 sub_components: [
                                                     "attrs",
                                                     "ismap",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "img",
+                                                sub_components: [
+                                                    "attrs",
+                                                    "controls",
                                                 ],
                                             },
                                         },
@@ -985,6 +999,71 @@ Schema {
                                             ),
                                         ),
                                         value: "ismap",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: Identifier {
+                            component: "img",
+                            sub_components: [
+                                "attrs",
+                                "controls",
+                            ],
+                        },
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "controls",
+                                        sub_components: [],
+                                    },
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "controls",
                                     },
                                     Value {
                                         name: Some(
@@ -5715,20 +5794,6 @@ Schema {
                                     ),
                                 ),
                                 Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "shared-hyperlink",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "download",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Optional(
                                     Interleave(
                                         [
                                             Name(
@@ -5755,49 +5820,91 @@ Schema {
                                                     },
                                                 },
                                             ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "download",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "target",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "ping",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "rel",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "hreflang",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "shared-hyperlink",
+                                                            sub_components: [
+                                                                "attrs",
+                                                                "type",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
                                         ],
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "shared-hyperlink",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "target",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "shared-hyperlink",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "ping",
-                                                ],
-                                            },
-                                        },
-                                    ),
-                                ),
-                                Optional(
-                                    Name(
-                                        Name {
-                                            prefix: None,
-                                            local: Identifier {
-                                                component: "shared-hyperlink",
-                                                sub_components: [
-                                                    "attrs",
-                                                    "rel",
-                                                ],
-                                            },
-                                        },
                                     ),
                                 ),
                                 Optional(
