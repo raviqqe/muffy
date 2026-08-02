@@ -8,48 +8,73 @@ use core::{
     fmt,
     fmt::{Display, Formatter},
 };
-use muffy_document::html::{Document, parse_bytes};
+use muffy_document::{document::Document, html, xml};
 use std::io;
 
-/// An HTML parser.
-pub struct HtmlParser {
-    cache: Box<dyn LocalCache<Result<Arc<Document>, HtmlParseError>>>,
+/// A document parser.
+pub struct DocumentParser {
+    cache: Box<dyn LocalCache<Result<Arc<Document>, DocumentParseError>>>,
 }
 
-impl HtmlParser {
-    /// Creates an HTML parser.
-    pub fn new(cache: impl LocalCache<Result<Arc<Document>, HtmlParseError>> + 'static) -> Self {
+impl DocumentParser {
+    /// Creates a document parser.
+    pub fn new(
+        cache: impl LocalCache<Result<Arc<Document>, DocumentParseError>> + 'static,
+    ) -> Self {
         Self {
             cache: Box::new(cache),
         }
     }
 
-    /// Parses an HTML document.
-    pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlParseError> {
+    /// Parses a document.
+    pub async fn parse(
+        &self,
+        response: &Arc<Response>,
+    ) -> Result<Arc<Document>, DocumentParseError> {
         let response = response.clone();
 
         self.cache
             .get_with(
                 response.url().to_string(),
                 Box::new(async move {
-                    parse_bytes(response.body())
-                        .map(Into::into)
-                        .map_err(|error| HtmlParseError::Io(error.into()))
+                    if Self::is_xml(&response) {
+                        xml::parse_bytes(response.body())
+                    } else {
+                        html::parse_bytes(response.body())
+                    }
+                    .map(Into::into)
+                    .map_err(|error| DocumentParseError::Io(error.into()))
                 }),
             )
             .await?
     }
+
+    fn is_xml(response: &Response) -> bool {
+        response
+            .headers()
+            .get("content-type")
+            .and_then(|value| value.to_str().ok())
+            .map(|value| {
+                value
+                    .split(';')
+                    .next()
+                    .unwrap_or_default()
+                    .trim()
+                    .eq_ignore_ascii_case("image/svg+xml")
+            })
+            .unwrap_or_default()
+    }
 }
 
 #[derive(Clone, Debug)]
-pub enum HtmlParseError {
+pub enum DocumentParseError {
     Cache(CacheError),
     Io(Arc<io::Error>),
 }
 
-impl Error for HtmlParseError {}
+impl Error for DocumentParseError {}
 
-impl Display for HtmlParseError {
+impl Display for DocumentParseError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Cache(error) => write!(formatter, "{error}"),
@@ -58,7 +83,7 @@ impl Display for HtmlParseError {
     }
 }
 
-impl From<CacheError> for HtmlParseError {
+impl From<CacheError> for DocumentParseError {
     fn from(error: CacheError) -> Self {
         Self::Cache(error)
     }
@@ -70,13 +95,13 @@ mod tests {
     use crate::MemoryCache;
     use http::StatusCode;
     use indoc::indoc;
-    use muffy_document::html::Element;
+    use muffy_document::document::Element;
     use pretty_assertions::assert_eq;
     use url::Url;
 
     #[tokio::test]
     async fn parse_response() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -119,8 +144,33 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn parse_svg_response() {
+        let parser = DocumentParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com/foo.svg").unwrap(),
+                    StatusCode::OK,
+                    http::HeaderMap::from_iter([(
+                        http::header::CONTENT_TYPE,
+                        http::HeaderValue::from_static("image/svg+xml"),
+                    )]),
+                    r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#.as_bytes().to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap(),
+            Document::new(vec![Arc::new(
+                Element::new("svg".into(), vec![], vec![]).into()
+            )])
+            .into()
+        );
+    }
+
+    #[tokio::test]
     async fn parse_base() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -149,7 +199,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_base_without_href() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -178,7 +228,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_multiple_base_elements() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -208,7 +258,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_base_in_body() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser

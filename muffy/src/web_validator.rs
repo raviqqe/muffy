@@ -4,11 +4,11 @@ use self::context::Context;
 use crate::{
     config::Config,
     document_output::DocumentOutput,
+    document_parser::DocumentParser,
     document_type::DocumentType,
     element::Element,
     element_output::ElementOutput,
     error::{Error, ItemError},
-    html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
     request::Request,
@@ -20,7 +20,7 @@ use alloc::sync::Arc;
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
-use muffy_document::html::{self, Node};
+use muffy_document::document::{self, Node};
 use muffy_validation::MarkupError;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -49,16 +49,16 @@ pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
     http_client: HttpClient,
-    html_parser: HtmlParser,
+    document_parser: DocumentParser,
 }
 
 impl WebValidator {
     /// Creates a web validator.
-    pub fn new(http_client: HttpClient, html_parser: HtmlParser) -> Self {
+    pub fn new(http_client: HttpClient, document_parser: DocumentParser) -> Self {
         Self(
             WebValidatorInner {
                 http_client,
-                html_parser,
+                document_parser,
             }
             .into(),
         )
@@ -247,7 +247,7 @@ impl WebValidator {
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
-        let document = self.0.html_parser.parse(response).await?;
+        let document = self.0.document_parser.parse(response).await?;
         let base = document
             .base()
             .map(|href| response.url().join(href))
@@ -286,7 +286,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         base: &Arc<Url>,
-        element: &html::Element,
+        element: &document::Element,
     ) -> Option<ElementFuture> {
         let attributes = HashMap::<_, _>::from_iter(element.attributes());
         let mut links = vec![];
@@ -445,28 +445,12 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
-        let document = self.0.html_parser.parse(response).await?;
 
-        for node in Self::unwrap_svg_document(document.children()) {
+        for node in self.0.document_parser.parse(response).await?.children() {
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 
         Ok(futures)
-    }
-
-    // TODO Split the SVG parser.
-    fn unwrap_svg_document<'a>(nodes: impl Iterator<Item = &'a Node>) -> Vec<&'a Node> {
-        nodes
-            .flat_map(|node| {
-                if let Node::Element(element) = node
-                    && ["body", "head", "html"].contains(&element.name())
-                {
-                    Self::unwrap_svg_document(element.children())
-                } else {
-                    vec![node]
-                }
-            })
-            .collect()
     }
 
     fn validate_svg_element(
@@ -587,7 +571,7 @@ impl WebValidator {
     async fn has_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, ItemError> {
         Ok(self
             .0
-            .html_parser
+            .document_parser
             .parse(response)
             .await?
             .children()
@@ -697,7 +681,7 @@ impl WebValidator {
     }
 
     fn create_output_element<'a>(
-        element: &html::Element,
+        element: &document::Element,
         attributes: &HashMap<&str, &str>,
         link_attributes: impl IntoIterator<Item = &'a str>,
         validation_result: &'a Result<(), MarkupError>,
@@ -737,7 +721,7 @@ mod tests {
     use crate::{
         Metrics, MokaCache, SchemeConfig,
         config::{Config, MarkupConfig, SiteConfig},
-        html_parser::HtmlParser,
+        document_parser::DocumentParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
@@ -793,7 +777,7 @@ mod tests {
 
         WebValidator::new(
             HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0))),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.to_string()],
@@ -1738,7 +1722,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
@@ -2001,7 +1985,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
@@ -2070,7 +2054,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(
             &Config::new(
@@ -2130,7 +2114,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(
             &Config::new(
@@ -2781,7 +2765,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn validate_invalid_svg_content_outside_root() {
+        async fn validate_invalid_html_element_in_svg_content() {
             let mut documents = validate_svg_content(
                 StubHttpClient::new(
                     [
@@ -2816,12 +2800,11 @@ mod tests {
             .await
             .unwrap();
 
-            // HTML parsers move the elements after the misplaced HTML element
-            // out of the SVG root element.
             assert_eq!(
                 collect_errors(&mut documents).await,
                 [
                     "invalid attributes: foo (not allowed)".into(),
+                    "invalid children: p (not allowed)".into(),
                     "unknown tag \"p\"".into(),
                 ]
                 .into()

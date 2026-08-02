@@ -1,4 +1,9 @@
-use super::{element::Element, node::Node};
+//! Documents.
+
+mod element;
+mod node;
+
+pub use self::{element::*, node::*};
 use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;

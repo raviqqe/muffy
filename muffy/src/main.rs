@@ -9,7 +9,7 @@ use futures::StreamExt;
 use http::{HeaderName, HeaderValue, StatusCode};
 use itertools::Itertools;
 use muffy::{
-    CacheConfig, ClockTimer, ConcurrencyConfig, Config, FjallCache, HtmlParser, HttpClient,
+    CacheConfig, ClockTimer, ConcurrencyConfig, Config, DocumentParser, FjallCache, HttpClient,
     MarkupConfig, MokaCache, RateLimitConfig, RenderFormat, RenderOptions, ReqwestHttpClient,
     RetryConfig, RetryDurationConfig, SchemeConfig, SiteConfig, SiteRateLimitConfig, StatusConfig,
     WebValidator,
@@ -231,7 +231,7 @@ async fn run_config(
         )
         .set_concurrency(config.concurrency())
         .set_rate_limit(config.rate_limit()),
-        HtmlParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
+        DocumentParser::new(MokaCache::new(INITIAL_CACHE_CAPACITY)),
     );
 
     let mut documents = validator.validate(config).await?;

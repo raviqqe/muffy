@@ -1,5 +1,5 @@
 use crate::{
-    cache::CacheError, html_parser::HtmlParseError, http_client::HttpClientError,
+    cache::CacheError, document_parser::DocumentParseError, http_client::HttpClientError,
     sitemap::SitemapError,
 };
 use core::{
@@ -21,8 +21,8 @@ pub enum Error {
     Acquire(AcquireError),
     /// A cache error.
     Cache(CacheError),
-    /// An HTML parse error.
-    HtmlParse(HtmlParseError),
+    /// A document parse error.
+    DocumentParse(DocumentParseError),
     /// An I/O error.
     Io(io::Error),
     /// An item error.
@@ -48,7 +48,7 @@ impl Display for Error {
         match self {
             Self::Acquire(error) => write!(formatter, "{error}"),
             Self::Cache(error) => write!(formatter, "{error}"),
-            Self::HtmlParse(error) => write!(formatter, "{error}"),
+            Self::DocumentParse(error) => write!(formatter, "{error}"),
             Self::Io(error) => write!(formatter, "{error}"),
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
@@ -85,9 +85,9 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<HtmlParseError> for Error {
-    fn from(error: HtmlParseError) -> Self {
-        Self::HtmlParse(error)
+impl From<DocumentParseError> for Error {
+    fn from(error: DocumentParseError) -> Self {
+        Self::DocumentParse(error)
     }
 }
 
@@ -131,10 +131,10 @@ pub enum ItemError {
         /// An expected content type.
         expected: &'static str,
     },
+    /// A document parse error.
+    DocumentParse(DocumentParseError),
     /// An element not found.
     ElementNotFound(String),
-    /// An HTML parse error.
-    HtmlParse(HtmlParseError),
     /// An HTML validation failure.
     HtmlValidation(MarkupError),
     /// An HTTP client error.
@@ -164,10 +164,10 @@ impl Display for ItemError {
                     "content type expected {expected} but got {actual}"
                 )
             }
+            Self::DocumentParse(error) => write!(formatter, "{error}"),
             Self::ElementNotFound(name) => {
                 write!(formatter, "element for #{name} not found")
             }
-            Self::HtmlParse(error) => write!(formatter, "{error}"),
             Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
@@ -186,9 +186,9 @@ impl Serialize for ItemError {
     }
 }
 
-impl From<HtmlParseError> for ItemError {
-    fn from(error: HtmlParseError) -> Self {
-        Self::HtmlParse(error)
+impl From<DocumentParseError> for ItemError {
+    fn from(error: DocumentParseError) -> Self {
+        Self::DocumentParse(error)
     }
 }
 
