@@ -75,19 +75,18 @@ pub fn load_grammar(
 fn load_definition(definition: &Definition, replace: bool, definitions: &mut DefinitionSet) {
     let pattern = definition.pattern.clone();
 
-    if let Some(combine) = definition.combine {
-        if let Some((operator, existing)) = definitions.get_mut(&definition.name) {
-            combine_patterns(existing, pattern, combine);
-            operator.get_or_insert(combine);
-        } else {
-            definitions.insert(definition.name.clone(), (Some(combine), pattern));
-        }
+    if let Some(combine) = definition.combine
+        && let Some((operator, existing)) = definitions.get_mut(&definition.name)
+    {
+        combine_patterns(existing, pattern, combine);
+        operator.get_or_insert(combine);
     } else if !replace
+        && definition.combine.is_none()
         && let Some((Some(operator), existing)) = definitions.get_mut(&definition.name)
     {
         combine_patterns(existing, pattern, *operator);
     } else {
-        definitions.insert(definition.name.clone(), (None, pattern));
+        definitions.insert(definition.name.clone(), (definition.combine, pattern));
     }
 }
 
