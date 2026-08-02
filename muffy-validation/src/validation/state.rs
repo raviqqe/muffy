@@ -1,7 +1,8 @@
 use crate::content::{Content, TEXT_TOKEN};
 use alloc::collections::BTreeSet;
+use core::{cmp::Ordering, ptr::eq};
 
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug)]
 pub enum State {
     Choice(Vec<Self>),
     Content(&'static Content),
@@ -11,7 +12,47 @@ pub enum State {
     NotAllowed,
 }
 
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self, other) {
+            (Self::Choice(one), Self::Choice(other))
+            | (Self::Group(one), Self::Group(other))
+            | (Self::Interleave(one), Self::Interleave(other)) => one.cmp(other),
+            // Content patterns are shared, so equal ones are usually the same
+            // one and their deep comparison is skipped.
+            (Self::Content(one), Self::Content(other)) if eq(*one, *other) => Ordering::Equal,
+            (Self::Content(one), Self::Content(other)) => one.cmp(other),
+            _ => self.order().cmp(&other.order()),
+        }
+    }
+}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == Ordering::Equal
+    }
+}
+
+impl Eq for State {}
+
 impl State {
+    const fn order(&self) -> usize {
+        match self {
+            Self::Choice(_) => 0,
+            Self::Content(_) => 1,
+            Self::Empty => 2,
+            Self::Group(_) => 3,
+            Self::Interleave(_) => 4,
+            Self::NotAllowed => 5,
+        }
+    }
+
     pub fn step(&self, name: &str) -> Self {
         match self {
             Self::Choice(states) => Self::choice(states.iter().map(|state| state.step(name))),
@@ -185,6 +226,51 @@ mod tests {
 
     fn c() -> State {
         State::Content(&C)
+    }
+
+    mod compare {
+        use super::*;
+        use alloc::boxed::Box;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn order_variants() {
+            let mut states = vec![
+                State::NotAllowed,
+                State::Interleave(vec![]),
+                State::Group(vec![]),
+                State::Empty,
+                a(),
+                State::Choice(vec![]),
+            ];
+
+            states.sort();
+
+            assert_eq!(
+                states,
+                vec![
+                    State::Choice(vec![]),
+                    a(),
+                    State::Empty,
+                    State::Group(vec![]),
+                    State::Interleave(vec![]),
+                    State::NotAllowed,
+                ]
+            );
+        }
+
+        #[test]
+        fn compare_equal_contents_at_distinct_addresses() {
+            let one = State::Content(Box::leak(Box::new(Content::Element(&["a"]))));
+            let other = State::Content(Box::leak(Box::new(Content::Element(&["a"]))));
+
+            assert_eq!(one, other);
+        }
+
+        #[test]
+        fn compare_different_contents() {
+            assert!(a() < b());
+        }
     }
 
     mod choice {
