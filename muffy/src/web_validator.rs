@@ -20,7 +20,7 @@ use alloc::sync::Arc;
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
-use muffy_document::html::{self, Node};
+use muffy_document::document::{self, Node};
 use muffy_validation::MarkupError;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -286,7 +286,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         base: &Arc<Url>,
-        element: &html::Element,
+        element: &document::Element,
     ) -> Option<ElementFuture> {
         let attributes = HashMap::<_, _>::from_iter(element.attributes());
         let mut links = vec![];
@@ -681,7 +681,7 @@ impl WebValidator {
     }
 
     fn create_output_element<'a>(
-        element: &html::Element,
+        element: &document::Element,
         attributes: &HashMap<&str, &str>,
         link_attributes: impl IntoIterator<Item = &'a str>,
         validation_result: &'a Result<(), MarkupError>,

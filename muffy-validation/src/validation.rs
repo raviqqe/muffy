@@ -10,7 +10,7 @@ use crate::{
     variant::Variant,
 };
 use alloc::collections::{BTreeMap, BTreeSet};
-use muffy_document::html::{Element, Node};
+use muffy_document::document::{Element, Node};
 use regex::Regex;
 
 const EMPTY_ATTRIBUTE_SET: AttributeSet = AttributeSet {

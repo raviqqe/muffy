@@ -8,7 +8,7 @@ use core::{
     fmt,
     fmt::{Display, Formatter},
 };
-use muffy_document::{html, html::Document, xml};
+use muffy_document::{document::Document, html, xml};
 use std::io;
 
 /// A document parser.
@@ -95,7 +95,7 @@ mod tests {
     use crate::MemoryCache;
     use http::StatusCode;
     use indoc::indoc;
-    use muffy_document::html::Element;
+    use muffy_document::document::Element;
     use pretty_assertions::assert_eq;
     use url::Url;
 

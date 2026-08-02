@@ -1,6 +1,6 @@
 //! XML documents.
 
-use crate::html::Document;
+use crate::document::Document;
 use markup5ever_rcdom::RcDom;
 use std::io;
 use xml5ever::{driver::parse_document, tendril::TendrilSink};
@@ -21,7 +21,7 @@ pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::html::{Element, Node};
+    use crate::document::{Element, Node};
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 

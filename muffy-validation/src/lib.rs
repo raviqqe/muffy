@@ -14,7 +14,7 @@ use self::{
     attribute_set::AttributeSet, content::Content, rule::Rule, validation::validate_rule,
     variant::Variant,
 };
-use muffy_document::html::Element;
+use muffy_document::document::Element;
 use muffy_validation_macro::{html, svg};
 
 html! {}
@@ -25,7 +25,7 @@ svg! {}
 mod tests {
     use super::*;
     use alloc::sync::Arc;
-    use muffy_document::html::Node;
+    use muffy_document::document::Node;
     use regex::Regex;
 
     fn create_element(
