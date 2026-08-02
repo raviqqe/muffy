@@ -8,7 +8,7 @@ use core::{
     fmt,
     fmt::{Display, Formatter},
 };
-use muffy_document::html::{Document, parse_bytes};
+use muffy_document::{html, html::Document, xml};
 use std::io;
 
 /// An HTML parser.
@@ -24,7 +24,8 @@ impl HtmlParser {
         }
     }
 
-    /// Parses an HTML document.
+    /// Parses an HTML or XML document depending on a content type of a
+    /// response.
     pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlParseError> {
         let response = response.clone();
 
@@ -32,12 +33,32 @@ impl HtmlParser {
             .get_with(
                 response.url().to_string(),
                 Box::new(async move {
-                    parse_bytes(response.body())
-                        .map(Into::into)
-                        .map_err(|error| HtmlParseError::Io(error.into()))
+                    if Self::is_xml(&response) {
+                        xml::parse_bytes(response.body())
+                    } else {
+                        html::parse_bytes(response.body())
+                    }
+                    .map(Into::into)
+                    .map_err(|error| HtmlParseError::Io(error.into()))
                 }),
             )
             .await?
+    }
+
+    fn is_xml(response: &Response) -> bool {
+        response
+            .headers()
+            .get("content-type")
+            .and_then(|value| value.to_str().ok())
+            .map(|value| {
+                value
+                    .split(';')
+                    .next()
+                    .unwrap_or_default()
+                    .trim()
+                    .eq_ignore_ascii_case("image/svg+xml")
+            })
+            .unwrap_or_default()
     }
 }
 

@@ -445,28 +445,12 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
-        let document = self.0.html_parser.parse(response).await?;
 
-        for node in Self::unwrap_svg_document(document.children()) {
+        for node in self.0.html_parser.parse(response).await?.children() {
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 
         Ok(futures)
-    }
-
-    // TODO Split the SVG parser.
-    fn unwrap_svg_document<'a>(nodes: impl Iterator<Item = &'a Node>) -> Vec<&'a Node> {
-        nodes
-            .flat_map(|node| {
-                if let Node::Element(element) = node
-                    && ["body", "head", "html"].contains(&element.name())
-                {
-                    Self::unwrap_svg_document(element.children())
-                } else {
-                    vec![node]
-                }
-            })
-            .collect()
     }
 
     fn validate_svg_element(
@@ -2781,7 +2765,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn validate_invalid_svg_content_outside_root() {
+        async fn validate_invalid_html_element_in_svg_content() {
             let mut documents = validate_svg_content(
                 StubHttpClient::new(
                     [
@@ -2816,12 +2800,11 @@ mod tests {
             .await
             .unwrap();
 
-            // HTML parsers move the elements after the misplaced HTML element
-            // out of the SVG root element.
             assert_eq!(
                 collect_errors(&mut documents).await,
                 [
                     "invalid attributes: foo (not allowed)".into(),
+                    "invalid children: p (not allowed)".into(),
                     "unknown tag \"p\"".into(),
                 ]
                 .into()
