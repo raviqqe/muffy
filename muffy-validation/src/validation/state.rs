@@ -2,7 +2,7 @@ use crate::content::{Content, TEXT_TOKEN};
 use alloc::collections::BTreeSet;
 use core::{cmp::Ordering, ptr::eq};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum State {
     Choice(Vec<Self>),
     Content(&'static Content),
@@ -32,14 +32,6 @@ impl PartialOrd for State {
         Some(self.cmp(other))
     }
 }
-
-impl PartialEq for State {
-    fn eq(&self, other: &Self) -> bool {
-        self.cmp(other) == Ordering::Equal
-    }
-}
-
-impl Eq for State {}
 
 impl State {
     const fn order(&self) -> usize {
