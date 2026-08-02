@@ -675,12 +675,12 @@ mod tests {
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
+    use alloc::collections::BTreeSet;
     use futures::{Stream, StreamExt};
     use http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use regex::Regex;
-    use alloc::collections::BTreeSet;
     use url::Url;
 
     async fn validate(
