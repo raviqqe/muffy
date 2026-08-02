@@ -1,6 +1,7 @@
 mod state;
+mod variant_evaluation;
 
-use self::state::State;
+use self::{state::State, variant_evaluation::VariantEvaluation};
 use crate::{
     attribute_set::AttributeSet,
     content::{Content, TEXT_TOKEN},
@@ -39,11 +40,16 @@ pub fn validate_rule(
     let mut missing_attributes = BTreeSet::new();
     let mut missing_children = BTreeSet::new();
 
-    if let Some((_, attribute_set, misplaced, state)) = rule
+    if let Some(VariantEvaluation {
+        attribute_set,
+        misplaced_children,
+        state,
+        ..
+    }) = rule
         .variants
         .iter()
         .map(|variant| evaluate_variant(variant, &attributes, &exempt_attributes, &children))
-        .min_by_key(|(score, ..)| *score)
+        .min_by_key(|evaluation| evaluation.score)
     {
         for name in attributes.iter().filter(|name| {
             attribute_set.required.binary_search(name).is_err()
@@ -55,7 +61,7 @@ pub fn validate_rule(
                 .insert(AttributeError::Conflict);
         }
 
-        for name in &misplaced {
+        for name in &misplaced_children {
             child_errors
                 .entry((*name).into())
                 .or_default()
@@ -76,7 +82,7 @@ pub fn validate_rule(
                 .map(|&name| name.into()),
         );
 
-        if misplaced.is_empty() {
+        if misplaced_children.is_empty() {
             missing_children.extend(
                 collect_missing_children(&state, rule.children)
                     .iter()
@@ -235,12 +241,7 @@ fn evaluate_variant(
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
     children: &[(&'static str, bool)],
-) -> (
-    (usize, usize, usize),
-    &'static AttributeSet,
-    BTreeSet<&'static str>,
-    State,
-) {
+) -> VariantEvaluation {
     let (attribute_set, (error_count, requirement_count, conflict_count)) = variant
         .attributes
         .iter()
@@ -252,16 +253,20 @@ fn evaluate_variant(
         })
         .min_by_key(|(_, score)| *score)
         .unwrap_or((&EMPTY_ATTRIBUTE_SET, Default::default()));
-    let (misplaced, state) = validate_children(variant.content, children);
+    let (misplaced_children, state) = validate_children(variant.content, children);
 
-    // (error count, conflict count, requirement count)
-    let score = (
-        error_count + misplaced.len() + usize::from(misplaced.is_empty() && !state.is_nullable()),
-        conflict_count + misplaced.len(),
-        requirement_count,
-    );
-
-    (score, attribute_set, misplaced, state)
+    VariantEvaluation {
+        score: (
+            error_count
+                + misplaced_children.len()
+                + usize::from(misplaced_children.is_empty() && !state.is_nullable()),
+            conflict_count + misplaced_children.len(),
+            requirement_count,
+        ),
+        attribute_set,
+        misplaced_children,
+        state,
+    }
 }
 
 // (error count, requirement count, conflict count)
