@@ -85,7 +85,7 @@ pub fn validate_rule(
 
         if misplaced.is_empty() {
             missing_children.extend(
-                expected_children(&state, rule.children)
+                collect_missing_children(&state, rule.children)
                     .iter()
                     .filter(|name| {
                         !ignored_elements
@@ -133,7 +133,7 @@ fn match_children(
     (misplaced, state)
 }
 
-fn expected_children(state: &State, names: &[&'static str]) -> BTreeSet<&'static str> {
+fn collect_missing_children(state: &State, names: &[&'static str]) -> BTreeSet<&'static str> {
     if state.is_nullable() {
         return Default::default();
     }
@@ -433,16 +433,16 @@ mod tests {
 
             let state = State::Content(&CONTENT);
 
-            assert_eq!(expected_children(&state, &names), ["foo"].into());
+            assert_eq!(collect_missing_children(&state, &names), ["foo"].into());
 
             let state = state.step("foo");
 
-            assert_eq!(expected_children(&state, &names), ["bar"].into());
+            assert_eq!(collect_missing_children(&state, &names), ["bar"].into());
 
             let state = state.step("bar");
 
             assert!(state.is_nullable());
-            assert_eq!(expected_children(&state, &names), [].into());
+            assert_eq!(collect_missing_children(&state, &names), [].into());
         }
     }
 
