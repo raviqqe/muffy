@@ -140,6 +140,31 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn parse_svg_response() {
+        let parser = HtmlParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com/foo.svg").unwrap(),
+                    StatusCode::OK,
+                    http::HeaderMap::from_iter([(
+                        http::header::CONTENT_TYPE,
+                        http::HeaderValue::from_static("image/svg+xml"),
+                    )]),
+                    r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#.as_bytes().to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap(),
+            Document::new(vec![Arc::new(
+                Element::new("svg".into(), vec![], vec![]).into()
+            )])
+            .into()
+        );
+    }
+
+    #[tokio::test]
     async fn parse_base() {
         let parser = HtmlParser::new(MemoryCache::new(0));
 
