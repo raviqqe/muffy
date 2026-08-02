@@ -135,18 +135,16 @@ pub enum ItemError {
     DocumentParse(DocumentParseError),
     /// An element not found.
     ElementNotFound(String),
-    /// An HTML validation failure.
-    HtmlValidation(MarkupError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
     HttpStatus(StatusCode),
     /// An invalid scheme.
     InvalidScheme(String),
+    /// A markup error.
+    Markup(MarkupError),
     /// A sitemap parse error.
     Sitemap(SitemapError),
-    /// An SVG validation failure.
-    SvgValidation(MarkupError),
     /// A URL parse error.
     UrlParse(ParseError),
     /// A UTF-8 error.
@@ -168,12 +166,11 @@ impl Display for ItemError {
             Self::ElementNotFound(name) => {
                 write!(formatter, "element for #{name} not found")
             }
-            Self::HtmlValidation(error) => write!(formatter, "{error}"),
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+            Self::Markup(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
-            Self::SvgValidation(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
@@ -215,22 +212,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn display_item_html_validation_error() {
+    fn display_item_markup_error() {
         assert_eq!(
             format!(
                 "{}",
-                ItemError::HtmlValidation(MarkupError::UnknownTag("foo".into()))
-            ),
-            "unknown tag \"foo\""
-        );
-    }
-
-    #[test]
-    fn display_item_svg_validation_error() {
-        assert_eq!(
-            format!(
-                "{}",
-                ItemError::SvgValidation(MarkupError::UnknownTag("foo".into()))
+                ItemError::Markup(MarkupError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
         );
