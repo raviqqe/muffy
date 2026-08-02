@@ -72,9 +72,6 @@ pub fn load_grammar(
     Ok(())
 }
 
-// A name can be defined once without a combine operator and multiple times
-// with a consistent one, in any order across schema files. Definitions in
-// include blocks replace included ones instead.
 fn load_definition(definition: &Definition, definitions: &mut DefinitionSet, replace: bool) {
     let pattern = definition.pattern.clone();
 
