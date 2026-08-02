@@ -478,7 +478,7 @@ impl WebValidator {
     ) {
         let Node::Element(element) = node else { return };
 
-        let attributes = HashMap::<_, _>::from_iter(element.attributes());
+        let attributes = HashMap::from_iter(element.attributes());
         let mut items = vec![];
 
         if let Some(value) = attributes.get("href") {
