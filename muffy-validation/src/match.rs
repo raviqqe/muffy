@@ -39,23 +39,12 @@ pub fn validate_rule(
     let mut missing_attributes = BTreeSet::new();
     let mut missing_children = BTreeSet::new();
 
-    if let Some((_, variant, misplaced, state)) = rule
+    if let Some((_, attribute_set, misplaced, state)) = rule
         .variants
         .iter()
-        .map(|variant| {
-            let (score, misplaced, state) =
-                evaluate_variant(variant, &attributes, &exempt_attributes, &children);
-
-            (score, variant, misplaced, state)
-        })
+        .map(|variant| evaluate_variant(variant, &attributes, &exempt_attributes, &children))
         .min_by_key(|(score, ..)| *score)
     {
-        let attribute_set = variant
-            .attributes
-            .iter()
-            .min_by_key(|set| evaluate_attribute_set(set, &attributes, &exempt_attributes))
-            .unwrap_or(&EMPTY_ATTRIBUTE_SET);
-
         for name in attributes.iter().filter(|name| {
             attribute_set.required.binary_search(name).is_err()
                 && attribute_set.optional.binary_search(name).is_err()
@@ -246,13 +235,23 @@ fn evaluate_variant(
     attributes: &[&'static str],
     exempt_attributes: &[&'static str],
     children: &[(&'static str, bool)],
-) -> ((usize, usize, usize), BTreeSet<&'static str>, State) {
-    let (error_count, requirement_count, conflict_count) = variant
+) -> (
+    (usize, usize, usize),
+    &'static AttributeSet,
+    BTreeSet<&'static str>,
+    State,
+) {
+    let (attribute_set, (error_count, requirement_count, conflict_count)) = variant
         .attributes
         .iter()
-        .map(|set| evaluate_attribute_set(set, attributes, exempt_attributes))
-        .min()
-        .unwrap_or_default();
+        .map(|set| {
+            (
+                set,
+                evaluate_attribute_set(set, attributes, exempt_attributes),
+            )
+        })
+        .min_by_key(|(_, score)| *score)
+        .unwrap_or((&EMPTY_ATTRIBUTE_SET, Default::default()));
     let (misplaced, state) = validate_children(variant.content, children);
 
     // (error count, conflict count, requirement count)
@@ -262,7 +261,7 @@ fn evaluate_variant(
         requirement_count,
     );
 
-    (score, misplaced, state)
+    (score, attribute_set, misplaced, state)
 }
 
 // (error count, requirement count, conflict count)
@@ -715,6 +714,46 @@ mod tests {
                 invalid_children: Default::default(),
                 missing_attributes: ["foo".into()].into(),
                 missing_children: ["one".into()].into(),
+            })
+        );
+    }
+
+    #[test]
+    fn prefer_attribute_set_with_fewer_errors() {
+        // The attributes of `element example { (attribute foo { text },
+        // attribute qux { text }) | attribute bar { text } }`.
+        const RULE: Rule = Rule {
+            attributes: &["bar", "foo", "qux"],
+            children: &[],
+            variants: &[Variant {
+                attributes: &[
+                    AttributeSet {
+                        required: &["bar"],
+                        optional: &[],
+                    },
+                    AttributeSet {
+                        required: &["foo", "qux"],
+                        optional: &[],
+                    },
+                ],
+                content: &EMPTY_CONTENT,
+            }],
+        };
+
+        // The second set misses only `qux` while the first one both misses
+        // `bar` and conflicts with the present `foo` attribute.
+        assert_eq!(
+            validate_rule(
+                &create_element("example", vec![("foo", "")], vec![]),
+                &[],
+                &[],
+                &RULE,
+            ),
+            Err(MarkupError::InvalidElement {
+                invalid_attributes: Default::default(),
+                invalid_children: Default::default(),
+                missing_attributes: ["qux".into()].into(),
+                missing_children: Default::default(),
             })
         );
     }
