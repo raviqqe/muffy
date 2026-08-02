@@ -387,112 +387,6 @@ impl WebValidator {
         }
     }
 
-    fn spawn_markup_errors(
-        error: &MarkupError,
-        item_error: fn(MarkupError) -> ItemError,
-    ) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
-        let mut items = vec![];
-
-        match error {
-            MarkupError::UnknownTag(_) => {
-                items.push(spawn({
-                    let error = item_error(error.clone());
-                    async move { Err(error) }
-                }));
-            }
-            MarkupError::InvalidElement {
-                invalid_attributes,
-                invalid_children,
-                missing_attributes,
-                missing_children,
-            } => {
-                for (name, errors) in invalid_attributes {
-                    items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
-                            invalid_attributes: [(name.clone(), errors.clone())].into(),
-                            invalid_children: Default::default(),
-                            missing_attributes: Default::default(),
-                            missing_children: Default::default(),
-                        });
-                        async move { Err(error) }
-                    }));
-                }
-
-                for (name, errors) in invalid_children {
-                    items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
-                            invalid_attributes: Default::default(),
-                            invalid_children: [(name.clone(), errors.clone())].into(),
-                            missing_attributes: Default::default(),
-                            missing_children: Default::default(),
-                        });
-                        async move { Err(error) }
-                    }));
-                }
-
-                if !missing_attributes.is_empty() {
-                    items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
-                            invalid_attributes: Default::default(),
-                            invalid_children: Default::default(),
-                            missing_attributes: missing_attributes.clone(),
-                            missing_children: Default::default(),
-                        });
-                        async move { Err(error) }
-                    }));
-                }
-
-                if !missing_children.is_empty() {
-                    items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
-                            invalid_attributes: Default::default(),
-                            invalid_children: Default::default(),
-                            missing_attributes: Default::default(),
-                            missing_children: missing_children.clone(),
-                        });
-                        async move { Err(error) }
-                    }));
-                }
-            }
-        }
-
-        items
-    }
-
-    fn create_output_element<'a>(
-        element: &muffy_document::html::Element,
-        attributes: &HashMap<&str, &str>,
-        link_attributes: impl IntoIterator<Item = &'a str>,
-        validation_result: &'a Result<(), MarkupError>,
-    ) -> Element {
-        Element::new(
-            element.name().into(),
-            link_attributes
-                .into_iter()
-                .chain(
-                    if let Err(MarkupError::InvalidElement {
-                        invalid_attributes, ..
-                    }) = validation_result
-                    {
-                        invalid_attributes
-                            .keys()
-                            .map(AsRef::as_ref)
-                            .collect::<Vec<_>>()
-                    } else {
-                        Default::default()
-                    },
-                )
-                .unique()
-                .filter_map(|name| {
-                    attributes
-                        .get(name)
-                        .map(|value| (name.to_string(), value.to_string()))
-                })
-                .sorted()
-                .collect(),
-        )
-    }
-
     fn validate_robots(
         &self,
         context: &Arc<Context>,
@@ -728,6 +622,112 @@ impl WebValidator {
 
             (!url.is_empty()).then_some(url)
         })
+    }
+
+    fn spawn_markup_errors(
+        error: &MarkupError,
+        item_error: fn(MarkupError) -> ItemError,
+    ) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
+        let mut items = vec![];
+
+        match error {
+            MarkupError::UnknownTag(_) => {
+                items.push(spawn({
+                    let error = item_error(error.clone());
+                    async move { Err(error) }
+                }));
+            }
+            MarkupError::InvalidElement {
+                invalid_attributes,
+                invalid_children,
+                missing_attributes,
+                missing_children,
+            } => {
+                for (name, errors) in invalid_attributes {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: [(name.clone(), errors.clone())].into(),
+                            invalid_children: Default::default(),
+                            missing_attributes: Default::default(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                for (name, errors) in invalid_children {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: [(name.clone(), errors.clone())].into(),
+                            missing_attributes: Default::default(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                if !missing_attributes.is_empty() {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: Default::default(),
+                            missing_attributes: missing_attributes.clone(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                if !missing_children.is_empty() {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: Default::default(),
+                            missing_attributes: Default::default(),
+                            missing_children: missing_children.clone(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+            }
+        }
+
+        items
+    }
+
+    fn create_output_element<'a>(
+        element: &muffy_document::html::Element,
+        attributes: &HashMap<&str, &str>,
+        link_attributes: impl IntoIterator<Item = &'a str>,
+        validation_result: &'a Result<(), MarkupError>,
+    ) -> Element {
+        Element::new(
+            element.name().into(),
+            link_attributes
+                .into_iter()
+                .chain(
+                    if let Err(MarkupError::InvalidElement {
+                        invalid_attributes, ..
+                    }) = validation_result
+                    {
+                        invalid_attributes
+                            .keys()
+                            .map(AsRef::as_ref)
+                            .collect::<Vec<_>>()
+                    } else {
+                        Default::default()
+                    },
+                )
+                .unique()
+                .filter_map(|name| {
+                    attributes
+                        .get(name)
+                        .map(|value| (name.to_string(), value.to_string()))
+                })
+                .sorted()
+                .collect(),
+        )
     }
 }
 
