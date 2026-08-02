@@ -26,8 +26,7 @@ impl DocumentParser {
         }
     }
 
-    /// Parses an HTML or XML document depending on a content type of a
-    /// response.
+    /// Parses a document.
     pub async fn parse(
         &self,
         response: &Arc<Response>,
