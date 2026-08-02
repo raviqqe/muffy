@@ -4,11 +4,11 @@ use self::context::Context;
 use crate::{
     config::Config,
     document_output::DocumentOutput,
+    document_parser::DocumentParser,
     document_type::DocumentType,
     element::Element,
     element_output::ElementOutput,
     error::{Error, ItemError},
-    html_parser::HtmlParser,
     http_client::{HttpClient, ROBOTS_PATH},
     item_output::ItemOutput,
     request::Request,
@@ -49,16 +49,16 @@ pub struct WebValidator(Arc<WebValidatorInner>);
 
 struct WebValidatorInner {
     http_client: HttpClient,
-    html_parser: HtmlParser,
+    document_parser: DocumentParser,
 }
 
 impl WebValidator {
     /// Creates a web validator.
-    pub fn new(http_client: HttpClient, html_parser: HtmlParser) -> Self {
+    pub fn new(http_client: HttpClient, document_parser: DocumentParser) -> Self {
         Self(
             WebValidatorInner {
                 http_client,
-                html_parser,
+                document_parser,
             }
             .into(),
         )
@@ -247,7 +247,7 @@ impl WebValidator {
         response: &Arc<Response>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
-        let document = self.0.html_parser.parse(response).await?;
+        let document = self.0.document_parser.parse(response).await?;
         let base = document
             .base()
             .map(|href| response.url().join(href))
@@ -446,7 +446,7 @@ impl WebValidator {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
 
-        for node in self.0.html_parser.parse(response).await?.children() {
+        for node in self.0.document_parser.parse(response).await?.children() {
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 
@@ -571,7 +571,7 @@ impl WebValidator {
     async fn has_element(&self, response: &Arc<Response>, id: &str) -> Result<bool, ItemError> {
         Ok(self
             .0
-            .html_parser
+            .document_parser
             .parse(response)
             .await?
             .children()
@@ -721,7 +721,7 @@ mod tests {
     use crate::{
         Metrics, MokaCache, SchemeConfig,
         config::{Config, MarkupConfig, SiteConfig},
-        html_parser::HtmlParser,
+        document_parser::DocumentParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
     };
@@ -777,7 +777,7 @@ mod tests {
 
         WebValidator::new(
             HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0))),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.to_string()],
@@ -1722,7 +1722,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
@@ -1985,7 +1985,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(&Config::new(
             vec![url.as_str().into()],
@@ -2054,7 +2054,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(
             &Config::new(
@@ -2114,7 +2114,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MokaCache::new(0)),
             ),
-            HtmlParser::new(MokaCache::new(0)),
+            DocumentParser::new(MokaCache::new(0)),
         )
         .validate(
             &Config::new(

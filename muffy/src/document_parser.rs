@@ -11,14 +11,16 @@ use core::{
 use muffy_document::{html, html::Document, xml};
 use std::io;
 
-/// An HTML parser.
-pub struct HtmlParser {
-    cache: Box<dyn LocalCache<Result<Arc<Document>, HtmlParseError>>>,
+/// A document parser.
+pub struct DocumentParser {
+    cache: Box<dyn LocalCache<Result<Arc<Document>, DocumentParseError>>>,
 }
 
-impl HtmlParser {
-    /// Creates an HTML parser.
-    pub fn new(cache: impl LocalCache<Result<Arc<Document>, HtmlParseError>> + 'static) -> Self {
+impl DocumentParser {
+    /// Creates a document parser.
+    pub fn new(
+        cache: impl LocalCache<Result<Arc<Document>, DocumentParseError>> + 'static,
+    ) -> Self {
         Self {
             cache: Box::new(cache),
         }
@@ -26,7 +28,10 @@ impl HtmlParser {
 
     /// Parses an HTML or XML document depending on a content type of a
     /// response.
-    pub async fn parse(&self, response: &Arc<Response>) -> Result<Arc<Document>, HtmlParseError> {
+    pub async fn parse(
+        &self,
+        response: &Arc<Response>,
+    ) -> Result<Arc<Document>, DocumentParseError> {
         let response = response.clone();
 
         self.cache
@@ -39,7 +44,7 @@ impl HtmlParser {
                         html::parse_bytes(response.body())
                     }
                     .map(Into::into)
-                    .map_err(|error| HtmlParseError::Io(error.into()))
+                    .map_err(|error| DocumentParseError::Io(error.into()))
                 }),
             )
             .await?
@@ -63,14 +68,14 @@ impl HtmlParser {
 }
 
 #[derive(Clone, Debug)]
-pub enum HtmlParseError {
+pub enum DocumentParseError {
     Cache(CacheError),
     Io(Arc<io::Error>),
 }
 
-impl Error for HtmlParseError {}
+impl Error for DocumentParseError {}
 
-impl Display for HtmlParseError {
+impl Display for DocumentParseError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Cache(error) => write!(formatter, "{error}"),
@@ -79,7 +84,7 @@ impl Display for HtmlParseError {
     }
 }
 
-impl From<CacheError> for HtmlParseError {
+impl From<CacheError> for DocumentParseError {
     fn from(error: CacheError) -> Self {
         Self::Cache(error)
     }
@@ -97,7 +102,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_response() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -141,7 +146,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_svg_response() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -166,7 +171,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_base() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -195,7 +200,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_base_without_href() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -224,7 +229,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_multiple_base_elements() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser
@@ -254,7 +259,7 @@ mod tests {
 
     #[tokio::test]
     async fn parse_base_in_body() {
-        let parser = HtmlParser::new(MemoryCache::new(0));
+        let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
             parser

@@ -5,11 +5,11 @@ extern crate alloc;
 mod cache;
 mod config;
 mod document_output;
+mod document_parser;
 mod document_type;
 mod element;
 mod element_output;
 mod error;
-mod html_parser;
 mod http_client;
 mod item_output;
 mod metrics;
@@ -26,8 +26,8 @@ pub use self::{
     cache::{FjallCache, GlobalCache, LocalCache, MemoryCache, MokaCache, SledCache},
     config::*,
     document_output::DocumentOutput,
+    document_parser::DocumentParser,
     error::{Error, ItemError},
-    html_parser::HtmlParser,
     http_client::{BareHttpClient, HttpClient, ReqwestHttpClient},
     metrics::Metrics,
     rate_limiter::RateLimiter,
