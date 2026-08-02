@@ -224,6 +224,38 @@ mod tests {
     }
 
     #[test]
+    fn display_multiple_missing_children() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["body".into(), "head".into()].into(),
+                }
+            ),
+            "missing children: body, head"
+        );
+    }
+
+    #[test]
+    fn display_missing_attributes_and_children() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["href".into(), "src".into()].into(),
+                    missing_children: ["img".into(), "source".into()].into(),
+                }
+            ),
+            "missing attributes: href, src, missing children: img, source"
+        );
+    }
+
+    #[test]
     fn display_not_allowed_attributes_and_children() {
         assert_eq!(
             format!(
