@@ -20,7 +20,7 @@ use alloc::sync::Arc;
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
-use muffy_document::html::Node;
+use muffy_document::html::{self, Node};
 use muffy_validation::MarkupError;
 use std::collections::HashMap;
 use tokio::{spawn, sync::mpsc::channel, task::JoinHandle};
@@ -286,7 +286,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         base: &Arc<Url>,
-        element: &muffy_document::html::Element,
+        element: &html::Element,
     ) -> Option<ElementFuture> {
         let attributes = HashMap::<_, _>::from_iter(element.attributes());
         let mut links = vec![];
@@ -367,100 +367,20 @@ impl WebValidator {
             .collect::<Vec<_>>();
 
         if let Err(error) = &validation_result {
-            match error {
-                MarkupError::UnknownTag(_) => {
-                    items.push(spawn({
-                        let error = error.clone();
-                        async move { Err(ItemError::HtmlValidation(error)) }
-                    }));
-                }
-                MarkupError::InvalidElement {
-                    invalid_attributes,
-                    invalid_children,
-                    missing_attributes,
-                    missing_children,
-                } => {
-                    for (name, errors) in invalid_attributes {
-                        items.push(spawn({
-                            let error = MarkupError::InvalidElement {
-                                invalid_attributes: [(name.clone(), errors.clone())].into(),
-                                invalid_children: Default::default(),
-                                missing_attributes: Default::default(),
-                                missing_children: Default::default(),
-                            };
-                            async move { Err(ItemError::HtmlValidation(error)) }
-                        }));
-                    }
-
-                    for (name, errors) in invalid_children {
-                        items.push(spawn({
-                            let error = MarkupError::InvalidElement {
-                                invalid_attributes: Default::default(),
-                                invalid_children: [(name.clone(), errors.clone())].into(),
-                                missing_attributes: Default::default(),
-                                missing_children: Default::default(),
-                            };
-                            async move { Err(ItemError::HtmlValidation(error)) }
-                        }));
-                    }
-
-                    if !missing_attributes.is_empty() {
-                        items.push(spawn({
-                            let error = MarkupError::InvalidElement {
-                                invalid_attributes: Default::default(),
-                                invalid_children: Default::default(),
-                                missing_attributes: missing_attributes.clone(),
-                                missing_children: Default::default(),
-                            };
-                            async move { Err(ItemError::HtmlValidation(error)) }
-                        }));
-                    }
-
-                    if !missing_children.is_empty() {
-                        items.push(spawn({
-                            let error = MarkupError::InvalidElement {
-                                invalid_attributes: Default::default(),
-                                invalid_children: Default::default(),
-                                missing_attributes: Default::default(),
-                                missing_children: missing_children.clone(),
-                            };
-                            async move { Err(ItemError::HtmlValidation(error)) }
-                        }));
-                    }
-                }
-            }
+            items.extend(Self::spawn_markup_errors(error, ItemError::HtmlValidation));
         }
 
         if items.is_empty() {
             None
         } else {
             Some((
-                Element::new(
-                    element.name().into(),
+                Self::create_output_element(
+                    element,
+                    &attributes,
                     links
                         .iter()
-                        .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name))
-                        .chain(
-                            if let Err(MarkupError::InvalidElement {
-                                invalid_attributes, ..
-                            }) = &validation_result
-                            {
-                                invalid_attributes
-                                    .keys()
-                                    .map(AsRef::as_ref)
-                                    .collect::<Vec<_>>()
-                            } else {
-                                Default::default()
-                            },
-                        )
-                        .unique()
-                        .filter_map(|name| {
-                            attributes
-                                .get(name)
-                                .map(|value| (name.to_string(), value.to_string()))
-                        })
-                        .sorted()
-                        .collect(),
+                        .flat_map(|(attributes, _)| attributes.iter().map(|(name, _)| *name)),
+                    &validation_result,
                 ),
                 items,
             ))
@@ -525,12 +445,28 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
+        let document = self.0.html_parser.parse(response).await?;
 
-        for node in self.0.html_parser.parse(response).await?.children() {
+        for node in Self::unwrap_svg_document(document.children()) {
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 
         Ok(futures)
+    }
+
+    // TODO Split the SVG parser.
+    fn unwrap_svg_document<'a>(nodes: impl Iterator<Item = &'a Node>) -> Vec<&'a Node> {
+        nodes
+            .flat_map(|node| {
+                if let Node::Element(element) = node
+                    && ["body", "head", "html"].contains(&element.name())
+                {
+                    Self::unwrap_svg_document(element.children())
+                } else {
+                    vec![node]
+                }
+            })
+            .collect()
     }
 
     fn validate_svg_element(
@@ -540,25 +476,49 @@ impl WebValidator {
         node: &Node,
         futures: &mut Vec<ElementFuture>,
     ) {
-        if let Node::Element(element) = node {
-            if let Some(value) = element
-                .attributes()
-                .find_map(|(name, value)| (name == "href").then_some(value))
-            {
-                futures.push((
-                    Element::new(element.name().into(), vec![("href".into(), value.into())]),
-                    vec![spawn(self.cloned().validate_element_link(
-                        context.clone(),
-                        value.into(),
-                        base.clone(),
-                        None,
-                    ))],
-                ));
-            }
+        let Node::Element(element) = node else { return };
 
-            for node in element.children() {
-                self.validate_svg_element(context, base, node, futures);
-            }
+        let attributes = HashMap::from_iter(element.attributes());
+        let mut items = vec![];
+
+        if let Some(value) = attributes.get("href") {
+            items.push(spawn(self.cloned().validate_element_link(
+                context.clone(),
+                value.to_string(),
+                base.clone(),
+                None,
+            )));
+        }
+
+        let validation_result = if let Some(config) = context.config().site(base).validation().svg()
+        {
+            muffy_validation::validate_svg_element(
+                element,
+                config.ignored_attributes(),
+                config.ignored_elements(),
+            )
+        } else {
+            Ok(())
+        };
+
+        if let Err(error) = &validation_result {
+            items.extend(Self::spawn_markup_errors(error, ItemError::SvgValidation));
+        }
+
+        if !items.is_empty() {
+            futures.push((
+                Self::create_output_element(
+                    element,
+                    &attributes,
+                    attributes.contains_key("href").then_some("href"),
+                    &validation_result,
+                ),
+                items,
+            ));
+        }
+
+        for node in element.children() {
+            self.validate_svg_element(context, base, node, futures);
         }
     }
 
@@ -663,6 +623,112 @@ impl WebValidator {
             (!url.is_empty()).then_some(url)
         })
     }
+
+    fn spawn_markup_errors(
+        error: &MarkupError,
+        item_error: fn(MarkupError) -> ItemError,
+    ) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
+        let mut items = vec![];
+
+        match error {
+            MarkupError::UnknownTag(_) => {
+                items.push(spawn({
+                    let error = item_error(error.clone());
+                    async move { Err(error) }
+                }));
+            }
+            MarkupError::InvalidElement {
+                invalid_attributes,
+                invalid_children,
+                missing_attributes,
+                missing_children,
+            } => {
+                for (name, errors) in invalid_attributes {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: [(name.clone(), errors.clone())].into(),
+                            invalid_children: Default::default(),
+                            missing_attributes: Default::default(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                for (name, errors) in invalid_children {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: [(name.clone(), errors.clone())].into(),
+                            missing_attributes: Default::default(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                if !missing_attributes.is_empty() {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: Default::default(),
+                            missing_attributes: missing_attributes.clone(),
+                            missing_children: Default::default(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+
+                if !missing_children.is_empty() {
+                    items.push(spawn({
+                        let error = item_error(MarkupError::InvalidElement {
+                            invalid_attributes: Default::default(),
+                            invalid_children: Default::default(),
+                            missing_attributes: Default::default(),
+                            missing_children: missing_children.clone(),
+                        });
+                        async move { Err(error) }
+                    }));
+                }
+            }
+        }
+
+        items
+    }
+
+    fn create_output_element<'a>(
+        element: &html::Element,
+        attributes: &HashMap<&str, &str>,
+        link_attributes: impl IntoIterator<Item = &'a str>,
+        validation_result: &'a Result<(), MarkupError>,
+    ) -> Element {
+        Element::new(
+            element.name().into(),
+            link_attributes
+                .into_iter()
+                .chain(
+                    if let Err(MarkupError::InvalidElement {
+                        invalid_attributes, ..
+                    }) = validation_result
+                    {
+                        invalid_attributes
+                            .keys()
+                            .map(AsRef::as_ref)
+                            .collect::<Vec<_>>()
+                    } else {
+                        Default::default()
+                    },
+                )
+                .unique()
+                .filter_map(|name| {
+                    attributes
+                        .get(name)
+                        .map(|value| (name.to_string(), value.to_string()))
+                })
+                .sorted()
+                .collect(),
+        )
+    }
 }
 
 #[cfg(test)]
@@ -699,6 +765,20 @@ mod tests {
             url,
             SiteConfig::default().set_validation(
                 crate::ValidationConfig::default().set_html(Some(MarkupConfig::default())),
+            ),
+        )
+        .await
+    }
+
+    async fn validate_svg_content(
+        client: impl BareHttpClient + 'static,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        validate_with_site(
+            client,
+            url,
+            SiteConfig::default().set_validation(
+                crate::ValidationConfig::default().set_svg(Some(MarkupConfig::default())),
             ),
         )
         .await
@@ -755,7 +835,9 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(ItemError::HtmlValidation(error)) = result {
+                    if let Err(ItemError::HtmlValidation(error) | ItemError::SvgValidation(error)) =
+                        result
+                    {
                         errors.insert(error.to_string());
                     }
                 }
@@ -2601,6 +2683,149 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_valid_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" role="img" aria-label="picture">
+                                    <title>foo</title>
+                                    <circle cx="1" cy="1" r="1" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(0, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <circle foo="bar" />
+                                    <linearGradient><stop /></linearGradient>
+                                    <invalid />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid attributes: foo (not allowed)".into(),
+                    "invalid children: invalid (not allowed)".into(),
+                    "missing attributes: offset".into(),
+                    "unknown tag \"invalid\"".into(),
+                ]
+                .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_content_outside_root() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            concat!(
+                                r#"<svg xmlns="http://www.w3.org/2000/svg">"#,
+                                "<p>foo</p>",
+                                r#"<circle foo="bar" />"#,
+                                "</svg>"
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            // HTML parsers move the elements after the misplaced HTML element
+            // out of the SVG root element.
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid attributes: foo (not allowed)".into(),
+                    "unknown tag \"p\"".into(),
+                ]
+                .into()
             );
         }
 

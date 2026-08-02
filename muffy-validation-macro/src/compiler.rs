@@ -112,6 +112,7 @@ impl<'a> Compiler<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::definition::{DefinitionSet, load_grammar};
     use alloc::collections::BTreeMap;
     use muffy_rnc::{Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
@@ -125,9 +126,14 @@ mod tests {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
-        let mut definitions = BTreeMap::new();
+        let mut definitions = DefinitionSet::default();
 
-        crate::definition::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
+        load_grammar(&grammar, Path::new("."), false, &mut definitions).unwrap();
+
+        let definitions = definitions
+            .into_iter()
+            .map(|(name, (_, pattern))| (name, pattern))
+            .collect::<BTreeMap<_, _>>();
 
         Compiler::new(&definitions).resolve(
             &definitions[&Identifier {
@@ -190,6 +196,30 @@ mod tests {
         assert_eq!(
             resolve("root = element (foo | bar) { empty }").unwrap(),
             Pattern::Element(["bar".into(), "foo".into()].into())
+        );
+    }
+
+    #[test]
+    fn merge_plain_definition_before_interleaved_definition() {
+        assert_eq!(
+            resolve("root = attribute foo { text }\nroot &= attribute bar { text }").unwrap(),
+            Pattern::interleave([attribute("foo"), attribute("bar")])
+        );
+    }
+
+    #[test]
+    fn merge_plain_definition_after_interleaved_definition() {
+        assert_eq!(
+            resolve("root &= attribute foo { text }\nroot = attribute bar { text }").unwrap(),
+            Pattern::interleave([attribute("foo"), attribute("bar")])
+        );
+    }
+
+    #[test]
+    fn merge_plain_definition_after_chosen_definition() {
+        assert_eq!(
+            resolve("root |= attribute foo { text }\nroot = attribute bar { text }").unwrap(),
+            Pattern::choice([attribute("foo"), attribute("bar")])
         );
     }
 

@@ -132,7 +132,7 @@ struct CheckSiteArguments {
     /// Set a list of status codes to retry on.
     #[arg(long)]
     retry_status: Vec<u16>,
-    /// Enable experimental HTML validation.
+    /// Enable experimental HTML and SVG validation.
     #[arg(long)]
     experimental_validation: bool,
 }

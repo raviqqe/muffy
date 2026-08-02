@@ -1,6 +1,9 @@
 use alloc::collections::BTreeSet;
 use muffy_rnc::{Identifier, NameClass};
 
+// TODO Distinguish names in different namespaces so that schemas of multiple
+// languages (e.g. HTML, SVG, and MathML) can compose without collisions of
+// equal local names, like the driver schemas in the Nu Html Checker expect.
 pub fn class_names(name_class: &NameClass, prefix: bool) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => {

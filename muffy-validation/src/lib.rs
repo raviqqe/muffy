@@ -15,9 +15,11 @@ use self::{
     variant::Variant,
 };
 use muffy_document::html::Element;
-use muffy_validation_macro::html;
+use muffy_validation_macro::{html, svg};
 
 html! {}
+
+svg! {}
 
 #[cfg(test)]
 mod tests {
@@ -830,6 +832,179 @@ mod tests {
                     missing_attributes: ["itemprop".into()].into(),
                     missing_children: Default::default(),
                 })
+            );
+        }
+    }
+
+    mod svg {
+        use super::*;
+
+        #[test]
+        fn validate_valid_element() {
+            let element = create_element("svg", vec![], vec![]);
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_attributes() {
+            let element = create_element(
+                "svg",
+                vec![
+                    ("version", "1.1"),
+                    ("viewBox", "0 0 10 10"),
+                    ("width", "10"),
+                    ("height", "10"),
+                ],
+                vec![],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_aria_attributes() {
+            let element = create_element(
+                "svg",
+                vec![("role", "img"), ("aria-label", "description")],
+                vec![],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_child() {
+            let element = create_element(
+                "svg",
+                vec![],
+                vec![create_element("circle", vec![("r", "1")], vec![])],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_text_child() {
+            let element = Element::new(
+                "text".into(),
+                vec![],
+                vec![Arc::new(Node::Text("hello".into()))],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_camel_case_element() {
+            let element = create_element(
+                "linearGradient",
+                vec![("id", "gradient")],
+                vec![create_element("stop", vec![("offset", "0")], vec![])],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_link() {
+            let element = create_element(
+                "a",
+                vec![("href", "/")],
+                vec![create_element("rect", vec![], vec![])],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_image_link() {
+            let element = create_element("image", vec![("href", "/foo.png")], vec![]);
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_prefixed_image_link() {
+            let element = create_element("image", vec![("xlink:href", "/foo.png")], vec![]);
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_element_name() {
+            let element = create_element("invalid", vec![], vec![]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[]),
+                Err(MarkupError::UnknownTag("invalid".to_owned()))
+            );
+        }
+
+        #[test]
+        fn validate_invalid_attribute() {
+            let element = create_element("circle", vec![("invalid", "foo")], vec![]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_invalid_child() {
+            let element =
+                create_element("svg", vec![], vec![create_element("html", vec![], vec![])]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("html".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_missing_attribute() {
+            let element = create_element("stop", vec![], vec![]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["offset".into()].into(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_ignored_attribute_regex() {
+            let element = create_element("circle", vec![("data-foo", "bar")], vec![]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[Regex::new("^data-.*$").unwrap()], &[]),
+                Ok(())
+            );
+        }
+
+        #[test]
+        fn validate_ignored_element_regex() {
+            let element = create_element("foreignObject", vec![], vec![]);
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[Regex::new("^foreignObject$").unwrap()]),
+                Ok(())
             );
         }
     }

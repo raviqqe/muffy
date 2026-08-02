@@ -29,15 +29,27 @@ use quote::{format_ident, quote};
 /// Generates HTML validation functions.
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
-    generate_html().unwrap_or_else(|error| {
+    // TODO Include SVG and MathML schemas for foreign elements.
+    generate_validation("html", &["schema/html5/html5.rnc", "schema/html5/rdfa.rnc"])
+        .unwrap_or_else(|error| {
+            syn::Error::new(Span::call_site(), error)
+                .to_compile_error()
+                .into()
+        })
+}
+
+/// Generates SVG validation functions.
+#[proc_macro]
+pub fn svg(_input: TokenStream) -> TokenStream {
+    generate_validation("svg", &["svg.rnc"]).unwrap_or_else(|error| {
         syn::Error::new(Span::call_site(), error)
             .to_compile_error()
             .into()
     })
 }
 
-fn generate_html() -> Result<TokenStream, MacroError> {
-    let definitions = load_definitions()?;
+fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, MacroError> {
+    let definitions = load_definitions(files)?;
     let mut compiler = Compiler::new(&definitions);
     let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, Pattern)>>::new();
 
@@ -136,9 +148,12 @@ fn generate_html() -> Result<TokenStream, MacroError> {
         })
         .collect::<Result<Vec<_>, MacroError>>()?;
 
+    let function_name = format_ident!("validate_{language}_element");
+    let documentation = format!("Validates an {} element.", language.to_uppercase());
+
     Ok(quote! {
-        /// Validates an HTML element.
-        pub fn validate_html_element(
+        #[doc = #documentation]
+        pub fn #function_name(
             element: &Element,
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
