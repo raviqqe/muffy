@@ -55,9 +55,25 @@ roots = [
   "https://raviqqe.com/",
   "https://raviqqe.com/muffet",
   "https://raviqqe.com/muffy",
-  "https://raviqqe.com/stak",
 ]
 recurse = true
+
+[sites.stak]
+extend = "main"
+roots = [
+  "https://raviqqe.com/stak",
+]
+
+[sites.stak.validation.html]
+ignored_elements = [
+  "div",
+  "site-search",
+  "sl-.*",
+  "style",
+  # TODO Allow inlined SVG elements.
+  "svg",
+  "path"
+]
 
 [sites.algo_logic]
 extend = "external"
