@@ -139,13 +139,13 @@ fn collect_missing_children(state: &State, names: &[&'static str]) -> BTreeSet<&
     }
 
     let mut visited = BTreeSet::from([state.clone()]);
-    let mut frontier = vec![(state.clone(), None)];
+    let mut states = vec![(state.clone(), None)];
 
     loop {
         let mut expected = BTreeSet::new();
         let mut next_frontier = vec![];
 
-        for (state, initial_name) in &frontier {
+        for (state, initial_name) in &states {
             for name in names {
                 let next = state.step(name);
 
@@ -169,7 +169,7 @@ fn collect_missing_children(state: &State, names: &[&'static str]) -> BTreeSet<&
             return expected;
         }
 
-        frontier = next_frontier;
+        states = next_frontier;
     }
 }
 
