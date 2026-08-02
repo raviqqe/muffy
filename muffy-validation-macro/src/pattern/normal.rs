@@ -94,7 +94,6 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
                 .iter()
                 .all(|(attribute, _)| *attribute == Pattern::Empty)
             {
-                // TODO Support attribute patterns in repetitions.
                 return Err(MacroError::RncPattern("repeated attribute pattern"));
             }
 
