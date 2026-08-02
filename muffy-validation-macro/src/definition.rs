@@ -7,10 +7,10 @@ use muffy_rnc::{
 };
 use std::{fs::read_to_string, path::Path};
 
-pub type Definitions = BTreeMap<Identifier, (Option<Combine>, RncPattern)>;
+pub type DefinitionSet = BTreeMap<Identifier, (Option<Combine>, RncPattern)>;
 
 pub fn load_definitions(files: &[&str]) -> Result<BTreeMap<Identifier, RncPattern>, MacroError> {
-    let mut definitions = Definitions::default();
+    let mut definitions = DefinitionSet::default();
 
     for file in files {
         load_schema(
@@ -25,7 +25,7 @@ pub fn load_definitions(files: &[&str]) -> Result<BTreeMap<Identifier, RncPatter
         .collect())
 }
 
-fn load_schema(path: &Path, definitions: &mut Definitions) -> Result<(), MacroError> {
+fn load_schema(path: &Path, definitions: &mut DefinitionSet) -> Result<(), MacroError> {
     let schema = parse_schema(&read_to_string(path)?)?;
 
     // We do not use the declarations.
@@ -48,7 +48,7 @@ fn load_schema(path: &Path, definitions: &mut Definitions) -> Result<(), MacroEr
 
 pub fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut Definitions,
+    definitions: &mut DefinitionSet,
     directory: &Path,
     replace: bool,
 ) -> Result<(), MacroError> {
@@ -75,7 +75,7 @@ pub fn load_grammar(
 // A name can be defined once without a combine operator and multiple times
 // with a consistent one, in any order across schema files. Definitions in
 // include blocks replace included ones instead.
-fn load_definition(definition: &Definition, definitions: &mut Definitions, replace: bool) {
+fn load_definition(definition: &Definition, definitions: &mut DefinitionSet, replace: bool) {
     let pattern = definition.pattern.clone();
 
     if let Some(combine) = definition.combine {

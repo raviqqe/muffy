@@ -125,7 +125,7 @@ mod tests {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
-        let mut definitions = crate::definition::Definitions::default();
+        let mut definitions = crate::definition::DefinitionSet::default();
 
         crate::definition::load_grammar(&grammar, &mut definitions, Path::new("."), false).unwrap();
 
