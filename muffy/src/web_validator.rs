@@ -510,13 +510,9 @@ impl WebValidator {
         response: &Response,
         document_type: Option<DocumentType>,
     ) -> Result<Option<DocumentType>, ItemError> {
-        let Some(value) = response.headers().get("content-type") else {
+        let Some(value) = response.media_type()? else {
             return Ok(document_type);
         };
-        let Some(value) = value.as_bytes().split(|byte| *byte == b';').next() else {
-            return Ok(document_type);
-        };
-        let value = str::from_utf8(value)?.trim();
         let media_type = value.to_ascii_lowercase();
 
         Ok(match document_type {
