@@ -2,9 +2,18 @@
 
 extern crate alloc;
 
+mod attribute_set;
+mod content;
 mod error;
+mod rule;
+mod validation;
+mod variant;
 
 pub use self::error::*;
+use self::{
+    attribute_set::AttributeSet, content::Content, rule::Rule, validation::validate_rule,
+    variant::Variant,
+};
 use muffy_document::html::Element;
 use muffy_validation_macro::html;
 
@@ -49,6 +58,13 @@ mod tests {
         use super::*;
 
         #[test]
+        fn validate_valid_attribute_name_prefix() {
+            let element = create_element("div", vec![("lang", "en"), ("xml:lang", "en")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_valid_element() {
             let element = create_element("div", vec![], vec![]);
 
@@ -69,8 +85,11 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -86,12 +105,14 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [
+                    invalid_attributes: [
                         ("invalid-one".into(), [AttributeError::NotAllowed].into()),
                         ("invalid-two".into(), [AttributeError::NotAllowed].into()),
                     ]
                     .into(),
-                    children: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -147,8 +168,11 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[Regex::new("^span$").unwrap()]),
                 Err(MarkupError::InvalidElement {
-                    attributes: [("invalid".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -172,14 +196,27 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_text() {
+            let element = Element::new(
+                "p".into(),
+                vec![],
+                vec![Arc::new(Node::Text("hello".into()))],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_invalid_child() {
             let element = create_element("p", vec![], vec![create_element("div", vec![], vec![])]);
 
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -198,12 +235,14 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [
+                    invalid_attributes: Default::default(),
+                    invalid_children: [
                         ("div".into(), [ChildError::NotAllowed].into()),
                         ("table".into(), [ChildError::NotAllowed].into()),
                     ]
                     .into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -215,6 +254,39 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[Regex::new("^p$").unwrap()]),
                 Ok(())
+            );
+        }
+    }
+
+    mod a {
+        use super::*;
+
+        #[test]
+        fn validate_valid_link() {
+            let element = create_element("a", vec![("href", "/")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_placeholder_link() {
+            let element = create_element("a", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_missing_href() {
+            let element = create_element("a", vec![("download", "")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["href".into()].into(),
+                    missing_children: Default::default(),
+                })
             );
         }
     }
@@ -245,8 +317,10 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -256,10 +330,18 @@ mod tests {
         use super::*;
 
         #[test]
-        fn validate_valid_element() {
+        fn validate_missing_children() {
             let element = create_element("html", vec![], vec![]);
 
-            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["head".into()].into(),
+                })
+            );
         }
 
         #[test]
@@ -274,6 +356,28 @@ mod tests {
             );
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_misplaced_children() {
+            let element = create_element(
+                "html",
+                vec![],
+                vec![
+                    create_element("body", vec![], vec![]),
+                    create_element("head", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("body".into(), [ChildError::Misplaced].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
     }
 
@@ -292,14 +396,31 @@ mod tests {
         }
 
         #[test]
+        fn validate_missing_title() {
+            let element = create_element("head", vec![], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["title".into()].into(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_invalid_child() {
             let element = create_element("head", vec![], vec![create_element("p", vec![], vec![])]);
 
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["title".into()].into(),
                 })
             );
         }
@@ -316,8 +437,10 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -334,14 +457,52 @@ mod tests {
         }
 
         #[test]
+        fn validate_whitespace_text() {
+            let element = Element::new(
+                "ul".into(),
+                vec![],
+                vec![
+                    Arc::new(Node::Text("\n    ".into())),
+                    Arc::new(Node::Element(create_element("li", vec![], vec![]))),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_text() {
+            let element = Element::new(
+                "ul".into(),
+                vec![],
+                vec![
+                    Arc::new(Node::Text("orphan".into())),
+                    Arc::new(Node::Element(create_element("li", vec![], vec![]))),
+                ],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("#text".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_invalid_child() {
             let element = create_element("ul", vec![], vec![create_element("p", vec![], vec![])]);
 
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -359,6 +520,44 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_ordered_children() {
+            let element = create_element(
+                "table",
+                vec![],
+                vec![
+                    create_element("caption", vec![], vec![]),
+                    create_element("thead", vec![], vec![]),
+                    create_element("tbody", vec![], vec![]),
+                    create_element("tfoot", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_misplaced_child() {
+            let element = create_element(
+                "table",
+                vec![],
+                vec![
+                    create_element("tfoot", vec![], vec![]),
+                    create_element("thead", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("thead".into(), [ChildError::Misplaced].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_invalid_child() {
             let element =
                 create_element("table", vec![], vec![create_element("p", vec![], vec![])]);
@@ -366,8 +565,10 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }
@@ -432,10 +633,18 @@ mod tests {
         use super::*;
 
         #[test]
-        fn validate_valid_element() {
+        fn validate_missing_child() {
             let element = create_element("picture", vec![], vec![]);
 
-            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["img".into()].into(),
+                })
+            );
         }
 
         #[test]
@@ -453,6 +662,28 @@ mod tests {
         }
 
         #[test]
+        fn validate_misplaced_child() {
+            let element = create_element(
+                "picture",
+                vec![],
+                vec![
+                    create_element("img", vec![], vec![]),
+                    create_element("source", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("source".into(), [ChildError::Misplaced].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_invalid_child() {
             let element =
                 create_element("picture", vec![], vec![create_element("p", vec![], vec![])]);
@@ -460,8 +691,10 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("p".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["img".into()].into(),
                 })
             );
         }
@@ -513,9 +746,52 @@ mod tests {
 
         #[test]
         fn validate_valid_property() {
-            let element = create_element("meta", vec![("property", "og:image")], vec![]);
+            let element = create_element(
+                "meta",
+                vec![("property", "og:image"), ("content", "image.png")],
+                vec![],
+            );
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_missing_content() {
+            let element = create_element("meta", vec![("name", "description")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["content".into()].into(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_conflicting_charset() {
+            let element = create_element(
+                "meta",
+                vec![
+                    ("charset", "utf-8"),
+                    ("name", "description"),
+                    ("content", "stuff"),
+                ],
+                vec![],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("charset".into(), [AttributeError::Conflict].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
     }
 
@@ -531,6 +807,30 @@ mod tests {
             );
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_rel_without_href() {
+            let element = create_element("link", vec![("rel", "preload")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_missing_rel() {
+            let element = create_element("link", vec![("href", "style.css")], vec![]);
+
+            // The schema alternatively requires either the `rel` attribute or
+            // the `itemprop` attribute, and one minimal diagnosis is reported.
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["itemprop".into()].into(),
+                    missing_children: Default::default(),
+                })
+            );
         }
     }
 
@@ -577,8 +877,10 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("title".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("title".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 })
             );
         }

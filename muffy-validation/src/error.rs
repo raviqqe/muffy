@@ -9,9 +9,13 @@ pub enum MarkupError {
     /// Invalid element.
     InvalidElement {
         /// Invalid attributes.
-        attributes: BTreeMap<String, BTreeSet<AttributeError>>,
+        invalid_attributes: BTreeMap<String, BTreeSet<AttributeError>>,
         /// Invalid children.
-        children: BTreeMap<String, BTreeSet<ChildError>>,
+        invalid_children: BTreeMap<String, BTreeSet<ChildError>>,
+        /// Missing required attributes.
+        missing_attributes: BTreeSet<String>,
+        /// Missing required children.
+        missing_children: BTreeSet<String>,
     },
 }
 
@@ -20,66 +24,65 @@ impl Display for MarkupError {
         match self {
             Self::UnknownTag(tag) => write!(formatter, "unknown tag \"{tag}\""),
             Self::InvalidElement {
-                attributes,
-                children,
-            } => {
-                if !attributes.is_empty() {
-                    write!(formatter, "invalid attributes: ")?;
-
-                    for (index, (name, errors)) in attributes.iter().enumerate() {
-                        if index > 0 {
-                            write!(formatter, ", ")?;
-                        }
-
-                        write!(formatter, "{name} (")?;
-
-                        for (index, error) in errors.iter().enumerate() {
-                            if index > 0 {
-                                write!(formatter, ", ")?;
-                            }
-
-                            write!(formatter, "{error}")?;
-                        }
-
-                        write!(formatter, ")")?;
-                    }
-                }
-
-                if !children.is_empty() {
-                    if !attributes.is_empty() {
-                        write!(formatter, ", ")?;
-                    }
-
-                    write!(formatter, "invalid children: ")?;
-
-                    for (index, (name, errors)) in children.iter().enumerate() {
-                        if index > 0 {
-                            write!(formatter, ", ")?;
-                        }
-
-                        write!(formatter, "{name} (")?;
-
-                        for (index, error) in errors.iter().enumerate() {
-                            if index > 0 {
-                                write!(formatter, ", ")?;
-                            }
-
-                            write!(formatter, "{error}")?;
-                        }
-
-                        write!(formatter, ")")?;
-                    }
-                }
-
-                Ok(())
-            }
+                invalid_attributes,
+                invalid_children,
+                missing_attributes,
+                missing_children,
+            } => write!(
+                formatter,
+                "{}",
+                [
+                    format_errors("invalid attributes", invalid_attributes),
+                    format_errors("invalid children", invalid_children),
+                    format_names("missing attributes", missing_attributes),
+                    format_names("missing children", missing_children),
+                ]
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>()
+                .join(", ")
+            ),
         }
     }
+}
+
+fn format_errors<E: Display>(
+    label: &str,
+    errors: &BTreeMap<String, BTreeSet<E>>,
+) -> Option<String> {
+    (!errors.is_empty()).then(|| {
+        format!(
+            "{label}: {}",
+            errors
+                .iter()
+                .map(|(name, errors)| format!(
+                    "{name} ({})",
+                    errors
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    })
+}
+
+fn format_names(label: &str, names: &BTreeSet<String>) -> Option<String> {
+    (!names.is_empty()).then(|| {
+        format!(
+            "{label}: {}",
+            names.iter().cloned().collect::<Vec<_>>().join(", ")
+        )
+    })
 }
 
 /// An attribute markup error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum AttributeError {
+    /// Conflicting with other attributes.
+    Conflict,
     /// Not allowed.
     NotAllowed,
 }
@@ -87,6 +90,7 @@ pub enum AttributeError {
 impl Display for AttributeError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Conflict => write!(formatter, "conflicting"),
             Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
@@ -95,6 +99,8 @@ impl Display for AttributeError {
 /// A child markup error.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ChildError {
+    /// Misplaced.
+    Misplaced,
     /// Not allowed.
     NotAllowed,
 }
@@ -102,6 +108,7 @@ pub enum ChildError {
 impl Display for ChildError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Misplaced => write!(formatter, "misplaced"),
             Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
@@ -125,11 +132,30 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: Default::default(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 }
             ),
             "invalid attributes: foo (not allowed)"
+        );
+    }
+
+    #[test]
+    fn display_conflicting_attribute() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: [("foo".into(), [AttributeError::Conflict].into())].into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                }
+            ),
+            "invalid attributes: foo (conflicting)"
         );
     }
 
@@ -139,11 +165,93 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: Default::default(),
-                    children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("foo".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 }
             ),
             "invalid children: foo (not allowed)"
+        );
+    }
+
+    #[test]
+    fn display_misplaced_child() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("foo".into(), [ChildError::Misplaced].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                }
+            ),
+            "invalid children: foo (misplaced)"
+        );
+    }
+
+    #[test]
+    fn display_missing_attributes() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["bar".into(), "foo".into()].into(),
+                    missing_children: Default::default(),
+                }
+            ),
+            "missing attributes: bar, foo"
+        );
+    }
+
+    #[test]
+    fn display_missing_children() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["title".into()].into(),
+                }
+            ),
+            "missing children: title"
+        );
+    }
+
+    #[test]
+    fn display_multiple_missing_children() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["body".into(), "head".into()].into(),
+                }
+            ),
+            "missing children: body, head"
+        );
+    }
+
+    #[test]
+    fn display_missing_attributes_and_children() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: ["href".into(), "src".into()].into(),
+                    missing_children: ["img".into(), "source".into()].into(),
+                }
+            ),
+            "missing attributes: href, src, missing children: img, source"
         );
     }
 
@@ -153,8 +261,11 @@ mod tests {
             format!(
                 "{}",
                 MarkupError::InvalidElement {
-                    attributes: [("foo".into(), [AttributeError::NotAllowed].into())].into(),
-                    children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
+                    invalid_attributes: [("foo".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: [("bar".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
                 }
             ),
             "invalid attributes: foo (not allowed), invalid children: bar (not allowed)"

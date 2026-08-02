@@ -13,6 +13,7 @@ pub enum MacroError {
     RncParse(ParseError),
     RncPattern(&'static str),
     RncSyntax(&'static str),
+    UndefinedReference(String),
 }
 
 impl Display for MacroError {
@@ -23,6 +24,7 @@ impl Display for MacroError {
             Self::RncParse(error) => write!(formatter, "{error}"),
             Self::RncPattern(name) => write!(formatter, "unexpected RNC pattern: {name}"),
             Self::RncSyntax(name) => write!(formatter, "unexpected RNC syntax: {name}"),
+            Self::UndefinedReference(name) => write!(formatter, "undefined reference: {name}"),
         }
     }
 }

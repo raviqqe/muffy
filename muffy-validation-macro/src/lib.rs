@@ -2,18 +2,29 @@
 
 extern crate alloc;
 
+mod attribute;
+mod compiler;
+mod content;
+mod definition;
 mod error;
+mod name;
+mod pattern;
 
-use self::error::MacroError;
-use alloc::collections::{BTreeMap, BTreeSet};
-use core::mem::replace;
-use muffy_rnc::{
-    Combine, Grammar, GrammarContent, Identifier, NameClass, Pattern, SchemaBody, parse_schema,
+use self::{
+    attribute::AttributeSet,
+    compiler::Compiler,
+    content::{children, generate_content},
+    definition::load_definitions,
+    error::MacroError,
+    name::class_names,
+    pattern::Pattern,
 };
+use alloc::collections::BTreeMap;
+use itertools::Itertools;
+use muffy_rnc::{NameClass, Pattern as RncPattern};
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
-use std::{fs::read_to_string, path::Path};
+use quote::{format_ident, quote};
 
 /// Generates HTML validation functions.
 #[proc_macro]
@@ -26,107 +37,104 @@ pub fn html(_input: TokenStream) -> TokenStream {
 }
 
 fn generate_html() -> Result<TokenStream, MacroError> {
-    let mut definitions = Default::default();
+    let definitions = load_definitions()?;
+    let mut compiler = Compiler::new(&definitions);
+    let mut element_rules = BTreeMap::<String, Vec<(Vec<AttributeSet>, Pattern)>>::new();
 
-    for file in ["html5.rnc", "rdfa.rnc"] {
-        load_schema(
-            &Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join("src")
-                .join("schema")
-                .join("html5")
-                .join(file),
-            &mut definitions,
-        )?;
-    }
+    for definition in definitions.values() {
+        for (name_class, pattern) in collect_elements(definition) {
+            let names = class_names(name_class, false);
 
-    // element -> (attributes, children)
-    let mut element_rules = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
-
-    for pattern in definitions.values() {
-        for (name_class, pattern) in collect_elements(pattern) {
-            let Some(element) = get_name(name_class) else {
+            if names.is_empty() {
                 continue;
-            };
+            }
 
-            let (attributes, children) = element_rules
-                .entry(element)
-                .or_insert_with(|| (vec![], vec![]));
+            for (attribute_sets, content_pattern) in compiler.compile(pattern)? {
+                for name in &names {
+                    let variants = element_rules.entry(name.clone()).or_default();
+                    let variant = (attribute_sets.clone(), content_pattern.clone());
 
-            attributes.extend(collect_attributes(pattern, &definitions)?);
-            children.extend(collect_children(pattern, &definitions)?);
+                    if !variants.contains(&variant) {
+                        variants.push(variant);
+                    }
+                }
+            }
         }
     }
 
+    let mut attribute_set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
+    let mut content_indexes = BTreeMap::<Pattern, usize>::new();
     let mut element_matches = vec![];
 
-    for (element, (mut attributes, mut children)) in element_rules {
-        attributes.sort();
-        attributes.dedup();
-        children.sort();
-        children.dedup();
+    for (name, variants) in &element_rules {
+        let attributes = variants
+            .iter()
+            .flat_map(|(sets, _)| sets)
+            .flat_map(|set| set.required.iter().chain(&set.optional))
+            .unique()
+            .sorted()
+            .map(|name| quote!(#name));
+        let children = variants
+            .iter()
+            .flat_map(|(_, content)| children(content))
+            .unique()
+            .sorted()
+            .map(|name| quote!(#name));
 
-        let attributes = attributes.iter().map(|attribute| quote!(#attribute));
-        let children = children.iter().map(|child| quote!(#child));
+        let variants = variants
+            .iter()
+            .map(|(sets, content)| {
+                let index = attribute_set_indexes.len();
+                let sets = format_ident!(
+                    "ATTRIBUTE_SETS_{}",
+                    *attribute_set_indexes.entry(sets.clone()).or_insert(index)
+                );
+
+                let index = content_indexes.len();
+                let content = format_ident!(
+                    "CONTENT_{}",
+                    *content_indexes.entry(content.clone()).or_insert(index)
+                );
+
+                quote!(Variant { attributes: #sets, content: &#content })
+            })
+            .collect::<Vec<_>>();
 
         element_matches.push(quote! {
-            #element => {
-                let mut attributes = ::alloc::collections::BTreeMap::<
-                    String,
-                    ::alloc::collections::BTreeSet<AttributeError>,
-                >::new();
+            #name => {
+                const RULE: Rule = Rule {
+                    attributes: &[#(#attributes),*],
+                    children: &[#(#children),*],
+                    variants: &[#(#variants),*],
+                };
 
-                for (attribute, _) in element.attributes() {
-                    if ignored_attributes.iter().any(|pattern| pattern.is_match(attribute)) {
-                        continue;
-                    }
-
-                    match attribute {
-                        #(#attributes |)* "_DUMMY_" => {}
-                        _ => {
-                            attributes
-                                .entry(attribute.into())
-                                .or_insert_with(Default::default)
-                                .insert(AttributeError::NotAllowed);
-                        }
-                    }
-                }
-
-                let mut children = ::alloc::collections::BTreeMap::<
-                    String,
-                    ::alloc::collections::BTreeSet<ChildError>,
-                >::new();
-
-                for child in element.children() {
-                    if let muffy_document::html::Node::Element(element) = child {
-                        let name = element.name();
-
-                        if ignored_elements.iter().any(|pattern| pattern.is_match(name)) {
-                            continue;
-                        }
-
-                        match name {
-                            #(#children |)* "_DUMMY_" => {}
-                            _ => {
-                                children
-                                    .entry(name.into())
-                                    .or_insert_with(Default::default)
-                                    .insert(ChildError::NotAllowed);
-                            }
-                        }
-                    }
-                }
-
-                if attributes.is_empty() && children.is_empty() {
-                    Ok(())
-                } else {
-                    Err(MarkupError::InvalidElement {
-                        attributes,
-                        children,
-                    })
-                }
+                validate_rule(element, ignored_attributes, ignored_elements, &RULE)
             }
         });
     }
+
+    let attribute_set_definitions = sort_by_index(attribute_set_indexes).map(|(sets, index)| {
+        let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
+        let sets = sets.iter().map(|set| {
+            let required = set.required.iter().map(|name| quote!(#name));
+            let optional = set.optional.iter().map(|name| quote!(#name));
+
+            quote!(AttributeSet {
+                required: &[#(#required),*],
+                optional: &[#(#optional),*],
+            })
+        });
+
+        quote!(const #identifier: &[AttributeSet] = &[#(#sets),*];)
+    });
+    let content_definitions = sort_by_index(content_indexes)
+        .map(|(content, index)| {
+            let identifier = format_ident!("CONTENT_{index}");
+            let content = generate_content(&content)?;
+
+            Ok(quote!(const #identifier: Content = #content;))
+        })
+        .collect::<Result<Vec<_>, MacroError>>()?;
 
     Ok(quote! {
         /// Validates an HTML element.
@@ -135,6 +143,9 @@ fn generate_html() -> Result<TokenStream, MacroError> {
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
+            #(#attribute_set_definitions)*
+            #(#content_definitions)*
+
             match element.name() {
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
                 #(#element_matches)*
@@ -145,259 +156,36 @@ fn generate_html() -> Result<TokenStream, MacroError> {
     .into())
 }
 
-fn load_schema(
-    path: &Path,
-    definitions: &mut BTreeMap<Identifier, Pattern>,
-) -> Result<(), MacroError> {
-    let schema = parse_schema(&read_to_string(path)?)?;
+fn sort_by_index<T>(indexes: BTreeMap<T, usize>) -> impl Iterator<Item = (T, usize)> {
+    let mut entries = indexes.into_iter().collect::<Vec<_>>();
 
-    // We do not use the declarations.
+    entries.sort_by_key(|(_, index)| *index);
 
-    match schema.body {
-        SchemaBody::Grammar(grammar) => {
-            load_grammar(
-                &grammar,
-                definitions,
-                path.parent().ok_or(MacroError::NoParentDirectory)?,
-            )?;
-        }
-        SchemaBody::Pattern(_) => return Err(MacroError::RncSyntax("top-level pattern")),
-    }
-
-    Ok(())
+    entries.into_iter()
 }
 
-fn load_grammar(
-    grammar: &Grammar,
-    definitions: &mut BTreeMap<Identifier, Pattern>,
-    directory: &Path,
-) -> Result<(), MacroError> {
-    for content in &grammar.contents {
-        match content {
-            GrammarContent::Definition(definition) => {
-                let name = definition.name.clone();
-                let pattern = definition.pattern.clone();
-
-                if let Some(combine) = definition.combine {
-                    combine_patterns(
-                        definitions.entry(name).or_insert(Pattern::NotAllowed),
-                        pattern,
-                        combine,
-                    );
-                } else {
-                    definitions.insert(name, pattern);
-                }
-            }
-            GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory)?,
-            GrammarContent::Include(include) => {
-                let include_path = directory.join(&include.uri);
-
-                load_schema(&include_path, definitions)?;
-
-                if let Some(grammar) = &include.grammar {
-                    load_grammar(grammar, definitions, directory)?;
-                }
-            }
-            GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
-        }
-    }
-
-    Ok(())
-}
-
-fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
-    match combine {
-        Combine::Choice => match existing {
-            Pattern::Choice(choices) => choices.push(new),
-            Pattern::NotAllowed => *existing = new,
-            Pattern::Attribute { .. }
-            | Pattern::Data { .. }
-            | Pattern::Element { .. }
-            | Pattern::Empty
-            | Pattern::External(_)
-            | Pattern::Grammar(_)
-            | Pattern::Group(_)
-            | Pattern::Interleave(_)
-            | Pattern::List(_)
-            | Pattern::Many0(_)
-            | Pattern::Many1(_)
-            | Pattern::Name(_)
-            | Pattern::Optional(_)
-            | Pattern::Text
-            | Pattern::Value { .. } => {
-                let old = replace(existing, Pattern::Choice(vec![]));
-
-                if let Pattern::Choice(choices) = existing {
-                    choices.push(old);
-                    choices.push(new);
-                }
-            }
-        },
-        Combine::Interleave => match existing {
-            Pattern::Interleave(patterns) => patterns.push(new),
-            Pattern::NotAllowed => *existing = new,
-            Pattern::Attribute { .. }
-            | Pattern::Choice(_)
-            | Pattern::Data { .. }
-            | Pattern::Element { .. }
-            | Pattern::Empty
-            | Pattern::External(_)
-            | Pattern::Grammar(_)
-            | Pattern::Group(_)
-            | Pattern::List(_)
-            | Pattern::Many0(_)
-            | Pattern::Many1(_)
-            | Pattern::Name(_)
-            | Pattern::Optional(_)
-            | Pattern::Text
-            | Pattern::Value { .. } => {
-                let old = replace(existing, Pattern::Interleave(vec![]));
-
-                if let Pattern::Interleave(patterns) = existing {
-                    patterns.push(old);
-                    patterns.push(new);
-                }
-            }
-        },
-    }
-}
-
-fn collect_elements(pattern: &Pattern) -> Vec<(&NameClass, &Pattern)> {
+// TODO Skip element definitions gated by not-allowed flag conjuncts.
+fn collect_elements(pattern: &RncPattern) -> Vec<(&NameClass, &RncPattern)> {
     match pattern {
-        Pattern::Element {
+        RncPattern::Element {
             name_class,
             pattern,
         } => vec![(name_class, pattern)],
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            patterns.iter().flat_map(collect_elements).collect()
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
+        RncPattern::Choice(patterns)
+        | RncPattern::Group(patterns)
+        | RncPattern::Interleave(patterns) => patterns.iter().flat_map(collect_elements).collect(),
+        RncPattern::Many0(pattern) | RncPattern::Many1(pattern) | RncPattern::Optional(pattern) => {
             collect_elements(pattern)
         }
-        Pattern::Attribute { .. }
-        | Pattern::Data { .. }
-        | Pattern::Empty
-        | Pattern::External(_)
-        | Pattern::Grammar(_)
-        | Pattern::List(_)
-        | Pattern::Name(_)
-        | Pattern::NotAllowed
-        | Pattern::Text
-        | Pattern::Value { .. } => vec![],
+        RncPattern::Attribute { .. }
+        | RncPattern::Data { .. }
+        | RncPattern::Empty
+        | RncPattern::External(_)
+        | RncPattern::Grammar(_)
+        | RncPattern::List(_)
+        | RncPattern::Name(_)
+        | RncPattern::NotAllowed
+        | RncPattern::Text
+        | RncPattern::Value { .. } => vec![],
     }
-}
-
-fn get_name(name_class: &NameClass) -> Option<String> {
-    match name_class {
-        NameClass::Name(name) => Some(name.local.component.clone()),
-        NameClass::Choice(choices) => choices.iter().find_map(get_name),
-        NameClass::AnyName | NameClass::Except { .. } | NameClass::NamespaceName(_) => None,
-    }
-}
-
-fn collect_attributes(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-) -> Result<BTreeSet<String>, MacroError> {
-    let mut attributes = Default::default();
-
-    collect_nested_attributes(
-        pattern,
-        definitions,
-        &mut attributes,
-        &mut Default::default(),
-    )?;
-
-    Ok(attributes)
-}
-
-fn collect_nested_attributes<'a>(
-    pattern: &'a Pattern,
-    definitions: &'a BTreeMap<Identifier, Pattern>,
-    attributes: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<&'a Identifier>,
-) -> Result<(), MacroError> {
-    match pattern {
-        Pattern::Attribute { name_class, .. } => {
-            if let Some(name) = get_name(name_class) {
-                attributes.insert(name);
-            }
-        }
-        Pattern::Name(name) => {
-            if !visited.contains(&name.local) {
-                visited.insert(&name.local);
-
-                if let Some(pattern) = definitions.get(&name.local) {
-                    collect_nested_attributes(pattern, definitions, attributes, visited)?;
-                }
-            }
-        }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_attributes(pattern, definitions, attributes, visited)?;
-            }
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
-            collect_nested_attributes(pattern, definitions, attributes, visited)?;
-        }
-        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
-        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
-        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Empty | Pattern::Element { .. } | Pattern::NotAllowed | Pattern::Text => {}
-    }
-
-    Ok(())
-}
-
-fn collect_children(
-    pattern: &Pattern,
-    definitions: &BTreeMap<Identifier, Pattern>,
-) -> Result<BTreeSet<String>, MacroError> {
-    let mut children = Default::default();
-
-    collect_nested_children(pattern, definitions, &mut children, &mut Default::default())?;
-
-    Ok(children)
-}
-
-fn collect_nested_children<'a>(
-    pattern: &'a Pattern,
-    definitions: &'a BTreeMap<Identifier, Pattern>,
-    children: &mut BTreeSet<String>,
-    visited: &mut BTreeSet<&'a Identifier>,
-) -> Result<(), MacroError> {
-    match pattern {
-        Pattern::Element { name_class, .. } => {
-            if let Some(name) = get_name(name_class) {
-                children.insert(name);
-            }
-        }
-        Pattern::Name(name) => {
-            if !visited.contains(&name.local) {
-                visited.insert(&name.local);
-
-                if let Some(pattern) = definitions.get(&name.local) {
-                    collect_nested_children(pattern, definitions, children, visited)?;
-                }
-            }
-        }
-        Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
-            for pattern in patterns {
-                collect_nested_children(pattern, definitions, children, visited)?;
-            }
-        }
-        Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
-            collect_nested_children(pattern, definitions, children, visited)?;
-        }
-        Pattern::Data { .. } => return Err(MacroError::RncPattern("data")),
-        Pattern::External(_) => return Err(MacroError::RncPattern("external")),
-        Pattern::Grammar(_) => return Err(MacroError::RncPattern("grammar")),
-        Pattern::List { .. } => return Err(MacroError::RncPattern("list")),
-        Pattern::Value { .. } => return Err(MacroError::RncPattern("value")),
-        Pattern::Attribute { .. } | Pattern::Empty | Pattern::NotAllowed | Pattern::Text => {}
-    }
-
-    Ok(())
 }

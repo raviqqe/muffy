@@ -1515,6 +1515,7 @@ version = "0.3.21"
 dependencies = [
  "muffy-document",
  "muffy-validation-macro",
+ "pretty_assertions",
  "regex",
 ]
 
@@ -1522,7 +1523,9 @@ dependencies = [
 name = "muffy-validation-macro"
 version = "0.3.21"
 dependencies = [
+ "itertools 0.15.0",
  "muffy-rnc",
+ "pretty_assertions",
  "proc-macro2",
  "quote",
  "syn 3.0.3",

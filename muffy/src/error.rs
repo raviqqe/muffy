@@ -8,6 +8,7 @@ use core::{
     str::Utf8Error,
 };
 use http::StatusCode;
+use muffy_validation::MarkupError;
 use serde::{Serialize, Serializer};
 use std::io;
 use tokio::{sync::AcquireError, task::JoinError};
@@ -135,7 +136,7 @@ pub enum ItemError {
     /// An HTML parse error.
     HtmlParse(HtmlParseError),
     /// An HTML validation failure.
-    HtmlValidation(muffy_validation::MarkupError),
+    HtmlValidation(MarkupError),
     /// An HTTP client error.
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
@@ -215,7 +216,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ItemError::HtmlValidation(muffy_validation::MarkupError::UnknownTag("foo".into()))
+                ItemError::HtmlValidation(MarkupError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
         );
