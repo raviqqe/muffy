@@ -112,6 +112,7 @@ impl<'a> Compiler<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::definition::DefinitionSet;
     use alloc::collections::BTreeMap;
     use muffy_rnc::{Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
@@ -125,7 +126,7 @@ mod tests {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
-        let mut definitions = crate::definition::DefinitionSet::default();
+        let mut definitions = DefinitionSet::default();
 
         crate::definition::load_grammar(&grammar, &mut definitions, Path::new("."), false).unwrap();
 
