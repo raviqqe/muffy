@@ -2774,7 +2774,6 @@ mod tests {
                 [
                     "invalid attributes: foo (not allowed)".into(),
                     "invalid children: invalid (not allowed)".into(),
-                    "missing attributes: offset".into(),
                     "unknown tag \"invalid\"".into(),
                 ]
                 .into()

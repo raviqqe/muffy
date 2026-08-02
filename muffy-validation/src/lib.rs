@@ -975,14 +975,14 @@ mod tests {
 
         #[test]
         fn validate_missing_attribute() {
-            let element = create_element("stop", vec![], vec![]);
+            let element = create_element("animate", vec![], vec![]);
 
             assert_eq!(
                 validate_svg_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
                     invalid_attributes: Default::default(),
                     invalid_children: Default::default(),
-                    missing_attributes: ["offset".into()].into(),
+                    missing_attributes: ["attributeName".into()].into(),
                     missing_children: Default::default(),
                 })
             );
