@@ -293,12 +293,12 @@ mod tests {
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 
-    static EMPTY_CONTENT: Content = Content::Empty;
+    const EMPTY_CONTENT: Content = Content::Empty;
 
     // The content model of `element example { (attribute foo { text },
     // attribute bar { text }?) | attribute baz { text } }` with children
     // `(one, two?)`.
-    static RULE: Rule = Rule {
+    const RULE: Rule = Rule {
         attributes: &["bar", "baz", "foo"],
         children: &["one", "two"],
         variants: &[
@@ -351,7 +351,7 @@ mod tests {
 
         #[test]
         fn accept_ordered_group() {
-            static CONTENT: Content =
+            const CONTENT: Content =
                 Content::Group(&[Content::Element(&["foo"]), Content::Element(&["bar"])]);
 
             assert!(accepts(&CONTENT, &["foo", "bar"]));
@@ -362,7 +362,7 @@ mod tests {
 
         #[test]
         fn accept_optional_operand() {
-            static CONTENT: Content = Content::Group(&[
+            const CONTENT: Content = Content::Group(&[
                 Content::Optional(&Content::Element(&["foo"])),
                 Content::Element(&["bar"]),
             ]);
@@ -374,7 +374,7 @@ mod tests {
 
         #[test]
         fn accept_interleave_in_any_order() {
-            static CONTENT: Content =
+            const CONTENT: Content =
                 Content::Interleave(&[Content::Element(&["foo"]), Content::Element(&["bar"])]);
 
             assert!(accepts(&CONTENT, &["foo", "bar"]));
@@ -384,7 +384,7 @@ mod tests {
 
         #[test]
         fn accept_repetition() {
-            static CONTENT: Content = Content::Many0(&Content::Element(&["foo"]));
+            const CONTENT: Content = Content::Many0(&Content::Element(&["foo"]));
 
             assert!(accepts(&CONTENT, &[]));
             assert!(accepts(&CONTENT, &["foo", "foo", "foo"]));
@@ -393,7 +393,7 @@ mod tests {
 
         #[test]
         fn accept_at_least_one_repetition() {
-            static CONTENT: Content = Content::Many1(&Content::Element(&["foo"]));
+            const CONTENT: Content = Content::Many1(&Content::Element(&["foo"]));
 
             assert!(!accepts(&CONTENT, &[]));
             assert!(accepts(&CONTENT, &["foo"]));
@@ -402,7 +402,7 @@ mod tests {
 
         #[test]
         fn accept_repetition_interleaved_with_group() {
-            static CONTENT: Content = Content::Interleave(&[
+            const CONTENT: Content = Content::Interleave(&[
                 Content::Group(&[Content::Element(&["foo"]), Content::Element(&["bar"])]),
                 Content::Many0(&Content::Element(&["baz"])),
             ]);
@@ -414,7 +414,7 @@ mod tests {
 
         #[test]
         fn accept_text() {
-            static CONTENT: Content = Content::Many0(&Content::Choice(&[
+            const CONTENT: Content = Content::Many0(&Content::Choice(&[
                 Content::Text,
                 Content::Element(&["foo"]),
             ]));
@@ -426,7 +426,7 @@ mod tests {
 
         #[test]
         fn expect_names_on_shortest_accepting_path() {
-            static CONTENT: Content = Content::Interleave(&[
+            const CONTENT: Content = Content::Interleave(&[
                 Content::Group(&[Content::Element(&["foo"]), Content::Element(&["bar"])]),
                 Content::Many0(&Content::Element(&["baz"])),
             ]);
@@ -472,7 +472,7 @@ mod tests {
 
         #[test]
         fn expect_remaining_required_children() {
-            static CONTENT: Content = Content::Interleave(&[
+            const CONTENT: Content = Content::Interleave(&[
                 Content::Element(&["bar"]),
                 Content::Element(&["baz"]),
                 Content::Element(&["foo"]),
