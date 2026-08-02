@@ -824,9 +824,8 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(
-                        ItemError::HtmlValidation(error) | ItemError::SvgValidation(error),
-                    ) = result
+                    if let Err(ItemError::HtmlValidation(error) | ItemError::SvgValidation(error)) =
+                        result
                     {
                         errors.insert(error.to_string());
                     }

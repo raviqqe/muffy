@@ -959,7 +959,8 @@ mod tests {
 
         #[test]
         fn validate_invalid_child() {
-            let element = create_element("svg", vec![], vec![create_element("html", vec![], vec![])]);
+            let element =
+                create_element("svg", vec![], vec![create_element("html", vec![], vec![])]);
 
             assert_eq!(
                 validate_svg_element(&element, &[], &[]),
