@@ -25,23 +25,6 @@ user-agent = "Muffy/0.2.0"
 svg = {}
 css = true
 
-[sites.default.validation.html]
-ignored_attributes = ["align", "data-.*", "sl-.*"]
-ignored_elements = [
-  "astro-island",
-  "mobile-starlight-.*",
-  "monza-editor",
-  "picolight-.*",
-  "site-search",
-  "sl-.*",
-  "starlight-.*",
-  # TODO Allow inlined SVG elements.
-  "circle",
-  "foreignObject",
-  "path",
-  "svg",
-]
-
 [sites.external]
 extend = "default"
 
@@ -53,26 +36,30 @@ stale_while_revalidate = "1w"
 extend = "default"
 roots = [
   "https://raviqqe.com/",
+  "https://raviqqe.com/monza-editor",
   "https://raviqqe.com/muffet",
   "https://raviqqe.com/muffy",
+  "https://raviqqe.com/stak",
 ]
 recurse = true
 
-[sites.stak]
-extend = "main"
-roots = [
-  "https://raviqqe.com/stak",
-]
-
-[sites.stak.validation.html]
+[sites.main.validation.html]
+ignored_attributes = ["align", "data-.*", "sl-.*"]
 ignored_elements = [
+  "astro-island",
   "div",
+  "mobile-starlight-.*",
+  "monza-editor",
+  "picolight-.*",
   "site-search",
   "sl-.*",
+  "starlight-.*",
   "style",
   # TODO Allow inlined SVG elements.
+  "circle",
+  "foreignObject",
+  "path",
   "svg",
-  "path"
 ]
 
 [sites.algo_logic]
