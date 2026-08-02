@@ -22,17 +22,32 @@ pub enum Pattern {
 impl Pattern {
     pub fn choice(patterns: impl IntoIterator<Item = Self>) -> Self {
         let mut alternatives = BTreeSet::new();
+        let mut names = BTreeSet::new();
         let mut empty = false;
 
         for pattern in patterns {
             match pattern {
-                Self::NotAllowed => {}
+                Self::Choice(patterns) => {
+                    for pattern in patterns {
+                        if let Self::Element(elements) = pattern {
+                            names.extend(elements);
+                        } else {
+                            alternatives.insert(pattern);
+                        }
+                    }
+                }
+                Self::Element(elements) => names.extend(elements),
                 Self::Empty => empty = true,
-                Self::Choice(patterns) => alternatives.extend(patterns),
+                Self::NotAllowed => {}
                 pattern => {
                     alternatives.insert(pattern);
                 }
             }
+        }
+
+        if !names.is_empty() {
+            // Merge all element names into a single term.
+            alternatives.insert(Self::Element(names));
         }
 
         let pattern = if alternatives.is_empty() {
@@ -127,5 +142,50 @@ impl Pattern {
             Self::Optional(pattern) => Self::Optional(pattern),
             pattern => Self::Optional(pattern.into()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    fn element(name: &str) -> Pattern {
+        Pattern::Element([name.into()].into())
+    }
+
+    #[test]
+    fn merge_element_names() {
+        assert_eq!(
+            Pattern::choice([element("foo"), element("bar")]),
+            Pattern::Element(["bar".into(), "foo".into()].into())
+        );
+    }
+
+    #[test]
+    fn merge_element_names_in_nested_choice() {
+        assert_eq!(
+            Pattern::choice([
+                Pattern::choice([element("foo"), element("bar")]),
+                element("baz")
+            ]),
+            Pattern::Element(["bar".into(), "baz".into(), "foo".into()].into())
+        );
+    }
+
+    #[test]
+    fn keep_other_alternatives_beside_elements() {
+        assert_eq!(
+            Pattern::choice([element("foo"), Pattern::Text]),
+            Pattern::Choice(vec![Pattern::Element(["foo".into()].into()), Pattern::Text])
+        );
+    }
+
+    #[test]
+    fn merge_optional_element_names() {
+        assert_eq!(
+            Pattern::choice([element("foo"), element("bar"), Pattern::Empty]),
+            Pattern::optional(Pattern::Element(["bar".into(), "foo".into()].into()))
+        );
     }
 }
