@@ -463,7 +463,7 @@ impl WebValidator {
         element: &muffy_document::html::Element,
         attributes: &HashMap<&str, &str>,
         link_attributes: impl IntoIterator<Item = &'a str>,
-        validation_result: &Result<(), MarkupError>,
+        validation_result: &'a Result<(), MarkupError>,
     ) -> Element {
         Element::new(
             element.name().into(),
@@ -759,6 +759,20 @@ mod tests {
         .await
     }
 
+    async fn validate_svg_content(
+        client: impl BareHttpClient + 'static,
+        url: &str,
+    ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
+        validate_with_site(
+            client,
+            url,
+            SiteConfig::default().set_validation(
+                crate::ValidationConfig::default().set_svg(Some(MarkupConfig::default())),
+            ),
+        )
+        .await
+    }
+
     async fn validate_with_site(
         client: impl BareHttpClient + 'static,
         url: &str,
@@ -810,7 +824,10 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(ItemError::HtmlValidation(error)) = result {
+                    if let Err(
+                        ItemError::HtmlValidation(error) | ItemError::SvgValidation(error),
+                    ) = result
+                    {
                         errors.insert(error.to_string());
                     }
                 }
@@ -2656,6 +2673,101 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_valid_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" role="img" aria-label="picture">
+                                    <title>foo</title>
+                                    <circle cx="1" cy="1" r="1" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(0, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <circle foo="bar" />
+                                    <linearGradient><stop /></linearGradient>
+                                    <invalid />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid attributes: foo (not allowed)".into(),
+                    "invalid children: invalid (not allowed)".into(),
+                    "missing attributes: offset".into(),
+                    "unknown tag \"invalid\"".into(),
+                ]
+                .into()
             );
         }
 
