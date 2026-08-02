@@ -680,6 +680,7 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use regex::Regex;
+    use std::collections::BTreeSet;
     use url::Url;
 
     async fn validate(
@@ -744,6 +745,24 @@ mod tests {
         }
 
         (document_metrics, element_metrics)
+    }
+
+    async fn collect_errors(
+        documents: &mut (impl Stream<Item = Result<DocumentOutput, Error>> + Unpin),
+    ) -> BTreeSet<String> {
+        let mut errors = BTreeSet::new();
+
+        while let Some(document) = documents.next().await {
+            for element in document.unwrap().elements() {
+                for result in element.results() {
+                    if let Err(ItemError::HtmlValidation(error)) = result {
+                        errors.insert(error.to_string());
+                    }
+                }
+            }
+        }
+
+        errors
     }
 
     #[tokio::test]
@@ -1034,9 +1053,13 @@ mod tests {
                         indoc! {r#"
                             <html>
                                 <head>
+                                    <title>foo</title>
+                                    <meta name="description">
                                 </head>
                                 <body>
                                     <div foo="bar"></div>
+                                    <ul><p></p></ul>
+                                    <picture></picture>
                                 </body>
                             </html>
                         "#}
@@ -1053,8 +1076,14 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            collect_metrics(&mut documents).await,
-            (Metrics::new(1, 1), Metrics::new(0, 2))
+            collect_errors(&mut documents).await,
+            [
+                "invalid attributes: foo (not allowed)".into(),
+                "invalid children: p (not allowed)".into(),
+                "missing attributes: content".into(),
+                "missing children: img".into(),
+            ]
+            .into()
         );
     }
 
