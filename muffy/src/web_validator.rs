@@ -551,12 +551,28 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
+        let document = self.0.html_parser.parse(response).await?;
 
-        for node in self.0.html_parser.parse(response).await?.children() {
-            self.validate_svg_element(context, &base, node, false, &mut futures);
+        for node in Self::unwrap_svg_document(document.children()) {
+            self.validate_svg_element(context, &base, node, &mut futures);
         }
 
         Ok(futures)
+    }
+
+    // TODO Split the SVG parser.
+    fn unwrap_svg_document<'a>(nodes: impl Iterator<Item = &'a Node>) -> Vec<&'a Node> {
+        nodes
+            .flat_map(|node| {
+                if let Node::Element(element) = node
+                    && ["body", "head", "html"].contains(&element.name())
+                {
+                    Self::unwrap_svg_document(element.children())
+                } else {
+                    vec![node]
+                }
+            })
+            .collect()
     }
 
     fn validate_svg_element(
@@ -564,14 +580,10 @@ impl WebValidator {
         context: &Arc<Context>,
         base: &Arc<Url>,
         node: &Node,
-        inside_svg: bool,
         futures: &mut Vec<ElementFuture>,
     ) {
         let Node::Element(element) = node else { return };
 
-        // HTML parsers wrap an SVG document in HTML elements, which we
-        // should not validate as SVG.
-        let inside_svg = inside_svg || element.name() == "svg";
         let attributes = HashMap::<_, _>::from_iter(element.attributes());
         let mut items = vec![];
 
@@ -584,16 +596,16 @@ impl WebValidator {
             )));
         }
 
-        let validation_result =
-            if inside_svg && let Some(config) = context.config().site(base).validation().svg() {
-                muffy_validation::validate_svg_element(
-                    element,
-                    config.ignored_attributes(),
-                    config.ignored_elements(),
-                )
-            } else {
-                Ok(())
-            };
+        let validation_result = if let Some(config) = context.config().site(base).validation().svg()
+        {
+            muffy_validation::validate_svg_element(
+                element,
+                config.ignored_attributes(),
+                config.ignored_elements(),
+            )
+        } else {
+            Ok(())
+        };
 
         if let Err(error) = &validation_result {
             items.extend(Self::spawn_markup_errors(error, ItemError::SvgValidation));
@@ -612,7 +624,7 @@ impl WebValidator {
         }
 
         for node in element.children() {
-            self.validate_svg_element(context, base, node, inside_svg, futures);
+            self.validate_svg_element(context, base, node, futures);
         }
     }
 
@@ -2764,6 +2776,54 @@ mod tests {
                     "invalid children: invalid (not allowed)".into(),
                     "missing attributes: offset".into(),
                     "unknown tag \"invalid\"".into(),
+                ]
+                .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_content_outside_root() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            concat!(
+                                r#"<svg xmlns="http://www.w3.org/2000/svg">"#,
+                                "<p>foo</p>",
+                                r#"<circle foo="bar" />"#,
+                                "</svg>"
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            // HTML parsers move the elements after the misplaced HTML element
+            // out of the SVG root element.
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid attributes: foo (not allowed)".into(),
+                    "unknown tag \"p\"".into(),
                 ]
                 .into()
             );
