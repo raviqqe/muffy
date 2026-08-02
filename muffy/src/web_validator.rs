@@ -34,6 +34,7 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
     "og:audio",
@@ -322,8 +323,10 @@ impl WebValidator {
                 }
             }
             _ => {
-                if let Some(value) = attributes.get("href") {
-                    links.push((vec![("href", value)], vec![(value.to_string(), None)]));
+                for name in HREF_ATTRIBUTES {
+                    if let Some(value) = attributes.get(name) {
+                        links.push((vec![(*name, value)], vec![(value.to_string(), None)]));
+                    }
                 }
 
                 if let Some(value) = attributes.get("src") {
@@ -464,14 +467,21 @@ impl WebValidator {
 
         let attributes = HashMap::from_iter(element.attributes());
         let mut items = vec![];
+        let link_attributes = HREF_ATTRIBUTES
+            .iter()
+            .copied()
+            .filter(|name| attributes.contains_key(name))
+            .collect::<Vec<_>>();
 
-        if let Some(value) = attributes.get("href") {
-            items.push(spawn(self.cloned().validate_element_link(
-                context.clone(),
-                value.to_string(),
-                base.clone(),
-                None,
-            )));
+        for name in &link_attributes {
+            if let Some(value) = attributes.get(name) {
+                items.push(spawn(self.cloned().validate_element_link(
+                    context.clone(),
+                    value.to_string(),
+                    base.clone(),
+                    None,
+                )));
+            }
         }
 
         let validation_result = if let Some(config) = context.config().site(base).validation().svg()
@@ -494,7 +504,7 @@ impl WebValidator {
                 Self::create_output_element(
                     element,
                     &attributes,
-                    attributes.contains_key("href").then_some("href"),
+                    link_attributes.iter().copied(),
                     &validation_result,
                 ),
                 items,

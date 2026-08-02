@@ -10,7 +10,7 @@ pub fn class_names(name_class: &NameClass, prefix: bool) -> BTreeSet<String> {
             let local = identifier_string(&name.local);
 
             if prefix && let Some(prefix) = &name.prefix {
-                [format!("{}:{local}", identifier_string(prefix)), local].into()
+                [format!("{}:{local}", identifier_string(prefix))].into()
             } else {
                 [local].into()
             }

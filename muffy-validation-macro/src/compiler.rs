@@ -155,7 +155,7 @@ mod tests {
     fn resolve_prefixed_attribute_names() {
         assert_eq!(
             resolve("root = attribute xml:lang { text }").unwrap(),
-            Pattern::Attribute(["lang".into(), "xml:lang".into()].into())
+            Pattern::Attribute(["xml:lang".into()].into())
         );
     }
 
