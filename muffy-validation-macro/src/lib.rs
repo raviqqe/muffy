@@ -40,7 +40,6 @@ pub fn html(_input: TokenStream) -> TokenStream {
 /// Generates SVG validation functions.
 #[proc_macro]
 pub fn svg(_input: TokenStream) -> TokenStream {
-    // The SVG schema references ARIA attribute definitions in the HTML schema.
     generate_validation("svg", &["svg11/svg11.rnc", "html5/aria.rnc"]).unwrap_or_else(|error| {
         syn::Error::new(Span::call_site(), error)
             .to_compile_error()
