@@ -51,18 +51,10 @@ impl DocumentParser {
 
     fn is_xml(response: &Response) -> bool {
         response
-            .headers()
-            .get("content-type")
-            .and_then(|value| value.to_str().ok())
-            .map(|value| {
-                value
-                    .split(';')
-                    .next()
-                    .unwrap_or_default()
-                    .trim()
-                    .eq_ignore_ascii_case("image/svg+xml")
-            })
-            .unwrap_or_default()
+            .media_type()
+            .ok()
+            .flatten()
+            .is_some_and(|value| value.eq_ignore_ascii_case("image/svg+xml"))
     }
 }
 
@@ -155,6 +147,31 @@ mod tests {
                     http::HeaderMap::from_iter([(
                         http::header::CONTENT_TYPE,
                         http::HeaderValue::from_static("image/svg+xml"),
+                    )]),
+                    r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#.as_bytes().to_vec(),
+                    Default::default(),
+                )))
+                .await
+                .unwrap(),
+            Document::new(vec![Arc::new(
+                Element::new("svg".into(), vec![], vec![]).into()
+            )])
+            .into()
+        );
+    }
+
+    #[tokio::test]
+    async fn parse_svg_response_with_non_ascii_content_type_parameter() {
+        let parser = DocumentParser::new(MemoryCache::new(0));
+
+        assert_eq!(
+            parser
+                .parse(&Arc::new(Response::new(
+                    Url::parse("https://foo.com/foo.svg").unwrap(),
+                    StatusCode::OK,
+                    http::HeaderMap::from_iter([(
+                        http::header::CONTENT_TYPE,
+                        http::HeaderValue::from_bytes(b"image/svg+xml; note=caf\xE9").unwrap(),
                     )]),
                     r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#.as_bytes().to_vec(),
                     Default::default(),
