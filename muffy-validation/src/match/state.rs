@@ -151,13 +151,11 @@ fn step_content(content: &'static Content, name: &str) -> State {
         Content::Many0(operand) => {
             State::group([step_content(operand, name), State::Content(content)])
         }
-        // The rest of a repetition matched once is a zero-or-more repetition.
         Content::Many1(operand) => State::group([
             step_content(operand, name),
             State::choice([State::Empty, State::Content(content)]),
         ]),
         Content::Optional(operand) => step_content(operand, name),
-        // A text pattern matches any number of text nodes.
         Content::Text => {
             if name == TEXT_TOKEN {
                 State::Content(content)
