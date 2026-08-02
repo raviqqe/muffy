@@ -35,9 +35,9 @@ fn load_schema(path: &Path, definitions: &mut DefinitionSet) -> Result<(), Macro
         SchemaBody::Grammar(grammar) | SchemaBody::Pattern(RncPattern::Grammar(grammar)) => {
             load_grammar(
                 &grammar,
-                definitions,
                 path.parent().ok_or(MacroError::NoParentDirectory)?,
                 false,
+                definitions,
             )?;
         }
         SchemaBody::Pattern(_) => return Err(MacroError::RncSyntax("top-level pattern")),
@@ -48,21 +48,21 @@ fn load_schema(path: &Path, definitions: &mut DefinitionSet) -> Result<(), Macro
 
 pub fn load_grammar(
     grammar: &Grammar,
-    definitions: &mut DefinitionSet,
     directory: &Path,
     replace: bool,
+    definitions: &mut DefinitionSet,
 ) -> Result<(), MacroError> {
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(definition) => {
-                load_definition(definition, definitions, replace)
+                load_definition(definition, replace, definitions)
             }
-            GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory, replace)?,
+            GrammarContent::Div(grammar) => load_grammar(grammar, directory, replace, definitions)?,
             GrammarContent::Include(include) => {
                 load_schema(&directory.join(&include.uri), definitions)?;
 
                 if let Some(grammar) = &include.grammar {
-                    load_grammar(grammar, definitions, directory, true)?;
+                    load_grammar(grammar, directory, true, definitions)?;
                 }
             }
             GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
@@ -72,7 +72,7 @@ pub fn load_grammar(
     Ok(())
 }
 
-fn load_definition(definition: &Definition, definitions: &mut DefinitionSet, replace: bool) {
+fn load_definition(definition: &Definition, replace: bool, definitions: &mut DefinitionSet) {
     let pattern = definition.pattern.clone();
 
     if let Some(combine) = definition.combine {

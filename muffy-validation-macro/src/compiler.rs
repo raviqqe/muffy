@@ -128,7 +128,7 @@ mod tests {
         };
         let mut definitions = DefinitionSet::default();
 
-        load_grammar(&grammar, &mut definitions, Path::new("."), false).unwrap();
+        load_grammar(&grammar, Path::new("."), false, &mut definitions).unwrap();
 
         let definitions = definitions
             .into_iter()
