@@ -134,10 +134,8 @@ mod tests {
                         )
                         .into(),
                     )),
-                    Err(ItemError::HtmlValidation(MarkupError::UnknownTag(
-                        "foo".into(),
-                    ))),
-                    Err(ItemError::HtmlValidation(MarkupError::InvalidElement {
+                    Err(ItemError::Markup(MarkupError::UnknownTag("foo".into()))),
+                    Err(ItemError::Markup(MarkupError::InvalidElement {
                         invalid_attributes: [("bar".into(), [AttributeError::Conflict].into())]
                             .into(),
                         invalid_children: [("baz".into(), [ChildError::Misplaced].into())].into(),

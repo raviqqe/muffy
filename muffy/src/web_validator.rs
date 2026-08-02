@@ -367,7 +367,7 @@ impl WebValidator {
             .collect::<Vec<_>>();
 
         if let Err(error) = &validation_result {
-            items.extend(Self::spawn_markup_errors(error, ItemError::HtmlValidation));
+            items.extend(Self::spawn_markup_errors(error));
         }
 
         if items.is_empty() {
@@ -486,7 +486,7 @@ impl WebValidator {
         };
 
         if let Err(error) = &validation_result {
-            items.extend(Self::spawn_markup_errors(error, ItemError::SvgValidation));
+            items.extend(Self::spawn_markup_errors(error));
         }
 
         if !items.is_empty() {
@@ -610,14 +610,13 @@ impl WebValidator {
 
     fn spawn_markup_errors(
         error: &MarkupError,
-        item_error: fn(MarkupError) -> ItemError,
     ) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
         let mut items = vec![];
 
         match error {
             MarkupError::UnknownTag(_) => {
                 items.push(spawn({
-                    let error = item_error(error.clone());
+                    let error = ItemError::Markup(error.clone());
                     async move { Err(error) }
                 }));
             }
@@ -629,7 +628,7 @@ impl WebValidator {
             } => {
                 for (name, errors) in invalid_attributes {
                     items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
+                        let error = ItemError::Markup(MarkupError::InvalidElement {
                             invalid_attributes: [(name.clone(), errors.clone())].into(),
                             invalid_children: Default::default(),
                             missing_attributes: Default::default(),
@@ -641,7 +640,7 @@ impl WebValidator {
 
                 for (name, errors) in invalid_children {
                     items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
+                        let error = ItemError::Markup(MarkupError::InvalidElement {
                             invalid_attributes: Default::default(),
                             invalid_children: [(name.clone(), errors.clone())].into(),
                             missing_attributes: Default::default(),
@@ -653,7 +652,7 @@ impl WebValidator {
 
                 if !missing_attributes.is_empty() {
                     items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
+                        let error = ItemError::Markup(MarkupError::InvalidElement {
                             invalid_attributes: Default::default(),
                             invalid_children: Default::default(),
                             missing_attributes: missing_attributes.clone(),
@@ -665,7 +664,7 @@ impl WebValidator {
 
                 if !missing_children.is_empty() {
                     items.push(spawn({
-                        let error = item_error(MarkupError::InvalidElement {
+                        let error = ItemError::Markup(MarkupError::InvalidElement {
                             invalid_attributes: Default::default(),
                             invalid_children: Default::default(),
                             missing_attributes: Default::default(),
@@ -819,9 +818,7 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(ItemError::HtmlValidation(error) | ItemError::SvgValidation(error)) =
-                        result
-                    {
+                    if let Err(ItemError::Markup(error)) = result {
                         errors.insert(error.to_string());
                     }
                 }
