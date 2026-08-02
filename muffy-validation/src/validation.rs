@@ -137,7 +137,7 @@ fn collect_missing_children(state: &State, names: &[&'static str]) -> BTreeSet<&
         return Default::default();
     }
 
-    let mut visited = BTreeSet::from([state.clone()]);
+    let mut visited = BTreeSet::from([(state.clone(), None)]);
     let mut states = vec![(state.clone(), None)];
 
     loop {
@@ -158,7 +158,7 @@ fn collect_missing_children(state: &State, names: &[&'static str]) -> BTreeSet<&
                     expected.insert(*name);
                 }
 
-                if visited.insert(next.clone()) {
+                if visited.insert((next.clone(), Some(name))) {
                     next_frontier.push((next, Some(name)));
                 }
             }
@@ -490,6 +490,21 @@ mod tests {
 
             assert_eq!(
                 collect_missing_children(&state, &["bar", "baz", "foo"]),
+                ["bar", "baz"].into()
+            );
+        }
+
+        #[test]
+        fn expect_alternatives_converging_on_a_shared_suffix() {
+            // Both alternatives reach the same "needs foo" state, so both
+            // starting children are reported despite the convergence.
+            const CONTENT: Content = Content::Choice(&[
+                Content::Group(&[Content::Element(&["bar"]), Content::Element(&["foo"])]),
+                Content::Group(&[Content::Element(&["baz"]), Content::Element(&["foo"])]),
+            ]);
+
+            assert_eq!(
+                collect_missing_children(&State::Content(&CONTENT), &["bar", "baz", "foo"]),
                 ["bar", "baz"].into()
             );
         }
