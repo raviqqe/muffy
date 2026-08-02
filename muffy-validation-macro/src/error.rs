@@ -8,6 +8,7 @@ use std::io;
 /// A macro error.
 #[derive(Debug)]
 pub enum MacroError {
+    CombineConflict(String),
     Io(io::Error),
     NoParentDirectory,
     RncParse(ParseError),
@@ -19,6 +20,9 @@ pub enum MacroError {
 impl Display for MacroError {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
+            Self::CombineConflict(name) => {
+                write!(formatter, "conflicting combine operators: {name}")
+            }
             Self::Io(error) => write!(formatter, "{error}"),
             Self::NoParentDirectory => write!(formatter, "no parent directory"),
             Self::RncParse(error) => write!(formatter, "{error}"),

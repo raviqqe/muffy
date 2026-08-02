@@ -1,4 +1,4 @@
-use crate::error::MacroError;
+use crate::{error::MacroError, name::identifier_string};
 use alloc::collections::BTreeMap;
 use core::mem::replace;
 use muffy_rnc::{
@@ -55,7 +55,7 @@ pub fn load_grammar(
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(definition) => {
-                load_definition(definition, replace, definitions)
+                load_definition(definition, replace, definitions)?
             }
             GrammarContent::Div(grammar) => load_grammar(grammar, directory, replace, definitions)?,
             GrammarContent::Include(include) => {
@@ -72,14 +72,26 @@ pub fn load_grammar(
     Ok(())
 }
 
-fn load_definition(definition: &Definition, replace: bool, definitions: &mut DefinitionSet) {
+fn load_definition(
+    definition: &Definition,
+    replace: bool,
+    definitions: &mut DefinitionSet,
+) -> Result<(), MacroError> {
     let pattern = definition.pattern.clone();
 
     if let Some(combine) = definition.combine
         && let Some((operator, existing)) = definitions.get_mut(&definition.name)
     {
+        if let Some(operator) = *operator
+            && operator != combine
+        {
+            return Err(MacroError::CombineConflict(identifier_string(
+                &definition.name,
+            )));
+        }
+
         combine_patterns(existing, pattern, combine);
-        operator.get_or_insert(combine);
+        *operator = Some(combine);
     } else if !replace
         && definition.combine.is_none()
         && let Some((Some(operator), existing)) = definitions.get_mut(&definition.name)
@@ -88,6 +100,8 @@ fn load_definition(definition: &Definition, replace: bool, definitions: &mut Def
     } else {
         definitions.insert(definition.name.clone(), (definition.combine, pattern));
     }
+
+    Ok(())
 }
 
 fn combine_patterns(existing: &mut RncPattern, new: RncPattern, combine: Combine) {
@@ -144,5 +158,74 @@ fn combine_patterns(existing: &mut RncPattern, new: RncPattern, combine: Combine
                 }
             }
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn load(
+        source: &str,
+        replace: bool,
+        definitions: &mut DefinitionSet,
+    ) -> Result<(), MacroError> {
+        let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
+            panic!("grammar expected");
+        };
+
+        load_grammar(&grammar, Path::new("."), replace, definitions)
+    }
+
+    #[test]
+    fn merge_combined_definitions() {
+        assert!(
+            load(
+                "root &= attribute foo { text }\nroot &= attribute bar { text }",
+                false,
+                &mut DefinitionSet::default(),
+            )
+            .is_ok()
+        );
+    }
+
+    #[test]
+    fn replace_plain_definition_in_override() {
+        let mut definitions = DefinitionSet::default();
+
+        load("root = empty", false, &mut definitions).unwrap();
+        load("root = notAllowed", true, &mut definitions).unwrap();
+
+        assert_eq!(
+            definitions
+                .values()
+                .map(|(_, pattern)| pattern)
+                .collect::<Vec<_>>(),
+            vec![&RncPattern::NotAllowed]
+        );
+    }
+
+    #[test]
+    fn fail_on_conflicting_combine_operators() {
+        assert!(matches!(
+            load(
+                "root |= attribute foo { text }\nroot &= attribute bar { text }",
+                false,
+                &mut DefinitionSet::default(),
+            ),
+            Err(MacroError::CombineConflict(_))
+        ));
+    }
+
+    #[test]
+    fn fail_on_combine_operator_conflicting_with_merged_plain_definition() {
+        assert!(matches!(
+            load(
+                "root |= attribute foo { text }\nroot = empty\nroot &= attribute bar { text }",
+                false,
+                &mut DefinitionSet::default(),
+            ),
+            Err(MacroError::CombineConflict(_))
+        ));
     }
 }
