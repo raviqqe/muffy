@@ -5,13 +5,13 @@ extern crate alloc;
 mod attribute_set;
 mod content;
 mod error;
-mod r#match;
 mod rule;
+mod validation;
 mod variant;
 
 pub use self::error::*;
 use self::{
-    attribute_set::AttributeSet, content::Content, r#match::validate_rule, rule::Rule,
+    attribute_set::AttributeSet, content::Content, rule::Rule, validation::validate_rule,
     variant::Variant,
 };
 use muffy_document::html::Element;
