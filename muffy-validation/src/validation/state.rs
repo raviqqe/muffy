@@ -169,7 +169,6 @@ fn step_content(content: &'static Content, name: &str) -> State {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pretty_assertions::assert_eq;
 
     const A: Content = Content::Element(&["a"]);
     const B: Content = Content::Element(&["b"]);
@@ -190,6 +189,7 @@ mod tests {
 
     mod choice {
         use super::*;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn collapse_singleton() {
@@ -218,6 +218,7 @@ mod tests {
 
     mod group {
         use super::*;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn collapse_singleton() {
@@ -255,6 +256,7 @@ mod tests {
 
     mod interleave {
         use super::*;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn collapse_singleton() {
