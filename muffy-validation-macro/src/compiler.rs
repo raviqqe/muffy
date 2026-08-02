@@ -112,7 +112,7 @@ impl<'a> Compiler<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::definition::DefinitionSet;
+    use crate::definition::{DefinitionSet, load_grammar};
     use alloc::collections::BTreeMap;
     use muffy_rnc::{Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
@@ -128,7 +128,7 @@ mod tests {
         };
         let mut definitions = DefinitionSet::default();
 
-        crate::definition::load_grammar(&grammar, &mut definitions, Path::new("."), false).unwrap();
+        load_grammar(&grammar, &mut definitions, Path::new("."), false).unwrap();
 
         let definitions = definitions
             .into_iter()
