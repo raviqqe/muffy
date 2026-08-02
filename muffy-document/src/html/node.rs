@@ -20,8 +20,7 @@ impl Node {
                 attrs
                     .borrow()
                     .iter()
-                    // Namespace declarations on foreign elements are not
-                    // semantic attributes.
+                    // Namespace declarations on foreign elements are not semantic attributes.
                     // TODO Consider keeping namespace prefixes.
                     .filter(|attribute| attribute.name.ns != ns!(xmlns))
                     .map(|attribute| {
