@@ -46,6 +46,7 @@ impl Pattern {
         }
 
         if !names.is_empty() {
+            // Merge all element names into a single term.
             alternatives.insert(Self::Element(names));
         }
 
