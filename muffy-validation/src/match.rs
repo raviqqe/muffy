@@ -291,6 +291,7 @@ fn score_attribute_set(
 mod tests {
     use super::*;
     use alloc::sync::Arc;
+    use pretty_assertions::assert_eq;
 
     static EMPTY_CONTENT: Content = Content::Empty;
 
@@ -444,9 +445,48 @@ mod tests {
             assert!(state.is_nullable());
             assert_eq!(collect_missing_children(&state, &names), [].into());
         }
-    }
 
-    use pretty_assertions::assert_eq;
+        #[test]
+        fn expect_alternative_children() {
+            static CONTENT: Content =
+                Content::Choice(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
+            let names = ["bar", "foo"];
+
+            assert_eq!(
+                collect_missing_children(&State::Content(&CONTENT), &names),
+                ["bar", "foo"].into()
+            );
+        }
+
+        #[test]
+        fn expect_all_required_children() {
+            static CONTENT: Content =
+                Content::Interleave(&[Content::Element(&["bar"]), Content::Element(&["foo"])]);
+            let names = ["bar", "foo"];
+
+            assert_eq!(
+                collect_missing_children(&State::Content(&CONTENT), &names),
+                ["bar", "foo"].into()
+            );
+        }
+
+        #[test]
+        fn expect_remaining_required_children() {
+            static CONTENT: Content = Content::Interleave(&[
+                Content::Element(&["bar"]),
+                Content::Element(&["baz"]),
+                Content::Element(&["foo"]),
+            ]);
+            let names = ["bar", "baz", "foo"];
+
+            let state = State::Content(&CONTENT).step("foo");
+
+            assert_eq!(
+                collect_missing_children(&state, &names),
+                ["bar", "baz"].into()
+            );
+        }
+    }
 
     #[test]
     fn validate_first_variant() {
