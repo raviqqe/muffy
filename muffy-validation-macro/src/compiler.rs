@@ -127,7 +127,7 @@ mod tests {
         };
         let mut definitions = BTreeMap::new();
 
-        crate::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
+        crate::definition::load_grammar(&grammar, &mut definitions, Path::new(".")).unwrap();
 
         Compiler::new(&definitions).resolve(
             &definitions[&Identifier {

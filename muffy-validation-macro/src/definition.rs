@@ -47,7 +47,7 @@ fn load_schema(
     Ok(())
 }
 
-fn load_grammar(
+pub fn load_grammar(
     grammar: &Grammar,
     definitions: &mut BTreeMap<Identifier, RncPattern>,
     directory: &Path,
