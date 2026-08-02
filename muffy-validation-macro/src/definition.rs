@@ -55,7 +55,7 @@ pub fn load_grammar(
     for content in &grammar.contents {
         match content {
             GrammarContent::Definition(definition) => {
-                load_definition(definition, definitions, replace);
+                load_definition(definition, definitions, replace)
             }
             GrammarContent::Div(grammar) => load_grammar(grammar, definitions, directory, replace)?,
             GrammarContent::Include(include) => {
