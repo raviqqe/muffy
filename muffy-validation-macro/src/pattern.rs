@@ -22,16 +22,11 @@ pub enum Pattern {
 impl Pattern {
     pub fn choice(patterns: impl IntoIterator<Item = Self>) -> Self {
         let mut alternatives = BTreeSet::new();
-        // Element names are merged into one alternative to keep content
-        // patterns small, as a choice of elements is a choice of their names.
         let mut names = BTreeSet::new();
         let mut empty = false;
 
         for pattern in patterns {
             match pattern {
-                Self::NotAllowed => {}
-                Self::Empty => empty = true,
-                Self::Element(elements) => names.extend(elements),
                 Self::Choice(patterns) => {
                     for pattern in patterns {
                         if let Self::Element(elements) = pattern {
@@ -41,6 +36,9 @@ impl Pattern {
                         }
                     }
                 }
+                Self::Element(elements) => names.extend(elements),
+                Self::Empty => empty = true,
+                Self::NotAllowed => {}
                 pattern => {
                     alternatives.insert(pattern);
                 }
