@@ -680,7 +680,7 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_eq;
     use regex::Regex;
-    use std::collections::BTreeSet;
+    use alloc::collections::BTreeSet;
     use url::Url;
 
     async fn validate(
