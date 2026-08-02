@@ -608,9 +608,7 @@ impl WebValidator {
         })
     }
 
-    fn spawn_markup_errors(
-        error: &MarkupError,
-    ) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
+    fn spawn_markup_errors(error: &MarkupError) -> Vec<JoinHandle<Result<ItemOutput, ItemError>>> {
         let mut items = vec![];
 
         match error {
