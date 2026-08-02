@@ -725,9 +725,9 @@ mod tests {
 
     #[test]
     fn prefer_attribute_set_with_fewer_errors() {
-        // The attributes of `element example { (attribute foo { text },
-        // attribute qux { text }) | attribute bar { text } }`.
-        const RULE: Rule = Rule {
+        // The attributes of `element example { attribute bar { text }
+        // | (attribute foo { text }, attribute qux { text }) }`.
+        const ATTRIBUTE_SET_RULE: Rule = Rule {
             attributes: &["bar", "foo", "qux"],
             children: &[],
             variants: &[Variant {
@@ -745,14 +745,12 @@ mod tests {
             }],
         };
 
-        // The second set misses only `qux` while the first one both misses
-        // `bar` and conflicts with the present `foo` attribute.
         assert_eq!(
             validate_rule(
                 &create_element("example", vec![("foo", "")], vec![]),
                 &[],
                 &[],
-                &RULE,
+                &ATTRIBUTE_SET_RULE,
             ),
             Err(MarkupError::InvalidElement {
                 invalid_attributes: Default::default(),
@@ -760,6 +758,17 @@ mod tests {
                 missing_attributes: ["qux".into()].into(),
                 missing_children: Default::default(),
             })
+        );
+
+        // The best set is chosen regardless of its position.
+        assert_eq!(
+            validate_rule(
+                &create_element("example", vec![("bar", "")], vec![]),
+                &[],
+                &[],
+                &ATTRIBUTE_SET_RULE,
+            ),
+            Ok(())
         );
     }
 }
