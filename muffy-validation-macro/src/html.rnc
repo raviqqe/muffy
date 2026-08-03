@@ -1,0 +1,11 @@
+# A driver schema for HTML documents based on the HTML5 schema in the Nu Html
+# Checker. We restore the language attribute which the vendored schema defines
+# only in its XML spelling expecting HTML parsers to map the attribute to it.
+
+include "schema/html5/html5.rnc" {
+    common.attrs.lang =
+        attribute lang {
+            common.data.langcode
+        }
+}
+include "schema/html5/rdfa.rnc"
