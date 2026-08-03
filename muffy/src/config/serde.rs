@@ -339,6 +339,24 @@ impl RetryDurationConfig {
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
 
+    // TODO Should we prevent the `ignore = true` option for default site
+    // configuration?
+    let default_name = match &config
+        .sites
+        .iter()
+        .filter(|(_, site)| site.roots == Some(Default::default()))
+        .map(|(name, _)| name.as_str())
+        .collect::<Vec<_>>()[..]
+    {
+        [] => None,
+        [name] => Some(*name),
+        names => {
+            return Err(ConfigError::MultipleDefaultSiteConfigs(
+                names.iter().copied().map(ToOwned::to_owned).collect(),
+            ));
+        }
+    };
+
     let ignored_links = config
         .sites
         .values()
@@ -381,7 +399,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                name.into(),
+                (default_name != Some(name)).then_some(name),
                 site,
                 if let Some(name) = &site.extend {
                     &configs[name.as_str()]
@@ -401,30 +419,9 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .flatten()
             .map(|url| url.to_string())
             .collect(),
-        {
-            let configs = config
-                .sites
-                .values()
-                .filter(|site| site.roots == Some(Default::default()))
-                .collect::<Vec<_>>();
-
-            // TODO Should we prevent the `ignore = true` option for default site
-            // configuration?
-            match &configs[..] {
-                [config] => compile_site_config(None, config, &DEFAULT_SITE_CONFIG)?.into(),
-                [_, ..] => {
-                    return Err(ConfigError::MultipleDefaultSiteConfigs(
-                        config
-                            .sites
-                            .iter()
-                            .filter(|(_, site)| site.roots == Some(Default::default()))
-                            .map(|(name, _)| name.to_owned())
-                            .collect::<Vec<_>>(),
-                    ));
-                }
-                _ => DEFAULT_SITE_CONFIG.clone().into(),
-            }
-        },
+        default_name
+            .and_then(|name| configs.get(name).cloned())
+            .unwrap_or_else(|| DEFAULT_SITE_CONFIG.clone().into()),
         included_sites
             .iter()
             .flat_map(|(name, site)| {
@@ -835,6 +832,65 @@ mod tests {
             paths.as_slice(),
             &[("/".into(), compile_config("foo".into()))]
         );
+    }
+
+    #[test]
+    fn compile_default_site_config_with_extend() {
+        let config = compile_config(SerializableConfig {
+            extend: None,
+            sites: [
+                (
+                    "base".to_owned(),
+                    SiteConfig {
+                        statuses: Some([200, 403].into()),
+                        timeout: Some(Duration::from_secs(42).into()),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "default".to_owned(),
+                    SiteConfig {
+                        extend: Some("base".to_owned()),
+                        roots: Some(Default::default()),
+                        statuses: Some([200].into()),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
+            concurrency: None,
+            cache: None,
+            rate_limit: None,
+        })
+        .unwrap();
+
+        assert_eq!(config.default.id(), None);
+        assert_eq!(config.default.timeout(), Some(Duration::from_secs(42)));
+        assert!(config.default.status().accepted(StatusCode::OK));
+        assert!(!config.default.status().accepted(StatusCode::FORBIDDEN));
+    }
+
+    #[test]
+    fn compile_ignored_default_site_config() {
+        let config = compile_config(SerializableConfig {
+            extend: None,
+            sites: [(
+                "default".to_owned(),
+                SiteConfig {
+                    ignore: Some(true),
+                    roots: Some(Default::default()),
+                    timeout: Some(Duration::from_secs(42).into()),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+            concurrency: None,
+            cache: None,
+            rate_limit: None,
+        })
+        .unwrap();
+
+        assert_eq!(config.default.timeout(), DEFAULT_TIMEOUT.into());
     }
 
     #[test]
