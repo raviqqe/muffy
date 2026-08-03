@@ -150,7 +150,7 @@ mod tests {
                                 ))),
                                 Arc::new(Node::Element(Element::new(
                                     "image".to_string(),
-                                    vec![("href".to_string(), "/bar.png".to_string())],
+                                    vec![("xlink:href".to_string(), "/bar.png".to_string())],
                                     vec![],
                                 ))),
                             ],
