@@ -12,16 +12,8 @@ The static website validator.
 
 ## Install
 
-### CLI
-
 ```sh
 cargo install muffy
-```
-
-### Docker
-
-```sh
-docker pull raviqqe/muffy
 ```
 
 ## Usage
