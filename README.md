@@ -26,6 +26,12 @@ For the full usage, see `muffy --help`.
 muffy
 ```
 
+### Check a website
+
+```sh
+muffy check-site https://example.com
+```
+
 ### GitHub Action
 
 ```yaml
