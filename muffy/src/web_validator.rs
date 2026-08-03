@@ -842,7 +842,10 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(ItemError::Markup(error)) = result {
+                    if let Err(
+                        error @ (ItemError::Markup(_) | ItemError::NamespaceInvalid { .. }),
+                    ) = result
+                    {
                         errors.insert(error.to_string());
                     }
                 }

@@ -143,6 +143,13 @@ pub enum ItemError {
     InvalidScheme(String),
     /// A markup error.
     Markup(MarkupError),
+    /// An invalid namespace.
+    NamespaceInvalid {
+        /// An actual namespace.
+        actual: Option<String>,
+        /// An expected namespace.
+        expected: &'static str,
+    },
     /// A sitemap parse error.
     Sitemap(SitemapError),
     /// A URL parse error.
@@ -170,6 +177,13 @@ impl Display for ItemError {
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Markup(error) => write!(formatter, "{error}"),
+            Self::NamespaceInvalid { actual, expected } => {
+                write!(
+                    formatter,
+                    "namespace expected {expected} but got {}",
+                    actual.as_deref().unwrap_or("none")
+                )
+            }
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
