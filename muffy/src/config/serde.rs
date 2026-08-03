@@ -399,7 +399,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
         configs.insert(
             name,
             compile_site_config(
-                (default_name != Some(name)).then_some(name),
+                name.into(),
                 site,
                 if let Some(name) = &site.extend {
                     &configs[name.as_str()]
@@ -420,7 +420,8 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
             .map(|url| url.to_string())
             .collect(),
         default_name
-            .and_then(|name| configs.get(name).cloned())
+            .and_then(|name| configs.get(name))
+            .map(|config| config.as_ref().clone().set_id(None).into())
             .unwrap_or_else(|| DEFAULT_SITE_CONFIG.clone().into()),
         included_sites
             .iter()
