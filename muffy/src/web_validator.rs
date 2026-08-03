@@ -35,6 +35,7 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
+const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
     "og:audio",
@@ -450,6 +451,25 @@ impl WebValidator {
         let base = Arc::new(response.url().clone());
 
         for node in self.0.document_parser.parse(response).await?.children() {
+            if let Node::Element(element) = node
+                && element.namespace() != Some(SVG_NAMESPACE)
+                && let Some(config) = context.config().site(&base).validation().svg()
+                && !config
+                    .ignored_elements()
+                    .iter()
+                    .any(|pattern| pattern.is_match(element.name()))
+            {
+                let error = ItemError::NamespaceInvalid {
+                    actual: element.namespace().map(Into::into),
+                    expected: SVG_NAMESPACE,
+                };
+
+                futures.push((
+                    Element::new(element.name().into(), vec![]),
+                    vec![spawn(async move { Err(error) })],
+                ));
+            }
+
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 

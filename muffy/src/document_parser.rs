@@ -91,6 +91,8 @@ mod tests {
     use pretty_assertions::assert_eq;
     use url::Url;
 
+    const XHTML_NAMESPACE: &str = "http://www.w3.org/1999/xhtml";
+
     #[tokio::test]
     async fn parse_response() {
         let parser = DocumentParser::new(MemoryCache::new(0));
@@ -111,7 +113,11 @@ mod tests {
                     "html".into(),
                     vec![],
                     vec![
-                        Arc::new(Element::new("head".into(), vec![], vec![]).into()),
+                        Arc::new(
+                            Element::new("head".into(), vec![], vec![])
+                                .set_namespace(Some(XHTML_NAMESPACE.into()))
+                                .into()
+                        ),
                         Arc::new(
                             Element::new(
                                 "body".into(),
@@ -122,13 +128,16 @@ mod tests {
                                         vec![("href".into(), "https://foo.com/bar".into())],
                                         vec![]
                                     )
+                                    .set_namespace(Some(XHTML_NAMESPACE.into()))
                                     .into()
                                 )]
                             )
+                            .set_namespace(Some(XHTML_NAMESPACE.into()))
                             .into()
                         )
                     ]
                 )
+                .set_namespace(Some(XHTML_NAMESPACE.into()))
                 .into()
             )])
             .into()
@@ -154,7 +163,9 @@ mod tests {
                 .await
                 .unwrap(),
             Document::new(vec![Arc::new(
-                Element::new("svg".into(), vec![], vec![]).into()
+                Element::new("svg".into(), vec![], vec![])
+                    .set_namespace(Some("http://www.w3.org/2000/svg".into()))
+                    .into()
             )])
             .into()
         );
@@ -179,7 +190,9 @@ mod tests {
                 .await
                 .unwrap(),
             Document::new(vec![Arc::new(
-                Element::new("svg".into(), vec![], vec![]).into()
+                Element::new("svg".into(), vec![], vec![])
+                    .set_namespace(Some("http://www.w3.org/2000/svg".into()))
+                    .into()
             )])
             .into()
         );
