@@ -46,17 +46,15 @@ impl Document {
     }
 
     pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
-        if matches!(node.data, NodeData::Document) {
-            Self::new(
-                node.children
-                    .borrow()
-                    .iter()
-                    .flat_map(|node| Node::from_markup5ever(node))
-                    .map(Arc::new)
-                    .collect(),
-            )
-        } else {
-            unreachable!()
-        }
+        debug_assert!(matches!(node.data, NodeData::Document));
+
+        Self::new(
+            node.children
+                .borrow()
+                .iter()
+                .flat_map(|node| Node::from_markup5ever(node))
+                .map(Arc::new)
+                .collect(),
+        )
     }
 }
