@@ -16,7 +16,7 @@ use crate::{
     robot_list::RobotList,
     sitemap,
 };
-use alloc::sync::Arc;
+use alloc::{collections::BTreeSet, sync::Arc};
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
@@ -449,8 +449,18 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
+        let document = self.0.document_parser.parse(response).await?;
 
-        for node in self.0.document_parser.parse(response).await?.children() {
+        for error in document.errors().collect::<BTreeSet<_>>() {
+            let error = ItemError::XmlSyntax(error.into());
+
+            futures.push((
+                Element::new("xml".into(), vec![]),
+                vec![spawn(async move { Err(error) })],
+            ));
+        }
+
+        for node in document.children() {
             if let Node::Element(element) = node
                 && element.namespace() != Some(SVG_NAMESPACE)
                 && let Some(config) = context.config().site(&base).validation().svg()
@@ -843,7 +853,10 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error @ (ItemError::Markup(_) | ItemError::InvalidNamespace { .. }),
+                        error
+                        @ (ItemError::Markup(_)
+                        | ItemError::InvalidNamespace { .. }
+                        | ItemError::XmlSyntax(_)),
                     ) = result
                     {
                         errors.insert(error.to_string());
