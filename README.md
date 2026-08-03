@@ -28,8 +28,6 @@ muffy
 
 ### GitHub Action
 
-### GitHub Action
-
 ```yaml
 job:
   steps:
