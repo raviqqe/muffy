@@ -49,8 +49,8 @@ See [`action.yaml`](https://github.com/raviqqe/muffy/blob/main/action.yaml) for 
 
 ## References
 
-- [Muffet](https://github.com/raviqqe/muffet)
 - [The Nu HTML validator](https://github.com/validator/validator)
+- [Muffet](https://github.com/raviqqe/muffet)
 
 ## License
 
