@@ -94,7 +94,7 @@ mod tests {
     const XHTML_NAMESPACE: &str = "http://www.w3.org/1999/xhtml";
 
     #[tokio::test]
-    async fn parse_response() {
+    async fn parse_html_response() {
         let parser = DocumentParser::new(MemoryCache::new(0));
 
         assert_eq!(
