@@ -455,7 +455,7 @@ impl WebValidator {
             let error = ItemError::XmlSyntax(error.into());
 
             futures.push((
-                Element::new("xml".into(), vec![]),
+                Element::new("#document".into(), vec![]),
                 vec![spawn(async move { Err(error) })],
             ));
         }
