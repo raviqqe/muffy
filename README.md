@@ -20,7 +20,7 @@ cargo install muffy
 
 For the full usage, see `muffy --help`.
 
-### Checking a set of websites with `muffy.toml`
+### Checking a set of websites
 
 ```sh
 muffy
