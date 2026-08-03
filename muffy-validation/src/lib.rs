@@ -932,6 +932,36 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_foreign_object() {
+            let element = create_element(
+                "foreignObject",
+                vec![],
+                vec![create_element("div", vec![], vec![])],
+            );
+
+            assert_eq!(validate_svg_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_foreign_object_child() {
+            let element = create_element(
+                "foreignObject",
+                vec![],
+                vec![create_element("title", vec![], vec![])],
+            );
+
+            assert_eq!(
+                validate_svg_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("title".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_invalid_element_name() {
             let element = create_element("invalid", vec![], vec![]);
 
