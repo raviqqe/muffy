@@ -47,10 +47,6 @@ export default defineConfig({
               label: "GitHub Action",
               link: "/usage/github-action",
             },
-            {
-              label: "Docker",
-              link: "/usage/docker",
-            },
           ],
           label: "Usage",
         },
