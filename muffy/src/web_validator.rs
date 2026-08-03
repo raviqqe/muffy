@@ -33,6 +33,7 @@ const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
+const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
 const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
@@ -449,8 +450,18 @@ impl WebValidator {
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
+        let document = self.0.document_parser.parse(response).await?;
 
-        for node in self.0.document_parser.parse(response).await?.children() {
+        for error in document.errors().unique().sorted() {
+            let error = ItemError::XmlSyntax(error.into());
+
+            futures.push((
+                Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
+                vec![spawn(async move { Err(error) })],
+            ));
+        }
+
+        for node in document.children() {
             if let Node::Element(element) = node
                 && element.namespace() != Some(SVG_NAMESPACE)
                 && let Some(config) = context.config().site(&base).validation().svg()
@@ -843,7 +854,9 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error @ (ItemError::Markup(_) | ItemError::InvalidNamespace { .. }),
+                        error @ (ItemError::Markup(_)
+                        | ItemError::InvalidNamespace { .. }
+                        | ItemError::XmlSyntax(_)),
                     ) = result
                     {
                         errors.insert(error.to_string());
@@ -2831,6 +2844,46 @@ mod tests {
                     "invalid children: p (not allowed)".into(),
                 ]
                 .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_syntax() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            concat!(
+                                r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#,
+                                r#"<svg id="two"></svg>"#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected element in end phase".into()].into()
             );
         }
 

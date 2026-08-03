@@ -12,17 +12,32 @@ use markup5ever_rcdom::NodeData;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Document {
     children: Vec<Arc<Node>>,
+    errors: Vec<String>,
 }
 
 impl Document {
     /// Creates a document.
     pub const fn new(children: Vec<Arc<Node>>) -> Self {
-        Self { children }
+        Self {
+            children,
+            errors: vec![],
+        }
     }
 
     /// Returns children.
     pub fn children(&self) -> impl Iterator<Item = &Node> {
         self.children.iter().map(Deref::deref)
+    }
+
+    /// Returns parse errors.
+    pub fn errors(&self) -> impl Iterator<Item = &str> {
+        self.errors.iter().map(String::as_str)
+    }
+
+    /// Sets parse errors.
+    pub fn set_errors(mut self, errors: Vec<String>) -> Self {
+        self.errors = errors;
+        self
     }
 
     /// Returns a base element.

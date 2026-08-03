@@ -156,6 +156,8 @@ pub enum ItemError {
     UrlParse(ParseError),
     /// A UTF-8 error.
     Utf8(Utf8Error),
+    /// An XML syntax error.
+    XmlSyntax(String),
 }
 
 impl error::Error for ItemError {}
@@ -187,6 +189,7 @@ impl Display for ItemError {
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
+            Self::XmlSyntax(message) => write!(formatter, "invalid XML: {message}"),
         }
     }
 }
@@ -247,6 +250,17 @@ mod tests {
                 }
             ),
             "namespace expected http://www.w3.org/2000/svg but got none"
+        );
+    }
+
+    #[test]
+    fn display_item_xml_syntax_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::XmlSyntax("Unexpected element in end phase".into())
+            ),
+            "invalid XML: Unexpected element in end phase"
         );
     }
 }

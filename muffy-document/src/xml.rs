@@ -15,7 +15,15 @@ pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
     parse_document(RcDom::default(), Default::default())
         .from_utf8()
         .read_from(&mut source)
-        .map(|dom| Document::from_markup5ever(&dom.document))
+        .map(|dom| {
+            Document::from_markup5ever(&dom.document).set_errors(
+                dom.errors
+                    .borrow()
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect(),
+            )
+        })
 }
 
 #[cfg(test)]
@@ -48,7 +56,10 @@ mod tests {
 
     #[test]
     fn parse_empty_string() {
-        assert_eq!(parse("").unwrap(), Document::new(vec![]));
+        assert_eq!(
+            parse("").unwrap(),
+            Document::new(vec![]).set_errors(vec!["Unexpected EOF in start phase".into()])
+        );
     }
 
     #[test]
@@ -80,6 +91,17 @@ mod tests {
                     ),
                 ],
             )])
+        );
+    }
+
+    #[test]
+    fn collect_error_on_multiple_root_elements() {
+        let document = parse("<svg/><svg/>").unwrap();
+
+        assert_eq!(document.children().count(), 1);
+        assert_eq!(
+            document.errors().collect::<Vec<_>>(),
+            vec!["Unexpected element in end phase"]
         );
     }
 
