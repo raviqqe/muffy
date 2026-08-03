@@ -16,7 +16,7 @@ use crate::{
     robot_list::RobotList,
     sitemap,
 };
-use alloc::{collections::BTreeSet, sync::Arc};
+use alloc::sync::Arc;
 use core::{iter, str};
 use futures::{Stream, StreamExt, future::try_join_all};
 use itertools::Itertools;
@@ -451,7 +451,7 @@ impl WebValidator {
         let base = Arc::new(response.url().clone());
         let document = self.0.document_parser.parse(response).await?;
 
-        for error in document.errors().collect::<BTreeSet<_>>() {
+        for error in document.errors().unique().sorted() {
             let error = ItemError::XmlSyntax(error.into());
 
             futures.push((
