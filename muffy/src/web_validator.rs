@@ -33,6 +33,7 @@ const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
+const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
 const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
@@ -455,7 +456,7 @@ impl WebValidator {
             let error = ItemError::XmlSyntax(error.into());
 
             futures.push((
-                Element::new("#document".into(), vec![]),
+                Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
                 vec![spawn(async move { Err(error) })],
             ));
         }
