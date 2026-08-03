@@ -50,6 +50,10 @@ export default defineConfig({
           ],
           label: "Usage",
         },
+        {
+          label: "Configuration",
+          link: "/configuration",
+        },
       ],
       social: [
         {
