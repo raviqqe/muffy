@@ -10,8 +10,42 @@
 
 The static website validator.
 
+## Install
+
+```sh
+cargo install muffy
+```
+
+## Usage
+
+For the full usage, see `muffy --help`.
+
+### Check a set of websites
+
+```sh
+muffy
+```
+
+### Check a website
+
+```sh
+muffy check-site https://example.com
+```
+
+### GitHub Action
+
+```yaml
+job:
+  steps:
+    # After building and/or deploying your website.
+    - uses: raviqqe/muffy@8f49f51742e2b4a4dec2be8e9db390204211ca19 # v0.3.21
+```
+
+See [`action.yaml`](https://github.com/raviqqe/muffy/blob/main/action.yaml) for more details.
+
 ## References
 
+- [The Nu HTML validator](https://github.com/validator/validator)
 - [Muffet](https://github.com/raviqqe/muffet)
 
 ## License
