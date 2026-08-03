@@ -139,6 +139,13 @@ pub enum ItemError {
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
     HttpStatus(StatusCode),
+    /// An invalid namespace.
+    InvalidNamespace {
+        /// An actual namespace.
+        actual: Option<String>,
+        /// An expected namespace.
+        expected: &'static str,
+    },
     /// An invalid scheme.
     InvalidScheme(String),
     /// A markup error.
@@ -168,6 +175,13 @@ impl Display for ItemError {
             }
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
+            Self::InvalidNamespace { actual, expected } => {
+                write!(
+                    formatter,
+                    "namespace expected {expected} but got {}",
+                    actual.as_deref().unwrap_or("none")
+                )
+            }
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
             Self::Markup(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
@@ -219,6 +233,20 @@ mod tests {
                 ItemError::Markup(MarkupError::UnknownTag("foo".into()))
             ),
             "unknown tag \"foo\""
+        );
+    }
+
+    #[test]
+    fn display_item_namespace_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::InvalidNamespace {
+                    actual: None,
+                    expected: "http://www.w3.org/2000/svg",
+                }
+            ),
+            "namespace expected http://www.w3.org/2000/svg but got none"
         );
     }
 }

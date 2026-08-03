@@ -25,26 +25,45 @@ mod tests {
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 
+    const XHTML_NAMESPACE: &str = "http://www.w3.org/1999/xhtml";
+    const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
+
+    fn element(
+        namespace: &str,
+        name: &str,
+        attributes: Vec<(&str, &str)>,
+        children: Vec<Arc<Node>>,
+    ) -> Arc<Node> {
+        Arc::new(Node::Element(
+            Element::new(
+                name.into(),
+                attributes
+                    .into_iter()
+                    .map(|(name, value)| (name.into(), value.into()))
+                    .collect(),
+                children,
+            )
+            .set_namespace(Some(namespace.into())),
+        ))
+    }
+
+    fn text(value: &str) -> Arc<Node> {
+        Arc::new(Node::Text(value.into()))
+    }
+
     #[test]
     fn parse_empty_string() {
         assert_eq!(
             parse("").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "html".to_string(),
+            Document::new(vec![element(
+                XHTML_NAMESPACE,
+                "html",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "head".to_string(),
-                        vec![],
-                        vec![]
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "body".to_string(),
-                        vec![],
-                        vec![]
-                    ))),
+                    element(XHTML_NAMESPACE, "head", vec![], vec![]),
+                    element(XHTML_NAMESPACE, "body", vec![], vec![]),
                 ],
-            )))])
+            )])
         );
     }
 
@@ -52,26 +71,20 @@ mod tests {
     fn parse_simple_html() {
         assert_eq!(
             parse("<html><body><p>Hello</p></body></html>").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "html".to_string(),
+            Document::new(vec![element(
+                XHTML_NAMESPACE,
+                "html",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "head".to_string(),
+                    element(XHTML_NAMESPACE, "head", vec![], vec![]),
+                    element(
+                        XHTML_NAMESPACE,
+                        "body",
                         vec![],
-                        vec![]
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "body".to_string(),
-                        vec![],
-                        vec![Arc::new(Node::Element(Element::new(
-                            "p".to_string(),
-                            vec![],
-                            vec![Arc::new(Node::Text("Hello".to_string()))],
-                        )))],
-                    ))),
+                        vec![element(XHTML_NAMESPACE, "p", vec![], vec![text("Hello")])],
+                    ),
                 ],
-            )))])
+            )])
         );
     }
 
@@ -79,26 +92,25 @@ mod tests {
     fn parse_with_attributes() {
         assert_eq!(
             parse("<html><body><p class=\"foo\">Hello</p></body></html>").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "html".to_string(),
+            Document::new(vec![element(
+                XHTML_NAMESPACE,
+                "html",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "head".to_string(),
+                    element(XHTML_NAMESPACE, "head", vec![], vec![]),
+                    element(
+                        XHTML_NAMESPACE,
+                        "body",
                         vec![],
-                        vec![]
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "body".to_string(),
-                        vec![],
-                        vec![Arc::new(Node::Element(Element::new(
-                            "p".to_string(),
-                            vec![("class".to_string(), "foo".to_string())],
-                            vec![Arc::new(Node::Text("Hello".to_string()))],
-                        )))],
-                    ))),
+                        vec![element(
+                            XHTML_NAMESPACE,
+                            "p",
+                            vec![("class", "foo")],
+                            vec![text("Hello")],
+                        )],
+                    ),
                 ],
-            )))])
+            )])
         );
     }
 
@@ -112,52 +124,38 @@ mod tests {
                 "</svg>"
             ))
             .unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "html".to_string(),
+            Document::new(vec![element(
+                XHTML_NAMESPACE,
+                "html",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "head".to_string(),
+                    element(XHTML_NAMESPACE, "head", vec![], vec![]),
+                    element(
+                        XHTML_NAMESPACE,
+                        "body",
                         vec![],
-                        vec![]
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "body".to_string(),
-                        vec![],
-                        vec![Arc::new(Node::Element(Element::new(
-                            "svg".to_string(),
-                            // TODO Keep namespace declarations.
-                            // vec![
-                            //     (
-                            //         "xmlns".to_string(),
-                            //         "http://www.w3.org/2000/svg".to_string()
-                            //     ),
-                            //     (
-                            //         "xlink".to_string(),
-                            //         "http://www.w3.org/1999/xlink".to_string()
-                            //     ),
-                            // ],
+                        vec![element(
+                            SVG_NAMESPACE,
+                            "svg",
                             vec![],
                             vec![
-                                Arc::new(Node::Element(Element::new(
-                                    "a".to_string(),
-                                    vec![("href".to_string(), "/foo".to_string())],
-                                    vec![Arc::new(Node::Element(Element::new(
-                                        "rect".to_string(),
-                                        vec![],
-                                        vec![]
-                                    )))],
-                                ))),
-                                Arc::new(Node::Element(Element::new(
-                                    "image".to_string(),
-                                    vec![("href".to_string(), "/bar.png".to_string())],
+                                element(
+                                    SVG_NAMESPACE,
+                                    "a",
+                                    vec![("href", "/foo")],
+                                    vec![element(SVG_NAMESPACE, "rect", vec![], vec![])],
+                                ),
+                                element(
+                                    SVG_NAMESPACE,
+                                    "image",
+                                    vec![("xlink:href", "/bar.png")],
                                     vec![],
-                                ))),
+                                ),
                             ],
-                        )))],
-                    ))),
+                        )],
+                    ),
                 ],
-            )))])
+            )])
         );
     }
 
@@ -165,26 +163,20 @@ mod tests {
     fn ignore_comments() {
         assert_eq!(
             parse("<html><body><!-- comment --><p>Hello</p></body></html>").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "html".to_string(),
+            Document::new(vec![element(
+                XHTML_NAMESPACE,
+                "html",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "head".to_string(),
+                    element(XHTML_NAMESPACE, "head", vec![], vec![]),
+                    element(
+                        XHTML_NAMESPACE,
+                        "body",
                         vec![],
-                        vec![]
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "body".to_string(),
-                        vec![],
-                        vec![Arc::new(Node::Element(Element::new(
-                            "p".to_string(),
-                            vec![],
-                            vec![Arc::new(Node::Text("Hello".to_string()))],
-                        )))],
-                    ))),
+                        vec![element(XHTML_NAMESPACE, "p", vec![], vec![text("Hello")])],
+                    ),
                 ],
-            )))])
+            )])
         );
     }
 }

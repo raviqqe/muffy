@@ -6,6 +6,7 @@ use core::ops::Deref;
 #[derive(Debug, Eq, PartialEq)]
 pub struct Element {
     name: String,
+    namespace: Option<String>,
     attributes: Vec<(String, String)>,
     children: Vec<Arc<Node>>,
 }
@@ -19,6 +20,7 @@ impl Element {
     ) -> Self {
         Self {
             name,
+            namespace: None,
             attributes,
             children,
         }
@@ -27,6 +29,17 @@ impl Element {
     /// Returns a name.
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    /// Returns a namespace.
+    pub fn namespace(&self) -> Option<&str> {
+        self.namespace.as_deref()
+    }
+
+    /// Sets a namespace.
+    pub fn set_namespace(mut self, namespace: Option<String>) -> Self {
+        self.namespace = namespace;
+        self
     }
 
     /// Returns attributes.

@@ -34,6 +34,8 @@ const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
+const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
     "og:audio",
@@ -322,8 +324,10 @@ impl WebValidator {
                 }
             }
             _ => {
-                if let Some(value) = attributes.get("href") {
-                    links.push((vec![("href", value)], vec![(value.to_string(), None)]));
+                for name in HREF_ATTRIBUTES {
+                    if let Some(value) = attributes.get(name) {
+                        links.push((vec![(*name, value)], vec![(value.to_string(), None)]));
+                    }
                 }
 
                 if let Some(value) = attributes.get("src") {
@@ -447,6 +451,25 @@ impl WebValidator {
         let base = Arc::new(response.url().clone());
 
         for node in self.0.document_parser.parse(response).await?.children() {
+            if let Node::Element(element) = node
+                && element.namespace() != Some(SVG_NAMESPACE)
+                && let Some(config) = context.config().site(&base).validation().svg()
+                && !config
+                    .ignored_elements()
+                    .iter()
+                    .any(|pattern| pattern.is_match(element.name()))
+            {
+                let error = ItemError::InvalidNamespace {
+                    actual: element.namespace().map(Into::into),
+                    expected: SVG_NAMESPACE,
+                };
+
+                futures.push((
+                    Element::new(element.name().into(), vec![]),
+                    vec![spawn(async move { Err(error) })],
+                ));
+            }
+
             self.validate_svg_element(context, &base, node, &mut futures);
         }
 
@@ -464,14 +487,21 @@ impl WebValidator {
 
         let attributes = HashMap::from_iter(element.attributes());
         let mut items = vec![];
+        let link_attributes = HREF_ATTRIBUTES
+            .iter()
+            .copied()
+            .filter(|name| attributes.contains_key(name))
+            .collect::<Vec<_>>();
 
-        if let Some(value) = attributes.get("href") {
-            items.push(spawn(self.cloned().validate_element_link(
-                context.clone(),
-                value.to_string(),
-                base.clone(),
-                None,
-            )));
+        for name in &link_attributes {
+            if let Some(value) = attributes.get(name) {
+                items.push(spawn(self.cloned().validate_element_link(
+                    context.clone(),
+                    value.to_string(),
+                    base.clone(),
+                    None,
+                )));
+            }
         }
 
         let validation_result = if let Some(config) = context.config().site(base).validation().svg()
@@ -494,7 +524,7 @@ impl WebValidator {
                 Self::create_output_element(
                     element,
                     &attributes,
-                    attributes.contains_key("href").then_some("href"),
+                    link_attributes.iter().copied(),
                     &validation_result,
                 ),
                 items,
@@ -812,7 +842,10 @@ mod tests {
         while let Some(document) = documents.next().await {
             for element in document.unwrap().elements() {
                 for result in element.results() {
-                    if let Err(ItemError::Markup(error)) = result {
+                    if let Err(
+                        error @ (ItemError::Markup(_) | ItemError::InvalidNamespace { .. }),
+                    ) = result
+                    {
                         errors.insert(error.to_string());
                     }
                 }
@@ -2800,6 +2833,79 @@ mod tests {
                 ]
                 .into()
             );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_namespace() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<svg><circle r="1" /></svg>"#.as_bytes().to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["namespace expected http://www.w3.org/2000/svg but got none".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_namespace_of_ignored_element() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<svg><circle r="1" /></svg>"#.as_bytes().to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_validation(crate::ValidationConfig::default().set_svg(
+                    Some(MarkupConfig::new(
+                        vec![],
+                        vec![Regex::new("^svg$").unwrap()],
+                    )),
+                )),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(collect_errors(&mut documents).await, BTreeSet::new());
         }
 
         #[test]
