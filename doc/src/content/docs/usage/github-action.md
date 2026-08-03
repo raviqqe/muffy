@@ -3,7 +3,7 @@ title: GitHub Action
 description: How to run Muffy as a GitHub Action
 ---
 
-The [`raviqqe/muffy` action](https://github.com/raviqqe/muffy/blob/main/action.yaml) runs the `muffy check` command in a repository. It runs Muffy in a Docker container with host networking so that it can check websites served on `localhost` as well as ones already deployed.
+The [`raviqqe/muffy` action](https://github.com/raviqqe/muffy/blob/main/action.yaml) runs the `muffy check` command in a repository. It can check websites served on `localhost` as well as ones already deployed.
 
 ## Usage
 
@@ -14,9 +14,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       # Build and/or deploy your website here.
-      - uses: raviqqe/muffy@8d7defea09ad275316deb3153be113b3edd6a33e # v0.4.0
+      - uses: raviqqe/muffy@v0.4.0
 ```
 
 ## Inputs
