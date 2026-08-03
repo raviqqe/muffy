@@ -101,7 +101,6 @@ Markup validation is experimental. HTML and SVG documents are validated only if 
 | ------ | ---------------------------------------------------- | ------- |
 | `html` | [Markup options](#markup-options) for HTML documents | None    |
 | `svg`  | [Markup options](#markup-options) for SVG documents  | None    |
-| `css`  | Whether to validate CSS documents.                   | `false` |
 
 #### Markup options
 
