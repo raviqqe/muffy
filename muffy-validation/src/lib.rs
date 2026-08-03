@@ -983,6 +983,50 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_editor_element() {
+            let element =
+                create_element("sodipodi:namedview", vec![("inkscape:zoom", "1")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_editor_attributes() {
+            let element = create_element(
+                "g",
+                vec![
+                    ("inkscape:groupmode", "layer"),
+                    ("sodipodi:insensitive", "true"),
+                ],
+                vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_metadata_child() {
+            let element = create_element(
+                "metadata",
+                vec![],
+                vec![create_element("rdf:RDF", vec![], vec![])],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_metadata_content() {
+            let element = create_element(
+                "rdf:RDF",
+                vec![],
+                vec![create_element("cc:Work", vec![("rdf:about", "")], vec![])],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_invalid_element_name() {
             let element = create_element("invalid", vec![], vec![]);
 

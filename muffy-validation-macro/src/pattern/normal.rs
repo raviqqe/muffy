@@ -88,24 +88,40 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
             }
         }
         Pattern::Many0(operand) | Pattern::Many1(operand) => {
-            let variants = normalize_pattern(operand)?;
+            let many1 = matches!(pattern, Pattern::Many1(_));
+            let mut attributes = vec![];
+            let mut contents = vec![];
 
-            if !variants
-                .iter()
-                .all(|(attribute, _)| *attribute == Pattern::Empty)
-            {
-                return Err(MacroError::RncPattern("repeated attribute pattern"));
+            for (attribute, content) in normalize_pattern(operand)? {
+                if attribute != Pattern::Empty {
+                    attributes.push(attribute);
+                }
+
+                if content != Pattern::Empty {
+                    contents.push(content);
+                }
             }
 
+            let any_attributes = !attributes.is_empty();
+            let any_contents = !contents.is_empty();
+
+            // Repeated attribute patterns are optional except attribute-only
+            // patterns repeated at least once.
             vec![(
-                Pattern::Empty,
-                if matches!(pattern, Pattern::Many1(_)) {
-                    Pattern::many1
+                if !any_attributes {
+                    Pattern::Empty
+                } else if many1 && !any_contents {
+                    Pattern::choice(attributes)
                 } else {
-                    Pattern::many0
-                }(Pattern::choice(
-                    variants.into_iter().map(|(_, content)| content),
-                )),
+                    Pattern::optional(Pattern::choice(attributes))
+                },
+                if !any_contents {
+                    Pattern::Empty
+                } else if many1 && !any_attributes {
+                    Pattern::many1(Pattern::choice(contents))
+                } else {
+                    Pattern::many0(Pattern::choice(contents))
+                },
             )]
         }
     })
@@ -179,14 +195,33 @@ mod tests {
     }
 
     #[test]
-    fn fail_on_attribute_repetition() {
-        assert!(matches!(
+    fn require_one_of_repeated_attributes() {
+        assert_eq!(
             normalize_pattern(&Pattern::many1(Pattern::choice([
                 attribute("foo"),
                 attribute("bar")
-            ]))),
-            Err(MacroError::RncPattern(_))
-        ));
+            ])))
+            .unwrap(),
+            vec![(
+                Pattern::choice([attribute("foo"), attribute("bar")]),
+                Pattern::Empty
+            )]
+        );
+    }
+
+    #[test]
+    fn split_repeated_attribute_and_element() {
+        assert_eq!(
+            normalize_pattern(&Pattern::many0(Pattern::choice([
+                attribute("foo"),
+                element("bar")
+            ])))
+            .unwrap(),
+            vec![(
+                Pattern::optional(attribute("foo")),
+                Pattern::many0(element("bar"))
+            )]
+        );
     }
 
     #[test]

@@ -186,11 +186,11 @@ fn classify_attributes<'a>(
             .iter()
             .any(|pattern| pattern.is_match(name));
 
-        if let Ok(index) = rule.attributes.binary_search(&name) {
+        if let Some(name) = find_name(rule.attributes, name) {
             if ignored {
-                exempt_attributes.push(rule.attributes[index]);
+                exempt_attributes.push(name);
             } else {
-                attributes.push(rule.attributes[index]);
+                attributes.push(name);
             }
         } else if !ignored {
             disallowed_attributes.push(name);
@@ -198,7 +198,9 @@ fn classify_attributes<'a>(
     }
 
     attributes.sort();
+    attributes.dedup();
     exempt_attributes.sort();
+    exempt_attributes.dedup();
 
     (attributes, exempt_attributes, disallowed_attributes)
 }
@@ -226,14 +228,28 @@ fn classify_children<'a>(
             .iter()
             .any(|pattern| pattern.is_match(name));
 
-        if let Ok(index) = rule.children.binary_search(&name) {
-            children.push((rule.children[index], exempt));
+        if let Some(name) = find_name(rule.children, name) {
+            children.push((name, exempt));
         } else if !exempt {
             disallowed_children.push(name);
         }
     }
 
     (children, disallowed_children)
+}
+
+// Wildcard names in rules end with an asterisk and match names by their
+// prefixes.
+fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str> {
+    if let Ok(index) = names.binary_search(&name) {
+        Some(names[index])
+    } else {
+        names.iter().copied().find(|pattern| {
+            pattern
+                .strip_suffix('*')
+                .is_some_and(|prefix| name.starts_with(prefix))
+        })
+    }
 }
 
 fn evaluate_variant(
