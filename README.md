@@ -6,8 +6,6 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/raviqqe/muffy?style=flat-square)](https://hub.docker.com/r/raviqqe/muffy)
 [![License](https://img.shields.io/github/license/raviqqe/muffy.svg?style=flat-square)](https://github.com/raviqqe/muffy/blob/main/LICENSE)
 
-> 🚧 Under very early development! Stay tuned! 🚧
-
 The static website validator.
 
 ## Install
