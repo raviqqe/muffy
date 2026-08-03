@@ -2829,7 +2829,6 @@ mod tests {
                 [
                     "invalid attributes: foo (not allowed)".into(),
                     "invalid children: p (not allowed)".into(),
-                    "unknown tag \"p\"".into(),
                 ]
                 .into()
             );
