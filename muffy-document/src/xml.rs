@@ -25,6 +25,27 @@ mod tests {
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 
+    const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
+
+    fn element(
+        namespace: Option<&str>,
+        name: &str,
+        attributes: Vec<(&str, &str)>,
+        children: Vec<Arc<Node>>,
+    ) -> Arc<Node> {
+        Arc::new(Node::Element(
+            Element::new(
+                name.into(),
+                attributes
+                    .into_iter()
+                    .map(|(name, value)| (name.into(), value.into()))
+                    .collect(),
+                children,
+            )
+            .set_namespace(namespace.map(Into::into)),
+        ))
+    }
+
     #[test]
     fn parse_empty_string() {
         assert_eq!(parse("").unwrap(), Document::new(vec![]));
@@ -40,59 +61,79 @@ mod tests {
                 "</svg>"
             ))
             .unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "svg".to_string(),
-                // XML parsers consume namespace declarations.
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
                 vec![],
                 vec![
-                    Arc::new(Node::Element(Element::new(
-                        "a".to_string(),
-                        vec![("href".to_string(), "/foo".to_string())],
-                        vec![Arc::new(Node::Element(Element::new(
-                            "rect".to_string(),
-                            vec![],
-                            vec![]
-                        )))],
-                    ))),
-                    Arc::new(Node::Element(Element::new(
-                        "image".to_string(),
-                        vec![("xlink:href".to_string(), "/bar.png".to_string())],
+                    element(
+                        Some(SVG_NAMESPACE),
+                        "a",
+                        vec![("href", "/foo")],
+                        vec![element(Some(SVG_NAMESPACE), "rect", vec![], vec![])],
+                    ),
+                    element(
+                        Some(SVG_NAMESPACE),
+                        "image",
+                        vec![("xlink:href", "/bar.png")],
                         vec![],
-                    ))),
+                    ),
                 ],
-            )))])
+            )])
         );
     }
 
     #[test]
-    fn preserve_element_name_case() {
+    fn parse_element_without_namespace() {
         assert_eq!(
             parse("<svg><foreignObject/></svg>").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "svg".to_string(),
+            Document::new(vec![element(
+                None,
+                "svg",
                 vec![],
-                vec![Arc::new(Node::Element(Element::new(
-                    "foreignObject".to_string(),
+                vec![element(None, "foreignObject", vec![], vec![])],
+            )])
+        );
+    }
+
+    #[test]
+    fn parse_prefixed_element() {
+        assert_eq!(
+            parse(concat!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg">"#,
+                r#"<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>"#,
+                "</svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
+                vec![],
+                vec![element(
+                    Some("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
+                    "rdf:RDF",
                     vec![],
-                    vec![]
-                )))],
-            )))])
+                    vec![],
+                )],
+            )])
         );
     }
 
     #[test]
     fn keep_html_element_in_svg_element() {
         assert_eq!(
-            parse("<svg><p>foo</p></svg>").unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "svg".to_string(),
+            parse(r#"<svg xmlns="http://www.w3.org/2000/svg"><p>foo</p></svg>"#).unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
                 vec![],
-                vec![Arc::new(Node::Element(Element::new(
-                    "p".to_string(),
+                vec![element(
+                    Some(SVG_NAMESPACE),
+                    "p",
                     vec![],
-                    vec![Arc::new(Node::Text("foo".to_string()))],
-                )))],
-            )))])
+                    vec![Arc::new(Node::Text("foo".into()))],
+                )],
+            )])
         );
     }
 
@@ -100,11 +141,7 @@ mod tests {
     fn ignore_processing_instructions() {
         assert_eq!(
             parse(r#"<?xml version="1.0"?><svg/>"#).unwrap(),
-            Document::new(vec![Arc::new(Node::Element(Element::new(
-                "svg".to_string(),
-                vec![],
-                vec![],
-            )))])
+            Document::new(vec![element(None, "svg", vec![], vec![])])
         );
     }
 }
