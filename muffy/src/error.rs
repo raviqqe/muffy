@@ -235,4 +235,18 @@ mod tests {
             "unknown tag \"foo\""
         );
     }
+
+    #[test]
+    fn display_item_namespace_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::NamespaceInvalid {
+                    actual: None,
+                    expected: "http://www.w3.org/2000/svg",
+                }
+            ),
+            "namespace expected http://www.w3.org/2000/svg but got none"
+        );
+    }
 }

@@ -2835,6 +2835,41 @@ mod tests {
             );
         }
 
+        #[tokio::test]
+        async fn validate_invalid_svg_namespace() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<svg><circle r="1" /></svg>"#.as_bytes().to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["namespace expected http://www.w3.org/2000/svg but got none".into()].into()
+            );
+        }
+
         #[test]
         fn validate_svg_document_type() {
             assert_eq!(
