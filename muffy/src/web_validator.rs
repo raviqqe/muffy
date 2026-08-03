@@ -853,8 +853,7 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error
-                        @ (ItemError::Markup(_)
+                        error @ (ItemError::Markup(_)
                         | ItemError::InvalidNamespace { .. }
                         | ItemError::XmlSyntax(_)),
                     ) = result
@@ -2844,6 +2843,46 @@ mod tests {
                     "invalid children: p (not allowed)".into(),
                 ]
                 .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_syntax() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            concat!(
+                                r#"<svg xmlns="http://www.w3.org/2000/svg"></svg>"#,
+                                r#"<svg id="two"></svg>"#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected element in end phase".into()].into()
             );
         }
 

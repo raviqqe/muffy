@@ -16,8 +16,13 @@ pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
         .from_utf8()
         .read_from(&mut source)
         .map(|dom| {
-            Document::from_markup5ever(&dom.document)
-                .set_errors(dom.errors.borrow().iter().map(ToString::to_string).collect())
+            Document::from_markup5ever(&dom.document).set_errors(
+                dom.errors
+                    .borrow()
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect(),
+            )
         })
 }
 
