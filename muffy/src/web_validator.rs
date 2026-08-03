@@ -459,7 +459,7 @@ impl WebValidator {
                     .iter()
                     .any(|pattern| pattern.is_match(element.name()))
             {
-                let error = ItemError::NamespaceInvalid {
+                let error = ItemError::InvalidNamespace {
                     actual: element.namespace().map(Into::into),
                     expected: SVG_NAMESPACE,
                 };
@@ -843,7 +843,7 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error @ (ItemError::Markup(_) | ItemError::NamespaceInvalid { .. }),
+                        error @ (ItemError::Markup(_) | ItemError::InvalidNamespace { .. }),
                     ) = result
                     {
                         errors.insert(error.to_string());

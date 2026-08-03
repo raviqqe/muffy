@@ -139,17 +139,17 @@ pub enum ItemError {
     HttpClient(HttpClientError),
     /// An error status code in an HTTP response.
     HttpStatus(StatusCode),
-    /// An invalid scheme.
-    InvalidScheme(String),
-    /// A markup error.
-    Markup(MarkupError),
     /// An invalid namespace.
-    NamespaceInvalid {
+    InvalidNamespace {
         /// An actual namespace.
         actual: Option<String>,
         /// An expected namespace.
         expected: &'static str,
     },
+    /// An invalid scheme.
+    InvalidScheme(String),
+    /// A markup error.
+    Markup(MarkupError),
     /// A sitemap parse error.
     Sitemap(SitemapError),
     /// A URL parse error.
@@ -175,15 +175,15 @@ impl Display for ItemError {
             }
             Self::HttpClient(error) => write!(formatter, "{error}"),
             Self::HttpStatus(status) => write!(formatter, "invalid status {status}"),
-            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
-            Self::Markup(error) => write!(formatter, "{error}"),
-            Self::NamespaceInvalid { actual, expected } => {
+            Self::InvalidNamespace { actual, expected } => {
                 write!(
                     formatter,
                     "namespace expected {expected} but got {}",
                     actual.as_deref().unwrap_or("none")
                 )
             }
+            Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
+            Self::Markup(error) => write!(formatter, "{error}"),
             Self::Sitemap(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
@@ -241,7 +241,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{}",
-                ItemError::NamespaceInvalid {
+                ItemError::InvalidNamespace {
                     actual: None,
                     expected: "http://www.w3.org/2000/svg",
                 }
