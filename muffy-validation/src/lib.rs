@@ -15,11 +15,21 @@ use self::{
     variant::Variant,
 };
 use muffy_document::document::Element;
-use muffy_validation_macro::{html, svg};
+use muffy_validation_macro::html;
+use regex::Regex;
 
 html! {}
 
-svg! {}
+/// Validates an SVG element.
+///
+/// The HTML and SVG schemas are composed into one document schema.
+pub fn validate_svg_element(
+    element: &Element,
+    ignored_attributes: &[Regex],
+    ignored_elements: &[Regex],
+) -> Result<(), MarkupError> {
+    validate_html_element(element, ignored_attributes, ignored_elements)
+}
 
 #[cfg(test)]
 mod tests {
@@ -185,6 +195,14 @@ mod tests {
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
+
+        #[test]
+        fn validate_valid_svg_child() {
+            let element =
+                create_element("div", vec![], vec![create_element("svg", vec![], vec![])]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
     }
 
     mod p {
@@ -266,6 +284,13 @@ mod tests {
         #[test]
         fn validate_valid_link() {
             let element = create_element("a", vec![("href", "/")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_prefixed_link() {
+            let element = create_element("a", vec![("xlink:href", "/")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
