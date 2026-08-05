@@ -80,12 +80,12 @@ impl Config {
         self.ignored_links.iter()
     }
 
-    /// Returns websites.
+    /// Returns sites.
     pub const fn sites(&self) -> &HashMap<String, Vec<(String, Arc<SiteConfig>)>> {
         &self.sites
     }
 
-    /// Gets a site config
+    /// Returns a site.
     pub fn site(&self, url: &Url) -> &SiteConfig {
         self.get_site(url).unwrap_or(&self.default)
     }
