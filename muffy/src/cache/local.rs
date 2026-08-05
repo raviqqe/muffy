@@ -4,7 +4,7 @@ use async_trait::async_trait;
 /// A local cache.
 #[async_trait]
 pub trait LocalCache<T: Clone>: Send + Sync {
-    /// Gets a value.
+    /// Returns a value.
     async fn get_with<'a>(
         &self,
         key: String,

@@ -5,7 +5,7 @@ use async_trait::async_trait;
 /// A global cache.
 #[async_trait]
 pub trait GlobalCache<T: Clone>: Send + Sync {
-    /// Gets a value.
+    /// Returns a value.
     async fn get(&self, key: &str) -> Result<Option<T>, CacheError>;
 
     /// Sets a value.
