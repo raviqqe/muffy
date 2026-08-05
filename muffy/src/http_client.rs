@@ -277,7 +277,6 @@ impl HttpClient {
 
     async fn get_once(&self, request: &Request) -> Result<Response, HttpClientError> {
         let start = self.timer.now();
-        // TODO Use a custom timeout implementation that would be reliable on CI.
         let response = timeout(request.timeout(), self.client.get(request.as_bare())).await??;
         let duration = self.timer.now().duration_since(start);
 
@@ -1362,7 +1361,46 @@ mod tests {
         assert!(cache.get(url.as_str()).await.unwrap().unwrap().is_err());
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
+    async fn miss_timeout() {
+        let url = Url::parse("https://foo.com").unwrap();
+        let response = BareResponse {
+            url: url.clone(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (url.as_str().into(), Ok(response.clone())),
+                    ]
+                    .into_iter()
+                    .collect(),
+                )
+                .set_delay(Duration::from_millis(50)),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+            )
+            .get(
+                &Request::new(url, Default::default())
+                    .set_timeout(Duration::from_millis(100).into())
+            )
+            .await
+            .unwrap(),
+            Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test(start_paused = true)]
     async fn hit_timeout() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
@@ -1372,7 +1410,6 @@ mod tests {
             body: vec![],
         };
 
-        // TODO Use a fake timer.
         let result = HttpClient::new(
             StubHttpClient::new(
                 [
