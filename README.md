@@ -11,12 +11,11 @@ The static website validator.
 ## Features
 
 - Recursive link checking of all pages in websites
-- Experimental markup validation of HTML, SVG, and MathML documents based on schemas of [the Nu HTML validator](https://github.com/validator/validator)
+- Experimental markup validation of HTML, SVG, and MathML documents
 - Checks of multiple websites with a single configuration file
 - Persistent response caching with configurable cache ages and stale-while-revalidate periods
 - Concurrency and rate limits, and retries with exponential backoff
 - `robots.txt` and sitemap support
-- Text and JSON output formats
 
 ## Install
 
