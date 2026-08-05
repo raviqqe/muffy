@@ -8,8 +8,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum CacheError {
     Bitcode(Arc<str>),
-    Fjall(Arc<str>),
-    Sled(Arc<str>),
+    Cache(Arc<str>),
 }
 
 impl Error for CacheError {}
@@ -17,9 +16,7 @@ impl Error for CacheError {}
 impl Display for CacheError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Bitcode(error) => write!(formatter, "{error}"),
-            Self::Fjall(error) => write!(formatter, "{error}"),
-            Self::Sled(error) => write!(formatter, "{error}"),
+            Self::Bitcode(error) | Self::Cache(error) => write!(formatter, "{error}"),
         }
     }
 }
@@ -32,12 +29,12 @@ impl From<bitcode::Error> for CacheError {
 
 impl From<fjall::Error> for CacheError {
     fn from(error: fjall::Error) -> Self {
-        Self::Fjall(error.to_string().into())
+        Self::Cache(error.to_string().into())
     }
 }
 
 impl From<sled::Error> for CacheError {
     fn from(error: sled::Error) -> Self {
-        Self::Sled(error.to_string().into())
+        Self::Cache(error.to_string().into())
     }
 }
