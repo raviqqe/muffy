@@ -17,8 +17,13 @@ use crate::{
     sitemap,
 };
 use alloc::sync::Arc;
-use core::{iter, str};
+use core::{iter, str, time::Duration};
+use data_url::DataUrl;
 use futures::{Stream, StreamExt, future::try_join_all};
+use http::{
+    HeaderValue, StatusCode,
+    header::{CONTENT_TYPE, HeaderMap},
+};
 use itertools::Itertools;
 use muffy_document::document::{self, Node};
 use muffy_validation::MarkupError;
@@ -32,7 +37,9 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, ItemError>>>);
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
+const DATA_SCHEME: &str = "data";
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
+const SVG_MEDIA_TYPE: &str = "image/svg+xml";
 const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
@@ -228,7 +235,9 @@ impl WebValidator {
     ) -> Result<ItemOutput, ItemError> {
         let url = base.join(&url)?;
 
-        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
+        if url.scheme() == DATA_SCHEME {
+            self.validate_data_link(context, url).await
+        } else if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
         } else if context.config().site(&url).scheme().accepted(url.scheme()) {
             self.validate_link(context, url.to_string(), document_type)
@@ -242,6 +251,64 @@ impl WebValidator {
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
+    }
+
+    async fn validate_data_link(
+        self,
+        context: Arc<Context>,
+        url: Url,
+    ) -> Result<ItemOutput, ItemError> {
+        if context
+            .config()
+            .ignored_links()
+            .any(|pattern| pattern.is_match(url.as_str()))
+        {
+            return Ok(ItemOutput::new());
+        }
+
+        let data_url = DataUrl::process(url.as_str())?;
+
+        if !data_url.mime_type().matches("image", "svg+xml") {
+            return Ok(ItemOutput::new());
+        }
+
+        let mut document_url = url.clone();
+        document_url.set_fragment(None);
+
+        let response = Arc::new(Response::new(
+            document_url,
+            StatusCode::OK,
+            HeaderMap::from_iter([(CONTENT_TYPE, HeaderValue::from_static(SVG_MEDIA_TYPE))]),
+            data_url.decode_to_vec()?.0,
+            Duration::default(),
+        ));
+
+        if let Some(fragment) = url.fragment()
+            && !context.config().site(&url).fragments_ignored()
+            && !self.has_element(&response, fragment).await?
+        {
+            return Err(ItemError::ElementNotFound(fragment.into()));
+        }
+
+        if context.insert_document(response.url().to_string()).await {
+            let handle = spawn({
+                let context = context.clone();
+                let response = response.clone();
+
+                async move {
+                    self.validate_document(context, response, DocumentType::Svg)
+                        .await
+                }
+            });
+
+            context
+                .job_sender()
+                .send(Box::new(async move { handle.await? }))
+                .await
+                .unwrap();
+        }
+
+        Ok(ItemOutput::new())
     }
 
     async fn validate_html(
