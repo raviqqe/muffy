@@ -15,6 +15,7 @@ use muffy::{
     WebValidator,
 };
 use regex::Regex;
+use rlimit::increase_nofile_limit;
 use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
@@ -162,6 +163,8 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Box<dyn Error>> {
+    increase_nofile_limit(u64::MAX)?;
+
     let arguments = Arguments::parse();
     let format = arguments.format;
     let verbose = arguments.verbose;
