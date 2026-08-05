@@ -15,7 +15,7 @@ use muffy::{
     WebValidator,
 };
 use regex::Regex;
-use rlimit::increase_nofile_limit;
+use rlimit::{Resource, getrlimit, increase_nofile_limit};
 use std::{
     env::{current_dir, temp_dir},
     path::PathBuf,
@@ -55,7 +55,7 @@ struct Arguments {
     #[arg(long, default_value = "text", global = true)]
     format: RenderFormat,
     /// Set an open file limit capped at a hard limit of an operating system.
-    #[arg(long, default_value_t = u64::MAX, global = true)]
+    #[arg(long, default_value_t = default_open_file_limit(), global = true)]
     open_file_limit: u64,
     /// Be verbose.
     #[arg(long, global = true)]
@@ -153,6 +153,12 @@ enum CacheCommand {
     Clean,
     /// Shows the cache directory path.
     Path,
+}
+
+fn default_open_file_limit() -> u64 {
+    getrlimit(Resource::NOFILE)
+        .map(|(_, hard)| hard)
+        .unwrap_or(u64::MAX)
 }
 
 #[tokio::main]
@@ -435,7 +441,10 @@ mod tests {
 
     #[test]
     fn parse_default_open_file_limit_argument() {
-        assert_eq!(Arguments::parse_from(["command"]).open_file_limit, u64::MAX);
+        assert_eq!(
+            Arguments::parse_from(["command"]).open_file_limit,
+            default_open_file_limit()
+        );
     }
 
     #[test]
