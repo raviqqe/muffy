@@ -17,8 +17,13 @@ use crate::{
     sitemap,
 };
 use alloc::sync::Arc;
-use core::{iter, str};
+use core::{iter, str, time::Duration};
+use data_url::DataUrl;
 use futures::{Stream, StreamExt, future::try_join_all};
+use http::{
+    HeaderValue, StatusCode,
+    header::{CONTENT_TYPE, HeaderMap},
+};
 use itertools::Itertools;
 use muffy_document::document::{self, Node};
 use muffy_validation::MarkupError;
@@ -32,7 +37,9 @@ type ElementFuture = (Element, Vec<JoinHandle<Result<ItemOutput, ItemError>>>);
 const JOB_CAPACITY: usize = 1 << 16;
 const JOB_COMPLETION_BUFFER: usize = 1 << 8;
 
+const DATA_SCHEME: &str = "data";
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
+const SVG_MEDIA_TYPE: &str = "image/svg+xml";
 const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
@@ -180,7 +187,9 @@ impl WebValidator {
                 let response = response.clone();
 
                 async move {
-                    self.validate_document(context, response, document_type)
+                    let site = Arc::new(response.url().clone());
+
+                    self.validate_document(context, response, site, document_type)
                         .await
                 }
             });
@@ -199,13 +208,14 @@ impl WebValidator {
         &self,
         context: Arc<Context>,
         response: Arc<Response>,
+        site: Arc<Url>,
         document_type: DocumentType,
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response),
-            DocumentType::Svg => self.validate_svg(&context, &response).await?,
+            DocumentType::Svg => self.validate_svg(&context, &response, &site).await?,
         };
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
@@ -224,11 +234,14 @@ impl WebValidator {
         context: Arc<Context>,
         url: String,
         base: Arc<Url>,
+        site: Arc<Url>,
         document_type: Option<DocumentType>,
     ) -> Result<ItemOutput, ItemError> {
         let url = base.join(&url)?;
 
-        if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
+        if url.scheme() == DATA_SCHEME {
+            self.validate_data_link(context, url, site).await
+        } else if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
         } else if context.config().site(&url).scheme().accepted(url.scheme()) {
             self.validate_link(context, url.to_string(), document_type)
@@ -242,6 +255,65 @@ impl WebValidator {
         } else {
             Err(ItemError::InvalidScheme(url.scheme().into()))
         }
+    }
+
+    async fn validate_data_link(
+        self,
+        context: Arc<Context>,
+        url: Url,
+        site: Arc<Url>,
+    ) -> Result<ItemOutput, ItemError> {
+        if context
+            .config()
+            .ignored_links()
+            .any(|pattern| pattern.is_match(url.as_str()))
+        {
+            return Ok(ItemOutput::new());
+        }
+
+        let data_url = DataUrl::process(url.as_str())?;
+
+        if !data_url.mime_type().matches("image", "svg+xml") {
+            return Ok(ItemOutput::new());
+        }
+
+        let mut document_url = url.clone();
+        document_url.set_fragment(None);
+
+        let response = Arc::new(Response::new(
+            document_url,
+            StatusCode::OK,
+            HeaderMap::from_iter([(CONTENT_TYPE, HeaderValue::from_static(SVG_MEDIA_TYPE))]),
+            data_url.decode_to_vec()?.0,
+            Duration::default(),
+        ));
+
+        if let Some(fragment) = url.fragment()
+            && !context.config().site(&site).fragments_ignored()
+            && !self.has_element(&response, fragment).await?
+        {
+            return Err(ItemError::ElementNotFound(fragment.into()));
+        }
+
+        if context.insert_document(response.url().to_string()).await {
+            let handle = spawn({
+                let context = context.clone();
+                let response = response.clone();
+
+                async move {
+                    self.validate_document(context, response, site, DocumentType::Svg)
+                        .await
+                }
+            });
+
+            context
+                .job_sender()
+                .send(Box::new(async move { handle.await? }))
+                .await
+                .unwrap();
+        }
+
+        Ok(ItemOutput::new())
     }
 
     async fn validate_html(
@@ -365,6 +437,7 @@ impl WebValidator {
                         context.clone(),
                         link.to_string(),
                         base.clone(),
+                        base.clone(),
                         *document_type,
                     ))
                 })
@@ -447,6 +520,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         response: &Arc<Response>,
+        site: &Arc<Url>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
@@ -464,7 +538,7 @@ impl WebValidator {
         for node in document.children() {
             if let Node::Element(element) = node
                 && element.namespace() != Some(SVG_NAMESPACE)
-                && let Some(config) = context.config().site(&base).validation().svg()
+                && let Some(config) = context.config().site(site).validation().svg()
                 && !config
                     .ignored_elements()
                     .iter()
@@ -481,7 +555,7 @@ impl WebValidator {
                 ));
             }
 
-            self.validate_svg_element(context, &base, node, &mut futures);
+            self.validate_svg_element(context, &base, site, node, &mut futures);
         }
 
         Ok(futures)
@@ -491,6 +565,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         base: &Arc<Url>,
+        site: &Arc<Url>,
         node: &Node,
         futures: &mut Vec<ElementFuture>,
     ) {
@@ -510,12 +585,13 @@ impl WebValidator {
                     context.clone(),
                     value.to_string(),
                     base.clone(),
+                    site.clone(),
                     None,
                 )));
             }
         }
 
-        let validation_result = if let Some(config) = context.config().site(base).validation().svg()
+        let validation_result = if let Some(config) = context.config().site(site).validation().svg()
         {
             muffy_validation::validate_html_element(
                 element,
@@ -543,7 +619,7 @@ impl WebValidator {
         }
 
         for node in element.children() {
-            self.validate_svg_element(context, base, node, futures);
+            self.validate_svg_element(context, base, site, node, futures);
         }
     }
 
@@ -3002,6 +3078,702 @@ mod tests {
                     ..
                 })
             ));
+        }
+    }
+
+    mod data {
+        use super::*;
+        use crate::http_client::{BareResponse, HttpClientError};
+        use pretty_assertions::assert_eq;
+
+        fn build_page_response(body: &str) -> (String, Result<BareResponse, HttpClientError>) {
+            build_stub_response(
+                "https://foo.com",
+                StatusCode::OK,
+                HeaderMap::from_iter([(
+                    HeaderName::from_static("content-type"),
+                    HeaderValue::from_static("text/html"),
+                )]),
+                body.as_bytes().to_vec(),
+            )
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_base64_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4="/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg_with_media_type_parameter() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg_with_uppercase_media_type() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:IMAGE/SVG+XML,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg_in_src_attribute() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>">"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg_once() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(concat!(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                        )),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(2, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_link_in_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><a href='https://foo.com/bar'/></svg>"/>"#,
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(4, 0), Metrics::new(2, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_fragment_for_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><symbol id='icon'/></svg>#icon"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_fragment_in_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><a href='%23icon'/><symbol id='icon'/></svg>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(2, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_valid_data_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' role='img' aria-label='picture'><title>foo</title><circle cx='1' cy='1' r='1'/></svg>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_data_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><foo/></svg>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid children: foo (not allowed)".into(),
+                    "unknown tag \"foo\"".into(),
+                ]
+                .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_ignored_element_in_data_svg() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><foo/></svg>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_validation(
+                    crate::ValidationConfig::default().set_svg(Some(MarkupConfig::new(
+                        vec![],
+                        vec![Regex::new("^foo$").unwrap()],
+                    ))),
+                ),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_nested_data_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(concat!(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>"#,
+                            "<image href='data:image/svg+xml;base64,",
+                            "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxmb28vPjwvc3ZnPg=='/>",
+                            r#"</svg>"/>"#,
+                        )),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid children: foo (not allowed)".into(),
+                    "unknown tag \"foo\"".into(),
+                ]
+                .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_data_svg_syntax() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/><svg/>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected element in end phase".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_empty_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:image/svg+xml,"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected EOF in start phase".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_missing_fragment_for_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><symbol id='icon'/></svg>#foo"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_ignored_fragment_for_data_svg() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>#foo"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_fragments_ignored(true),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn skip_non_svg_data_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:image/png;base64,a"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn skip_plain_text_data_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:text/plain,<svg"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn skip_ignored_data_link() {
+            let url = Url::parse("https://foo.com").unwrap();
+            let mut documents = WebValidator::new(
+                HttpClient::new(
+                    StubHttpClient::new(
+                        [
+                            build_stub_response(
+                                "https://foo.com/robots.txt",
+                                StatusCode::OK,
+                                Default::default(),
+                                Default::default(),
+                            ),
+                            build_page_response(r#"<a href="data:image/svg+xml"/>"#),
+                        ]
+                        .into_iter()
+                        .collect(),
+                    ),
+                    StubTimer::new(),
+                    Box::new(MokaCache::new(0)),
+                ),
+                DocumentParser::new(MokaCache::new(0)),
+            )
+            .validate(
+                &Config::new(
+                    vec![url.to_string()],
+                    Default::default(),
+                    [(
+                        url.host_str().unwrap_or_default().into(),
+                        [(
+                            "".into(),
+                            SiteConfig::default()
+                                .set_recursive(true)
+                                .set_max_redirects(1 << 32)
+                                .into(),
+                        )]
+                        .into(),
+                    )]
+                    .into(),
+                )
+                .set_ignored_links(vec![Regex::new("^data:").unwrap()]),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_invalid_data_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:image/svg+xml"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_invalid_base64_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:image/svg+xml;base64,a"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
         }
     }
 

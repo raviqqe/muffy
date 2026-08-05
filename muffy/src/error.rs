@@ -7,6 +7,7 @@ use core::{
     fmt::{self, Display, Formatter},
     str::Utf8Error,
 };
+use data_url::{DataUrlError, forgiving_base64::InvalidBase64};
 use http::StatusCode;
 use muffy_validation::MarkupError;
 use serde::{Serialize, Serializer};
@@ -115,6 +116,8 @@ impl From<Utf8Error> for Error {
 /// An item error.
 #[derive(Debug)]
 pub enum ItemError {
+    /// An invalid base64 encoding.
+    Base64(InvalidBase64),
     /// An invalid content type.
     ContentTypeInvalid {
         /// An actual content type.
@@ -122,6 +125,8 @@ pub enum ItemError {
         /// An expected content type.
         expected: &'static str,
     },
+    /// A data URL error.
+    DataUrl(DataUrlError),
     /// A document parse error.
     DocumentParse(DocumentParseError),
     /// An element not found.
@@ -156,12 +161,14 @@ impl error::Error for ItemError {}
 impl Display for ItemError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::Base64(error) => write!(formatter, "invalid base64: {error}"),
             Self::ContentTypeInvalid { actual, expected } => {
                 write!(
                     formatter,
                     "content type expected {expected} but got {actual}"
                 )
             }
+            Self::DataUrl(error) => write!(formatter, "{error}"),
             Self::DocumentParse(error) => write!(formatter, "{error}"),
             Self::ElementNotFound(name) => {
                 write!(formatter, "element for #{name} not found")
@@ -188,6 +195,18 @@ impl Display for ItemError {
 impl Serialize for ItemError {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl From<InvalidBase64> for ItemError {
+    fn from(error: InvalidBase64) -> Self {
+        Self::Base64(error)
+    }
+}
+
+impl From<DataUrlError> for ItemError {
+    fn from(error: DataUrlError) -> Self {
+        Self::DataUrl(error)
     }
 }
 
@@ -218,6 +237,32 @@ impl From<Utf8Error> for ItemError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use data_url::DataUrl;
+
+    #[test]
+    fn display_item_base64_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::Base64(
+                    DataUrl::process("data:;base64,a")
+                        .unwrap()
+                        .decode_to_vec()
+                        .err()
+                        .unwrap()
+                )
+            ),
+            "invalid base64: lone alphabet symbol present"
+        );
+    }
+
+    #[test]
+    fn display_item_data_url_error() {
+        assert_eq!(
+            format!("{}", ItemError::DataUrl(DataUrlError::NoComma)),
+            "data url is missing comma delimiting attributes and body"
+        );
+    }
 
     #[test]
     fn display_item_markup_error() {
