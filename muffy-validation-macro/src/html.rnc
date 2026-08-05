@@ -13,9 +13,7 @@ include "schema/html5/rdfa.rnc"
 include "schema/svg11/svg11.rnc"
 include "schema/mml3/mathml3-inc.rnc"
 
-common.elem.phrasing |= svg
-
-common.elem.phrasing |= math
+common.elem.phrasing |= svg | math
 
 math.attributes &=
     (	common.attrs.aria.role.math
