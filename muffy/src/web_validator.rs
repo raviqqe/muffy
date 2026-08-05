@@ -187,7 +187,9 @@ impl WebValidator {
                 let response = response.clone();
 
                 async move {
-                    self.validate_document(context, response, document_type)
+                    let site_url = Arc::new(response.url().clone());
+
+                    self.validate_document(context, response, site_url, document_type)
                         .await
                 }
             });
@@ -206,13 +208,14 @@ impl WebValidator {
         &self,
         context: Arc<Context>,
         response: Arc<Response>,
+        site_url: Arc<Url>,
         document_type: DocumentType,
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
             DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response),
-            DocumentType::Svg => self.validate_svg(&context, &response).await?,
+            DocumentType::Svg => self.validate_svg(&context, &response, &site_url).await?,
         };
         let (elements, futures) = futures.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
 
@@ -231,12 +234,13 @@ impl WebValidator {
         context: Arc<Context>,
         url: String,
         base: Arc<Url>,
+        site_url: Arc<Url>,
         document_type: Option<DocumentType>,
     ) -> Result<ItemOutput, ItemError> {
         let url = base.join(&url)?;
 
         if url.scheme() == DATA_SCHEME {
-            self.validate_data_link(context, url).await
+            self.validate_data_link(context, url, site_url).await
         } else if !DOCUMENT_SCHEMES.contains(&url.scheme()) {
             Ok(ItemOutput::new())
         } else if context.config().site(&url).scheme().accepted(url.scheme()) {
@@ -257,6 +261,7 @@ impl WebValidator {
         self,
         context: Arc<Context>,
         url: Url,
+        site_url: Arc<Url>,
     ) -> Result<ItemOutput, ItemError> {
         if context
             .config()
@@ -284,7 +289,7 @@ impl WebValidator {
         ));
 
         if let Some(fragment) = url.fragment()
-            && !context.config().site(&url).fragments_ignored()
+            && !context.config().site(&site_url).fragments_ignored()
             && !self.has_element(&response, fragment).await?
         {
             return Err(ItemError::ElementNotFound(fragment.into()));
@@ -296,7 +301,7 @@ impl WebValidator {
                 let response = response.clone();
 
                 async move {
-                    self.validate_document(context, response, DocumentType::Svg)
+                    self.validate_document(context, response, site_url, DocumentType::Svg)
                         .await
                 }
             });
@@ -432,6 +437,7 @@ impl WebValidator {
                         context.clone(),
                         link.to_string(),
                         base.clone(),
+                        base.clone(),
                         *document_type,
                     ))
                 })
@@ -514,6 +520,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         response: &Arc<Response>,
+        site_url: &Arc<Url>,
     ) -> Result<Vec<ElementFuture>, Error> {
         let mut futures = vec![];
         let base = Arc::new(response.url().clone());
@@ -531,7 +538,7 @@ impl WebValidator {
         for node in document.children() {
             if let Node::Element(element) = node
                 && element.namespace() != Some(SVG_NAMESPACE)
-                && let Some(config) = context.config().site(&base).validation().svg()
+                && let Some(config) = context.config().site(site_url).validation().svg()
                 && !config
                     .ignored_elements()
                     .iter()
@@ -548,7 +555,7 @@ impl WebValidator {
                 ));
             }
 
-            self.validate_svg_element(context, &base, node, &mut futures);
+            self.validate_svg_element(context, &base, site_url, node, &mut futures);
         }
 
         Ok(futures)
@@ -558,6 +565,7 @@ impl WebValidator {
         &self,
         context: &Arc<Context>,
         base: &Arc<Url>,
+        site_url: &Arc<Url>,
         node: &Node,
         futures: &mut Vec<ElementFuture>,
     ) {
@@ -577,21 +585,22 @@ impl WebValidator {
                     context.clone(),
                     value.to_string(),
                     base.clone(),
+                    site_url.clone(),
                     None,
                 )));
             }
         }
 
-        let validation_result = if let Some(config) = context.config().site(base).validation().svg()
-        {
-            muffy_validation::validate_html_element(
-                element,
-                config.ignored_attributes(),
-                config.ignored_elements(),
-            )
-        } else {
-            Ok(())
-        };
+        let validation_result =
+            if let Some(config) = context.config().site(site_url).validation().svg() {
+                muffy_validation::validate_html_element(
+                    element,
+                    config.ignored_attributes(),
+                    config.ignored_elements(),
+                )
+            } else {
+                Ok(())
+            };
 
         if let Err(error) = &validation_result {
             items.extend(Self::spawn_markup_errors(error));
@@ -610,7 +619,7 @@ impl WebValidator {
         }
 
         for node in element.children() {
-            self.validate_svg_element(context, base, node, futures);
+            self.validate_svg_element(context, base, site_url, node, futures);
         }
     }
 
@@ -3077,39 +3086,6 @@ mod tests {
         use crate::http_client::{BareResponse, HttpClientError};
         use pretty_assertions::assert_eq;
 
-        async fn validate_data_svg_content(
-            client: impl BareHttpClient + 'static,
-            url: &str,
-        ) -> Result<impl Stream<Item = Result<DocumentOutput, Error>>, Error> {
-            let url = Url::parse(url).unwrap();
-
-            WebValidator::new(
-                HttpClient::new(client, StubTimer::new(), Box::new(MokaCache::new(0))),
-                DocumentParser::new(MokaCache::new(0)),
-            )
-            .validate(&Config::new(
-                vec![url.to_string()],
-                SiteConfig::default()
-                    .set_validation(
-                        crate::ValidationConfig::default().set_svg(Some(MarkupConfig::default())),
-                    )
-                    .into(),
-                [(
-                    url.host_str().unwrap_or_default().into(),
-                    [(
-                        "".into(),
-                        SiteConfig::default()
-                            .set_recursive(true)
-                            .set_max_redirects(1 << 32)
-                            .into(),
-                    )]
-                    .into(),
-                )]
-                .into(),
-            ))
-            .await
-        }
-
         fn build_page_response(body: &str) -> (String, Result<BareResponse, HttpClientError>) {
             build_stub_response(
                 "https://foo.com",
@@ -3337,7 +3313,7 @@ mod tests {
 
         #[tokio::test]
         async fn validate_valid_data_svg_content() {
-            let mut documents = validate_data_svg_content(
+            let mut documents = validate_svg_content(
                 StubHttpClient::new(
                     [
                         build_stub_response(
@@ -3366,7 +3342,7 @@ mod tests {
 
         #[tokio::test]
         async fn validate_invalid_data_svg_content() {
-            let mut documents = validate_data_svg_content(
+            let mut documents = validate_svg_content(
                 StubHttpClient::new(
                     [
                         build_stub_response(
@@ -3378,6 +3354,77 @@ mod tests {
                         build_page_response(
                             r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><foo/></svg>"/>"#,
                         ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                [
+                    "invalid children: foo (not allowed)".into(),
+                    "unknown tag \"foo\"".into(),
+                ]
+                .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_ignored_element_in_data_svg() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><foo/></svg>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_validation(
+                    crate::ValidationConfig::default().set_svg(Some(MarkupConfig::new(
+                        vec![],
+                        vec![Regex::new("^foo$").unwrap()],
+                    ))),
+                ),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_nested_data_svg_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(concat!(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'>"#,
+                            "<image href='data:image/svg+xml;base64,",
+                            "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxmb28vPjwvc3ZnPg=='/>",
+                            r#"</svg>"/>"#,
+                        )),
                     ]
                     .into_iter()
                     .collect(),
@@ -3452,6 +3499,36 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_ignored_fragment_for_data_svg() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>#foo"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_fragments_ignored(true),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
             );
         }
 
