@@ -3186,6 +3186,64 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn validate_data_svg_with_uppercase_media_type() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:IMAGE/SVG+XML,<svg xmlns='http://www.w3.org/2000/svg'/>"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_svg_in_src_attribute() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>">"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
         async fn validate_data_svg_once() {
             let mut documents = validate(
                 StubHttpClient::new(
@@ -3474,6 +3532,33 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn validate_empty_data_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:image/svg+xml,"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected EOF in start phase".into()].into()
+            );
+        }
+
+        #[tokio::test]
         async fn validate_missing_fragment_for_data_svg() {
             let mut documents = validate(
                 StubHttpClient::new(
@@ -3544,6 +3629,33 @@ mod tests {
                             Default::default(),
                         ),
                         build_page_response(r#"<a href="data:image/png;base64,a"/>"#),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn skip_plain_text_data_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(r#"<a href="data:text/plain,<svg"/>"#),
                     ]
                     .into_iter()
                     .collect(),
