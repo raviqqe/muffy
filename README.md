@@ -8,6 +8,12 @@
 
 The static website validator.
 
+## Features
+
+- foo
+- bar
+- baz
+
 ## Install
 
 ```sh
