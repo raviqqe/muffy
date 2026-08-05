@@ -29,7 +29,6 @@ use quote::{format_ident, quote};
 /// Generates HTML validation functions.
 #[proc_macro]
 pub fn html(_input: TokenStream) -> TokenStream {
-    // TODO Include the MathML schema for foreign elements.
     generate_validation("html", &["html.rnc"]).unwrap_or_else(|error| {
         syn::Error::new(Span::call_site(), error)
             .to_compile_error()

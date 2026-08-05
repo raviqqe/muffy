@@ -1,7 +1,7 @@
-# A driver schema for HTML and SVG documents based on the HTML5 schema and
-# the SVG driver schema in the Nu Html Checker. We restore the language
-# attribute which the vendored schema defines only in its XML spelling
-# expecting HTML parsers to map the attribute to it.
+# A driver schema for HTML documents with inline SVG and MathML based on the
+# HTML5 schema and the SVG and MathML driver schema in the Nu Html Checker.
+# We restore the language attribute which the vendored schema defines only in
+# its XML spelling expecting HTML parsers to map the attribute to it.
 
 include "schema/html5/html5.rnc" {
     common.attrs.lang =
@@ -11,13 +11,31 @@ include "schema/html5/html5.rnc" {
 }
 include "schema/html5/rdfa.rnc"
 include "schema/svg11/svg11.rnc"
+include "schema/mml3/mathml3-inc.rnc"
 
-common.elem.phrasing |= svg
+common.elem.phrasing |= svg | math
+
+math.attributes &=
+    (	common.attrs.aria.role.math
+    |	common.attrs.aria.implicit.math
+    )?
+
+math.attributes &= aria.global?
 
 SVG.Core.attrib &= aria.global?
 
 SVG.foreignObject.content |=
     (	html.elem
     |	body.elem
+    |	math
     |	common.inner.flow
     )
+
+annotation-xml.model.svg |= svg
+
+annotation-xml.model.xhtml |=
+    (	html.elem
+    |	common.elem.flow
+    )
+
+mtext.content |= common.elem.phrasing

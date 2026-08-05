@@ -191,6 +191,14 @@ mod tests {
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
+
+        #[test]
+        fn validate_valid_math_child() {
+            let element =
+                create_element("div", vec![], vec![create_element("math", vec![], vec![])]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
     }
 
     mod p {
@@ -1048,6 +1056,126 @@ mod tests {
             assert_eq!(
                 validate_html_element(&element, &[], &[Regex::new("^foreignObject$").unwrap()]),
                 Ok(())
+            );
+        }
+    }
+
+    mod math {
+        use super::*;
+
+        #[test]
+        fn validate_valid_element() {
+            let element = create_element("math", vec![], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_attributes() {
+            let element =
+                create_element("math", vec![("display", "block"), ("alttext", "x")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_aria_attributes() {
+            let element = create_element(
+                "math",
+                vec![("role", "math"), ("aria-label", "description")],
+                vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_child() {
+            let element =
+                create_element("math", vec![], vec![create_element("mi", vec![], vec![])]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_text_child() {
+            let element = Element::new("mi".into(), vec![], vec![Arc::new(Node::Text("x".into()))]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_fraction_children() {
+            let element = create_element(
+                "mfrac",
+                vec![],
+                vec![
+                    create_element("mi", vec![], vec![]),
+                    create_element("mn", vec![], vec![]),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_annotated_children() {
+            let element = create_element(
+                "semantics",
+                vec![],
+                vec![
+                    create_element("mi", vec![], vec![]),
+                    create_element(
+                        "annotation",
+                        vec![("encoding", "application/x-tex")],
+                        vec![],
+                    ),
+                ],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_html_child_of_token_element() {
+            let element = create_element(
+                "mtext",
+                vec![],
+                vec![create_element("span", vec![], vec![])],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_attribute() {
+            let element = create_element("math", vec![("invalid", "foo")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("invalid".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_invalid_child() {
+            let element =
+                create_element("math", vec![], vec![create_element("div", vec![], vec![])]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: [("div".into(), [ChildError::NotAllowed].into())].into(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
             );
         }
     }
