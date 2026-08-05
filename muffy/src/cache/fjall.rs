@@ -4,7 +4,7 @@ use core::marker::PhantomData;
 use fjall::Keyspace;
 use serde::{Deserialize, Serialize};
 
-/// A cache based on the Fjall database.
+/// A cache backed by the Fjall database.
 pub struct FjallCache<T> {
     keyspace: Keyspace,
     phantom: PhantomData<T>,

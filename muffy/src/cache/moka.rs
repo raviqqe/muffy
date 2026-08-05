@@ -1,7 +1,7 @@
 use super::{CacheError, GlobalCache, LocalCache};
 use async_trait::async_trait;
 
-/// An in-memory cache based on [`moka`].
+/// An in-memory cache backed by [`moka`].
 pub struct MokaCache<T> {
     cache: moka::future::Cache<String, T>,
 }

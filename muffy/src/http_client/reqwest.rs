@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use log::trace;
 use reqwest::{Client, ClientBuilder, redirect::Policy};
 
-/// An HTTP client based on [`reqwest`].
+/// An HTTP client backed by [`reqwest`].
 #[derive(Debug, Default)]
 pub struct ReqwestHttpClient {
     client: Client,
