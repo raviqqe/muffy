@@ -31,8 +31,6 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A Sled database error.
-    Sled(sled::Error),
     /// A URL parse error.
     UrlParse(ParseError),
     /// A UTF-8 error.
@@ -53,7 +51,6 @@ impl Display for Error {
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
             Self::Validation => write!(formatter, "validation failed"),
@@ -103,12 +100,6 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-impl From<sled::Error> for Error {
-    fn from(error: sled::Error) -> Self {
-        Self::Sled(error)
-    }
-}
-
 impl From<url::ParseError> for Error {
     fn from(error: url::ParseError) -> Self {
         Self::UrlParse(error)
@@ -121,7 +112,7 @@ impl From<Utf8Error> for Error {
     }
 }
 
-/// An element item error.
+/// An item error.
 #[derive(Debug)]
 pub enum ItemError {
     /// An invalid content type.
