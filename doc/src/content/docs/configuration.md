@@ -56,6 +56,8 @@ The `sites` field is a table of site options under arbitrary site names. A site 
 
 Muffy crawls pages under the root URLs of sites with the `recurse` option enabled and checks links on them. A site inherits options it leaves unset from another site specified by its `extend` field.
 
+Muffy also validates SVG images embedded as `data` URLs (e.g. `data:image/svg+xml,...`) in crawled pages. Such images inherit the options of the sites of documents that contain them.
+
 | Name                | Description                                                                                        | Default              |
 | ------------------- | -------------------------------------------------------------------------------------------------- | -------------------- |
 | `cache`             | [Cache options](#sitesnamecache)                                                                    |                      |
