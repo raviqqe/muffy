@@ -238,8 +238,6 @@ fn classify_children<'a>(
     (children, disallowed_children)
 }
 
-// Wildcard names in rules end with an asterisk and match names by their
-// prefixes.
 fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str> {
     if let Ok(index) = names.binary_search(&name) {
         Some(names[index])
