@@ -7,7 +7,7 @@ on:
 concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
   group: release-${{ github.ref }}
-  queue: max
+  queue: ${{ github.ref == 'refs/heads/main' && 'max' || 'single' }}
 jobs:
   rust_release:
     permissions:
