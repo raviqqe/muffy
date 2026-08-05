@@ -4,7 +4,6 @@ use core::{
 };
 use tokio::time::{Instant, sleep};
 
-// TODO Use `Timer`?
 // TODO Optimize the ordering.
 
 /// A token bucket rate limiter.
@@ -39,10 +38,13 @@ impl RateLimiter {
                 })
                 .is_err()
         } {
-            let duration = self.time.elapsed();
-
-            sleep(self.window * (duration.div_duration_f64(self.window) as u32 + 1) - duration)
-                .await;
+            sleep(
+                self.window
+                    - Duration::from_nanos(
+                        (self.time.elapsed().as_nanos() % self.window.as_nanos()) as u64,
+                    ),
+            )
+            .await;
         }
 
         future.await
@@ -50,7 +52,7 @@ impl RateLimiter {
 
     fn add_supply(&self) {
         let old = self.window_count.load(Ordering::Relaxed);
-        let new = self.time.elapsed().div_duration_f64(self.window) as _;
+        let new = (self.time.elapsed().as_nanos() / self.window.as_nanos()) as _;
 
         if new > old
             && self
@@ -68,7 +70,7 @@ mod tests {
     use super::*;
     use alloc::sync::Arc;
     use futures::future::join_all;
-    use tokio::spawn;
+    use tokio::{spawn, time::advance};
 
     #[tokio::test]
     async fn run_once() {
@@ -77,7 +79,7 @@ mod tests {
         assert_eq!(limiter.run(async { 42 }).await, 42);
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
     async fn run_many_times() {
         const REQUEST_COUNT: u64 = 10_000;
         const SUPPLY: u64 = 1000;
@@ -99,5 +101,19 @@ mod tests {
 
         assert!(time.elapsed() >= duration);
         assert!(time.elapsed() < duration.mul_f64(1.5));
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn run_after_many_windows() {
+        const WINDOW: Duration = Duration::from_micros(1);
+
+        let limiter = RateLimiter::new(1, WINDOW);
+
+        limiter.run(async {}).await;
+
+        advance(WINDOW * u32::MAX).await;
+
+        limiter.run(async {}).await;
+        limiter.run(async {}).await;
     }
 }
