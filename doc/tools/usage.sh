@@ -19,3 +19,9 @@ set -e
   cargo run -- check --help
   echo '```'
 ) >src/components/CheckHelp.md
+
+(
+  echo '```text'
+  cargo run -- cache --help
+  echo '```'
+) >src/components/CacheHelp.md

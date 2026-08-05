@@ -8,6 +8,15 @@
 
 The static website validator.
 
+## Features
+
+- Recursive link checking of all pages in websites
+- Markup validation of HTML, SVG, and MathML documents
+- Checks of multiple websites with a single configuration file
+- Persistent response caching with configurable cache ages and stale-while-revalidate periods
+- Concurrency and rate limits, and retries with exponential backoff
+- `robots.txt` and sitemap support
+
 ## Install
 
 ```sh
@@ -22,6 +31,12 @@ For the full usage, see `muffy --help`.
 
 ```sh
 muffy
+```
+
+or
+
+```sh
+muffy check
 ```
 
 ### Check a website

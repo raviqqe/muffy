@@ -6,15 +6,30 @@ description: How to use Muffy CLI
 import Help from "../../../components/Help.md";
 import CheckSiteHelp from "../../../components/CheckSiteHelp.md";
 import CheckHelp from "../../../components/CheckHelp.md";
+import CacheHelp from "../../../components/CacheHelp.md";
+
+The `muffy` command validates websites given either a configuration file or command line options. It also provides a subcommand to manage its cache persisted on the file system.
 
 ## `muffy`
+
+Running the `muffy` command without any subcommand is equivalent to running the `muffy check` subcommand. The global options below are available in all the subcommands.
 
 <Help />
 
 ## `muffy check`
 
+The `muffy check` subcommand validates websites defined in a [configuration file](/muffy/configuration).
+
 <CheckHelp />
 
 ## `muffy check-site`
 
+The `muffy check-site` subcommand validates a single website given its root URLs. All its options are set as command line flags without any configuration file.
+
 <CheckSiteHelp />
+
+## `muffy cache`
+
+The `muffy cache` subcommand manages the persistent cache. The cache is enabled by the `cache.persistent` option in a configuration file or the `--cache` flag of the `muffy check-site` subcommand.
+
+<CacheHelp />
