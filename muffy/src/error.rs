@@ -112,7 +112,7 @@ impl From<Utf8Error> for Error {
     }
 }
 
-/// An element item error.
+/// An item error.
 #[derive(Debug)]
 pub enum ItemError {
     /// An invalid content type.
