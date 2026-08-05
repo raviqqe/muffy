@@ -36,7 +36,7 @@ muffy check-site https://example.com
 job:
   steps:
     # After building and/or deploying your website.
-    - uses: raviqqe/muffy@v0.4.0
+    - uses: raviqqe/muffy@v0.4.1
 ```
 
 See [`action.yaml`](https://github.com/raviqqe/muffy/blob/main/action.yaml) for more details.
