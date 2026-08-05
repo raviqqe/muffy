@@ -31,8 +31,6 @@ pub enum Error {
     Join(JoinError),
     /// A JSON serialization error.
     Json(serde_json::Error),
-    /// A Sled database error.
-    Sled(sled::Error),
     /// A URL parse error.
     UrlParse(ParseError),
     /// A UTF-8 error.
@@ -53,7 +51,6 @@ impl Display for Error {
             Self::Item(error) => write!(formatter, "{error}"),
             Self::Join(error) => write!(formatter, "{error}"),
             Self::Json(error) => write!(formatter, "{error}"),
-            Self::Sled(error) => write!(formatter, "{error}"),
             Self::UrlParse(error) => write!(formatter, "{error}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
             Self::Validation => write!(formatter, "validation failed"),
@@ -100,12 +97,6 @@ impl From<JoinError> for Error {
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
         Self::Json(error)
-    }
-}
-
-impl From<sled::Error> for Error {
-    fn from(error: sled::Error) -> Self {
-        Self::Sled(error)
     }
 }
 
