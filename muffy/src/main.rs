@@ -54,6 +54,9 @@ struct Arguments {
     /// Set an output format.
     #[arg(long, default_value = "text", global = true)]
     format: RenderFormat,
+    /// Set an open file limit capped at a hard limit of an operating system.
+    #[arg(long, default_value_t = u64::MAX, global = true)]
+    open_file_limit: u64,
     /// Be verbose.
     #[arg(long, global = true)]
     verbose: bool,
@@ -163,9 +166,10 @@ async fn main() {
 }
 
 async fn run() -> Result<(), Box<dyn Error>> {
-    increase_nofile_limit(u64::MAX)?;
-
     let arguments = Arguments::parse();
+
+    increase_nofile_limit(arguments.open_file_limit)?;
+
     let format = arguments.format;
     let verbose = arguments.verbose;
 
@@ -428,6 +432,19 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
 mod tests {
     use super::*;
     use core::time::Duration;
+
+    #[test]
+    fn parse_default_open_file_limit_argument() {
+        assert_eq!(Arguments::parse_from(["command"]).open_file_limit, u64::MAX);
+    }
+
+    #[test]
+    fn parse_open_file_limit_argument() {
+        assert_eq!(
+            Arguments::parse_from(["command", "--open-file-limit", "42"]).open_file_limit,
+            42
+        );
+    }
 
     #[test]
     fn parse_default_check_site_arguments() {
