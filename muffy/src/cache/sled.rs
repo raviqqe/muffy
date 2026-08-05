@@ -5,7 +5,7 @@ use log::trace;
 use serde::{Deserialize, Serialize};
 use sled::Tree;
 
-/// A cache based on the Sled database.
+/// A cache backed by the Sled database.
 pub struct SledCache<T> {
     tree: Tree,
     phantom: PhantomData<T>,
