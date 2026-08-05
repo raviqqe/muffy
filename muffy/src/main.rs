@@ -109,9 +109,9 @@ struct CheckSiteArguments {
     /// Set an HTTP timeout.
     #[arg(long, default_value = "30s")]
     timeout: DurationString,
-    /// Set concurrency.
-    #[arg(long, default_value_t = muffy::default_concurrency())]
-    concurrency: usize,
+    /// Set concurrency. It defaults to a half of an open file limit.
+    #[arg(long)]
+    concurrency: Option<usize>,
     /// Set URL patterns to ignore from validation.
     #[arg(long)]
     ignore: Vec<Regex>,
@@ -423,7 +423,7 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
             })
             .collect(),
     )
-    .set_concurrency(ConcurrencyConfig::default().set_global(Some(arguments.concurrency)))
+    .set_concurrency(ConcurrencyConfig::default().set_global(arguments.concurrency))
     .set_ignored_links(arguments.ignore.clone())
     .set_persistent_cache(arguments.cache)
     .set_rate_limit(
@@ -473,7 +473,25 @@ mod tests {
         assert_eq!(arguments.max_age, Duration::default());
         assert_eq!(arguments.stale_while_revalidate, Duration::default());
         assert_eq!(arguments.retry_status, Vec::<u16>::new());
+        assert_eq!(arguments.concurrency, None);
         assert!(!arguments.experimental_validation);
+    }
+
+    #[test]
+    fn parse_concurrency_check_site_arguments() {
+        let Command::CheckSite(arguments) = Arguments::parse_from([
+            "command",
+            "check-site",
+            "https://foo.com",
+            "--concurrency",
+            "42",
+        ])
+        .command
+        .unwrap() else {
+            panic!()
+        };
+
+        assert_eq!(arguments.concurrency, Some(42));
     }
 
     #[test]
