@@ -1072,11 +1072,8 @@ mod tests {
 
         #[test]
         fn validate_valid_attributes() {
-            let element = create_element(
-                "math",
-                vec![("display", "block"), ("alttext", "x")],
-                vec![],
-            );
+            let element =
+                create_element("math", vec![("display", "block"), ("alttext", "x")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
@@ -1102,11 +1099,7 @@ mod tests {
 
         #[test]
         fn validate_valid_text_child() {
-            let element = Element::new(
-                "mi".into(),
-                vec![],
-                vec![Arc::new(Node::Text("x".into()))],
-            );
+            let element = Element::new("mi".into(), vec![], vec![Arc::new(Node::Text("x".into()))]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
         }
