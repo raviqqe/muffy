@@ -7,7 +7,6 @@ on:
 concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
   group: test-${{ github.ref }}
-  queue: ${{ github.ref == 'refs/heads/main' && 'max' || 'single' }}
 jobs:
   build:
     runs-on: ubuntu-latest
