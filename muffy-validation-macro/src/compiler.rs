@@ -1,7 +1,7 @@
 use crate::{
     attribute::{AttributeSet, normalize_attributes},
     error::MacroError,
-    name::{class_names, identifier_string},
+    name::class_names,
     pattern::{Pattern, normalize_pattern},
 };
 use alloc::collections::BTreeMap;
@@ -90,9 +90,7 @@ impl<'a> Compiler<'a> {
                     pattern.clone()
                 } else {
                     let Some(definition) = self.definitions.get(&name.local) else {
-                        return Err(MacroError::UndefinedReference(identifier_string(
-                            &name.local,
-                        )));
+                        return Err(MacroError::UndefinedReference(name.local.to_string()));
                     };
 
                     let pattern = self.resolve(definition)?;
@@ -112,9 +110,8 @@ impl<'a> Compiler<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::definition::{DefinitionSet, load_grammar};
-    use alloc::collections::BTreeMap;
-    use muffy_rnc::{Identifier, SchemaBody, parse_schema};
+    use crate::definition::load_grammar;
+    use muffy_rnc::{DefinitionSet, Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
     use std::path::Path;
 
@@ -130,10 +127,7 @@ mod tests {
 
         load_grammar(&grammar, Path::new("."), false, &mut definitions).unwrap();
 
-        let definitions = definitions
-            .into_iter()
-            .map(|(name, (_, pattern))| (name, pattern))
-            .collect::<BTreeMap<_, _>>();
+        let definitions = definitions.into_patterns();
 
         Compiler::new(&definitions).resolve(
             &definitions[&Identifier {

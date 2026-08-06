@@ -1,3 +1,5 @@
+use core::fmt::{self, Display, Formatter};
+
 /// A schema.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Schema {
@@ -249,4 +251,46 @@ pub struct Identifier {
     pub component: String,
     /// Sub-components.
     pub sub_components: Vec<String>,
+}
+
+impl Display for Identifier {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{}", self.component)?;
+
+        for component in &self.sub_components {
+            write!(formatter, ".{component}")?;
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn display_identifier() {
+        assert_eq!(
+            Identifier {
+                component: "foo".into(),
+                sub_components: vec![],
+            }
+            .to_string(),
+            "foo"
+        );
+    }
+
+    #[test]
+    fn display_identifier_with_sub_components() {
+        assert_eq!(
+            Identifier {
+                component: "foo".into(),
+                sub_components: vec!["bar".into(), "baz".into()],
+            }
+            .to_string(),
+            "foo.bar.baz"
+        );
+    }
 }
