@@ -35,3 +35,40 @@ impl<'a> From<&'a Response> for RenderedResponse<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use url::Url;
+
+    #[test]
+    fn keep_http_url() {
+        assert_eq!(
+            RenderedResponse::from(&Response::new(
+                Url::parse("https://foo.com").unwrap(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ))
+            .url(),
+            "https://foo.com/"
+        );
+    }
+
+    #[test]
+    fn abbreviate_data_url() {
+        assert_eq!(
+            RenderedResponse::from(&Response::new(
+                Url::parse("data:image/svg+xml;base64,PHN2Zy8+").unwrap(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ))
+            .url(),
+            "data:image/svg+xml"
+        );
+    }
+}

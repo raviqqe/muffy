@@ -166,31 +166,27 @@ mod tests {
 
     fn data_document_output() -> DocumentOutput {
         DocumentOutput::new(
-            Url::parse("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><foo/></svg>")
-                .unwrap(),
-            vec![ElementOutput::new(
-                Element::new(
-                    "image".into(),
-                    vec![(
-                        "href".into(),
-                        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=".into(),
-                    )],
+            Url::parse(
+                "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><image \
+                 href='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4='/><foo/></svg>",
+            )
+            .unwrap(),
+            vec![
+                ElementOutput::new(
+                    Element::new(
+                        "image".into(),
+                        vec![(
+                            "href".into(),
+                            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=".into(),
+                        )],
+                    ),
+                    vec![Ok(ItemOutput::default())],
                 ),
-                vec![
-                    Ok(ItemOutput::default().with_response(
-                        Response::new(
-                            Url::parse("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=")
-                                .unwrap(),
-                            Default::default(),
-                            Default::default(),
-                            Default::default(),
-                            Default::default(),
-                        )
-                        .into(),
-                    )),
-                    Err(ItemError::Markup(MarkupError::UnknownTag("foo".into()))),
-                ],
-            )],
+                ElementOutput::new(
+                    Element::new("foo".into(), vec![]),
+                    vec![Err(ItemError::Markup(MarkupError::UnknownTag("foo".into())))],
+                ),
+            ],
         )
     }
 
