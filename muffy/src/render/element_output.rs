@@ -1,16 +1,16 @@
-use super::{item_output::RenderedItemOutput, result::RenderedResult};
-use crate::{element::Element, error::ItemError};
+use super::{element::RenderedElement, item_output::RenderedItemOutput, result::RenderedResult};
+use crate::error::ItemError;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedElementOutput<'a> {
-    element: &'a Element,
+    element: RenderedElement<'a>,
     results: Vec<RenderedResult<RenderedItemOutput<'a>, &'a ItemError>>,
 }
 
 impl<'a> RenderedElementOutput<'a> {
-    pub const fn element(&self) -> &'a Element {
-        self.element
+    pub const fn element(&self) -> &RenderedElement<'a> {
+        &self.element
     }
 
     pub fn results(
@@ -27,7 +27,7 @@ impl<'a> RenderedElementOutput<'a> {
 impl<'a> From<&'a crate::element_output::ElementOutput> for RenderedElementOutput<'a> {
     fn from(output: &'a crate::element_output::ElementOutput) -> Self {
         Self {
-            element: output.element(),
+            element: output.element().into(),
             results: output
                 .results()
                 .map(|result| result.as_ref().map(RenderedItemOutput::from).into())
