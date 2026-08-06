@@ -7,8 +7,9 @@ import Help from "../../../components/Help.md";
 import CheckSiteHelp from "../../../components/CheckSiteHelp.md";
 import CheckHelp from "../../../components/CheckHelp.md";
 import CacheHelp from "../../../components/CacheHelp.md";
+import InitHelp from "../../../components/InitHelp.md";
 
-The `muffy` command validates websites given either a configuration file or command line options. It also provides a subcommand to manage its cache persisted on the file system.
+The `muffy` command validates websites given either a configuration file or command line options. It also provides subcommands to initialize a configuration file and manage its cache persisted on the file system.
 
 ## `muffy`
 
@@ -33,3 +34,9 @@ The `muffy check-site` subcommand validates a single website given its root URLs
 The `muffy cache` subcommand manages the persistent cache. The cache is enabled by the `cache.persistent` option in a configuration file or the `--cache` flag of the `muffy check-site` subcommand.
 
 <CacheHelp />
+
+## `muffy init`
+
+The `muffy init` subcommand initializes a [configuration file](/muffy/configuration) named `muffy.toml` in the current directory. It fails if the file already exists there.
+
+<InitHelp />
