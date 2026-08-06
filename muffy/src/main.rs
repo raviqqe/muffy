@@ -33,6 +33,11 @@ use tokio::{
 use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
+const DATABASE_DIRECTORY: &str = "muffy";
+const FJALL_DIRECTORY: &str = "fjall";
+const RESPONSE_NAMESPACE: &str = "responses";
+const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
+
 const DEFAULT_CONFIG: &str = r#"[cache]
 persistent = true
 
@@ -53,10 +58,6 @@ extend = "default"
 max_age = "1w"
 stale_while_revalidate = "1w"
 "#;
-const DATABASE_DIRECTORY: &str = "muffy";
-const FJALL_DIRECTORY: &str = "fjall";
-const RESPONSE_NAMESPACE: &str = "responses";
-const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
 
 static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     cache_dir()
