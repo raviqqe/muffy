@@ -33,31 +33,11 @@ use tokio::{
 use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
+const DEFAULT_CONFIG: &str = include_str!("default_config.toml");
 const DATABASE_DIRECTORY: &str = "muffy";
 const FJALL_DIRECTORY: &str = "fjall";
 const RESPONSE_NAMESPACE: &str = "responses";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 20;
-
-const DEFAULT_CONFIG: &str = r#"[cache]
-persistent = true
-
-[sites.default]
-roots = []
-schemes = ["https"]
-statuses = [200]
-
-[sites.main]
-extend = "default"
-roots = ["https://example.com/"]
-recurse = true
-
-[sites.external]
-extend = "default"
-
-[sites.external.cache]
-max_age = "1w"
-stale_while_revalidate = "1w"
-"#;
 
 static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     cache_dir()
