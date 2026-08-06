@@ -102,22 +102,20 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
                 }
             }
 
-            let any_attributes = !attributes.is_empty();
-            let any_contents = !contents.is_empty();
+            let attributes_empty = attributes.is_empty();
+            let contents_empty = contents.is_empty();
 
-            // Repeated attribute patterns are optional except attribute-only
-            // patterns repeated at least once.
             vec![(
-                if !any_attributes {
+                if attributes_empty {
                     Pattern::Empty
-                } else if many1 && !any_contents {
+                } else if many1 && contents_empty {
                     Pattern::choice(attributes)
                 } else {
                     Pattern::optional(Pattern::choice(attributes))
                 },
-                if !any_contents {
+                if contents_empty {
                     Pattern::Empty
-                } else if many1 && !any_attributes {
+                } else if many1 && attributes_empty {
                     Pattern::many1(Pattern::choice(contents))
                 } else {
                     Pattern::many0(Pattern::choice(contents))
