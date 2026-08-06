@@ -38,12 +38,20 @@ persistent = true
 
 [sites.default]
 roots = []
-statuses = [200, 403]
+schemes = ["https"]
+statuses = [200]
 
 [sites.main]
 extend = "default"
 roots = ["https://example.com/"]
 recurse = true
+
+[sites.external]
+extend = "default"
+
+[sites.external.cache]
+max_age = "1w"
+stale_while_revalidate = "1w"
 "#;
 const DATABASE_DIRECTORY: &str = "muffy";
 const FJALL_DIRECTORY: &str = "fjall";
