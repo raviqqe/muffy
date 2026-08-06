@@ -9,8 +9,8 @@ statuses = [200]
 timeout = "30s"
 
 [sites.default.cache]
-max_age = "1d"
-stale_while_revalidate = "1d"
+max_age = "1w"
+stale_while_revalidate = "1w"
 
 [sites.default.retry]
 count = 3
@@ -28,10 +28,6 @@ css = true
 [sites.external]
 extend = "default"
 
-[sites.external.cache]
-max_age = "1w"
-stale_while_revalidate = "1w"
-
 [sites.main]
 extend = "default"
 roots = [
@@ -42,6 +38,10 @@ roots = [
   "https://raviqqe.com/stak",
 ]
 recurse = true
+
+[sites.main.cache]
+max_age = "5m"
+stale_while_revalidate = "5m"
 
 [sites.main.validation.html]
 ignored_attributes = ["data-.*", "sl-.*"]
