@@ -185,7 +185,10 @@ mod tests {
 
         assert_eq!(
             patterns(definitions),
-            vec![Pattern::Interleave(vec![attribute("foo"), attribute("bar")])]
+            vec![Pattern::Interleave(vec![
+                attribute("foo"),
+                attribute("bar")
+            ])]
         );
     }
 
@@ -202,7 +205,10 @@ mod tests {
 
         assert_eq!(
             patterns(definitions),
-            vec![Pattern::Interleave(vec![attribute("foo"), attribute("bar")])]
+            vec![Pattern::Interleave(vec![
+                attribute("foo"),
+                attribute("bar")
+            ])]
         );
     }
 
@@ -219,7 +225,10 @@ mod tests {
 
         assert_eq!(
             patterns(definitions),
-            vec![Pattern::Interleave(vec![attribute("foo"), attribute("bar")])]
+            vec![Pattern::Interleave(vec![
+                attribute("foo"),
+                attribute("bar")
+            ])]
         );
     }
 
