@@ -1,4 +1,4 @@
-use super::{element_output::RenderedElementOutput, url::abbreviate_url};
+use super::{element_output::RenderedElementOutput, utility::abbreviate_url};
 use alloc::borrow::Cow;
 use serde::Serialize;
 

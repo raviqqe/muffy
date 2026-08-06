@@ -51,7 +51,10 @@ mod tests {
 
     #[test]
     fn abbreviate_data_url_with_default_media_type() {
-        assert_eq!(abbreviate_url("data:,foo"), "data:text/plain;charset=US-ASCII");
+        assert_eq!(
+            abbreviate_url("data:,foo"),
+            "data:text/plain;charset=US-ASCII"
+        );
     }
 
     #[test]

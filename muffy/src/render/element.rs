@@ -1,4 +1,4 @@
-use super::url::abbreviate_url;
+use super::utility::abbreviate_url;
 use crate::element::Element;
 use alloc::borrow::Cow;
 use serde::Serialize;

@@ -1,6 +1,4 @@
-use super::{
-    element::RenderedElement, item_output::RenderedItemOutput, result::RenderedResult,
-};
+use super::{element::RenderedElement, item_output::RenderedItemOutput, result::RenderedResult};
 use crate::error::ItemError;
 use serde::Serialize;
 
