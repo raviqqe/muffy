@@ -3,6 +3,7 @@ use alloc::sync::Arc;
 use html5ever::{QualName, ns};
 use markup5ever_rcdom::NodeData;
 
+// TODO Is it valid to handle all markup languages with a single driver schema?
 const DEFAULT_NAMESPACES: &[&str] = &[
     "",
     "http://www.w3.org/1998/Math/MathML",
