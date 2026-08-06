@@ -86,7 +86,7 @@ mod tests {
     }
 
     #[test]
-    fn truncate_multibyte_data_url() {
+    fn truncate_multi_byte_data_url() {
         assert_eq!(
             truncate_url(&format!("data:,{}", "あ".repeat(70))),
             format!("data:,{}...", "あ".repeat(58))
