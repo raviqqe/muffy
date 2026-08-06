@@ -1,16 +1,16 @@
-use super::element_output::RenderedElementOutput;
+use super::{element_output::RenderedElementOutput, url::abbreviate_url};
+use alloc::borrow::Cow;
 use serde::Serialize;
-use url::Url;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedDocumentOutput<'a> {
-    url: &'a Url,
+    url: Cow<'a, str>,
     elements: Vec<RenderedElementOutput<'a>>,
 }
 
 impl<'a> RenderedDocumentOutput<'a> {
-    pub const fn url(&self) -> &'a Url {
-        self.url
+    pub fn url(&self) -> &str {
+        &self.url
     }
 
     pub fn elements(&self) -> impl ExactSizeIterator<Item = &RenderedElementOutput<'a>> {
@@ -29,7 +29,7 @@ impl<'a> RenderedDocumentOutput<'a> {
 impl<'a> From<&'a crate::DocumentOutput> for RenderedDocumentOutput<'a> {
     fn from(output: &'a crate::DocumentOutput) -> Self {
         Self {
-            url: output.url(),
+            url: abbreviate_url(output.url().as_str()),
             elements: output.elements().map(RenderedElementOutput::from).collect(),
         }
     }

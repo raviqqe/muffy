@@ -1,9 +1,11 @@
 mod document_output;
+mod element;
 mod element_output;
 mod item_output;
 mod options;
 mod response;
 mod result;
+mod url;
 
 pub use self::options::{RenderFormat, RenderOptions};
 use self::{document_output::RenderedDocumentOutput, result::RenderedResult};
@@ -37,11 +39,7 @@ pub async fn render_document(
         return render_json_document(&document, &mut writer).await;
     }
 
-    render_line(
-        &format!("{}", document.url().to_string().yellow()),
-        &mut writer,
-    )
-    .await?;
+    render_line(&format!("{}", document.url().yellow()), &mut writer).await?;
 
     for output in document.elements() {
         render_line(
