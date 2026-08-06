@@ -17,6 +17,12 @@ Running the `muffy` command without any subcommand is equivalent to running the 
 
 <Help />
 
+## `muffy init`
+
+The `muffy init` subcommand initializes a [configuration file](/muffy/configuration) named `muffy.toml` in the current directory. It fails if the file already exists there.
+
+<InitHelp />
+
 ## `muffy check`
 
 The `muffy check` subcommand validates websites defined in a [configuration file](/muffy/configuration).
@@ -34,9 +40,3 @@ The `muffy check-site` subcommand validates a single website given its root URLs
 The `muffy cache` subcommand manages the persistent cache. The cache is enabled by the `cache.persistent` option in a configuration file or the `--cache` flag of the `muffy check-site` subcommand.
 
 <CacheHelp />
-
-## `muffy init`
-
-The `muffy init` subcommand initializes a [configuration file](/muffy/configuration) named `muffy.toml` in the current directory. It fails if the file already exists there.
-
-<InitHelp />
