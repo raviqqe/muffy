@@ -43,8 +43,7 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
 
     for definition in definitions.values() {
         for (name_class, pattern) in collect_elements(definition) {
-            // Elements of any names constrain only content models of their
-            // parents.
+            // Elements of any names constrain only content models of their parents.
             let names = class_names(name_class)
                 .into_iter()
                 .filter(|name| name != "*")
