@@ -33,7 +33,6 @@ use tokio::{
 use url::Url;
 
 const CONFIG_FILE: &str = "muffy.toml";
-const DEFAULT_CONFIG: &str = include_str!("default_config.toml");
 const DATABASE_DIRECTORY: &str = "muffy";
 const FJALL_DIRECTORY: &str = "fjall";
 const RESPONSE_NAMESPACE: &str = "responses";
@@ -344,7 +343,7 @@ async fn initialize_config(directory: &Path) -> Result<(), Box<dyn Error>> {
         return Err(format!("configuration file already exists at {}", file.display()).into());
     }
 
-    write(&file, DEFAULT_CONFIG).await?;
+    write(&file, include_str!("default_config.toml")).await?;
 
     Ok(())
 }
