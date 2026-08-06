@@ -1,0 +1,26 @@
+[cache]
+persistent = true
+
+[sites.default]
+roots = []
+schemes = ["https"]
+statuses = [200]
+
+[sites.default.cache]
+max_age = "1w"
+stale_while_revalidate = "1w"
+
+[sites.default.retry]
+count = 3
+factor = 2
+interval = { initial = "500ms", cap = "10s" }
+statuses = [408, 502, 503, 504]
+
+[sites.main]
+extend = "default"
+roots = ["https://example.com/"]
+recurse = true
+
+[sites.main.cache]
+max_age = "0s"
+stale_while_revalidate = "0s"

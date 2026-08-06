@@ -18,7 +18,7 @@ use regex::Regex;
 use rlimit::{Resource, getrlimit, increase_nofile_limit};
 use std::{
     env::{current_dir, temp_dir},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::exit,
     sync::LazyLock,
 };
@@ -27,7 +27,7 @@ use tabled::{
     settings::{Color, Style, themes::Colorization},
 };
 use tokio::{
-    fs::{create_dir_all, remove_dir_all, try_exists},
+    fs::{create_dir_all, remove_dir_all, try_exists, write},
     io::{AsyncWriteExt, stdout},
 };
 use url::Url;
@@ -70,6 +70,8 @@ enum Command {
     CheckSite(Box<CheckSiteArguments>),
     /// Manages the persistent cache.
     Cache(CacheArguments),
+    /// Initializes a configuration file in the current directory.
+    Init,
 }
 
 #[derive(clap::Args, Default)]
@@ -215,6 +217,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         Command::CheckSite(sub_arguments) => {
             run_config(&compile_check_site_config(&sub_arguments)?, format, verbose).await
         }
+        Command::Init => initialize_config(&current_dir()?).await,
     }
 }
 
@@ -329,6 +332,18 @@ async fn handle_cache_command(arguments: CacheArguments) -> Result<(), Box<dyn E
         }
         CacheCommand::Path => println!("{}", CACHE_DIRECTORY.display()),
     }
+
+    Ok(())
+}
+
+async fn initialize_config(directory: &Path) -> Result<(), Box<dyn Error>> {
+    let file = directory.join(CONFIG_FILE);
+
+    if try_exists(&file).await? {
+        return Err(format!("configuration file already exists at {}", file.display()).into());
+    }
+
+    write(&file, include_str!("default_config.toml")).await?;
 
     Ok(())
 }
@@ -619,6 +634,105 @@ mod tests {
             };
 
             assert_eq!(arguments.config, Some("config.toml".into()));
+        }
+    }
+
+    mod init {
+        use super::*;
+        use tempfile::tempdir;
+        use tokio::fs::read_to_string;
+
+        async fn initialize(directory: &Path) -> Config {
+            initialize_config(directory).await.unwrap();
+
+            muffy::compile_config(
+                muffy::read_config(&directory.join(CONFIG_FILE))
+                    .await
+                    .unwrap(),
+            )
+            .unwrap()
+        }
+
+        #[test]
+        fn parse_arguments() {
+            assert!(matches!(
+                Arguments::parse_from(["command", "init"]).command.unwrap(),
+                Command::Init
+            ));
+        }
+
+        #[tokio::test]
+        async fn initialize_valid_config() {
+            let directory = tempdir().unwrap();
+
+            let config = initialize(directory.path()).await;
+
+            assert!(config.persistent_cache());
+            assert_eq!(
+                config.roots().collect::<Vec<_>>(),
+                vec!["https://example.com/"]
+            );
+            assert!(config.sites().get("example.com").unwrap()[0].1.recursive());
+        }
+
+        #[tokio::test]
+        async fn cache_external_links_but_not_crawled_pages() {
+            let directory = tempdir().unwrap();
+
+            let config = initialize(directory.path()).await;
+            let week = Duration::from_secs(7 * 24 * 60 * 60);
+
+            let external = config.site(&Url::parse("https://foo.com/bar").unwrap());
+
+            assert_eq!(external.cache().max_age(), week);
+            assert_eq!(external.cache().stale_while_revalidate(), week);
+
+            let crawled = config.site(&Url::parse("https://example.com/foo").unwrap());
+
+            assert_eq!(crawled.cache().max_age(), Duration::default());
+            assert_eq!(
+                crawled.cache().stale_while_revalidate(),
+                Duration::default()
+            );
+        }
+
+        #[tokio::test]
+        async fn retry_transient_failures() {
+            let directory = tempdir().unwrap();
+
+            let config = initialize(directory.path()).await;
+            let statuses = [
+                StatusCode::REQUEST_TIMEOUT,
+                StatusCode::BAD_GATEWAY,
+                StatusCode::SERVICE_UNAVAILABLE,
+                StatusCode::GATEWAY_TIMEOUT,
+            ]
+            .into_iter()
+            .collect();
+
+            for url in ["https://foo.com/bar", "https://example.com/foo"] {
+                let site = config.site(&Url::parse(url).unwrap());
+
+                assert_eq!(site.retry().count(), 3);
+                assert_eq!(site.retry().statuses(), &statuses);
+            }
+        }
+
+        #[tokio::test]
+        async fn keep_existing_config_file() {
+            let directory = tempdir().unwrap();
+            let file = directory.path().join(CONFIG_FILE);
+
+            write(&file, "custom").await.unwrap();
+
+            assert_eq!(
+                initialize_config(directory.path())
+                    .await
+                    .unwrap_err()
+                    .to_string(),
+                format!("configuration file already exists at {}", file.display())
+            );
+            assert_eq!(read_to_string(&file).await.unwrap(), "custom");
         }
     }
 }
