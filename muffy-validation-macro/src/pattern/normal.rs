@@ -93,11 +93,16 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
             let mut contents = vec![];
 
             for (attribute, content) in normalize_pattern(operand)? {
-                if attribute != Pattern::Empty {
-                    attributes.push(attribute);
+                // Groups of attributes and contents in repetitions are prohibited in Relax NG.
+                if attribute != Pattern::Empty && content != Pattern::Empty {
+                    return Err(MacroError::RncPattern(
+                        "attribute grouped with content in a repetition",
+                    ));
                 }
 
-                if content != Pattern::Empty {
+                if attribute != Pattern::Empty {
+                    attributes.push(attribute);
+                } else if content != Pattern::Empty {
                     contents.push(content);
                 }
             }
@@ -205,6 +210,28 @@ mod tests {
                 Pattern::Empty
             )]
         );
+    }
+
+    #[test]
+    fn fail_on_attribute_grouped_with_element_in_repetition() {
+        assert!(matches!(
+            normalize_pattern(&Pattern::many1(Pattern::group([
+                attribute("foo"),
+                element("bar")
+            ]))),
+            Err(MacroError::RncPattern(_))
+        ));
+    }
+
+    #[test]
+    fn fail_on_chosen_attribute_groups_in_repetition() {
+        assert!(matches!(
+            normalize_pattern(&Pattern::many1(Pattern::choice([
+                Pattern::group([attribute("foo"), element("bar")]),
+                Pattern::group([attribute("baz"), element("qux")])
+            ]))),
+            Err(MacroError::RncPattern(_))
+        ));
     }
 
     #[test]
