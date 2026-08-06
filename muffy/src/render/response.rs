@@ -1,19 +1,20 @@
+use super::utility::truncate_url;
 use crate::response::Response;
+use alloc::borrow::Cow;
 use http::StatusCode;
 use serde::Serialize;
-use url::Url;
 
 #[derive(Debug, Serialize)]
 pub struct RenderedResponse<'a> {
-    url: &'a Url,
+    url: Cow<'a, str>,
     #[serde(with = "http_serde::status_code")]
     status: StatusCode,
     latency: u128,
 }
 
 impl<'a> RenderedResponse<'a> {
-    pub const fn url(&self) -> &'a Url {
-        self.url
+    pub fn url(&self) -> &str {
+        &self.url
     }
 
     pub const fn status(&self) -> StatusCode {
@@ -28,9 +29,49 @@ impl<'a> RenderedResponse<'a> {
 impl<'a> From<&'a Response> for RenderedResponse<'a> {
     fn from(response: &'a Response) -> Self {
         Self {
-            url: response.url(),
+            url: truncate_url(response.url().as_str()),
             status: response.status(),
             latency: response.duration().as_millis(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+    use url::Url;
+
+    #[test]
+    fn keep_http_url() {
+        assert_eq!(
+            RenderedResponse::from(&Response::new(
+                Url::parse("https://foo.com").unwrap(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ))
+            .url(),
+            "https://foo.com/"
+        );
+    }
+
+    #[test]
+    fn truncate_data_url() {
+        assert_eq!(
+            RenderedResponse::from(&Response::new(
+                Url::parse(
+                    "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4="
+                )
+                .unwrap(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+            ))
+            .url(),
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcm..."
+        );
     }
 }

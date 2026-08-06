@@ -1,9 +1,11 @@
 mod document_output;
+mod element;
 mod element_output;
 mod item_output;
 mod options;
 mod response;
 mod result;
+mod utility;
 
 pub use self::options::{RenderFormat, RenderOptions};
 use self::{document_output::RenderedDocumentOutput, result::RenderedResult};
@@ -37,11 +39,7 @@ pub async fn render_document(
         return render_json_document(&document, &mut writer).await;
     }
 
-    render_line(
-        &format!("{}", document.url().to_string().yellow()),
-        &mut writer,
-    )
-    .await?;
+    render_line(&format!("{}", document.url().yellow()), &mut writer).await?;
 
     for output in document.elements() {
         render_line(
@@ -166,6 +164,32 @@ mod tests {
         )
     }
 
+    fn data_document_output() -> DocumentOutput {
+        DocumentOutput::new(
+            Url::parse(
+                "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><image \
+                 href='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4='/><foo/></svg>",
+            )
+            .unwrap(),
+            vec![
+                ElementOutput::new(
+                    Element::new(
+                        "image".into(),
+                        vec![(
+                            "href".into(),
+                            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=".into(),
+                        )],
+                    ),
+                    vec![Ok(ItemOutput::default())],
+                ),
+                ElementOutput::new(
+                    Element::new("foo".into(), vec![]),
+                    vec![Err(ItemError::Markup(MarkupError::UnknownTag("foo".into())))],
+                ),
+            ],
+        )
+    }
+
     mod json {
         use super::*;
 
@@ -222,6 +246,23 @@ mod tests {
 
             render_document(
                 &successful_document_output(),
+                &RenderOptions::default()
+                    .set_format(RenderFormat::Json)
+                    .set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_truncated_data_urls() {
+            let mut string = vec![];
+
+            render_document(
+                &data_document_output(),
                 &RenderOptions::default()
                     .set_format(RenderFormat::Json)
                     .set_verbose(true),
@@ -292,6 +333,22 @@ mod tests {
 
             render_document(
                 &successful_document_output(),
+                &RenderOptions::default().set_verbose(true),
+                &mut string,
+            )
+            .await
+            .unwrap();
+
+            assert_snapshot!(str::from_utf8(&string).unwrap());
+        }
+
+        #[tokio::test]
+        async fn render_truncated_data_urls() {
+            colored::control::set_override(false);
+            let mut string = vec![];
+
+            render_document(
+                &data_document_output(),
                 &RenderOptions::default().set_verbose(true),
                 &mut string,
             )
