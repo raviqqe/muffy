@@ -6,14 +6,15 @@ roots = []
 schemes = ["https"]
 statuses = [200]
 
+[sites.default.cache]
+max_age = "1w"
+stale_while_revalidate = "1w"
+
 [sites.main]
 extend = "default"
 roots = ["https://example.com/"]
 recurse = true
 
-[sites.external]
-extend = "default"
-
-[sites.external.cache]
-max_age = "1w"
-stale_while_revalidate = "1w"
+[sites.main.cache]
+max_age = "0s"
+stale_while_revalidate = "0s"

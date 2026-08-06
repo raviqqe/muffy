@@ -672,6 +672,34 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn cache_external_links_but_not_crawled_pages() {
+            let directory = tempdir().unwrap();
+
+            initialize_config(directory.path()).await.unwrap();
+
+            let config = muffy::compile_config(
+                muffy::read_config(&directory.path().join(CONFIG_FILE))
+                    .await
+                    .unwrap(),
+            )
+            .unwrap();
+            let week = Duration::from_secs(7 * 24 * 60 * 60);
+
+            let external = config.site(&Url::parse("https://foo.com/bar").unwrap());
+
+            assert_eq!(external.cache().max_age(), week);
+            assert_eq!(external.cache().stale_while_revalidate(), week);
+
+            let crawled = config.site(&Url::parse("https://example.com/foo").unwrap());
+
+            assert_eq!(crawled.cache().max_age(), Duration::default());
+            assert_eq!(
+                crawled.cache().stale_while_revalidate(),
+                Duration::default()
+            );
+        }
+
+        #[tokio::test]
         async fn keep_existing_config_file() {
             let directory = tempdir().unwrap();
             let file = directory.path().join(CONFIG_FILE);
