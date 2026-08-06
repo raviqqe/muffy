@@ -642,6 +642,17 @@ mod tests {
         use tempfile::tempdir;
         use tokio::fs::read_to_string;
 
+        async fn initialize(directory: &Path) -> Config {
+            initialize_config(directory).await.unwrap();
+
+            muffy::compile_config(
+                muffy::read_config(&directory.join(CONFIG_FILE))
+                    .await
+                    .unwrap(),
+            )
+            .unwrap()
+        }
+
         #[test]
         fn parse_arguments() {
             assert!(matches!(
@@ -654,14 +665,7 @@ mod tests {
         async fn initialize_valid_config() {
             let directory = tempdir().unwrap();
 
-            initialize_config(directory.path()).await.unwrap();
-
-            let config = muffy::compile_config(
-                muffy::read_config(&directory.path().join(CONFIG_FILE))
-                    .await
-                    .unwrap(),
-            )
-            .unwrap();
+            let config = initialize(directory.path()).await;
 
             assert!(config.persistent_cache());
             assert_eq!(
@@ -675,14 +679,7 @@ mod tests {
         async fn cache_external_links_but_not_crawled_pages() {
             let directory = tempdir().unwrap();
 
-            initialize_config(directory.path()).await.unwrap();
-
-            let config = muffy::compile_config(
-                muffy::read_config(&directory.path().join(CONFIG_FILE))
-                    .await
-                    .unwrap(),
-            )
-            .unwrap();
+            let config = initialize(directory.path()).await;
             let week = Duration::from_secs(7 * 24 * 60 * 60);
 
             let external = config.site(&Url::parse("https://foo.com/bar").unwrap());
@@ -697,6 +694,28 @@ mod tests {
                 crawled.cache().stale_while_revalidate(),
                 Duration::default()
             );
+        }
+
+        #[tokio::test]
+        async fn retry_transient_failures() {
+            let directory = tempdir().unwrap();
+
+            let config = initialize(directory.path()).await;
+            let statuses = [
+                StatusCode::REQUEST_TIMEOUT,
+                StatusCode::BAD_GATEWAY,
+                StatusCode::SERVICE_UNAVAILABLE,
+                StatusCode::GATEWAY_TIMEOUT,
+            ]
+            .into_iter()
+            .collect();
+
+            for url in ["https://foo.com/bar", "https://example.com/foo"] {
+                let site = config.site(&Url::parse(url).unwrap());
+
+                assert_eq!(site.retry().count(), 3);
+                assert_eq!(site.retry().statuses(), &statuses);
+            }
         }
 
         #[tokio::test]
