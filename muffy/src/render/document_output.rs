@@ -1,4 +1,4 @@
-use super::{element_output::RenderedElementOutput, utility::abbreviate_url};
+use super::{element_output::RenderedElementOutput, utility::truncate_url};
 use alloc::borrow::Cow;
 use serde::Serialize;
 
@@ -29,7 +29,7 @@ impl<'a> RenderedDocumentOutput<'a> {
 impl<'a> From<&'a crate::DocumentOutput> for RenderedDocumentOutput<'a> {
     fn from(output: &'a crate::DocumentOutput) -> Self {
         Self {
-            url: abbreviate_url(output.url().as_str()),
+            url: truncate_url(output.url().as_str()),
             elements: output.elements().map(RenderedElementOutput::from).collect(),
         }
     }

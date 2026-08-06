@@ -1,4 +1,4 @@
-use super::utility::abbreviate_url;
+use super::utility::truncate_url;
 use crate::element::Element;
 use alloc::borrow::Cow;
 use serde::Serialize;
@@ -27,7 +27,7 @@ impl<'a> From<&'a Element> for RenderedElement<'a> {
             attributes: element
                 .attributes()
                 .iter()
-                .map(|(name, value)| (name.as_str(), abbreviate_url(value)))
+                .map(|(name, value)| (name.as_str(), truncate_url(value)))
                 .collect(),
         }
     }

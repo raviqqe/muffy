@@ -1,4 +1,4 @@
-use super::utility::abbreviate_url;
+use super::utility::truncate_url;
 use crate::response::Response;
 use alloc::borrow::Cow;
 use http::StatusCode;
@@ -29,7 +29,7 @@ impl<'a> RenderedResponse<'a> {
 impl<'a> From<&'a Response> for RenderedResponse<'a> {
     fn from(response: &'a Response) -> Self {
         Self {
-            url: abbreviate_url(response.url().as_str()),
+            url: truncate_url(response.url().as_str()),
             status: response.status(),
             latency: response.duration().as_millis(),
         }
@@ -58,17 +58,20 @@ mod tests {
     }
 
     #[test]
-    fn abbreviate_data_url() {
+    fn truncate_data_url() {
         assert_eq!(
             RenderedResponse::from(&Response::new(
-                Url::parse("data:image/svg+xml;base64,PHN2Zy8+").unwrap(),
+                Url::parse(
+                    "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4="
+                )
+                .unwrap(),
                 Default::default(),
                 Default::default(),
                 Default::default(),
                 Default::default(),
             ))
             .url(),
-            "data:image/svg+xml"
+            "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcm..."
         );
     }
 }

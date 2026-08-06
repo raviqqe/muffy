@@ -258,7 +258,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_data_urls_without_bodies() {
+        async fn render_truncated_data_urls() {
             let mut string = vec![];
 
             render_document(
@@ -343,7 +343,7 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn render_data_urls_without_bodies() {
+        async fn render_truncated_data_urls() {
             colored::control::set_override(false);
             let mut string = vec![];
 
