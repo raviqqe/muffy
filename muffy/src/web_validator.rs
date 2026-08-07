@@ -556,6 +556,12 @@ impl WebValidator {
 
         let attributes = HashMap::from_iter(element.attributes());
         let config = context.config().site(site).validation().svg();
+        let link_attributes = HREF_ATTRIBUTES
+            .iter()
+            .copied()
+            .filter(|name| attributes.contains_key(name))
+            .collect::<Vec<_>>();
+
         let mut items = if root
             && let Some(config) = config
             && !config
@@ -580,11 +586,6 @@ impl WebValidator {
         } else {
             vec![]
         };
-        let link_attributes = HREF_ATTRIBUTES
-            .iter()
-            .copied()
-            .filter(|name| attributes.contains_key(name))
-            .collect::<Vec<_>>();
 
         for name in &link_attributes {
             if let Some(value) = attributes.get(name) {
