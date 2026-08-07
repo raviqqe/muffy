@@ -88,6 +88,14 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
             }
         }
         Pattern::Many0(operand) | Pattern::Many1(operand) => {
+            // TODO Implement the exact Relax NG semantics for attributes in
+            // repetitions. Repeated attribute alternatives compile into at
+            // most or exactly one attribute although the specification allows
+            // arbitrary subsets, mixed repetitions lose their at-least-one
+            // obligations, and pure attribute groups are accepted although
+            // prohibited. Every attribute repetition in the vendored schemas
+            // is a single wildcard alternative compiled correctly today, but
+            // the semantics might drift silently when the schemas update.
             let many1 = matches!(pattern, Pattern::Many1(_));
             let mut attributes = vec![];
             let mut contents = vec![];
