@@ -59,7 +59,7 @@ pub fn defined_names(grammar: &Grammar) -> BTreeSet<Identifier> {
             GrammarContent::Div(grammar) => defined_names(grammar),
             GrammarContent::Annotation(_)
             | GrammarContent::Include(_)
-            | GrammarContent::Start { .. } => BTreeSet::new(),
+            | GrammarContent::Start { .. } => Default::default(),
         })
         .collect()
 }
