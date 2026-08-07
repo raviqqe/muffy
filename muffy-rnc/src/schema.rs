@@ -1,8 +1,8 @@
 mod error;
 
 pub use self::error::SchemaError;
-use crate::ast::{Combine, Definition, Identifier, Pattern};
-use alloc::collections::BTreeMap;
+use crate::ast::{Combine, Definition, Grammar, GrammarContent, Identifier, Pattern};
+use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
 
 /// A definition set.
@@ -13,9 +13,8 @@ pub struct DefinitionSet {
 
 impl DefinitionSet {
     /// Defines a pattern, merging it into an existing definition by its
-    /// combine operator. If `replace` is `true`, plain definitions replace
-    /// existing ones as in include override blocks.
-    pub fn define(&mut self, definition: &Definition, replace: bool) -> Result<(), SchemaError> {
+    /// combine operator.
+    pub fn define(&mut self, definition: &Definition) -> Result<(), SchemaError> {
         let pattern = definition.pattern.clone();
 
         if let Some(combine) = definition.combine
@@ -29,8 +28,7 @@ impl DefinitionSet {
 
             combine_patterns(existing, pattern, combine);
             *operator = Some(combine);
-        } else if !replace
-            && definition.combine.is_none()
+        } else if definition.combine.is_none()
             && let Some((Some(operator), existing)) = self.definitions.get_mut(&definition.name)
         {
             combine_patterns(existing, pattern, *operator);
@@ -49,6 +47,21 @@ impl DefinitionSet {
             .map(|(name, (_, pattern))| (name, pattern))
             .collect()
     }
+}
+
+/// Collects names defined in a grammar, descending into div blocks.
+pub fn defined_names(grammar: &Grammar) -> BTreeSet<Identifier> {
+    grammar
+        .contents
+        .iter()
+        .flat_map(|content| match content {
+            GrammarContent::Definition(definition) => [definition.name.clone()].into(),
+            GrammarContent::Div(grammar) => defined_names(grammar),
+            GrammarContent::Annotation(_)
+            | GrammarContent::Include(_)
+            | GrammarContent::Start { .. } => Default::default(),
+        })
+        .collect()
 }
 
 fn combine_patterns(existing: &mut Pattern, new: Pattern, combine: Combine) {
@@ -114,11 +127,7 @@ mod tests {
     use crate::{GrammarContent, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
 
-    fn load(
-        source: &str,
-        replace: bool,
-        definitions: &mut DefinitionSet,
-    ) -> Result<(), SchemaError> {
+    fn load(source: &str, definitions: &mut DefinitionSet) -> Result<(), SchemaError> {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
@@ -128,7 +137,7 @@ mod tests {
                 panic!("definition expected");
             };
 
-            definitions.define(definition, replace)?;
+            definitions.define(definition)?;
         }
 
         Ok(())
@@ -143,7 +152,6 @@ mod tests {
 
         load(
             &format!("root = attribute {name} {{ text }}"),
-            false,
             &mut definitions,
         )
         .unwrap();
@@ -157,7 +165,6 @@ mod tests {
 
         load(
             "root |= attribute foo { text }\nroot |= attribute bar { text }",
-            false,
             &mut definitions,
         )
         .unwrap();
@@ -174,7 +181,6 @@ mod tests {
 
         load(
             "root &= attribute foo { text }\nroot &= attribute bar { text }",
-            false,
             &mut definitions,
         )
         .unwrap();
@@ -194,7 +200,6 @@ mod tests {
 
         load(
             "root = attribute foo { text }\nroot &= attribute bar { text }",
-            false,
             &mut definitions,
         )
         .unwrap();
@@ -214,7 +219,6 @@ mod tests {
 
         load(
             "root &= attribute foo { text }\nroot = attribute bar { text }",
-            false,
             &mut definitions,
         )
         .unwrap();
@@ -232,19 +236,43 @@ mod tests {
     fn overwrite_duplicate_plain_definition() {
         let mut definitions = DefinitionSet::default();
 
-        load("root = empty\nroot = notAllowed", false, &mut definitions).unwrap();
+        load("root = empty\nroot = notAllowed", &mut definitions).unwrap();
 
         assert_eq!(patterns(definitions), vec![Pattern::NotAllowed]);
     }
 
     #[test]
-    fn replace_plain_definition_in_override() {
-        let mut definitions = DefinitionSet::default();
+    fn collect_defined_names() {
+        let SchemaBody::Grammar(grammar) =
+            parse_schema("foo = empty\nbar = empty\nstart = foo\ninclude \"baz.rnc\"")
+                .unwrap()
+                .body
+        else {
+            panic!("grammar expected");
+        };
 
-        load("root = empty", false, &mut definitions).unwrap();
-        load("root = notAllowed", true, &mut definitions).unwrap();
+        assert_eq!(
+            defined_names(&grammar)
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
+            vec!["bar", "foo"]
+        );
+    }
 
-        assert_eq!(patterns(definitions), vec![Pattern::NotAllowed]);
+    #[test]
+    fn collect_defined_names_in_div() {
+        let SchemaBody::Grammar(grammar) = parse_schema("div { foo = empty }").unwrap().body else {
+            panic!("grammar expected");
+        };
+
+        assert_eq!(
+            defined_names(&grammar)
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
+            vec!["foo"]
+        );
     }
 
     #[test]
@@ -252,7 +280,6 @@ mod tests {
         assert!(matches!(
             load(
                 "root |= attribute foo { text }\nroot &= attribute bar { text }",
-                false,
                 &mut DefinitionSet::default(),
             ),
             Err(SchemaError::CombineConflict(_))
@@ -264,7 +291,6 @@ mod tests {
         assert!(matches!(
             load(
                 "root |= attribute foo { text }\nroot = empty\nroot &= attribute bar { text }",
-                false,
                 &mut DefinitionSet::default(),
             ),
             Err(SchemaError::CombineConflict(_))
