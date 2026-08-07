@@ -13,7 +13,7 @@ The static website validator.
 - Recursive link checking of all pages in websites
 - Markup validation of HTML, SVG, and MathML documents
 - Checks of multiple websites with a single configuration file
-- Persistent response caching with configurable cache ages and stale-while-revalidate periods
+- Persistent response caching with configurable cache ages and [stale-while-revalidate](https://datatracker.ietf.org/doc/html/rfc5861#section-3) periods
 - Concurrency and rate limits, and retries with exponential backoff
 - `robots.txt` and sitemap support
 
