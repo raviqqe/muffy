@@ -25,9 +25,6 @@ user-agent = "Muffy/0.2.0"
 svg = {}
 css = true
 
-[sites.external]
-extend = "default"
-
 [sites.main]
 extend = "default"
 roots = [
@@ -63,18 +60,18 @@ ignored_attributes = ["data-.*"]
 ignored_elements = ["p"]
 
 [sites.algo_logic]
-extend = "external"
+extend = "default"
 roots = ["https://algo-logic.info/"]
 fragments_ignored = true
 timeout = "1m"
 
 [sites.crates_io]
-extend = "external"
+extend = "default"
 roots = ["https://crates.io/"]
 statuses = [200, 403, 404]
 
 [sites.github]
-extend = "external"
+extend = "default"
 roots = ["https://github.com/"]
 concurrency = 64
 fragments_ignored = true
@@ -84,17 +81,17 @@ supply = 10
 window = "1s"
 
 [sites.zulip]
-extend = "external"
+extend = "default"
 roots = ["https://prog-lang-sys-ja.zulipchat.com/"]
 fragments_ignored = true
 
 [sites.broad_200]
-extend = "external"
+extend = "default"
 roots = ["https://infoscience.epfl.ch/", "https://www.semanticscholar.org/"]
 statuses = [200, 202]
 
 [sites.rate_limited]
-extend = "external"
+extend = "default"
 roots = [
   "https://dblp.org/",
   "https://www.lambdanote.com/",
@@ -107,7 +104,7 @@ supply = 1
 window = "1s"
 
 [sites.flaky]
-extend = "external"
+extend = "default"
 roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
 timeout = "20s"
 
@@ -115,12 +112,12 @@ timeout = "20s"
 count = 5
 
 [sites.fallible]
-extend = "external"
+extend = "default"
 roots = ["https://wiki.haskell.org/"]
 statuses = [200, 502, 503]
 
 [sites.forbidden]
-extend = "external"
+extend = "default"
 roots = [
   "https://armoredcore.fandom.com/",
   "https://dl.acm.org/",
