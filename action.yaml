@@ -19,14 +19,14 @@ runs:
       run: |
         version=$(grep '^version = ' < ${{ github.action_path }}/Cargo.toml | grep -o '[0-9.]\+')
         echo version=$version >> ${{ github.output }}
-        echo cache-version=${version%.*} >> ${{ github.output }}
+        echo cache_version=${version%.*} >> ${{ github.output }}
     - shell: bash
       run: mkdir -p ~/.cache/muffy
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/muffy
-        key: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.cache-version }}-${{ github.run_id }}
-        restore-keys: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.cache-version }}-
+        key: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.cache_version }}-${{ github.run_id }}
+        restore-keys: muffy-v2-${{ github.workflow }}-${{ github.job }}-${{ strategy.job-index || 0 }}-${{ steps.version.outputs.cache_version }}-
     - shell: bash
       run: >
         docker run --network host
