@@ -1,7 +1,9 @@
 # A driver schema for HTML documents with inline SVG and MathML based on the
 # HTML5 schema and the SVG and MathML driver schema in the Nu Html Checker.
 # We restore the language attribute which the vendored schema defines only in
-# its XML spelling expecting HTML parsers to map the attribute to it.
+# its XML spelling expecting HTML parsers to map the attribute to it. On SVG
+# elements, we also allow both spellings together which the vendored schema
+# treats as mutually exclusive.
 
 include "schema/html5/html5.rnc" {
     common.attrs.lang =
@@ -10,7 +12,15 @@ include "schema/html5/html5.rnc" {
         }
 }
 include "schema/html5/rdfa.rnc"
-include "schema/svg11/svg11.rnc"
+include "schema/svg11/svg11.rnc" {
+    SVG.lang.attrib =
+        attribute xml:lang {
+            LanguageCode.datatype
+        }?,
+        attribute lang {
+            LanguageCode.datatype
+        }?
+}
 include "schema/svg11/inkscape.rnc"
 include "schema/mml3/mathml3-inc.rnc"
 include "schema/.drivers/rdf.rnc"
