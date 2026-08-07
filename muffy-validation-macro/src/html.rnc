@@ -11,7 +11,11 @@ include "schema/html5/html5.rnc" {
 }
 include "schema/html5/rdfa.rnc"
 include "schema/svg11/svg11.rnc"
+include "schema/svg11/inkscape.rnc"
 include "schema/mml3/mathml3-inc.rnc"
+include "schema/.drivers/rdf.rnc"
+
+common.elem.metadata |= rdf.elem
 
 common.elem.phrasing |= svg | math
 
@@ -21,6 +25,8 @@ math.attributes &=
     )?
 
 math.attributes &= aria.global?
+
+SVG.metadata.content |= rdf.elem
 
 SVG.Core.attrib &= aria.global?
 

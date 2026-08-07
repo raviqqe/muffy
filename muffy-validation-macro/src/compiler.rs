@@ -43,7 +43,7 @@ impl<'a> Compiler<'a> {
     fn resolve(&mut self, pattern: &RncPattern) -> Result<Pattern, MacroError> {
         Ok(match pattern {
             RncPattern::Attribute { name_class, .. } => {
-                let names = class_names(name_class, true);
+                let names = class_names(name_class);
 
                 if names.is_empty() {
                     Pattern::NotAllowed
@@ -58,7 +58,7 @@ impl<'a> Compiler<'a> {
                     .collect::<Result<Vec<_>, _>>()?,
             ),
             RncPattern::Element { name_class, .. } => {
-                let names = class_names(name_class, false);
+                let names = class_names(name_class);
 
                 if names.is_empty() {
                     Pattern::NotAllowed
@@ -178,10 +178,26 @@ mod tests {
     }
 
     #[test]
-    fn drop_wildcard_attribute_repetition() {
+    fn resolve_wildcard_attribute_repetition() {
         assert_eq!(
             resolve("root = attribute * { text }*").unwrap(),
-            Pattern::Empty
+            Pattern::many0(attribute("*"))
+        );
+    }
+
+    #[test]
+    fn resolve_namespace_wildcard_attribute() {
+        assert_eq!(
+            resolve("root = attribute inkscape:* { text }").unwrap(),
+            attribute("inkscape:*")
+        );
+    }
+
+    #[test]
+    fn resolve_namespace_wildcard_element() {
+        assert_eq!(
+            resolve("root = element sodipodi:* { empty }").unwrap(),
+            Pattern::Element(["sodipodi:*".into()].into())
         );
     }
 

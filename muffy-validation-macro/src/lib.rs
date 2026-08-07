@@ -43,7 +43,13 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
 
     for definition in definitions.values() {
         for (name_class, pattern) in collect_elements(definition) {
-            let names = class_names(name_class, false);
+            // Elements of any names constrain only content models of their parents.
+            // TODO Support position-aware validation to exempt descendants of
+            // elements with unconstrained content models from name validation.
+            let names = class_names(name_class)
+                .into_iter()
+                .filter(|name| name != "*")
+                .collect::<Vec<_>>();
 
             if names.is_empty() {
                 continue;
@@ -65,6 +71,7 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
     let mut attribute_set_indexes = BTreeMap::<Vec<AttributeSet>, usize>::new();
     let mut content_indexes = BTreeMap::<Pattern, usize>::new();
     let mut element_matches = vec![];
+    let mut wildcard_matches = vec![];
 
     for (name, variants) in &element_rules {
         let attributes = variants
@@ -100,8 +107,8 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
             })
             .collect::<Vec<_>>();
 
-        element_matches.push(quote! {
-            #name => {
+        let rule = quote! {
+            {
                 const RULE: Rule = Rule {
                     attributes: &[#(#attributes),*],
                     children: &[#(#children),*],
@@ -110,7 +117,13 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
 
                 validate_rule(element, ignored_attributes, ignored_elements, &RULE)
             }
-        });
+        };
+
+        if let Some(prefix) = name.strip_suffix('*') {
+            wildcard_matches.push(quote! { name if name.starts_with(#prefix) => #rule });
+        } else {
+            element_matches.push(quote! { #name => #rule });
+        }
     }
 
     let attribute_set_definitions = sort_by_index(attribute_set_indexes).map(|(sets, index)| {
@@ -152,6 +165,7 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
             match element.name() {
                 name if ignored_elements.iter().any(|pattern| pattern.is_match(name)) => Ok(()),
                 #(#element_matches)*
+                #(#wildcard_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
         }
