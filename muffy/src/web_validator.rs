@@ -44,6 +44,7 @@ const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
 const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
 const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
+const SVG_ROOT_ELEMENT: &str = "svg";
 const META_LINK_PROPERTIES: &[&str] = &[
     "og:image",
     "og:audio",
@@ -537,18 +538,25 @@ impl WebValidator {
 
         for node in document.children() {
             if let Node::Element(element) = node
-                && element.namespace() != Some(SVG_NAMESPACE)
                 && let Some(config) = context.config().site(site).validation().svg()
                 && !config
                     .ignored_elements()
                     .iter()
                     .any(|pattern| pattern.is_match(element.name()))
+                && let Some(error) = if element.namespace() != Some(SVG_NAMESPACE) {
+                    Some(ItemError::InvalidNamespace {
+                        actual: element.namespace().map(Into::into),
+                        expected: SVG_NAMESPACE,
+                    })
+                } else if element.name() != SVG_ROOT_ELEMENT {
+                    Some(ItemError::InvalidRootElement {
+                        actual: element.name().into(),
+                        expected: SVG_ROOT_ELEMENT,
+                    })
+                } else {
+                    None
+                }
             {
-                let error = ItemError::InvalidNamespace {
-                    actual: element.namespace().map(Into::into),
-                    expected: SVG_NAMESPACE,
-                };
-
                 futures.push((
                     Element::new(element.name().into(), vec![]),
                     vec![spawn(async move { Err(error) })],
@@ -932,6 +940,7 @@ mod tests {
                     if let Err(
                         error @ (ItemError::Markup(_)
                         | ItemError::InvalidNamespace { .. }
+                        | ItemError::InvalidRootElement { .. }
                         | ItemError::XmlSyntax(_)),
                     ) = result
                     {
@@ -3027,6 +3036,83 @@ mod tests {
                     Some(MarkupConfig::new(
                         vec![],
                         vec![Regex::new("^svg$").unwrap()],
+                    )),
+                )),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(collect_errors(&mut documents).await, BTreeSet::new());
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_root_element() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<circle xmlns="http://www.w3.org/2000/svg" r="1" />"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["root element expected svg but got circle".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_invalid_svg_root_element_of_ignored_element() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<circle xmlns="http://www.w3.org/2000/svg" r="1" />"#
+                                .as_bytes()
+                                .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default().set_validation(crate::ValidationConfig::default().set_svg(
+                    Some(MarkupConfig::new(
+                        vec![],
+                        vec![Regex::new("^circle$").unwrap()],
                     )),
                 )),
             )

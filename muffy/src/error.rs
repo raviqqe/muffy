@@ -142,6 +142,13 @@ pub enum ItemError {
         /// An expected namespace.
         expected: &'static str,
     },
+    /// An invalid root element.
+    InvalidRootElement {
+        /// An actual element name.
+        actual: String,
+        /// An expected element name.
+        expected: &'static str,
+    },
     /// An invalid scheme.
     InvalidScheme(String),
     /// A markup error.
@@ -180,6 +187,12 @@ impl Display for ItemError {
                     formatter,
                     "namespace expected {expected} but got {}",
                     actual.as_deref().unwrap_or("none")
+                )
+            }
+            Self::InvalidRootElement { actual, expected } => {
+                write!(
+                    formatter,
+                    "root element expected {expected} but got {actual}"
                 )
             }
             Self::InvalidScheme(scheme) => write!(formatter, "invalid scheme \"{scheme}\""),
@@ -286,6 +299,20 @@ mod tests {
                 }
             ),
             "namespace expected http://www.w3.org/2000/svg but got none"
+        );
+    }
+
+    #[test]
+    fn display_item_root_element_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::InvalidRootElement {
+                    actual: "circle".into(),
+                    expected: "svg",
+                }
+            ),
+            "root element expected svg but got circle"
         );
     }
 
