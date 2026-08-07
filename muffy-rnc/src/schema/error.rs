@@ -4,14 +4,14 @@ use core::{
     fmt::{self, Display, Formatter},
 };
 
-/// A definition error.
+/// A schema error.
 #[derive(Debug, PartialEq, Eq)]
-pub enum DefinitionError {
+pub enum SchemaError {
     /// Conflicting combine operators.
     CombineConflict(Identifier),
 }
 
-impl Display for DefinitionError {
+impl Display for SchemaError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::CombineConflict(name) => {
@@ -21,4 +21,4 @@ impl Display for DefinitionError {
     }
 }
 
-impl Error for DefinitionError {}
+impl Error for SchemaError {}

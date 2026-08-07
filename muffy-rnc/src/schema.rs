@@ -1,6 +1,6 @@
 mod error;
 
-pub use self::error::DefinitionError;
+pub use self::error::SchemaError;
 use crate::ast::{Combine, Definition, Identifier, Pattern};
 use alloc::collections::BTreeMap;
 use core::mem::replace;
@@ -15,11 +15,7 @@ impl DefinitionSet {
     /// Defines a pattern, merging it into an existing definition by its
     /// combine operator. If `replace` is `true`, plain definitions replace
     /// existing ones as in include override blocks.
-    pub fn define(
-        &mut self,
-        definition: &Definition,
-        replace: bool,
-    ) -> Result<(), DefinitionError> {
+    pub fn define(&mut self, definition: &Definition, replace: bool) -> Result<(), SchemaError> {
         let pattern = definition.pattern.clone();
 
         if let Some(combine) = definition.combine
@@ -28,7 +24,7 @@ impl DefinitionSet {
             if let Some(operator) = *operator
                 && operator != combine
             {
-                return Err(DefinitionError::CombineConflict(definition.name.clone()));
+                return Err(SchemaError::CombineConflict(definition.name.clone()));
             }
 
             combine_patterns(existing, pattern, combine);
@@ -122,7 +118,7 @@ mod tests {
         source: &str,
         replace: bool,
         definitions: &mut DefinitionSet,
-    ) -> Result<(), DefinitionError> {
+    ) -> Result<(), SchemaError> {
         let SchemaBody::Grammar(grammar) = parse_schema(source).unwrap().body else {
             panic!("grammar expected");
         };
@@ -259,7 +255,7 @@ mod tests {
                 false,
                 &mut DefinitionSet::default(),
             ),
-            Err(DefinitionError::CombineConflict(_))
+            Err(SchemaError::CombineConflict(_))
         ));
     }
 
@@ -271,7 +267,7 @@ mod tests {
                 false,
                 &mut DefinitionSet::default(),
             ),
-            Err(DefinitionError::CombineConflict(_))
+            Err(SchemaError::CombineConflict(_))
         ));
     }
 }
