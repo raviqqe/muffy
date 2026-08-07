@@ -41,7 +41,7 @@ const DATA_SCHEME: &str = "data";
 const DOCUMENT_SCHEMES: &[&str] = &["http", "https"];
 const SVG_MEDIA_TYPE: &str = "image/svg+xml";
 const PSEUDO_DOCUMENT_ELEMENT: &str = "#document";
-const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name"];
+const FRAGMENT_ATTRIBUTES: &[&str] = &["id", "name", "xml:id"];
 const HREF_ATTRIBUTES: &[&str] = &["href", "xlink:href"];
 const SVG_NAMESPACE: &str = "http://www.w3.org/2000/svg";
 const META_LINK_PROPERTIES: &[&str] = &[
@@ -2710,6 +2710,58 @@ mod tests {
                                 r#"
                                 <svg xmlns="http://www.w3.org/2000/svg">
                                     <symbol id="icon" />
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_xml_id_fragment_for_svg() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<a href="https://foo.com/sprite.svg#icon"/>"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/sprite.svg",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <symbol xml:id="icon" />
                                 </svg>
                                 "#
                             )
