@@ -1,5 +1,5 @@
 use alloc::collections::BTreeSet;
-use muffy_rnc::{Identifier, NameClass};
+use muffy_rnc::NameClass;
 
 // TODO Distinguish names in different namespaces so that schemas of multiple
 // languages (e.g. HTML, SVG, and MathML) can compose without collisions of
@@ -7,10 +7,10 @@ use muffy_rnc::{Identifier, NameClass};
 pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
         NameClass::Name(name) => {
-            let local = identifier_string(&name.local);
+            let local = name.local.to_string();
 
             [if let Some(prefix) = &name.prefix {
-                format!("{}:{local}", identifier_string(prefix))
+                format!("{prefix}:{local}")
             } else {
                 local
             }]
@@ -18,7 +18,7 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
         }
         NameClass::AnyName => ["*".into()].into(),
         NameClass::NamespaceName(prefix) => [if let Some(prefix) = prefix {
-            format!("{}:*", identifier_string(prefix))
+            format!("{prefix}:*")
         } else {
             "*".into()
         }]
@@ -28,13 +28,4 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
         // embed elements).
         NameClass::Except { .. } => Default::default(),
     }
-}
-
-pub fn identifier_string(identifier: &Identifier) -> String {
-    identifier
-        .sub_components
-        .iter()
-        .fold(identifier.component.clone(), |string, component| {
-            string + "." + component
-        })
 }
