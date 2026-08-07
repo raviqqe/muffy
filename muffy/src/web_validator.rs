@@ -537,34 +537,7 @@ impl WebValidator {
         }
 
         for node in document.children() {
-            let items = if let Node::Element(element) = node
-                && let Some(config) = context.config().site(site).validation().svg()
-                && !config
-                    .ignored_elements()
-                    .iter()
-                    .any(|pattern| pattern.is_match(element.name()))
-            {
-                [
-                    (element.namespace() != Some(SVG_NAMESPACE)).then(|| {
-                        ItemError::InvalidNamespace {
-                            actual: element.namespace().map(Into::into),
-                            expected: SVG_NAMESPACE,
-                        }
-                    }),
-                    (element.name() != SVG_ROOT_ELEMENT).then(|| ItemError::InvalidRootElement {
-                        actual: element.name().into(),
-                        expected: SVG_ROOT_ELEMENT,
-                    }),
-                ]
-                .into_iter()
-                .flatten()
-                .map(|error| spawn(async move { Err(error) }))
-                .collect()
-            } else {
-                vec![]
-            };
-
-            self.validate_svg_element(context, &base, site, node, items, &mut futures);
+            self.validate_svg_element(context, &base, site, node, true, &mut futures);
         }
 
         Ok(futures)
@@ -576,13 +549,37 @@ impl WebValidator {
         base: &Arc<Url>,
         site: &Arc<Url>,
         node: &Node,
-        items: Vec<JoinHandle<Result<ItemOutput, ItemError>>>,
+        root: bool,
         futures: &mut Vec<ElementFuture>,
     ) {
         let Node::Element(element) = node else { return };
 
         let attributes = HashMap::from_iter(element.attributes());
-        let mut items = items;
+        let config = context.config().site(site).validation().svg();
+        let mut items = if root
+            && let Some(config) = config
+            && !config
+                .ignored_elements()
+                .iter()
+                .any(|pattern| pattern.is_match(element.name()))
+        {
+            [
+                (element.namespace() != Some(SVG_NAMESPACE)).then(|| ItemError::InvalidNamespace {
+                    actual: element.namespace().map(Into::into),
+                    expected: SVG_NAMESPACE,
+                }),
+                (element.name() != SVG_ROOT_ELEMENT).then(|| ItemError::InvalidRootElement {
+                    actual: element.name().into(),
+                    expected: SVG_ROOT_ELEMENT,
+                }),
+            ]
+            .into_iter()
+            .flatten()
+            .map(|error| spawn(async move { Err(error) }))
+            .collect()
+        } else {
+            vec![]
+        };
         let link_attributes = HREF_ATTRIBUTES
             .iter()
             .copied()
@@ -601,8 +598,7 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if let Some(config) = context.config().site(site).validation().svg()
-        {
+        let validation_result = if let Some(config) = config {
             muffy_validation::validate_html_element(
                 element,
                 config.ignored_attributes(),
@@ -629,7 +625,7 @@ impl WebValidator {
         }
 
         for node in element.children() {
-            self.validate_svg_element(context, base, site, node, vec![], futures);
+            self.validate_svg_element(context, base, site, node, false, futures);
         }
     }
 
