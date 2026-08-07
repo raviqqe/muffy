@@ -3,6 +3,26 @@ use alloc::sync::Arc;
 use html5ever::{QualName, ns};
 use markup5ever_rcdom::NodeData;
 
+// TODO Is it valid to handle all markup languages with a single driver schema?
+const DEFAULT_NAMESPACES: &[&str] = &[
+    "",
+    "http://www.w3.org/1998/Math/MathML",
+    "http://www.w3.org/1999/xhtml",
+    "http://www.w3.org/2000/svg",
+];
+const NAMESPACE_PREFIXES: &[(&str, &str)] = &[
+    ("http://creativecommons.org/ns#", "cc"),
+    ("http://purl.org/dc/elements/1.1/", "dc"),
+    (
+        "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
+        "sodipodi",
+    ),
+    ("http://www.inkscape.org/namespaces/inkscape", "inkscape"),
+    ("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf"),
+    ("http://www.w3.org/1999/xlink", "xlink"),
+    ("http://www.w3.org/XML/1998/namespace", "xml"),
+];
+
 /// A node.
 #[derive(Debug, Eq, PartialEq)]
 pub enum Node {
@@ -47,7 +67,14 @@ impl Node {
 }
 
 fn qualify_name(name: &QualName) -> String {
-    if let Some(prefix) = &name.prefix {
+    if let Some(prefix) = NAMESPACE_PREFIXES
+        .iter()
+        .find_map(|(namespace, prefix)| (*name.ns == **namespace).then_some(prefix))
+    {
+        format!("{prefix}:{}", name.local)
+    } else if DEFAULT_NAMESPACES.contains(&&*name.ns) {
+        name.local.to_string()
+    } else if let Some(prefix) = &name.prefix {
         format!("{prefix}:{}", name.local)
     } else {
         name.local.to_string()

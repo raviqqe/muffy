@@ -142,6 +142,60 @@ mod tests {
     }
 
     #[test]
+    fn canonicalize_element_prefix() {
+        assert_eq!(
+            parse(concat!(
+                r#"<s:svg xmlns:s="http://www.w3.org/2000/svg">"#,
+                "<s:circle/>",
+                "</s:svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
+                vec![],
+                vec![element(Some(SVG_NAMESPACE), "circle", vec![], vec![])],
+            )])
+        );
+    }
+
+    #[test]
+    fn canonicalize_attribute_prefix() {
+        assert_eq!(
+            parse(concat!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink">"#,
+                r#"<image x:href="/foo.png"/>"#,
+                "</svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
+                vec![],
+                vec![element(
+                    Some(SVG_NAMESPACE),
+                    "image",
+                    vec![("xlink:href", "/foo.png")],
+                    vec![],
+                )],
+            )])
+        );
+    }
+
+    #[test]
+    fn keep_unknown_namespace_prefix() {
+        assert_eq!(
+            parse(r#"<f:thing xmlns:f="http://foo.example"/>"#).unwrap(),
+            Document::new(vec![element(
+                Some("http://foo.example"),
+                "f:thing",
+                vec![],
+                vec![],
+            )])
+        );
+    }
+
+    #[test]
     fn keep_html_element_in_svg_element() {
         assert_eq!(
             parse(r#"<svg xmlns="http://www.w3.org/2000/svg"><p>foo</p></svg>"#).unwrap(),
