@@ -2973,6 +2973,41 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn validate_empty_svg_document() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            vec![],
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid XML: Unexpected EOF in start phase".into()].into()
+            );
+        }
+
+        #[tokio::test]
         async fn validate_invalid_svg_namespace() {
             let mut documents = validate_svg_content(
                 StubHttpClient::new(
