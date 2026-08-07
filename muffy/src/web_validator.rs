@@ -3311,6 +3311,71 @@ mod tests {
             );
         }
 
+        #[tokio::test]
+        async fn report_root_errors_and_link_result_in_single_element_output() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<image href="https://foo.com/bar" />"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            let mut elements = vec![];
+
+            while let Some(document) = documents.next().await {
+                for element in document.unwrap().elements() {
+                    elements.push((
+                        element.element().name().to_string(),
+                        element.element().attributes().to_vec(),
+                        element.results().filter(|result| result.is_ok()).count(),
+                        element
+                            .results()
+                            .filter_map(|result| result.as_ref().err().map(ToString::to_string))
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+            }
+
+            assert_eq!(
+                elements,
+                vec![(
+                    "image".into(),
+                    vec![("href".into(), "https://foo.com/bar".into())],
+                    1,
+                    vec![
+                        "namespace expected http://www.w3.org/2000/svg but got none".into(),
+                        "root element expected svg but got image".into(),
+                    ]
+                )]
+            );
+        }
+
         #[test]
         fn validate_svg_document_type() {
             assert_eq!(
