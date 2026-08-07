@@ -2,4 +2,7 @@
 
 set -e
 
-echo version=$(yq .workspace.package.version Cargo.toml) >>$GITHUB_OUTPUT
+version=$(yq .workspace.package.version Cargo.toml)
+
+echo version=$version >>$GITHUB_OUTPUT
+echo cache-version=${version%.*} >>$GITHUB_OUTPUT
