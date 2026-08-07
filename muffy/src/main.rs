@@ -1,6 +1,6 @@
 #![doc = include_str!("../README.md")]
 
-use clap::{Parser, crate_version};
+use clap::Parser;
 use core::{error::Error, str::FromStr};
 use dirs::cache_dir;
 use duration_string::DurationString;
@@ -42,7 +42,11 @@ static CACHE_DIRECTORY: LazyLock<PathBuf> = LazyLock::new(|| {
     cache_dir()
         .unwrap_or_else(temp_dir)
         .join(DATABASE_DIRECTORY)
-        .join(crate_version!())
+        .join(concat!(
+            env!("CARGO_PKG_VERSION_MAJOR"),
+            ".",
+            env!("CARGO_PKG_VERSION_MINOR")
+        ))
         .join(FJALL_DIRECTORY)
 });
 
@@ -603,7 +607,7 @@ mod tests {
     #[test]
     fn check_cache_directory_suffix() {
         let expected = PathBuf::from(DATABASE_DIRECTORY)
-            .join(crate_version!())
+            .join(env!("CARGO_PKG_VERSION").rsplit_once('.').unwrap().0)
             .join(FJALL_DIRECTORY);
 
         assert!(CACHE_DIRECTORY.ends_with(&expected));
