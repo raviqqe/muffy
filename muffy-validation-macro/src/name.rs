@@ -20,7 +20,8 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
         NameClass::NamespaceName(prefix) => [if let Some(prefix) = prefix {
             format!("{prefix}:*")
         } else {
-            "*".into()
+            // Wildcards in the empty namespace match names without prefixes.
+            ":*".into()
         }]
         .into(),
         NameClass::Choice(classes) => classes.iter().flat_map(class_names).collect(),
