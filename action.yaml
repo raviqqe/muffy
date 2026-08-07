@@ -31,6 +31,7 @@ runs:
         --env XDG_CACHE_HOME=/cache
         --mount type=bind,src=$HOME/.cache/muffy,dst=/cache/muffy
         --mount type=bind,src=.,dst=/work
+        --user $(id -u):$(id -g)
         --workdir /work
         raviqqe/muffy:${{ steps.version.outputs.version }}
         check
