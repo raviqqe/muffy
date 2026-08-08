@@ -541,36 +541,7 @@ impl WebValidator {
         }
 
         for node in document.children() {
-            if let Node::Element(element) = node
-                && let Some(config) = context.config().site(site).validation().svg()
-                && !config
-                    .ignored_elements()
-                    .iter()
-                    .any(|pattern| pattern.is_match(element.name()))
-            {
-                let items = [
-                    (element.namespace() != Some(SVG_NAMESPACE)).then(|| {
-                        ItemError::InvalidNamespace {
-                            actual: element.namespace().map(Into::into),
-                            expected: SVG_NAMESPACE,
-                        }
-                    }),
-                    (element.name() != SVG_ROOT_ELEMENT).then(|| ItemError::InvalidRootElement {
-                        actual: element.name().into(),
-                        expected: SVG_ROOT_ELEMENT,
-                    }),
-                ]
-                .into_iter()
-                .flatten()
-                .map(|error| spawn(async move { Err(error) }))
-                .collect::<Vec<_>>();
-
-                if !items.is_empty() {
-                    futures.push((Element::new(element.name().into(), vec![]), items));
-                }
-            }
-
-            self.validate_svg_element(context, &base, site, node, &mut futures);
+            self.validate_svg_element(context, &base, site, node, true, &mut futures);
         }
 
         Ok(futures)
@@ -582,17 +553,43 @@ impl WebValidator {
         base: &Arc<Url>,
         site: &Arc<Url>,
         node: &Node,
+        root: bool,
         futures: &mut Vec<ElementFuture>,
     ) {
         let Node::Element(element) = node else { return };
 
         let attributes = HashMap::from_iter(element.attributes());
-        let mut items = vec![];
+        let config = context.config().site(site).validation().svg();
         let link_attributes = HREF_ATTRIBUTES
             .iter()
             .copied()
             .filter(|name| attributes.contains_key(name))
             .collect::<Vec<_>>();
+
+        let mut items = if root
+            && let Some(config) = config
+            && !config
+                .ignored_elements()
+                .iter()
+                .any(|pattern| pattern.is_match(element.name()))
+        {
+            [
+                (element.namespace() != Some(SVG_NAMESPACE)).then(|| ItemError::InvalidNamespace {
+                    actual: element.namespace().map(Into::into),
+                    expected: SVG_NAMESPACE,
+                }),
+                (element.name() != SVG_ROOT_ELEMENT).then(|| ItemError::InvalidRootElement {
+                    actual: element.name().into(),
+                    expected: SVG_ROOT_ELEMENT,
+                }),
+            ]
+            .into_iter()
+            .flatten()
+            .map(|error| spawn(async move { Err(error) }))
+            .collect()
+        } else {
+            vec![]
+        };
 
         for name in &link_attributes {
             if let Some(value) = attributes.get(name) {
@@ -606,8 +603,7 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if let Some(config) = context.config().site(site).validation().svg()
-        {
+        let validation_result = if let Some(config) = config {
             muffy_validation::validate_html_element(
                 element,
                 config.ignored_attributes(),
@@ -638,7 +634,7 @@ impl WebValidator {
         // independently, so ignoring a subtree root does not silence
         // unknown-tag errors of its descendants.
         for node in element.children() {
-            self.validate_svg_element(context, base, site, node, futures);
+            self.validate_svg_element(context, base, site, node, false, futures);
         }
     }
 
@@ -3256,6 +3252,127 @@ mod tests {
                     "root element expected svg but got circle".into(),
                 ]
                 .into()
+            );
+        }
+
+        #[tokio::test]
+        async fn report_root_and_markup_errors_in_single_element_output() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<circle r="1" foo="bar" />"#.as_bytes().to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            let mut elements = vec![];
+
+            while let Some(document) = documents.next().await {
+                for element in document.unwrap().elements() {
+                    elements.push((
+                        element.element().name().to_string(),
+                        element
+                            .results()
+                            .filter_map(|result| result.as_ref().err().map(ToString::to_string))
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+            }
+
+            assert_eq!(
+                elements,
+                vec![(
+                    "circle".into(),
+                    vec![
+                        "namespace expected http://www.w3.org/2000/svg but got none".into(),
+                        "root element expected svg but got circle".into(),
+                        "invalid attributes: foo (not allowed)".into(),
+                    ]
+                )]
+            );
+        }
+
+        #[tokio::test]
+        async fn report_root_errors_and_link_result_in_single_element_output() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            r#"<image href="https://foo.com/bar" />"#.as_bytes().to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            let mut elements = vec![];
+
+            while let Some(document) = documents.next().await {
+                for element in document.unwrap().elements() {
+                    elements.push((
+                        element.element().name().to_string(),
+                        element.element().attributes().to_vec(),
+                        element.results().filter(|result| result.is_ok()).count(),
+                        element
+                            .results()
+                            .filter_map(|result| result.as_ref().err().map(ToString::to_string))
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+            }
+
+            assert_eq!(
+                elements,
+                vec![(
+                    "image".into(),
+                    vec![("href".into(), "https://foo.com/bar".into())],
+                    1,
+                    vec![
+                        "namespace expected http://www.w3.org/2000/svg but got none".into(),
+                        "root element expected svg but got image".into(),
+                    ]
+                )]
             );
         }
 
