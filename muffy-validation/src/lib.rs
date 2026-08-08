@@ -884,6 +884,13 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_language_attributes() {
+            let element = create_element("svg", vec![("lang", "en"), ("xml:lang", "en")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_valid_aria_attributes() {
             let element = create_element(
                 "svg",
