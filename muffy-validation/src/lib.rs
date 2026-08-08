@@ -999,6 +999,7 @@ mod tests {
 
         #[test]
         fn validate_valid_editor_element_with_plain_attributes() {
+            // cspell: ignore bordercolor pagecolor
             let element = create_element(
                 "sodipodi:namedview",
                 vec![
