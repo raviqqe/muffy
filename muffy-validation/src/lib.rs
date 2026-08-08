@@ -998,6 +998,37 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_editor_element_with_plain_attributes() {
+            let element = create_element(
+                "sodipodi:namedview",
+                vec![
+                    ("bordercolor", "#666666"),
+                    ("id", "base"),
+                    ("pagecolor", "#ffffff"),
+                ],
+                vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_prefixed_editor_attribute() {
+            let element = create_element("sodipodi:namedview", vec![("none:foo", "1")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("none:foo".into(), [AttributeError::NotAllowed].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_valid_editor_attributes() {
             let element = create_element(
                 "g",

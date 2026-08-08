@@ -242,11 +242,16 @@ fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str>
     if let Ok(index) = names.binary_search(&name) {
         Some(names[index])
     } else {
-        names.iter().copied().find(|pattern| {
-            pattern
-                .strip_suffix('*')
-                .is_some_and(|prefix| name.starts_with(prefix))
-        })
+        names
+            .iter()
+            .copied()
+            .find(|pattern| match pattern.strip_suffix('*') {
+                // Wildcards in the empty namespace match names without
+                // prefixes.
+                Some(":") => !name.contains(':'),
+                Some(prefix) => name.starts_with(prefix),
+                None => false,
+            })
     }
 }
 

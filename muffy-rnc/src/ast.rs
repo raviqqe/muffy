@@ -213,7 +213,8 @@ pub enum NameClass {
     },
     /// A name.
     Name(Name),
-    /// A namespace wildcard for a prefix.
+    /// A namespace wildcard for a prefix where a missing prefix represents
+    /// the empty namespace.
     NamespaceName(Option<Identifier>),
 }
 

@@ -8,6 +8,7 @@ mod content;
 mod definition;
 mod error;
 mod name;
+mod namespace;
 mod pattern;
 
 use self::{
