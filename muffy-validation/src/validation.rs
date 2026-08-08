@@ -246,8 +246,6 @@ fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str>
             .iter()
             .copied()
             .find(|pattern| match pattern.strip_suffix('*') {
-                // Wildcards in the empty namespace match names without
-                // prefixes.
                 Some(":") => !name.contains(':'),
                 Some(prefix) => name.starts_with(prefix),
                 None => false,
