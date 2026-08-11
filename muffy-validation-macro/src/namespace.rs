@@ -4,8 +4,7 @@ use muffy_rnc::{
     SchemaBody,
 };
 
-// Canonical prefixes of namespace URIs consistent with document name
-// canonicalization in the document crate.
+// TODO Share this table with the document parse logic.
 const CANONICAL_PREFIXES: &[(&str, &str)] = &[
     ("http://creativecommons.org/ns#", "cc"),
     ("http://purl.org/dc/elements/1.1/", "dc"),
@@ -19,9 +18,6 @@ const CANONICAL_PREFIXES: &[(&str, &str)] = &[
     ("http://www.w3.org/XML/1998/namespace", "xml"),
 ];
 
-// Resolves prefixes in element and attribute names into namespace URIs
-// declared in a schema, and renders the names with canonical prefixes.
-// Prefixes of undeclared or unrecognized namespaces are kept as they are.
 pub fn resolve_namespaces(schema: Schema) -> Schema {
     let namespaces = schema
         .declarations
