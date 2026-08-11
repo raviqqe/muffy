@@ -16,8 +16,8 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
             }]
             .into()
         }
-        NameClass::AnyName => ["*".into()].into(),
-        NameClass::NamespaceName(prefix) => [if let Some(prefix) = prefix {
+        NameClass::Any => ["*".into()].into(),
+        NameClass::Namespace(prefix) => [if let Some(prefix) = prefix {
             format!("{prefix}:*")
         } else {
             "*".into()
