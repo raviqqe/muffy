@@ -201,7 +201,7 @@ pub enum DatatypeName {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NameClass {
     /// Any name.
-    AnyName,
+    Any,
     /// A choice of name classes.
     Choice(Vec<Self>),
     /// A name class with exclusions.
@@ -215,7 +215,7 @@ pub enum NameClass {
     Name(Name),
     /// A namespace wildcard for a prefix where a missing prefix represents
     /// the empty namespace.
-    NamespaceName(Option<Identifier>),
+    Namespace(Option<Identifier>),
 }
 
 /// A datatype parameter.

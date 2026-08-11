@@ -140,7 +140,7 @@ mod tests {
             )])
             .unwrap(),
             vec![RncPattern::Attribute {
-                name_class: NameClass::NamespaceName(None),
+                name_class: NameClass::Namespace(None),
                 pattern: RncPattern::Text.into(),
             }]
         );

@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -46,7 +46,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Element {
-                            name_class: NamespaceName(
+                            name_class: Namespace(
                                 Some(
                                     Identifier {
                                         component: "sodipodi",
@@ -150,7 +150,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Element {
-                            name_class: NamespaceName(
+                            name_class: Namespace(
                                 Some(
                                     Identifier {
                                         component: "inkscape",
@@ -333,7 +333,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Attribute {
-                            name_class: NamespaceName(
+                            name_class: Namespace(
                                 Some(
                                     Identifier {
                                         component: "inkscape",
@@ -359,7 +359,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Attribute {
-                            name_class: NamespaceName(
+                            name_class: Namespace(
                                 Some(
                                     Identifier {
                                         component: "sodipodi",
@@ -386,7 +386,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Attribute {
-                            name_class: NamespaceName(
+                            name_class: Namespace(
                                 Some(
                                     Identifier {
                                         component: "none",

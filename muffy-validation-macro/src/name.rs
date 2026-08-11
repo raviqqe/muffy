@@ -6,6 +6,10 @@ use muffy_rnc::NameClass;
 // equal local names, like the driver schemas in the Nu Html Checker expect.
 pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
     match name_class {
+        NameClass::Any => ["*".into()].into(),
+        NameClass::Choice(classes) => classes.iter().flat_map(class_names).collect(),
+        // TODO Support name class exceptions (e.g. arbitrary attributes of embed elements).
+        NameClass::Except { .. } => Default::default(),
         NameClass::Name(name) => {
             let local = name.local.to_string();
 
@@ -16,16 +20,11 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
             }]
             .into()
         }
-        NameClass::AnyName => ["*".into()].into(),
-        NameClass::NamespaceName(prefix) => [if let Some(prefix) = prefix {
+        NameClass::Namespace(prefix) => [if let Some(prefix) = prefix {
             format!("{prefix}:*")
         } else {
             ":*".into()
         }]
         .into(),
-        NameClass::Choice(classes) => classes.iter().flat_map(class_names).collect(),
-        // TODO Support name class exceptions (e.g. arbitrary attributes of
-        // embed elements).
-        NameClass::Except { .. } => Default::default(),
     }
 }

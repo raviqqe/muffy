@@ -142,7 +142,7 @@ fn resolve_name_class(
     namespaces: &BTreeMap<Identifier, String>,
 ) -> NameClass {
     match name_class {
-        NameClass::AnyName => NameClass::AnyName,
+        NameClass::Any => NameClass::Any,
         NameClass::Choice(classes) => NameClass::Choice(
             classes
                 .into_iter()
@@ -154,12 +154,12 @@ fn resolve_name_class(
             except: resolve_name_class(*except, namespaces).into(),
         },
         NameClass::Name(name) => NameClass::Name(resolve_name(name, namespaces)),
-        NameClass::NamespaceName(Some(prefix)) => match namespaces.get(&prefix) {
-            Some(uri) if uri.is_empty() => NameClass::NamespaceName(None),
-            Some(uri) => NameClass::NamespaceName(Some(canonical_prefix(uri).unwrap_or(prefix))),
-            None => NameClass::NamespaceName(Some(prefix)),
+        NameClass::Namespace(Some(prefix)) => match namespaces.get(&prefix) {
+            Some(uri) if uri.is_empty() => NameClass::Namespace(None),
+            Some(uri) => NameClass::Namespace(Some(canonical_prefix(uri).unwrap_or(prefix))),
+            None => NameClass::Namespace(Some(prefix)),
         },
-        NameClass::NamespaceName(None) => NameClass::NamespaceName(None),
+        NameClass::Namespace(None) => NameClass::Namespace(None),
     }
 }
 
@@ -280,7 +280,7 @@ mod tests {
             attribute_name_class(&resolve(
                 "namespace none = \"\"\nroot = attribute none:* { text }"
             )),
-            &NameClass::NamespaceName(None)
+            &NameClass::Namespace(None)
         );
     }
 
@@ -290,7 +290,7 @@ mod tests {
             attribute_name_class(&resolve(
                 "namespace ink = \"http://www.inkscape.org/namespaces/inkscape\"\nroot = attribute ink:* { text }"
             )),
-            &NameClass::NamespaceName(Some(Identifier {
+            &NameClass::Namespace(Some(Identifier {
                 component: "inkscape".into(),
                 sub_components: vec![],
             }))

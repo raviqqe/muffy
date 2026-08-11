@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -104,10 +104,10 @@ Schema {
                         combine: None,
                         pattern: Attribute {
                             name_class: Except {
-                                base: AnyName,
+                                base: Any,
                                 except: Choice(
                                     [
-                                        NamespaceName(
+                                        Namespace(
                                             Some(
                                                 Identifier {
                                                     component: "local",
@@ -115,7 +115,7 @@ Schema {
                                                 },
                                             ),
                                         ),
-                                        NamespaceName(
+                                        Namespace(
                                             Some(
                                                 Identifier {
                                                     component: "m",
@@ -937,8 +937,8 @@ Schema {
                         combine: None,
                         pattern: Element {
                             name_class: Except {
-                                base: AnyName,
-                                except: NamespaceName(
+                                base: Any,
+                                except: Namespace(
                                     Some(
                                         Identifier {
                                             component: "m",
@@ -951,7 +951,7 @@ Schema {
                                 Choice(
                                     [
                                         Attribute {
-                                            name_class: AnyName,
+                                            name_class: Any,
                                             pattern: Text,
                                         },
                                         Text,
