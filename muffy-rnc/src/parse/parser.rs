@@ -350,9 +350,9 @@ fn name_class_choice(input: &str) -> ParserResult<'_, NameClass> {
 
 fn primary_name_class(input: &str) -> ParserResult<'_, NameClass> {
     blanked(alt((
-        value(NameClass::AnyName, tag("*")),
+        value(NameClass::Any, tag("*")),
         map((raw_identifier, char(':'), char('*')), |(prefix, _, _)| {
-            NameClass::NamespaceName(Some(prefix))
+            NameClass::Namespace(Some(prefix))
         }),
         map(name, NameClass::Name),
         parenthesized(name_class),
@@ -737,7 +737,7 @@ mod tests {
 
         #[test]
         fn parse_any_name() {
-            assert_eq!(name_class("*"), Ok(("", NameClass::AnyName)));
+            assert_eq!(name_class("*"), Ok(("", NameClass::Any)));
         }
 
         #[test]
@@ -746,7 +746,7 @@ mod tests {
                 name_class("html:*"),
                 Ok((
                     "",
-                    NameClass::NamespaceName(Some(Identifier {
+                    NameClass::Namespace(Some(Identifier {
                         component: "html".into(),
                         sub_components: vec![],
                     }))
@@ -813,7 +813,7 @@ mod tests {
                 Ok((
                     "",
                     NameClass::Except {
-                        base: Box::new(NameClass::NamespaceName(Some(Identifier {
+                        base: Box::new(NameClass::Namespace(Some(Identifier {
                             component: "html".into(),
                             sub_components: vec![],
                         }))),
@@ -1691,7 +1691,7 @@ mod tests {
 
         #[test]
         fn parse_any_name() {
-            assert_eq!(primary_name_class("*"), Ok(("", NameClass::AnyName)));
+            assert_eq!(primary_name_class("*"), Ok(("", NameClass::Any)));
         }
 
         #[test]
@@ -1700,7 +1700,7 @@ mod tests {
                 primary_name_class("html:*"),
                 Ok((
                     "",
-                    NameClass::NamespaceName(Some(Identifier {
+                    NameClass::Namespace(Some(Identifier {
                         component: "html".into(),
                         sub_components: vec![],
                     }))

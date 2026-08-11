@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -81,7 +81,7 @@ Schema {
                         combine: None,
                         pattern: Many0(
                             Attribute {
-                                name_class: AnyName,
+                                name_class: Any,
                                 pattern: Text,
                             },
                         ),
@@ -98,7 +98,7 @@ Schema {
                         },
                         combine: None,
                         pattern: Element {
-                            name_class: AnyName,
+                            name_class: Any,
                             pattern: Interleave(
                                 [
                                     Name(
