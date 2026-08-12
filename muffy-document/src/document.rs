@@ -1,9 +1,10 @@
 //! Documents.
 
 mod element;
+mod namespace;
 mod node;
 
-pub use self::{element::*, node::*};
+pub use self::{element::*, namespace::*, node::*};
 use alloc::sync::Arc;
 use core::ops::Deref;
 use markup5ever_rcdom::NodeData;
