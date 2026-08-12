@@ -2,8 +2,8 @@ use crate::{
     Identifier,
     ast::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
-        Declaration, Definition, Grammar, GrammarContent, Include, Inherit, Name, NameClass,
-        NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+        Declaration, DefaultNamespaceDeclaration, Definition, Grammar, GrammarContent, Include,
+        Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
     },
 };
 use nom::{
@@ -57,7 +57,7 @@ fn namespace_declaration(input: &str) -> ParserResult<'_, NamespaceDeclaration> 
     .parse(input)
 }
 
-fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
+fn default_namespace_declaration(input: &str) -> ParserResult<'_, DefaultNamespaceDeclaration> {
     map(
         (
             keyword("default"),
@@ -66,7 +66,7 @@ fn default_namespace_declaration(input: &str) -> ParserResult<'_, String> {
             symbol("="),
             literal,
         ),
-        |(_, _, _, _, uri)| uri,
+        |(_, _, prefix, _, uri)| DefaultNamespaceDeclaration { prefix, uri },
     )
     .parse(input)
 }
@@ -1093,7 +1093,27 @@ mod tests {
                 declaration("default namespace = \"http://www.w3.org/1999/xhtml\""),
                 Ok((
                     "",
-                    Declaration::DefaultNamespace("http://www.w3.org/1999/xhtml".into())
+                    Declaration::DefaultNamespace(DefaultNamespaceDeclaration {
+                        prefix: None,
+                        uri: "http://www.w3.org/1999/xhtml".into(),
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_default_namespace_declaration_with_prefix() {
+            assert_eq!(
+                declaration("default namespace svg = \"http://www.w3.org/2000/svg\""),
+                Ok((
+                    "",
+                    Declaration::DefaultNamespace(DefaultNamespaceDeclaration {
+                        prefix: Some(Identifier {
+                            component: "svg".into(),
+                            sub_components: vec![],
+                        }),
+                        uri: "http://www.w3.org/2000/svg".into(),
+                    })
                 ))
             );
         }
