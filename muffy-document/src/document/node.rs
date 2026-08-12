@@ -70,7 +70,7 @@ impl Node {
 pub fn namespace_prefix(namespace: &str) -> Option<&'static str> {
     NAMESPACE_PREFIXES
         .iter()
-        .find_map(|(candidate, prefix)| (*candidate == namespace).then_some(*prefix))
+        .find_map(|(other, prefix)| (*other == namespace).then_some(*prefix))
 }
 
 fn qualify_name(name: &QualName) -> String {
