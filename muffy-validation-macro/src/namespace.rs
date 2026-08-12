@@ -1,22 +1,9 @@
 use alloc::collections::BTreeMap;
+use muffy_document::document::namespace_prefix;
 use muffy_rnc::{
     Declaration, Grammar, GrammarContent, Identifier, Include, Name, NameClass, Pattern, Schema,
     SchemaBody,
 };
-
-// TODO Share this table with the document parse logic.
-const CANONICAL_PREFIXES: &[(&str, &str)] = &[
-    ("http://creativecommons.org/ns#", "cc"),
-    ("http://purl.org/dc/elements/1.1/", "dc"),
-    (
-        "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd",
-        "sodipodi",
-    ),
-    ("http://www.inkscape.org/namespaces/inkscape", "inkscape"),
-    ("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "rdf"),
-    ("http://www.w3.org/1999/xlink", "xlink"),
-    ("http://www.w3.org/XML/1998/namespace", "xml"),
-];
 
 pub fn resolve_namespaces(schema: Schema) -> Schema {
     let namespaces = schema
@@ -188,11 +175,9 @@ fn resolve_name(name: Name, namespaces: &BTreeMap<Identifier, String>) -> Name {
 }
 
 fn canonical_prefix(uri: &str) -> Option<Identifier> {
-    CANONICAL_PREFIXES.iter().find_map(|(candidate, prefix)| {
-        (*candidate == uri).then(|| Identifier {
-            component: (*prefix).to_owned(),
-            sub_components: vec![],
-        })
+    namespace_prefix(uri).map(|prefix| Identifier {
+        component: prefix.to_owned(),
+        sub_components: vec![],
     })
 }
 
