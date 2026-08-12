@@ -308,6 +308,19 @@ mod tests {
     }
 
     #[test]
+    fn resolve_canonical_prefix_of_default_namespace() {
+        assert_eq!(
+            attribute_name_class(&resolve(
+                "default namespace ink = \"http://www.inkscape.org/namespaces/inkscape\"\nroot = attribute ink:* { text }"
+            )),
+            &NameClass::Namespace(Some(Identifier {
+                component: "inkscape".into(),
+                sub_components: vec![],
+            }))
+        );
+    }
+
+    #[test]
     fn keep_names_on_default_namespace_without_prefix() {
         assert_eq!(
             attribute_name_class(&resolve(
