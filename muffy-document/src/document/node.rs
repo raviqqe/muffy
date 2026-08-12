@@ -66,11 +66,15 @@ impl Node {
     }
 }
 
-fn qualify_name(name: &QualName) -> String {
-    if let Some(prefix) = NAMESPACE_PREFIXES
+/// Returns a canonical prefix of a namespace.
+pub fn namespace_prefix(namespace: &str) -> Option<&'static str> {
+    NAMESPACE_PREFIXES
         .iter()
-        .find_map(|(namespace, prefix)| (*name.ns == **namespace).then_some(prefix))
-    {
+        .find_map(|(candidate, prefix)| (*candidate == namespace).then_some(*prefix))
+}
+
+fn qualify_name(name: &QualName) -> String {
+    if let Some(prefix) = namespace_prefix(&name.ns) {
         format!("{prefix}:{}", name.local)
     } else if DEFAULT_NAMESPACES.contains(&&*name.ns) {
         name.local.to_string()
@@ -78,5 +82,24 @@ fn qualify_name(name: &QualName) -> String {
         format!("{prefix}:{}", name.local)
     } else {
         name.local.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn resolve_canonical_prefix() {
+        assert_eq!(
+            namespace_prefix("http://www.inkscape.org/namespaces/inkscape"),
+            Some("inkscape")
+        );
+    }
+
+    #[test]
+    fn resolve_no_prefix_of_unknown_namespace() {
+        assert_eq!(namespace_prefix("http://foo.example/"), None);
     }
 }
