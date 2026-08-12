@@ -25,7 +25,7 @@ fn load_schema(
     overridden: &BTreeSet<Identifier>,
     definitions: &mut DefinitionSet,
 ) -> Result<(), MacroError> {
-    // TODO Respect default namespace declarations.
+    // TODO Respect default namespaces of unprefixed names.
     let schema = resolve_namespaces(parse_schema(&read_to_string(path)?)?);
 
     match schema.body {

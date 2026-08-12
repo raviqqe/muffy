@@ -1,11 +1,19 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
     declarations: [
         DefaultNamespace(
-            "http://www.w3.org/1998/Math/MathML",
+            DefaultNamespaceDeclaration {
+                prefix: Some(
+                    Identifier {
+                        component: "m",
+                        sub_components: [],
+                    },
+                ),
+                uri: "http://www.w3.org/1998/Math/MathML",
+            },
         ),
     ],
     body: Grammar(
