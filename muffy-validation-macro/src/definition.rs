@@ -1,4 +1,4 @@
-use crate::error::MacroError;
+use crate::{error::MacroError, namespace::resolve_namespaces};
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{
     DefinitionSet, Grammar, GrammarContent, Identifier, Pattern as RncPattern, SchemaBody,
@@ -25,10 +25,8 @@ fn load_schema(
     overridden: &BTreeSet<Identifier>,
     definitions: &mut DefinitionSet,
 ) -> Result<(), MacroError> {
-    let schema = parse_schema(&read_to_string(path)?)?;
-
-    // We do not use the declarations.
-    // TODO Respect namespace declarations.
+    // TODO Respect default namespace declarations.
+    let schema = resolve_namespaces(parse_schema(&read_to_string(path)?)?);
 
     match schema.body {
         SchemaBody::Grammar(grammar) | SchemaBody::Pattern(RncPattern::Grammar(grammar)) => {
@@ -87,7 +85,7 @@ pub fn load_grammar(
 mod tests {
     use super::*;
     use crate::error::MacroError;
-    use muffy_rnc::SchemaError;
+    use muffy_rnc::{NameClass, SchemaError};
     use pretty_assertions::assert_eq;
     use std::fs::write;
     use tempfile::tempdir;
@@ -130,6 +128,21 @@ mod tests {
         assert_eq!(
             load(&[("main.rnc", "include \"a.rnc\""), ("a.rnc", "root = empty")]).unwrap(),
             vec![RncPattern::Empty]
+        );
+    }
+
+    #[test]
+    fn resolve_empty_namespace_wildcard_attribute() {
+        assert_eq!(
+            load(&[(
+                "main.rnc",
+                "namespace none = \"\"\nroot = attribute none:* { text }"
+            )])
+            .unwrap(),
+            vec![RncPattern::Attribute {
+                name_class: NameClass::Namespace(None),
+                pattern: RncPattern::Text.into(),
+            }]
         );
     }
 

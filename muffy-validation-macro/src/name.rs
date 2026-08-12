@@ -23,7 +23,7 @@ pub fn class_names(name_class: &NameClass) -> BTreeSet<String> {
         NameClass::Namespace(prefix) => [if let Some(prefix) = prefix {
             format!("{prefix}:*")
         } else {
-            "*".into()
+            ":*".into()
         }]
         .into(),
     }
