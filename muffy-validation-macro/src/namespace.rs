@@ -10,10 +10,14 @@ pub fn resolve_namespaces(schema: Schema) -> Schema {
         .declarations
         .iter()
         .filter_map(|declaration| match declaration {
+            Declaration::Datatypes(_) => None,
+            Declaration::DefaultNamespace(declaration) => declaration
+                .prefix
+                .clone()
+                .map(|prefix| (prefix, declaration.uri.clone())),
             Declaration::Namespace(declaration) => {
                 Some((declaration.prefix.clone(), declaration.uri.clone()))
             }
-            Declaration::Datatypes(_) | Declaration::DefaultNamespace(_) => None,
         })
         .collect();
 
@@ -273,6 +277,42 @@ mod tests {
             )),
             &NameClass::Namespace(Some(Identifier {
                 component: "inkscape".into(),
+                sub_components: vec![],
+            }))
+        );
+    }
+
+    #[test]
+    fn resolve_prefix_of_default_namespace() {
+        assert_eq!(
+            attribute_name_class(&resolve(
+                "default namespace none = \"\"\nroot = attribute none:* { text }"
+            )),
+            &NameClass::Namespace(None)
+        );
+    }
+
+    #[test]
+    fn resolve_canonical_prefix_of_default_namespace() {
+        assert_eq!(
+            attribute_name_class(&resolve(
+                "default namespace ink = \"http://www.inkscape.org/namespaces/inkscape\"\nroot = attribute ink:* { text }"
+            )),
+            &NameClass::Namespace(Some(Identifier {
+                component: "inkscape".into(),
+                sub_components: vec![],
+            }))
+        );
+    }
+
+    #[test]
+    fn keep_names_on_default_namespace_without_prefix() {
+        assert_eq!(
+            attribute_name_class(&resolve(
+                "default namespace = \"\"\nroot = attribute none:* { text }"
+            )),
+            &NameClass::Namespace(Some(Identifier {
+                component: "none".into(),
                 sub_components: vec![],
             }))
         );

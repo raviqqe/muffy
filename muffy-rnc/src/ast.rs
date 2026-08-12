@@ -31,7 +31,7 @@ pub enum Declaration {
     /// A datatype library declaration.
     Datatypes(DatatypesDeclaration),
     /// A default namespace declaration.
-    DefaultNamespace(String),
+    DefaultNamespace(DefaultNamespaceDeclaration),
     /// A namespace declaration.
     Namespace(NamespaceDeclaration),
 }
@@ -41,6 +41,15 @@ pub enum Declaration {
 pub struct NamespaceDeclaration {
     /// A prefix.
     pub prefix: Identifier,
+    /// A URI.
+    pub uri: String,
+}
+
+/// A default namespace declaration, which also binds its prefix if any.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DefaultNamespaceDeclaration {
+    /// A prefix.
+    pub prefix: Option<Identifier>,
     /// A URI.
     pub uri: String,
 }

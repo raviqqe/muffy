@@ -14,7 +14,15 @@ Schema {
             },
         ),
         DefaultNamespace(
-            "http://www.w3.org/2000/svg",
+            DefaultNamespaceDeclaration {
+                prefix: Some(
+                    Identifier {
+                        component: "svg",
+                        sub_components: [],
+                    },
+                ),
+                uri: "http://www.w3.org/2000/svg",
+            },
         ),
     ],
     body: Grammar(
