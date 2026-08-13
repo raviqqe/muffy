@@ -11,7 +11,10 @@ mod variant;
 
 pub use self::error::*;
 use self::{
-    attribute_set::AttributeSet, content::Content, rule::Rule, validation::validate_rule,
+    attribute_set::AttributeSet,
+    content::Content,
+    rule::Rule,
+    validation::{matches_wildcard, validate_rule},
     variant::Variant,
 };
 use muffy_document::document::Element;

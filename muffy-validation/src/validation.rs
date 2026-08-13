@@ -245,11 +245,15 @@ fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str>
         names
             .iter()
             .copied()
-            .find(|pattern| match pattern.strip_suffix('*') {
-                Some(":") => !name.contains(':'),
-                Some(prefix) => name.starts_with(prefix),
-                None => false,
-            })
+            .find(|pattern| matches_wildcard(pattern, name))
+    }
+}
+
+pub fn matches_wildcard(pattern: &str, name: &str) -> bool {
+    match pattern.strip_suffix('*') {
+        Some(":") => !name.contains(':'),
+        Some(prefix) => name.starts_with(prefix),
+        None => false,
     }
 }
 
@@ -370,6 +374,37 @@ mod tests {
         );
 
         misplaced.is_empty() && state.is_nullable()
+    }
+
+    mod wildcard {
+        use super::*;
+
+        #[test]
+        fn match_any_name() {
+            assert!(matches_wildcard("*", "zoom"));
+            assert!(matches_wildcard("*", "inkscape:zoom"));
+        }
+
+        #[test]
+        fn match_prefixed_names() {
+            assert!(matches_wildcard("inkscape:*", "inkscape:zoom"));
+            assert!(!matches_wildcard("inkscape:*", "sodipodi:zoom"));
+            assert!(!matches_wildcard("inkscape:*", "zoom"));
+        }
+
+        #[test]
+        fn match_names_in_no_namespace() {
+            assert!(matches_wildcard(":*", "zoom"));
+            assert!(!matches_wildcard(":*", "inkscape:zoom"));
+            // A no-namespace name containing a colon is conservatively
+            // rejected.
+            assert!(!matches_wildcard(":*", "xmlns:foo"));
+        }
+
+        #[test]
+        fn match_no_plain_name() {
+            assert!(!matches_wildcard("zoom", "zoom"));
+        }
     }
 
     mod content {
