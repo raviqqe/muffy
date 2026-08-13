@@ -251,9 +251,6 @@ fn find_name(names: &'static [&'static str], name: &str) -> Option<&'static str>
 
 pub fn matches_wildcard(pattern: &str, name: &str) -> bool {
     match pattern.strip_suffix('*') {
-        // Names without colons are in no namespace. No-namespace names
-        // containing colons, which HTML documents allow, are conservatively
-        // treated as prefixed and rejected.
         Some(":") => !name.contains(':'),
         Some(prefix) => name.starts_with(prefix),
         None => false,
