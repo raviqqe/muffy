@@ -120,8 +120,8 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
             }
         };
 
-        if let Some(prefix) = name.strip_suffix('*') {
-            wildcard_matches.push(quote! { name if name.starts_with(#prefix) => #rule });
+        if name.ends_with('*') {
+            wildcard_matches.push(quote! { name if matches_wildcard(#name, name) => #rule });
         } else {
             element_matches.push(quote! { #name => #rule });
         }
