@@ -36,11 +36,7 @@ muffy-validation = { path = "../muffy-validation", version = "0.5.0" }
 petgraph = "0.8.3"
 quick-xml = "0.41.0"
 regex = "1.12.4"
-reqwest = {
-  version = "0.12.28",
-  default-features = false,
-  features = ["rustls-tls-webpki-roots"]
-}
+reqwest = { version = "0.12.28", default-features = false, features = ["rustls-tls-webpki-roots"] }
 rlimit = "0.11.0"
 robotxt = "0.6.1"
 scc = "3.7.3"
@@ -64,11 +60,7 @@ toml = "1.1.2"
 url = { version = "2.5.8", features = ["serde"] }
 
 [dev-dependencies]
-criterion = {
-  package = "codspeed-criterion-compat",
-  version = "5.0.1",
-  features = ["async_tokio"]
-}
+criterion = { package = "codspeed-criterion-compat", version = "5.0.1", features = ["async_tokio"] }
 indoc = "2.0.7"
 insta = "1.47.2"
 pretty_assertions = "1.4.1"
