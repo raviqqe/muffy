@@ -31,6 +31,10 @@ pub(crate) fn qualify_element_name(name: &QualName) -> String {
     qualify_name(name, DEFAULT_NAMESPACES)
 }
 
+// Attributes never inherit default namespaces, so only names in no namespace
+// drop their prefixes. Prefixes bound to namespaces other than their
+// canonical ones are replaced by the namespaces themselves so that such
+// names never match names in the canonical namespaces.
 pub(crate) fn qualify_attribute_name(name: &QualName) -> String {
     if let Some(prefix) = &name.prefix
         && !name.ns.is_empty()
