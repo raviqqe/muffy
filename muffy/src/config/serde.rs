@@ -1693,7 +1693,6 @@ mod tests {
                     ignored_elements: Some(vec!["y-".into()]),
                 }),
                 svg: Some(MarkupConfig::default()),
-                ..Default::default()
             });
 
             assert_eq!(
