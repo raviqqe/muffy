@@ -417,8 +417,7 @@ fn compile_check_site_config(arguments: &CheckSiteArguments) -> Result<Config, B
                     arguments
                         .experimental_validation
                         .then(MarkupConfig::default),
-                )
-                .set_css(arguments.experimental_validation),
+                ),
         );
 
     Ok(Config::new(
