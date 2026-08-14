@@ -27,10 +27,33 @@ pub fn namespace_prefix(namespace: &str) -> Option<&'static str> {
         .find_map(|(other, prefix)| (*other == namespace).then_some(*prefix))
 }
 
-pub(crate) fn qualify_name(name: &QualName) -> String {
+pub(crate) fn qualify_element_name(name: &QualName) -> String {
+    qualify_name(name, DEFAULT_NAMESPACES)
+}
+
+// Prefixes bound to namespaces other than their canonical ones are replaced by
+// the namespaces themselves so that such names never match names in the
+// canonical namespaces.
+//
+// TODO Remove this hack.
+pub(crate) fn qualify_attribute_name(name: &QualName) -> String {
+    if let Some(prefix) = &name.prefix
+        && !name.ns.is_empty()
+        && namespace_prefix(&name.ns).is_none()
+        && NAMESPACE_PREFIXES
+            .iter()
+            .any(|(_, other)| *other == &**prefix)
+    {
+        format!("{}:{}", name.ns, name.local)
+    } else {
+        qualify_name(name, &[""])
+    }
+}
+
+fn qualify_name(name: &QualName, default_namespaces: &[&str]) -> String {
     if let Some(prefix) = namespace_prefix(&name.ns) {
         format!("{prefix}:{}", name.local)
-    } else if DEFAULT_NAMESPACES.contains(&&*name.ns) {
+    } else if default_namespaces.contains(&&*name.ns) {
         name.local.to_string()
     } else if let Some(prefix) = &name.prefix {
         format!("{prefix}:{}", name.local)

@@ -183,6 +183,52 @@ mod tests {
     }
 
     #[test]
+    fn keep_prefix_of_attribute_in_default_namespace() {
+        assert_eq!(
+            parse(concat!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:s="http://www.w3.org/2000/svg">"#,
+                r#"<rect s:foo="1"/>"#,
+                "</svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
+                vec![],
+                vec![element(
+                    Some(SVG_NAMESPACE),
+                    "rect",
+                    vec![("s:foo", "1")],
+                    vec![],
+                )],
+            )])
+        );
+    }
+
+    #[test]
+    fn replace_canonical_prefix_bound_to_other_namespace() {
+        assert_eq!(
+            parse(concat!(
+                r#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/2000/svg">"#,
+                r#"<image xlink:href="/foo.png"/>"#,
+                "</svg>"
+            ))
+            .unwrap(),
+            Document::new(vec![element(
+                Some(SVG_NAMESPACE),
+                "svg",
+                vec![],
+                vec![element(
+                    Some(SVG_NAMESPACE),
+                    "image",
+                    vec![("http://www.w3.org/2000/svg:href", "/foo.png")],
+                    vec![],
+                )],
+            )])
+        );
+    }
+
+    #[test]
     fn keep_unknown_namespace_prefix() {
         assert_eq!(
             parse(r#"<f:thing xmlns:f="http://foo.example"/>"#).unwrap(),

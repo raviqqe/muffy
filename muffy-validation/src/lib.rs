@@ -1018,13 +1018,16 @@ mod tests {
 
         #[test]
         fn validate_invalid_prefixed_editor_attribute() {
-            let element = create_element("sodipodi:namedview", vec![("none:foo", "1")], vec![]);
+            let element = create_element("sodipodi:namedview", vec![("xlink:href", "/")], vec![]);
 
             assert_eq!(
                 validate_html_element(&element, &[], &[]),
                 Err(MarkupError::InvalidElement {
-                    invalid_attributes: [("none:foo".into(), [AttributeError::NotAllowed].into())]
-                        .into(),
+                    invalid_attributes: [(
+                        "xlink:href".into(),
+                        [AttributeError::NotAllowed].into()
+                    )]
+                    .into(),
                     invalid_children: Default::default(),
                     missing_attributes: Default::default(),
                     missing_children: Default::default(),

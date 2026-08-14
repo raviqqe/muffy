@@ -1,4 +1,7 @@
-use super::{element::Element, namespace::qualify_name};
+use super::{
+    element::Element,
+    namespace::{qualify_attribute_name, qualify_element_name},
+};
 use alloc::sync::Arc;
 use html5ever::ns;
 use markup5ever_rcdom::NodeData;
@@ -17,7 +20,7 @@ impl Node {
         match &node.data {
             NodeData::Element { name, attrs, .. } => Some(Self::Element(
                 Element::new(
-                    qualify_name(name),
+                    qualify_element_name(name),
                     attrs
                         .borrow()
                         .iter()
@@ -25,7 +28,10 @@ impl Node {
                         // semantic attributes.
                         .filter(|attribute| attribute.name.ns != ns!(xmlns))
                         .map(|attribute| {
-                            (qualify_name(&attribute.name), attribute.value.to_string())
+                            (
+                                qualify_attribute_name(&attribute.name),
+                                attribute.value.to_string(),
+                            )
                         })
                         .collect(),
                     node.children
