@@ -138,12 +138,12 @@ impl Config {
 }
 
 /// A site configuration.
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default)]
 pub struct SiteConfig {
     id: Option<Arc<str>>,
     cache: CacheConfig,
-    fragments_ignored: bool,
     headers: HeaderMap,
+    ignored_fragments: Vec<Regex>,
     max_redirects: usize,
     recursive: bool,
     retry: Arc<RetryConfig>,
@@ -169,14 +169,14 @@ impl SiteConfig {
         &self.cache
     }
 
-    /// Returns whether URL fragments should be ignored.
-    pub const fn fragments_ignored(&self) -> bool {
-        self.fragments_ignored
-    }
-
     /// Returns headers attached to HTTP requests.
     pub const fn headers(&self) -> &HeaderMap {
         &self.headers
+    }
+
+    /// Returns ignored fragment patterns.
+    pub fn ignored_fragments(&self) -> &[Regex] {
+        &self.ignored_fragments
     }
 
     /// Returns a retry configuration.
@@ -226,15 +226,15 @@ impl SiteConfig {
         self
     }
 
-    /// Sets whether URL fragments are ignored.
-    pub const fn set_fragments_ignored(mut self, ignored: bool) -> Self {
-        self.fragments_ignored = ignored;
-        self
-    }
-
     /// Sets request headers.
     pub fn set_headers(mut self, headers: HeaderMap) -> Self {
         self.headers = headers;
+        self
+    }
+
+    /// Sets ignored fragment patterns.
+    pub fn set_ignored_fragments(mut self, fragments: Vec<Regex>) -> Self {
+        self.ignored_fragments = fragments;
         self
     }
 
@@ -279,6 +279,30 @@ impl SiteConfig {
         self.validation = validation;
         self
     }
+}
+
+impl PartialEq for SiteConfig {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+            && self.cache == other.cache
+            && self.headers == other.headers
+            && patterns_equal(&self.ignored_fragments, &other.ignored_fragments)
+            && self.max_redirects == other.max_redirects
+            && self.recursive == other.recursive
+            && self.retry == other.retry
+            && self.scheme == other.scheme
+            && self.status == other.status
+            && self.timeout == other.timeout
+            && self.validation == other.validation
+    }
+}
+
+fn patterns_equal(one: &[Regex], other: &[Regex]) -> bool {
+    one.len() == other.len()
+        && one
+            .iter()
+            .zip(other)
+            .all(|(one, other)| one.as_str() == other.as_str())
 }
 
 /// A status code configuration.
@@ -397,14 +421,8 @@ impl MarkupConfig {
 
 impl PartialEq for MarkupConfig {
     fn eq(&self, other: &Self) -> bool {
-        self.ignored_attributes.len() == other.ignored_attributes.len()
-            && self.ignored_elements.len() == other.ignored_elements.len()
-            && self
-                .ignored_attributes
-                .iter()
-                .zip(&other.ignored_attributes)
-                .chain(self.ignored_elements.iter().zip(&other.ignored_elements))
-                .all(|(one, other)| one.as_str() == other.as_str())
+        patterns_equal(&self.ignored_attributes, &other.ignored_attributes)
+            && patterns_equal(&self.ignored_elements, &other.ignored_elements)
     }
 }
 
@@ -733,6 +751,21 @@ mod tests {
             !config
                 .site(&Url::parse("http://example.com/other").unwrap())
                 .recursive()
+        );
+    }
+
+    #[test]
+    fn compare_site_configs_with_ignored_fragments() {
+        let config = SiteConfig::default().set_ignored_fragments(vec![Regex::new("foo").unwrap()]);
+
+        assert_eq!(
+            config,
+            SiteConfig::default().set_ignored_fragments(vec![Regex::new("foo").unwrap()])
+        );
+        assert_ne!(config, SiteConfig::default());
+        assert_ne!(
+            config,
+            SiteConfig::default().set_ignored_fragments(vec![Regex::new("bar").unwrap()])
         );
     }
 

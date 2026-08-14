@@ -61,7 +61,6 @@ ignored_elements = ["p"]
 [sites.algo_logic]
 extend = "default"
 roots = ["https://algo-logic.info/"]
-fragments_ignored = true
 timeout = "1m"
 
 [sites.crates_io]
@@ -73,7 +72,7 @@ statuses = [200, 403, 404]
 extend = "default"
 roots = ["https://github.com/"]
 concurrency = 64
-fragments_ignored = true
+ignored_fragments = ["L\\d+(-L\\d+)?", "performance"]
 
 [sites.github.rate_limit]
 supply = 10
@@ -82,7 +81,7 @@ window = "1s"
 [sites.zulip]
 extend = "default"
 roots = ["https://prog-lang-sys-ja.zulipchat.com/"]
-fragments_ignored = true
+ignored_fragments = ["narrow/.*"]
 
 [sites.broad_200]
 extend = "default"

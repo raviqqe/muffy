@@ -160,7 +160,10 @@ impl WebValidator {
 
         if let Some(fragment) = url.fragment()
             && matches!(document_type, DocumentType::Html | DocumentType::Svg)
-            && !site.fragments_ignored()
+            && !site
+                .ignored_fragments()
+                .iter()
+                .any(|pattern| pattern.is_match(fragment))
             && !self.has_element(&response, fragment).await?
         {
             return Err(ItemError::ElementNotFound(fragment.into()));
@@ -290,7 +293,12 @@ impl WebValidator {
         ));
 
         if let Some(fragment) = url.fragment()
-            && !context.config().site(&site).fragments_ignored()
+            && !context
+                .config()
+                .site(&site)
+                .ignored_fragments()
+                .iter()
+                .any(|pattern| pattern.is_match(fragment))
             && !self.has_element(&response, fragment).await?
         {
             return Err(ItemError::ElementNotFound(fragment.into()));
@@ -1862,7 +1870,7 @@ mod tests {
                     "".into(),
                     SiteConfig::default()
                         .set_recursive(true)
-                        .set_fragments_ignored(true)
+                        .set_ignored_fragments(vec![Regex::new("^(?:foo)$").unwrap()])
                         .into(),
                 )]
                 .into(),
@@ -1875,6 +1883,42 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_missing_fragment_with_unmatched_pattern_for_html() {
+        let mut documents = validate_with_site(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        r#"<a href="https://foo.com#foo"/>"#.as_bytes().to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+            SiteConfig::default().set_ignored_fragments(vec![Regex::new("^(?:bar)$").unwrap()]),
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(1, 1), Metrics::new(0, 1))
         );
     }
 
@@ -3946,7 +3990,7 @@ mod tests {
                     .collect(),
                 ),
                 "https://foo.com",
-                SiteConfig::default().set_fragments_ignored(true),
+                SiteConfig::default().set_ignored_fragments(vec![Regex::new("^(?:foo)$").unwrap()]),
             )
             .await
             .unwrap();
@@ -3954,6 +3998,37 @@ mod tests {
             assert_eq!(
                 collect_metrics(&mut documents).await,
                 (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_missing_fragment_with_unmatched_pattern_for_data_svg() {
+            let mut documents = validate_with_site(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_page_response(
+                            r#"<a href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>#foo"/>"#,
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+                SiteConfig::default()
+                    .set_ignored_fragments(vec![Regex::new("^(?:bar)$").unwrap()]),
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
             );
         }
 
