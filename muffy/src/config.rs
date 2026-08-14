@@ -342,7 +342,6 @@ impl Default for SchemeConfig {
 pub struct ValidationConfig {
     html: Option<MarkupConfig>,
     svg: Option<MarkupConfig>,
-    css: bool,
 }
 
 impl ValidationConfig {
@@ -356,11 +355,6 @@ impl ValidationConfig {
         self.svg.as_ref()
     }
 
-    /// Returns whether CSS validation is enabled.
-    pub const fn css(&self) -> bool {
-        self.css
-    }
-
     /// Sets an HTML validation configuration.
     pub fn set_html(mut self, config: Option<MarkupConfig>) -> Self {
         self.html = config;
@@ -370,12 +364,6 @@ impl ValidationConfig {
     /// Sets an SVG validation configuration.
     pub fn set_svg(mut self, config: Option<MarkupConfig>) -> Self {
         self.svg = config;
-        self
-    }
-
-    /// Sets whether CSS validation is enabled.
-    pub const fn set_css(mut self, enabled: bool) -> Self {
-        self.css = enabled;
         self
     }
 }
@@ -754,19 +742,16 @@ mod tests {
 
         assert!(config.html().is_none());
         assert!(config.svg().is_none());
-        assert!(!config.css());
     }
 
     #[test]
     fn set_validation_config_enabled() {
         let config = ValidationConfig::default()
             .set_html(Some(MarkupConfig::default()))
-            .set_svg(Some(MarkupConfig::default()))
-            .set_css(true);
+            .set_svg(Some(MarkupConfig::default()));
 
         assert!(config.html().is_some());
         assert!(config.svg().is_some());
-        assert!(config.css());
     }
 
     #[test]

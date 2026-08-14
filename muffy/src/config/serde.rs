@@ -219,7 +219,6 @@ impl CacheConfig {
 struct ValidationConfig {
     html: Option<MarkupConfig>,
     svg: Option<MarkupConfig>,
-    css: Option<bool>,
 }
 
 impl ValidationConfig {
@@ -238,10 +237,6 @@ impl ValidationConfig {
             } else {
                 self.svg = Some(other);
             }
-        }
-
-        if other.css.is_some() {
-            self.css = other.css;
         }
     }
 }
@@ -589,13 +584,7 @@ fn compile_site_config(
                         .as_ref()
                         .and_then(|validation| validation.svg.as_ref()),
                     parent.validation().svg(),
-                )?)
-                .set_css(
-                    site.validation
-                        .as_ref()
-                        .and_then(|validation| validation.css)
-                        .unwrap_or(parent.validation().css()),
-                ),
+                )?),
         ))
 }
 
