@@ -41,7 +41,7 @@ pub(crate) fn qualify_attribute_name(name: &QualName) -> String {
         && namespace_prefix(&name.ns).is_none()
         && NAMESPACE_PREFIXES
             .iter()
-            .any(|(_, candidate)| *candidate == &**prefix)
+            .any(|(_, other)| *other == &**prefix)
     {
         format!("{}:{}", name.ns, name.local)
     } else {
