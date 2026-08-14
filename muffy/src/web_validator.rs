@@ -3,6 +3,7 @@ mod context;
 use self::context::Context;
 use crate::{
     config::Config,
+    css,
     document_output::DocumentOutput,
     document_parser::DocumentParser,
     document_type::DocumentType,
@@ -216,6 +217,7 @@ impl WebValidator {
         document_type: DocumentType,
     ) -> Result<DocumentOutput, Error> {
         let futures = match document_type {
+            DocumentType::Css => self.validate_css(&context, &response, &site),
             DocumentType::Html => self.validate_html(&context, &response).await?,
             DocumentType::Robots => self.validate_robots(&context, &response)?,
             DocumentType::Sitemap => self.validate_sitemap(&context, &response),
@@ -325,6 +327,43 @@ impl WebValidator {
         Ok(ItemOutput::new())
     }
 
+    fn validate_css(
+        &self,
+        context: &Arc<Context>,
+        response: &Arc<Response>,
+        site: &Arc<Url>,
+    ) -> Vec<ElementFuture> {
+        let (entries, errors) = css::parse(response.body());
+        let base = Arc::new(response.url().clone());
+
+        errors
+            .into_iter()
+            .map(|error| {
+                (
+                    Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
+                    vec![spawn(async move { Err(ItemError::CssSyntax(error)) })],
+                )
+            })
+            .chain(entries.into_iter().map(|entry| {
+                let (name, url, document_type) = match entry {
+                    css::Entry::Import(url) => ("@import", url, Some(DocumentType::Css)),
+                    css::Entry::Url(url) => ("url", url, None),
+                };
+
+                (
+                    Element::new(name.into(), vec![("url".into(), url.clone())]),
+                    vec![spawn(self.cloned().validate_element_link(
+                        context.clone(),
+                        url,
+                        base.clone(),
+                        site.clone(),
+                        document_type,
+                    ))],
+                )
+            }))
+            .collect()
+    }
+
     async fn validate_html(
         &self,
         context: &Arc<Context>,
@@ -392,8 +431,11 @@ impl WebValidator {
                         vec![("href", value)],
                         vec![(
                             value.to_string(),
-                            (attributes.get("rel") == Some(&"sitemap"))
-                                .then_some(DocumentType::Sitemap),
+                            match attributes.get("rel").copied() {
+                                Some("sitemap") => Some(DocumentType::Sitemap),
+                                Some("stylesheet") => Some(DocumentType::Css),
+                                _ => None,
+                            },
                         )],
                     ));
                 }
@@ -656,6 +698,16 @@ impl WebValidator {
         let media_type = value.to_ascii_lowercase();
 
         Ok(match document_type {
+            Some(DocumentType::Css) => {
+                if media_type != "text/css" {
+                    return Err(ItemError::ContentTypeInvalid {
+                        actual: value.into(),
+                        expected: "text/css",
+                    });
+                }
+
+                document_type
+            }
             Some(DocumentType::Html) => {
                 if media_type != "text/html" {
                     return Err(ItemError::ContentTypeInvalid {
@@ -697,6 +749,7 @@ impl WebValidator {
                 document_type
             }
             None => match media_type.as_str() {
+                "text/css" => Some(DocumentType::Css),
                 "text/html" => Some(DocumentType::Html),
                 "image/svg+xml" => Some(DocumentType::Svg),
                 _ => None,
@@ -953,7 +1006,8 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error @ (ItemError::Markup(_)
+                        error @ (ItemError::CssSyntax(_)
+                        | ItemError::Markup(_)
                         | ItemError::InvalidNamespace { .. }
                         | ItemError::InvalidRootElement { .. }
                         | ItemError::XmlSyntax(_)),
@@ -2379,6 +2433,495 @@ mod tests {
                 WebValidator::parse_srcset("small.jpg 500w, medium.jpg 1000w, large.jpg 1500w")
                     .collect::<Vec<_>>(),
                 ["small.jpg", "medium.jpg", "large.jpg"]
+            );
+        }
+    }
+
+    mod css {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        fn build_headers(content_type: &'static str) -> HeaderMap {
+            HeaderMap::from_iter([(
+                HeaderName::from_static("content-type"),
+                HeaderValue::from_static(content_type),
+            )])
+        }
+
+        #[tokio::test]
+        async fn validate_css_document() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            b"a { background: url(bar.png); }".to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_relative_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/css/style.css",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            b"a { background: url(../images/bar.png); }".to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/images/bar.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com/css/style.css",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_import() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            br#"@import "bar.css";"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.css",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_stylesheet_link() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/html"),
+                            br#"<link rel="stylesheet" href="style.css"/>"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/style.css",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            br#"@import "extra.css"; a { background: url(bar.png); }"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/extra.css",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(4, 0), Metrics::new(3, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_stylesheet_link_without_content_type() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/html"),
+                            br#"<link rel="stylesheet" href="style.css"/>"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/style.css",
+                            StatusCode::OK,
+                            Default::default(),
+                            b"a { background: url(bar.png); }".to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(2, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_data_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            br#"a { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>"); }"#.to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_syntax_error() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            b"@unknown-rule { x } a { background: url(bar.png); }".to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid CSS: Unknown at rule: @unknown-rule at 1:14".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn report_syntax_error_and_link_results_in_element_outputs() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            concat!(
+                                r#"@import "bar.css"; "#,
+                                "@unknown-rule { x } ",
+                                "a { background: url(baz.png); }"
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.css",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/baz.png",
+                            StatusCode::OK,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            let mut elements = vec![];
+
+            while let Some(document) = documents.next().await {
+                for element in document.unwrap().elements() {
+                    elements.push((
+                        element.element().name().to_string(),
+                        element.element().attributes().to_vec(),
+                        element.results().filter(|result| result.is_ok()).count(),
+                        element
+                            .results()
+                            .filter_map(|result| result.as_ref().err().map(ToString::to_string))
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+            }
+
+            assert_eq!(
+                elements,
+                vec![
+                    (
+                        "#document".into(),
+                        vec![],
+                        0,
+                        vec!["invalid CSS: Unknown at rule: @unknown-rule at 1:33".into()]
+                    ),
+                    (
+                        "@import".into(),
+                        vec![("url".into(), "bar.css".into())],
+                        1,
+                        vec![]
+                    ),
+                    (
+                        "url".into(),
+                        vec![("url".into(), "baz.png".into())],
+                        1,
+                        vec![]
+                    ),
+                ]
+            );
+        }
+
+        #[tokio::test]
+        async fn report_invalid_content_type_for_stylesheet() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/html"),
+                            br#"<link rel="stylesheet" href="style.css"/>"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/style.css",
+                            StatusCode::OK,
+                            build_headers("text/plain"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_invalid_content_type_for_import() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            br#"@import "bar.css";"#.to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.css",
+                            StatusCode::OK,
+                            build_headers("text/plain"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
+            );
+        }
+
+        #[tokio::test]
+        async fn report_missing_url() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            b"a { background: url(bar.png); }".to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar.png",
+                            StatusCode::NOT_FOUND,
+                            build_headers("image/png"),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(1, 1), Metrics::new(0, 1))
             );
         }
     }

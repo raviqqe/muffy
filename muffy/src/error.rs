@@ -125,6 +125,8 @@ pub enum ItemError {
         /// An expected content type.
         expected: &'static str,
     },
+    /// A CSS syntax error.
+    CssSyntax(String),
     /// A data URL error.
     DataUrl(DataUrlError),
     /// A document parse error.
@@ -175,6 +177,7 @@ impl Display for ItemError {
                     "content type expected {expected} but got {actual}"
                 )
             }
+            Self::CssSyntax(message) => write!(formatter, "invalid CSS: {message}"),
             Self::DataUrl(error) => write!(formatter, "{error}"),
             Self::DocumentParse(error) => write!(formatter, "{error}"),
             Self::ElementNotFound(name) => {
@@ -313,6 +316,17 @@ mod tests {
                 }
             ),
             "root element expected svg but got circle"
+        );
+    }
+
+    #[test]
+    fn display_item_css_syntax_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                ItemError::CssSyntax("Invalid empty selector at 1:1".into())
+            ),
+            "invalid CSS: Invalid empty selector at 1:1"
         );
     }
 
