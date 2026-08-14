@@ -12,7 +12,6 @@ The `muffy check` command reads a configuration file written in [the TOML format
 persistent = true
 
 [sites.default]
-roots = []
 statuses = [200, 403]
 
 [sites.main]
@@ -52,7 +51,7 @@ A rate limit allows only a given number of requests in each time window. Both fi
 
 ## Site options
 
-The `sites` field is a table of site options under arbitrary site names. A site is a set of URLs specified by its `roots` field; its options apply to every URL under one of the root URLs. A site with an empty `roots` field is the default site whose options apply to all URLs that belong to no other site, and only one such site can exist. A site without the `roots` field never matches any URL and works only as a parent of other sites.
+The `sites` field is a table of site options under arbitrary site names. A site is a set of URLs specified by its `roots` field; its options apply to every URL under one of the root URLs. A site without the `roots` field is the default site whose options apply to all URLs that belong to no other site, and only one such site can exist. A site with an empty `roots` field never matches any URL and works only as a parent of other sites.
 
 Muffy crawls pages under the root URLs of sites with the `recurse` option enabled and checks links on them. A site inherits options it leaves unset from another site specified by its `extend` field.
 
