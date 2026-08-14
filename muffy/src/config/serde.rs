@@ -339,7 +339,7 @@ pub fn compile_config(config: SerializableConfig) -> Result<super::Config, Confi
     let default_name = match &config
         .sites
         .iter()
-        .filter(|(_, site)| site.roots == Some(Default::default()))
+        .filter(|(_, site)| site.roots.is_none())
         .map(|(name, _)| name.as_str())
         .collect::<Vec<_>>()[..]
     {
@@ -744,7 +744,6 @@ mod tests {
                             .into(),
                             statuses: None,
                         }),
-                        roots: Some(Default::default()),
                         schemes: Some(["https".to_owned()].into()),
                         statuses: Some([200, 403, 418].into()),
                         timeout: Some(Duration::from_secs(42).into()),
@@ -831,6 +830,7 @@ mod tests {
                 (
                     "base".to_owned(),
                     SiteConfig {
+                        roots: Some(Default::default()),
                         statuses: Some([200, 403].into()),
                         timeout: Some(Duration::from_secs(42).into()),
                         ..Default::default()
@@ -840,7 +840,6 @@ mod tests {
                     "default".to_owned(),
                     SiteConfig {
                         extend: Some("base".to_owned()),
-                        roots: Some(Default::default()),
                         statuses: Some([200].into()),
                         ..Default::default()
                     },
@@ -867,7 +866,6 @@ mod tests {
                 "default".to_owned(),
                 SiteConfig {
                     ignore: Some(true),
-                    roots: Some(Default::default()),
                     timeout: Some(Duration::from_secs(42).into()),
                     ..Default::default()
                 },
@@ -1207,7 +1205,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_parent_site_config_with_no_root() {
+    fn compile_parent_site_config_with_empty_roots() {
         let config = compile_config(SerializableConfig {
             extend: None,
             sites: [
@@ -1215,6 +1213,7 @@ mod tests {
                     "foo".to_owned(),
                     SiteConfig {
                         recurse: Some(true),
+                        roots: Some(Default::default()),
                         ..Default::default()
                     },
                 ),
@@ -1253,6 +1252,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             ["/"]
         );
+        assert_eq!(config.default.as_ref(), &*DEFAULT_SITE_CONFIG);
     }
 
     #[test]
@@ -1316,20 +1316,8 @@ mod tests {
         let result = compile_config(SerializableConfig {
             extend: None,
             sites: [
-                (
-                    "foo".to_owned(),
-                    SiteConfig {
-                        roots: Some(Default::default()),
-                        ..Default::default()
-                    },
-                ),
-                (
-                    "bar".to_owned(),
-                    SiteConfig {
-                        roots: Some(Default::default()),
-                        ..Default::default()
-                    },
-                ),
+                ("foo".to_owned(), SiteConfig::default()),
+                ("bar".to_owned(), SiteConfig::default()),
             ]
             .into(),
             concurrency: None,
