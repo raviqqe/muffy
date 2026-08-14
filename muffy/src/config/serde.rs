@@ -101,9 +101,9 @@ struct SiteConfig {
     cache: Option<CacheConfig>,
     concurrency: Option<usize>,
     extend: Option<String>,
-    fragments_ignored: Option<bool>,
     headers: Option<HashMap<String, String>>,
     ignore: Option<bool>,
+    ignored_fragments: Option<Vec<String>>,
     max_redirects: Option<usize>,
     rate_limit: Option<RateLimitConfig>,
     recurse: Option<bool>,
@@ -133,10 +133,6 @@ impl SiteConfig {
             self.extend = other.extend;
         }
 
-        if other.fragments_ignored.is_some() {
-            self.fragments_ignored = other.fragments_ignored;
-        }
-
         if let Some(other) = other.headers {
             if let Some(headers) = &mut self.headers {
                 headers.extend(other);
@@ -147,6 +143,16 @@ impl SiteConfig {
 
         if other.ignore.is_some() {
             self.ignore = other.ignore;
+        }
+
+        if let Some(others) = other.ignored_fragments {
+            if let Some(patterns) = &mut self.ignored_fragments {
+                patterns.extend(others);
+                patterns.sort();
+                patterns.dedup();
+            } else {
+                self.ignored_fragments = Some(others);
+            }
         }
 
         if other.max_redirects.is_some() {
@@ -500,7 +506,6 @@ fn compile_site_config(
                         .unwrap_or(parent.cache().stale_while_revalidate()),
                 ),
         )
-        .set_fragments_ignored(site.fragments_ignored.unwrap_or(parent.fragments_ignored()))
         .set_headers(
             site.headers
                 .as_ref()
@@ -515,6 +520,10 @@ fn compile_site_config(
                 .transpose()?
                 .unwrap_or_else(|| parent.headers().clone()),
         )
+        .set_ignored_fragments(compile_patterns(
+            &site.ignored_fragments,
+            Some(parent.ignored_fragments()),
+        )?)
         .set_status(
             site.statuses
                 .as_ref()
@@ -730,8 +739,8 @@ mod tests {
                             stale_while_revalidate: Some(Duration::from_secs(30).into()),
                         }),
                         concurrency: Some(42),
-                        fragments_ignored: true.into(),
                         headers: Some([("user-agent".to_owned(), "my-agent".to_owned())].into()),
+                        ignored_fragments: Some(vec!["L\\d+".into()]),
                         max_redirects: Some(42),
                         recurse: Some(true),
                         retry: Some(RetryConfig {
@@ -781,11 +790,11 @@ mod tests {
                             .set_max_age(Duration::from_secs(2045))
                             .set_stale_while_revalidate(Duration::from_secs(30)),
                     )
-                    .set_fragments_ignored(true)
                     .set_headers(HeaderMap::from_iter([(
                         HeaderName::try_from("user-agent").unwrap(),
                         HeaderValue::try_from("my-agent").unwrap(),
                     )]))
+                    .set_ignored_fragments(vec![Regex::new("^(?:L\\d+)$").unwrap()])
                     .set_status(config::StatusConfig::new(
                         [
                             StatusCode::try_from(200).unwrap(),
@@ -856,6 +865,60 @@ mod tests {
         assert_eq!(config.default.timeout(), Some(Duration::from_secs(42)));
         assert!(config.default.status().accepted(StatusCode::OK));
         assert!(!config.default.status().accepted(StatusCode::FORBIDDEN));
+    }
+
+    #[test]
+    fn compile_ignored_fragments_with_extend() {
+        let config = compile_config(SerializableConfig {
+            sites: [
+                (
+                    "base".to_owned(),
+                    SiteConfig {
+                        ignored_fragments: Some(vec!["L\\d+".into()]),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "foo".to_owned(),
+                    SiteConfig {
+                        extend: Some("base".to_owned()),
+                        roots: Some([Url::parse("https://foo.com/").unwrap()].into()),
+                        ..Default::default()
+                    },
+                ),
+                (
+                    "bar".to_owned(),
+                    SiteConfig {
+                        extend: Some("base".to_owned()),
+                        ignored_fragments: Some(vec!["line-.*".into()]),
+                        roots: Some([Url::parse("https://bar.com/").unwrap()].into()),
+                        ..Default::default()
+                    },
+                ),
+            ]
+            .into(),
+            ..Default::default()
+        })
+        .unwrap();
+
+        assert_eq!(
+            config.sites().get("foo.com").unwrap()[0]
+                .1
+                .ignored_fragments()
+                .iter()
+                .map(Regex::as_str)
+                .collect::<Vec<_>>(),
+            ["^(?:L\\d+)$"]
+        );
+        assert_eq!(
+            config.sites().get("bar.com").unwrap()[0]
+                .1
+                .ignored_fragments()
+                .iter()
+                .map(Regex::as_str)
+                .collect::<Vec<_>>(),
+            ["^(?:line-.*)$"]
+        );
     }
 
     #[test]
@@ -1122,6 +1185,23 @@ mod tests {
             compile_config(config),
             Err(ConfigError::HttpInvalidStatus(_))
         ));
+    }
+
+    #[test]
+    fn compile_invalid_ignored_fragment_pattern() {
+        let config = SerializableConfig {
+            sites: [(
+                "default".to_owned(),
+                SiteConfig {
+                    ignored_fragments: Some(vec!["(".into()]),
+                    ..Default::default()
+                },
+            )]
+            .into(),
+            ..Default::default()
+        };
+
+        assert!(matches!(compile_config(config), Err(ConfigError::Regex(_))));
     }
 
     #[test]
@@ -1597,6 +1677,24 @@ mod tests {
             assert_eq!(
                 interval.cap.as_deref().copied().unwrap(),
                 Duration::from_secs(9)
+            );
+        }
+
+        #[test]
+        fn merge_ignored_fragments() {
+            let mut config = SiteConfig {
+                ignored_fragments: Some(vec!["foo".into()]),
+                ..Default::default()
+            };
+
+            config.merge(SiteConfig {
+                ignored_fragments: Some(vec!["bar".into(), "foo".into()]),
+                ..Default::default()
+            });
+
+            assert_eq!(
+                config.ignored_fragments.unwrap(),
+                vec!["bar".to_string(), "foo".to_string()]
             );
         }
 
