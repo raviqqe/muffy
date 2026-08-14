@@ -145,13 +145,13 @@ impl SiteConfig {
             self.ignore = other.ignore;
         }
 
-        if let Some(other) = other.ignored_fragments {
+        if let Some(others) = other.ignored_fragments {
             if let Some(patterns) = &mut self.ignored_fragments {
-                patterns.extend(other);
+                patterns.extend(others);
                 patterns.sort();
                 patterns.dedup();
             } else {
-                self.ignored_fragments = Some(other);
+                self.ignored_fragments = Some(others);
             }
         }
 
