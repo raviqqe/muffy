@@ -58,14 +58,16 @@ Muffy crawls pages under the root URLs of sites with the `recurse` option enable
 
 Muffy also validates SVG images embedded as `data` URLs (e.g. `data:image/svg+xml,...`) in crawled pages. Such images inherit the options of the sites of documents that contain them.
 
+Muffy checks that fragments of link URLs (e.g. `#foo`) exist in target documents. The `ignored_fragments` option is a list of regular expressions that must match full fragments to skip such checks.
+
 | Name                | Description                                                                                        | Default              |
 | ------------------- | -------------------------------------------------------------------------------------------------- | -------------------- |
 | `cache`             | [Cache options](#sitesnamecache)                                                                    |                      |
 | `concurrency`       | A maximum number of concurrent HTTP requests to a site.                                             | None                 |
 | `extend`            | A name of another site to inherit options from.                                                     | None                 |
-| `fragments_ignored` | Whether to skip checking that fragments of link URLs (e.g. `#foo`) exist in target documents.       | `false`              |
 | `headers`           | A table of HTTP header names to values sent in requests.                                            | `{}`                 |
 | `ignore`            | Whether to skip checking links that match root URLs of a site.                                      | `false`              |
+| `ignored_fragments` | Patterns of fragments of link URLs to ignore.                                                       | `[]`                 |
 | `max_redirects`     | A maximum number of redirects to follow.                                                            | `16`                 |
 | `rate_limit`        | [Rate limit options](#rate_limit) applied to requests to a site.                                    | None                 |
 | `recurse`           | Whether to crawl pages under root URLs recursively.                                                 | `false`              |
