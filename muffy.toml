@@ -89,11 +89,7 @@ statuses = [200, 202]
 
 [sites.rate_limited]
 extend = "default"
-roots = [
-  "https://dblp.org/",
-  "https://www.lambdanote.com/",
-  "https://www.youtube.com/"
-]
+roots = ["https://dblp.org/", "https://www.lambdanote.com/", "https://www.youtube.com/"]
 statuses = [200, 429]
 
 [sites.rate_limited.rate_limit]
@@ -102,8 +98,8 @@ window = "1s"
 
 [sites.flaky]
 extend = "default"
-roots = ["https://gitlab.haskell.org/", "https://zsh.sourceforge.io/"]
-timeout = "20s"
+roots = ["https://gitlab.haskell.org/", "https://www.gnu.org/software/guile/", "https://zsh.sourceforge.io/"]
+timeout = "1m"
 
 [sites.flaky.retry]
 count = 5
