@@ -1,3 +1,7 @@
+//! CSS documents.
+
+extern crate alloc;
+
 use alloc::sync::Arc;
 use core::convert::Infallible;
 use itertools::Itertools;
@@ -9,7 +13,7 @@ use lightningcss::{
     visit_types,
     visitor::{Visit, VisitTypes, Visitor},
 };
-use std::sync::RwLock;
+use std::sync::{PoisonError, RwLock};
 
 /// A URL entry in a style sheet.
 #[derive(Debug, Eq, PartialEq)]
@@ -57,7 +61,7 @@ pub fn parse(source: &[u8]) -> (Vec<Entry>, Vec<String>) {
             .collect(),
         warnings
             .read()
-            .unwrap()
+            .unwrap_or_else(PoisonError::into_inner)
             .iter()
             .map(format_error)
             .unique()
