@@ -153,6 +153,7 @@ mod tests {
     #[test]
     fn parse_import_after_byte_order_mark() {
         assert_eq!(
+            // cspell: disable-next-line
             parse_entries("\u{feff}@import \"foo.css\";".as_bytes()),
             vec![Entry::Import("foo.css".into())]
         );
