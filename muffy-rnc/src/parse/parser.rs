@@ -3,7 +3,8 @@ use crate::{
     ast::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
         Declaration, DefaultNamespaceDeclaration, Definition, Grammar, GrammarContent, Include,
-        Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+        IncludeContent, Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema,
+        SchemaBody, Start,
     },
 };
 use nom::{
@@ -86,42 +87,48 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     annotated(alt((
         map(annotation_element, GrammarContent::Annotation),
-        start,
-        definition,
-        div,
+        map(start, GrammarContent::Start),
+        map(definition, GrammarContent::Definition),
+        map(div(grammar), GrammarContent::Div),
         include,
     )))
     .parse(input)
 }
 
-fn start(input: &str) -> ParserResult<'_, GrammarContent> {
+fn include_content(input: &str) -> ParserResult<'_, IncludeContent> {
+    annotated(alt((
+        map(annotation_element, IncludeContent::Annotation),
+        map(start, IncludeContent::Start),
+        map(definition, IncludeContent::Definition),
+        map(div(many0(include_content)), IncludeContent::Div),
+    )))
+    .parse(input)
+}
+
+fn start(input: &str) -> ParserResult<'_, Start> {
     map(
         (keyword("start"), assignment_operator, pattern),
-        |(_, combine, pattern)| GrammarContent::Start { combine, pattern },
+        |(_, combine, pattern)| Start { combine, pattern },
     )
     .parse(input)
 }
 
-fn definition(input: &str) -> ParserResult<'_, GrammarContent> {
+fn definition(input: &str) -> ParserResult<'_, Definition> {
     map(
         (identifier, assignment_operator, pattern),
-        |(name, combine, pattern)| {
-            GrammarContent::Definition(Definition {
-                name,
-                combine,
-                pattern,
-            })
+        |(name, combine, pattern)| Definition {
+            name,
+            combine,
+            pattern,
         },
     )
     .parse(input)
 }
 
-fn div(input: &str) -> ParserResult<'_, GrammarContent> {
-    map(
-        preceded(keyword("div"), braced(grammar)),
-        GrammarContent::Div,
-    )
-    .parse(input)
+fn div<'a, T>(
+    contents: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    preceded(keyword("div"), braced(contents))
 }
 
 fn include(input: &str) -> ParserResult<'_, GrammarContent> {
@@ -130,13 +137,13 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
             keyword("include"),
             literal,
             opt(inherit),
-            opt(braced(grammar)),
+            opt(braced(many0(include_content))),
         ),
-        |(_, uri, inherit, grammar)| {
+        |(_, uri, inherit, contents)| {
             GrammarContent::Include(Include {
                 uri,
                 inherit,
-                grammar,
+                contents: contents.unwrap_or_default(),
             })
         },
     )
@@ -1147,7 +1154,7 @@ mod tests {
                 Ok((
                     "",
                     Grammar {
-                        contents: vec![GrammarContent::Start {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(Name {
@@ -1159,7 +1166,7 @@ mod tests {
                                 }),
                                 pattern: Box::new(Pattern::Empty),
                             }
-                        }]
+                        })]
                     }
                 ))
             );
@@ -1204,7 +1211,7 @@ mod tests {
                         contents: vec![GrammarContent::Include(Include {
                             uri: "common.rnc".into(),
                             inherit: None,
-                            grammar: None,
+                            contents: vec![],
                         })]
                     }
                 ))
@@ -1219,10 +1226,10 @@ mod tests {
                     "",
                     Grammar {
                         contents: vec![GrammarContent::Div(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })]
                     }
                 ))
@@ -1266,10 +1273,10 @@ mod tests {
                     Schema {
                         declarations: vec![],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1285,10 +1292,10 @@ mod tests {
                     Schema {
                         declarations: vec![],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1313,7 +1320,7 @@ mod tests {
                             uri: "http://www.w3.org/1999/xhtml".into(),
                         })],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(Name {
@@ -1328,7 +1335,7 @@ mod tests {
                                     }),
                                     pattern: Box::new(Pattern::Empty),
                                 }
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1697,10 +1704,10 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Grammar(Grammar {
-                        contents: vec![GrammarContent::Start {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }]
+                        })]
                     })
                 ))
             );
@@ -1761,7 +1768,7 @@ mod tests {
                 start("start = empty"),
                 Ok((
                     "",
-                    GrammarContent::Start {
+                    Start {
                         combine: None,
                         pattern: Pattern::Empty,
                     }
@@ -1775,7 +1782,7 @@ mod tests {
                 start("start |= empty"),
                 Ok((
                     "",
-                    GrammarContent::Start {
+                    Start {
                         combine: Some(Combine::Choice),
                         pattern: Pattern::Empty,
                     }
@@ -1794,14 +1801,14 @@ mod tests {
                 definition("foo = text"),
                 Ok((
                     "",
-                    GrammarContent::Definition(Definition {
+                    Definition {
                         name: Identifier {
                             component: "foo".into(),
                             sub_components: vec![],
                         },
                         combine: None,
                         pattern: Pattern::Text,
-                    })
+                    }
                 ))
             );
         }
@@ -1809,20 +1816,21 @@ mod tests {
 
     mod div {
         use super::*;
+        use nom::Parser;
         use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_div() {
             assert_eq!(
-                div("div { start = empty }"),
+                div(grammar).parse("div { start = empty }"),
                 Ok((
                     "",
-                    GrammarContent::Div(Grammar {
-                        contents: vec![GrammarContent::Start {
+                    Grammar {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }]
-                    })
+                        })]
+                    }
                 ))
             );
         }
@@ -1900,7 +1908,7 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        grammar: None,
+                        contents: vec![],
                     })
                 ))
             );
@@ -1920,10 +1928,77 @@ mod tests {
                                 sub_components: vec![],
                             }
                         }),
-                        grammar: None,
+                        contents: vec![],
                     })
                 ))
             );
+        }
+
+        #[test]
+        fn parse_include_with_definition() {
+            assert_eq!(
+                include("include \"foo.rnc\" { bar = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        contents: vec![IncludeContent::Definition(Definition {
+                            name: Identifier {
+                                component: "bar".into(),
+                                sub_components: vec![],
+                            },
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        })],
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_start() {
+            assert_eq!(
+                include("include \"foo.rnc\" { start = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        contents: vec![IncludeContent::Start(Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        })],
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_div() {
+            assert_eq!(
+                include("include \"foo.rnc\" { div { start = empty } }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        contents: vec![IncludeContent::Div(vec![IncludeContent::Start(Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        })])],
+                    })
+                ))
+            );
+        }
+    }
+
+    mod include_content {
+        use super::*;
+
+        #[test]
+        fn fail_on_include() {
+            assert!(include_content("include \"foo.rnc\"").is_err());
         }
     }
 

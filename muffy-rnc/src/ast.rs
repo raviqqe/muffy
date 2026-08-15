@@ -75,15 +75,21 @@ pub enum GrammarContent {
     /// An include block.
     Include(Include),
     /// A start.
-    Start {
-        /// A combine operator.
-        combine: Option<Combine>,
-        /// A pattern.
-        pattern: Pattern,
-    },
+    Start(Start),
 }
 
-// TODO Add `LocalGrammarContent`.
+/// An include content.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IncludeContent {
+    /// An annotation.
+    Annotation(AnnotationElement),
+    /// A definition.
+    Definition(Definition),
+    /// A div block.
+    Div(Vec<Self>),
+    /// A start.
+    Start(Start),
+}
 
 /// A definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -103,9 +109,8 @@ pub struct Include {
     pub uri: String,
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
-    /// A grammar.
-    // TODO Use `LocalGrammar`.
-    pub grammar: Option<Grammar>,
+    /// Contents.
+    pub contents: Vec<IncludeContent>,
 }
 
 /// An inherit modifier.
@@ -113,6 +118,15 @@ pub struct Include {
 pub struct Inherit {
     /// A prefix.
     pub prefix: Identifier,
+}
+
+/// A start.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Start {
+    /// A combine operator.
+    pub combine: Option<Combine>,
+    /// A pattern.
+    pub pattern: Pattern,
 }
 
 /// A combine operator.

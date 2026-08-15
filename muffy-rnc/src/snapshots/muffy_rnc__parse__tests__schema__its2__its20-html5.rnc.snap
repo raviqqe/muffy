@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -11,7 +11,7 @@ Schema {
                     Include {
                         uri: "its20-html5-types.rnc",
                         inherit: None,
-                        grammar: None,
+                        contents: [],
                     },
                 ),
                 Definition(

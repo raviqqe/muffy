@@ -33,4 +33,9 @@ mod tests {
             parse_schema(&read_to_string(&path).unwrap()).unwrap()
         );
     }
+
+    #[test]
+    fn fail_on_include_nested_in_include_block() {
+        assert!(parse_schema("include \"foo.rnc\" { include \"bar.rnc\" }").is_err());
+    }
 }

@@ -28,38 +28,34 @@ Schema {
                         Include {
                             uri: "svg-basic-font.rnc",
                             inherit: None,
-                            grammar: Some(
-                                Grammar {
-                                    contents: [
-                                        Definition(
-                                            Definition {
-                                                name: Identifier {
-                                                    component: "SVG",
-                                                    sub_components: [
-                                                        "font-face",
-                                                        "extra",
-                                                        "class",
-                                                    ],
-                                                },
-                                                combine: Some(
-                                                    Interleave,
-                                                ),
-                                                pattern: Optional(
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "definition-src",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                ),
-                                            },
+                            contents: [
+                                Definition(
+                                    Definition {
+                                        name: Identifier {
+                                            component: "SVG",
+                                            sub_components: [
+                                                "font-face",
+                                                "extra",
+                                                "class",
+                                            ],
+                                        },
+                                        combine: Some(
+                                            Interleave,
                                         ),
-                                    ],
-                                },
-                            ),
+                                        pattern: Optional(
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "definition-src",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                    },
+                                ),
+                            ],
                         },
                     ),
                     Annotation(

@@ -1,8 +1,8 @@
 use crate::{error::MacroError, namespace::resolve_namespaces};
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{
-    DefinitionSet, Grammar, GrammarContent, Identifier, Pattern as RncPattern, SchemaBody,
-    defined_names, parse_schema,
+    DefinitionSet, Grammar, GrammarContent, Identifier, IncludeContent, Pattern as RncPattern,
+    SchemaBody, defined_names, parse_schema,
 };
 use std::{fs::read_to_string, path::Path};
 
@@ -65,16 +65,36 @@ pub fn load_grammar(
                     &overridden
                         .iter()
                         .cloned()
-                        .chain(include.grammar.iter().flat_map(defined_names))
+                        .chain(defined_names(&include.contents))
                         .collect(),
                     definitions,
                 )?;
 
-                if let Some(grammar) = &include.grammar {
-                    load_grammar(grammar, directory, overridden, definitions)?;
+                load_include_contents(&include.contents, overridden, definitions)?;
+            }
+            GrammarContent::Annotation(_) | GrammarContent::Start(_) => {}
+        }
+    }
+
+    Ok(())
+}
+
+fn load_include_contents(
+    contents: &[IncludeContent],
+    overridden: &BTreeSet<Identifier>,
+    definitions: &mut DefinitionSet,
+) -> Result<(), MacroError> {
+    for content in contents {
+        match content {
+            IncludeContent::Definition(definition) => {
+                if !overridden.contains(&definition.name) {
+                    definitions.define(definition)?;
                 }
             }
-            GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
+            IncludeContent::Div(contents) => {
+                load_include_contents(contents, overridden, definitions)?
+            }
+            IncludeContent::Annotation(_) | IncludeContent::Start(_) => {}
         }
     }
 

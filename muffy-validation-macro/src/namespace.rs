@@ -1,8 +1,8 @@
 use alloc::collections::BTreeMap;
 use muffy_document::document::namespace_prefix;
 use muffy_rnc::{
-    Declaration, Grammar, GrammarContent, Identifier, Include, Name, NameClass, Pattern, Schema,
-    SchemaBody,
+    Declaration, Grammar, GrammarContent, Identifier, Include, IncludeContent, Name, NameClass,
+    Pattern, Schema, SchemaBody, Start,
 };
 
 pub fn resolve_namespaces(schema: Schema) -> Schema {
@@ -51,18 +51,41 @@ fn resolve_grammar(grammar: Grammar, namespaces: &BTreeMap<Identifier, String>) 
                     GrammarContent::Div(resolve_grammar(grammar, namespaces))
                 }
                 GrammarContent::Include(include) => GrammarContent::Include(Include {
-                    grammar: include
-                        .grammar
-                        .map(|grammar| resolve_grammar(grammar, namespaces)),
+                    contents: resolve_include_contents(include.contents, namespaces),
                     ..include
                 }),
-                GrammarContent::Start { combine, pattern } => GrammarContent::Start {
-                    combine,
-                    pattern: resolve_pattern(pattern, namespaces),
-                },
+                GrammarContent::Start(start) => GrammarContent::Start(Start {
+                    pattern: resolve_pattern(start.pattern, namespaces),
+                    ..start
+                }),
             })
             .collect(),
     }
+}
+
+fn resolve_include_contents(
+    contents: Vec<IncludeContent>,
+    namespaces: &BTreeMap<Identifier, String>,
+) -> Vec<IncludeContent> {
+    contents
+        .into_iter()
+        .map(|content| match content {
+            IncludeContent::Annotation(_) => content,
+            IncludeContent::Definition(definition) => {
+                IncludeContent::Definition(muffy_rnc::Definition {
+                    pattern: resolve_pattern(definition.pattern, namespaces),
+                    ..definition
+                })
+            }
+            IncludeContent::Div(contents) => {
+                IncludeContent::Div(resolve_include_contents(contents, namespaces))
+            }
+            IncludeContent::Start(start) => IncludeContent::Start(Start {
+                pattern: resolve_pattern(start.pattern, namespaces),
+                ..start
+            }),
+        })
+        .collect()
 }
 
 fn resolve_pattern(pattern: Pattern, namespaces: &BTreeMap<Identifier, String>) -> Pattern {
