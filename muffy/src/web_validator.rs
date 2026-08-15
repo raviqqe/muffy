@@ -405,10 +405,6 @@ impl WebValidator {
                 futures.push(future);
             }
 
-            // TODO Prune subtrees of ignored elements and of elements with
-            // unconstrained content models. Every element is validated
-            // independently, so ignoring a subtree root does not silence
-            // unknown-tag errors of its descendants.
             for node in element.children() {
                 self.validate_html_element(context, base, node, futures)?;
             }
@@ -687,10 +683,6 @@ impl WebValidator {
             ));
         }
 
-        // TODO Prune subtrees of ignored elements and of elements with
-        // unconstrained content models. Every element is validated
-        // independently, so ignoring a subtree root does not silence
-        // unknown-tag errors of its descendants.
         for node in element.children() {
             self.validate_svg_element(context, base, site, node, false, futures);
         }
