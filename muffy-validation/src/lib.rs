@@ -2,19 +2,23 @@
 
 extern crate alloc;
 
+mod attribute;
 mod attribute_set;
 mod content;
 mod error;
 mod rule;
 mod validation;
+mod value;
 mod variant;
 
 pub use self::error::*;
 use self::{
+    attribute::Attribute,
     attribute_set::AttributeSet,
     content::Content,
     rule::Rule,
     validation::{matches_wildcard, validate_rule},
+    value::{Literal, Value},
     variant::Variant,
 };
 use muffy_document::document::Element;
@@ -79,6 +83,69 @@ mod tests {
             let element = create_element("div", vec![("id", "foo"), ("class", "bar")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_attribute_value() {
+            let element = create_element("div", vec![("dir", "ltr")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_case_insensitive_attribute_value() {
+            let element = create_element("div", vec![("dir", "LTR")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_attribute_value() {
+            let element = create_element("div", vec![("dir", "wrong")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("dir".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_valid_role_value() {
+            let element = create_element("div", vec![("role", "img")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_case_sensitive_role_value() {
+            let element = create_element("div", vec![("role", "IMG")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("role".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_ignored_attribute_value_regex() {
+            let element = create_element("div", vec![("dir", "wrong")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[Regex::new("^dir$").unwrap()], &[]),
+                Ok(())
+            );
         }
 
         #[test]
@@ -629,6 +696,30 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_case_insensitive_method_value() {
+            let element = create_element("form", vec![("action", "/"), ("method", "POST")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_method_value() {
+            let element =
+                create_element("form", vec![("action", "/"), ("method", "delete")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("method".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_valid_child() {
             let element = create_element(
                 "form",
@@ -797,6 +888,40 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_refresh() {
+            let element = create_element(
+                "meta",
+                vec![("http-equiv", "refresh"), ("content", "0")],
+                vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_http_equiv_value() {
+            let element = create_element(
+                "meta",
+                vec![("http-equiv", "bogus"), ("content", "stuff")],
+                vec![],
+            );
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [(
+                        "http-equiv".into(),
+                        [AttributeError::InvalidValue].into()
+                    )]
+                    .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
         fn validate_conflicting_charset() {
             let element = create_element(
                 "meta",
@@ -891,6 +1016,32 @@ mod tests {
             let element = create_element("svg", vec![("lang", "en"), ("xml:lang", "en")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_attribute_value() {
+            let element = create_element("svg", vec![("zoomAndPan", "magnify")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_case_sensitive_attribute_value() {
+            let element = create_element("svg", vec![("zoomAndPan", "MAGNIFY")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [(
+                        "zoomAndPan".into(),
+                        [AttributeError::InvalidValue].into()
+                    )]
+                    .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
 
         #[test]
@@ -1165,6 +1316,29 @@ mod tests {
                 create_element("math", vec![("display", "block"), ("alttext", "x")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_padded_attribute_value() {
+            let element = create_element("math", vec![("display", " block ")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_case_sensitive_attribute_value() {
+            let element = create_element("math", vec![("display", "Block")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("display".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
 
         #[test]

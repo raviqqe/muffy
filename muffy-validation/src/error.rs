@@ -83,6 +83,8 @@ fn format_names(label: &str, names: &BTreeSet<String>) -> Option<String> {
 pub enum AttributeError {
     /// Conflicting with other attributes.
     Conflict,
+    /// An invalid value.
+    InvalidValue,
     /// Not allowed.
     NotAllowed,
 }
@@ -91,6 +93,7 @@ impl Display for AttributeError {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Conflict => write!(formatter, "conflicting"),
+            Self::InvalidValue => write!(formatter, "invalid value"),
             Self::NotAllowed => write!(formatter, "not allowed"),
         }
     }
@@ -140,6 +143,23 @@ mod tests {
                 }
             ),
             "invalid attributes: foo (not allowed)"
+        );
+    }
+
+    #[test]
+    fn display_invalid_attribute_value() {
+        assert_eq!(
+            format!(
+                "{}",
+                MarkupError::InvalidElement {
+                    invalid_attributes: [("foo".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                }
+            ),
+            "invalid attributes: foo (invalid value)"
         );
     }
 

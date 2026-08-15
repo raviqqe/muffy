@@ -51,14 +51,20 @@ pub fn validate_rule(
         .map(|variant| evaluate_variant(variant, &attributes, &exempt_attributes, &children))
         .min_by_key(|evaluation| evaluation.score)
     {
-        for name in attributes.iter().filter(|name| {
-            attribute_set.required.binary_search(name).is_err()
-                && attribute_set.optional.binary_search(name).is_err()
-        }) {
-            attribute_errors
-                .entry((*name).into())
-                .or_default()
-                .insert(AttributeError::Conflict);
+        for (name, value) in &attributes {
+            if let Some(attribute) = attribute_set.find(name) {
+                if !attribute.value.matches(value) {
+                    attribute_errors
+                        .entry((*name).into())
+                        .or_default()
+                        .insert(AttributeError::InvalidValue);
+                }
+            } else {
+                attribute_errors
+                    .entry((*name).into())
+                    .or_default()
+                    .insert(AttributeError::Conflict);
+            }
         }
 
         for name in &misplaced_children {
@@ -72,14 +78,16 @@ pub fn validate_rule(
             attribute_set
                 .required
                 .iter()
-                .filter(|name| {
-                    attributes.binary_search(name).is_err()
-                        && exempt_attributes.binary_search(name).is_err()
+                .filter(|attribute| {
+                    attributes
+                        .binary_search_by(|(name, _)| name.cmp(&attribute.name))
+                        .is_err()
+                        && exempt_attributes.binary_search(&attribute.name).is_err()
                         && !ignored_attributes
                             .iter()
-                            .any(|pattern| pattern.is_match(name))
+                            .any(|pattern| pattern.is_match(attribute.name))
                 })
-                .map(|&name| name.into()),
+                .map(|attribute| attribute.name.into()),
         );
 
         if misplaced_children.is_empty() {
@@ -176,12 +184,16 @@ fn classify_attributes<'a>(
     element: &'a Element,
     ignored_attributes: &[Regex],
     rule: &Rule,
-) -> (Vec<&'static str>, Vec<&'static str>, Vec<&'a str>) {
+) -> (
+    Vec<(&'static str, &'a str)>,
+    Vec<&'static str>,
+    Vec<&'a str>,
+) {
     let mut attributes = vec![];
     let mut exempt_attributes = vec![];
     let mut disallowed_attributes = vec![];
 
-    for (name, _) in element.attributes() {
+    for (name, value) in element.attributes() {
         let ignored = ignored_attributes
             .iter()
             .any(|pattern| pattern.is_match(name));
@@ -190,15 +202,15 @@ fn classify_attributes<'a>(
             if ignored {
                 exempt_attributes.push(name);
             } else {
-                attributes.push(name);
+                attributes.push((name, value));
             }
         } else if !ignored {
             disallowed_attributes.push(name);
         }
     }
 
-    attributes.sort();
-    attributes.dedup();
+    attributes.sort_by_key(|(name, _)| *name);
+    attributes.dedup_by_key(|(name, _)| *name);
     exempt_attributes.sort();
     exempt_attributes.dedup();
 
@@ -259,11 +271,11 @@ pub fn matches_wildcard(pattern: &str, name: &str) -> bool {
 
 fn evaluate_variant(
     variant: &Variant,
-    attributes: &[&'static str],
+    attributes: &[(&'static str, &str)],
     exempt_attributes: &[&'static str],
     children: &[(&'static str, bool)],
 ) -> VariantEvaluation {
-    let (attribute_set, (error_count, requirement_count, conflict_count)) = variant
+    let (attribute_set, (error_count, conflict_count, requirement_count)) = variant
         .attributes
         .iter()
         .map(|set| {
@@ -290,41 +302,62 @@ fn evaluate_variant(
     }
 }
 
-// (error count, requirement count, conflict count)
+// (error count, conflict count, requirement count)
 fn evaluate_attribute_set(
     set: &AttributeSet,
-    attributes: &[&'static str],
+    attributes: &[(&'static str, &str)],
     exempt_attributes: &[&'static str],
 ) -> (usize, usize, usize) {
-    let conflict_count = attributes
-        .iter()
-        .filter(|name| {
-            set.required.binary_search(name).is_err() && set.optional.binary_search(name).is_err()
-        })
-        .count();
+    let mut conflict_count = 0;
+    let mut mismatch_count = 0;
+
+    for (name, value) in attributes {
+        match set.find(name) {
+            Some(attribute) => {
+                if !attribute.value.matches(value) {
+                    mismatch_count += 1;
+                }
+            }
+            None => conflict_count += 1,
+        }
+    }
+
     let missing_count = set
         .required
         .iter()
-        .filter(|name| {
-            attributes.binary_search(name).is_err()
-                && exempt_attributes.binary_search(name).is_err()
+        .filter(|attribute| {
+            attributes
+                .binary_search_by(|(name, _)| name.cmp(&attribute.name))
+                .is_err()
+                && exempt_attributes.binary_search(&attribute.name).is_err()
         })
         .count();
 
     (
-        conflict_count + missing_count,
-        set.required.len(),
+        conflict_count + mismatch_count + missing_count,
         conflict_count,
+        set.required.len(),
     )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        attribute::Attribute,
+        value::{Literal, Value},
+    };
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 
     const EMPTY_CONTENT: Content = Content::Empty;
+
+    const fn attribute(name: &'static str) -> Attribute {
+        Attribute {
+            name,
+            value: &Value::Any,
+        }
+    }
 
     // The content model of `element example { (attribute foo { text },
     // attribute bar { text }?) | attribute baz { text } }` with children
@@ -335,8 +368,8 @@ mod tests {
         variants: &[
             Variant {
                 attributes: &[AttributeSet {
-                    required: &["foo"],
-                    optional: &["bar"],
+                    required: &[attribute("foo")],
+                    optional: &[attribute("bar")],
                 }],
                 content: &Content::Group(&[
                     Content::Element(&["one"]),
@@ -345,7 +378,7 @@ mod tests {
             },
             Variant {
                 attributes: &[AttributeSet {
-                    required: &["baz"],
+                    required: &[attribute("baz")],
                     optional: &[],
                 }],
                 content: &EMPTY_CONTENT,
@@ -800,11 +833,11 @@ mod tests {
             variants: &[Variant {
                 attributes: &[
                     AttributeSet {
-                        required: &["bar"],
+                        required: &[attribute("bar")],
                         optional: &[],
                     },
                     AttributeSet {
-                        required: &["foo", "qux"],
+                        required: &[attribute("foo"), attribute("qux")],
                         optional: &[],
                     },
                 ],
@@ -837,5 +870,130 @@ mod tests {
             ),
             Ok(())
         );
+    }
+
+    mod value {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        // The attributes of `element example { attribute kind { "one" | "two" }? }`.
+        const VALUE_RULE: Rule = Rule {
+            attributes: &["kind"],
+            children: &[],
+            variants: &[Variant {
+                attributes: &[AttributeSet {
+                    required: &[],
+                    optional: &[Attribute {
+                        name: "kind",
+                        value: &Value::Literals(&[Literal::Exact("one"), Literal::Exact("two")]),
+                    }],
+                }],
+                content: &EMPTY_CONTENT,
+            }],
+        };
+
+        #[test]
+        fn validate_valid_value() {
+            assert_eq!(
+                validate_rule(
+                    &create_element("example", vec![("kind", "one")], vec![]),
+                    &[],
+                    &[],
+                    &VALUE_RULE,
+                ),
+                Ok(())
+            );
+        }
+
+        #[test]
+        fn validate_invalid_value() {
+            assert_eq!(
+                validate_rule(
+                    &create_element("example", vec![("kind", "three")], vec![]),
+                    &[],
+                    &[],
+                    &VALUE_RULE,
+                ),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("kind".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn skip_value_of_ignored_attribute() {
+            assert_eq!(
+                validate_rule(
+                    &create_element("example", vec![("kind", "three")], vec![]),
+                    &[Regex::new("^kind$").unwrap()],
+                    &[],
+                    &VALUE_RULE,
+                ),
+                Ok(())
+            );
+        }
+
+        #[test]
+        fn prefer_variant_with_matching_value() {
+            // The rule of `element example { (attribute kind { "one" }, one)
+            // | (attribute kind { "two" }, two) }`.
+            const VARIANT_RULE: Rule = Rule {
+                attributes: &["kind"],
+                children: &["one", "two"],
+                variants: &[
+                    Variant {
+                        attributes: &[AttributeSet {
+                            required: &[Attribute {
+                                name: "kind",
+                                value: &Value::Literals(&[Literal::Exact("one")]),
+                            }],
+                            optional: &[],
+                        }],
+                        content: &Content::Element(&["one"]),
+                    },
+                    Variant {
+                        attributes: &[AttributeSet {
+                            required: &[Attribute {
+                                name: "kind",
+                                value: &Value::Literals(&[Literal::Exact("two")]),
+                            }],
+                            optional: &[],
+                        }],
+                        content: &Content::Element(&["two"]),
+                    },
+                ],
+            };
+
+            assert_eq!(
+                validate_rule(
+                    &create_element("example", vec![("kind", "two")], vec!["two"]),
+                    &[],
+                    &[],
+                    &VARIANT_RULE,
+                ),
+                Ok(())
+            );
+
+            // The missing child is diagnosed against the variant with the
+            // matching value.
+            assert_eq!(
+                validate_rule(
+                    &create_element("example", vec![("kind", "two")], vec![]),
+                    &[],
+                    &[],
+                    &VARIANT_RULE,
+                ),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: Default::default(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: ["two".into()].into(),
+                })
+            );
+        }
     }
 }

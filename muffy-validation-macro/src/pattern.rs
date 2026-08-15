@@ -1,12 +1,12 @@
 mod normal;
 
 pub use self::normal::normalize_pattern;
+use crate::value::Value;
 use alloc::collections::BTreeSet;
 
-// TODO Support attribute value schemas.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Pattern {
-    Attribute(BTreeSet<String>),
+    Attribute(BTreeSet<String>, Value),
     Choice(Vec<Self>),
     Element(BTreeSet<String>),
     Empty,

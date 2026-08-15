@@ -10,6 +10,7 @@ mod error;
 mod name;
 mod namespace;
 mod pattern;
+mod value;
 
 use self::{
     attribute::AttributeSet,
@@ -19,6 +20,7 @@ use self::{
     error::MacroError,
     name::class_names,
     pattern::Pattern,
+    value::{Value, generate_value},
 };
 use alloc::collections::BTreeMap;
 use itertools::Itertools;
@@ -78,7 +80,7 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
         let attributes = variants
             .iter()
             .flat_map(|(sets, _)| sets)
-            .flat_map(|set| set.required.iter().chain(&set.optional))
+            .flat_map(|set| set.required.keys().chain(set.optional.keys()))
             .unique()
             .sorted()
             .map(|name| quote!(#name));
@@ -127,19 +129,31 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
         }
     }
 
-    let attribute_set_definitions = sort_by_index(attribute_set_indexes).map(|(sets, index)| {
-        let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
-        let sets = sets.iter().map(|set| {
-            let required = set.required.iter().map(|name| quote!(#name));
-            let optional = set.optional.iter().map(|name| quote!(#name));
+    let mut value_indexes = BTreeMap::<Value, usize>::new();
+    let attribute_set_definitions = sort_by_index(attribute_set_indexes)
+        .map(|(sets, index)| {
+            let identifier = format_ident!("ATTRIBUTE_SETS_{index}");
+            let sets = sets
+                .iter()
+                .map(|set| {
+                    let required = generate_attributes(&set.required, &mut value_indexes);
+                    let optional = generate_attributes(&set.optional, &mut value_indexes);
 
-            quote!(AttributeSet {
-                required: &[#(#required),*],
-                optional: &[#(#optional),*],
-            })
-        });
+                    quote!(AttributeSet {
+                        required: &[#(#required),*],
+                        optional: &[#(#optional),*],
+                    })
+                })
+                .collect::<Vec<_>>();
 
-        quote!(const #identifier: &[AttributeSet] = &[#(#sets),*];)
+            quote!(const #identifier: &[AttributeSet] = &[#(#sets),*];)
+        })
+        .collect::<Vec<_>>();
+    let value_definitions = sort_by_index(value_indexes).map(|(value, index)| {
+        let identifier = format_ident!("VALUE_{index}");
+        let value = generate_value(&value);
+
+        quote!(const #identifier: &Value = &#value;)
     });
     let content_definitions = sort_by_index(content_indexes)
         .map(|(content, index)| {
@@ -160,6 +174,7 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
             ignored_attributes: &[::regex::Regex],
             ignored_elements: &[::regex::Regex],
         ) -> Result<(), MarkupError> {
+            #(#value_definitions)*
             #(#attribute_set_definitions)*
             #(#content_definitions)*
 
@@ -172,6 +187,24 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
         }
     }
     .into())
+}
+
+fn generate_attributes(
+    attributes: &BTreeMap<String, Value>,
+    value_indexes: &mut BTreeMap<Value, usize>,
+) -> Vec<proc_macro2::TokenStream> {
+    attributes
+        .iter()
+        .map(|(name, value)| {
+            let index = value_indexes.len();
+            let value = format_ident!(
+                "VALUE_{}",
+                *value_indexes.entry(value.clone()).or_insert(index)
+            );
+
+            quote!(Attribute { name: #name, value: #value })
+        })
+        .collect()
 }
 
 fn sort_by_index<T>(indexes: BTreeMap<T, usize>) -> impl Iterator<Item = (T, usize)> {

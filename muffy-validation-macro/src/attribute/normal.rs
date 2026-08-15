@@ -1,21 +1,21 @@
-use super::set::AttributeSet;
-use crate::{error::MacroError, pattern::Pattern};
-use alloc::collections::BTreeSet;
+use super::set::{AttributeSet, merge_attributes};
+use crate::{error::MacroError, pattern::Pattern, value::Value};
+use alloc::collections::BTreeMap;
 
 pub fn normalize_attributes(pattern: &Pattern) -> Result<Vec<AttributeSet>, MacroError> {
-    let mut sets = normalize(pattern)?;
-
-    sets.sort();
-    sets.dedup();
-
-    Ok(sets)
+    Ok(merge_sets(normalize(pattern)?))
 }
 
 fn normalize(pattern: &Pattern) -> Result<Vec<AttributeSet>, MacroError> {
     Ok(match pattern {
         Pattern::Empty => vec![Default::default()],
         Pattern::NotAllowed => vec![],
-        Pattern::Attribute(names) => name_choice(names),
+        Pattern::Attribute(names, value) => name_choice(
+            &names
+                .iter()
+                .map(|name| (name.clone(), value.clone()))
+                .collect(),
+        ),
         Pattern::Choice(patterns) => patterns
             .iter()
             .map(normalize)
@@ -43,15 +43,12 @@ fn normalize(pattern: &Pattern) -> Result<Vec<AttributeSet>, MacroError> {
     })
 }
 
-fn optional(mut sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
-    sets.sort();
-    sets.dedup();
+fn optional(sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
+    let sets = merge_sets(sets);
 
-    let names = sets
-        .iter()
-        .flat_map(|set| set.required.iter().chain(&set.optional))
-        .cloned()
-        .collect::<BTreeSet<_>>();
+    let names = sets.iter().fold(BTreeMap::new(), |names, set| {
+        merge_attributes(&merge_attributes(&names, &set.required), &set.optional)
+    });
 
     if sets == name_choice(&names) {
         vec![AttributeSet {
@@ -65,15 +62,33 @@ fn optional(mut sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
     }
 }
 
-fn name_choice(names: &BTreeSet<String>) -> Vec<AttributeSet> {
+// Sets with the same attribute names are merged by unioning their value
+// schemas, over-approximating value combinations across alternatives.
+fn merge_sets(sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
+    let mut merged = BTreeMap::<_, AttributeSet>::new();
+
+    for set in sets {
+        merged
+            .entry((
+                set.required.keys().cloned().collect::<Vec<_>>(),
+                set.optional.keys().cloned().collect::<Vec<_>>(),
+            ))
+            .and_modify(|merged| *merged = merged.merge(&set))
+            .or_insert(set);
+    }
+
+    merged.into_values().collect()
+}
+
+fn name_choice(names: &BTreeMap<String, Value>) -> Vec<AttributeSet> {
     names
         .iter()
-        .map(|name| AttributeSet {
-            required: [name.clone()].into(),
+        .map(|(name, value)| AttributeSet {
+            required: [(name.clone(), value.clone())].into(),
             optional: names
                 .iter()
-                .filter(|other| *other != name)
-                .cloned()
+                .filter(|(other, _)| *other != name)
+                .map(|(other, value)| (other.clone(), value.clone()))
                 .collect(),
         })
         .collect()
@@ -82,16 +97,32 @@ fn name_choice(names: &BTreeSet<String>) -> Vec<AttributeSet> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::value::Literal;
     use pretty_assertions::assert_eq;
 
     fn attribute(name: &str) -> Pattern {
-        Pattern::Attribute([name.into()].into())
+        Pattern::Attribute([name.into()].into(), Value::Any)
+    }
+
+    fn literals(values: &[&str]) -> Value {
+        Value::Literals(
+            values
+                .iter()
+                .map(|&value| Literal::Token(value.into()))
+                .collect(),
+        )
     }
 
     fn set(required: &[&str], optional: &[&str]) -> AttributeSet {
         AttributeSet {
-            required: required.iter().copied().map(Into::into).collect(),
-            optional: optional.iter().copied().map(Into::into).collect(),
+            required: required
+                .iter()
+                .map(|&name| (name.into(), Value::Any))
+                .collect(),
+            optional: optional
+                .iter()
+                .map(|&name| (name.into(), Value::Any))
+                .collect(),
         }
     }
 
@@ -179,7 +210,11 @@ mod tests {
     #[test]
     fn normalize_alternative_attribute_names() {
         assert_eq!(
-            normalize_attributes(&Pattern::Attribute(["foo".into(), "bar".into()].into())).unwrap(),
+            normalize_attributes(&Pattern::Attribute(
+                ["foo".into(), "bar".into()].into(),
+                Value::Any
+            ))
+            .unwrap(),
             vec![set(&["bar"], &["foo"]), set(&["foo"], &["bar"])]
         );
     }
@@ -188,7 +223,8 @@ mod tests {
     fn normalize_optional_alternative_attribute_names() {
         assert_eq!(
             normalize_attributes(&Pattern::optional(Pattern::Attribute(
-                ["foo".into(), "bar".into()].into()
+                ["foo".into(), "bar".into()].into(),
+                Value::Any
             )))
             .unwrap(),
             vec![set(&[], &["bar", "foo"])]
@@ -205,6 +241,58 @@ mod tests {
             ])))
             .unwrap(),
             vec![set(&[], &[]), set(&["bar"], &[]), set(&["foo"], &[])]
+        );
+    }
+
+    #[test]
+    fn merge_values_of_alternative_attributes() {
+        assert_eq!(
+            normalize_attributes(&Pattern::choice([
+                Pattern::Attribute(["foo".into()].into(), literals(&["bar"])),
+                Pattern::Attribute(["foo".into()].into(), literals(&["baz"])),
+            ]))
+            .unwrap(),
+            vec![AttributeSet {
+                required: [("foo".into(), literals(&["bar", "baz"]))].into(),
+                optional: Default::default(),
+            }]
+        );
+    }
+
+    #[test]
+    fn collapse_optional_choice_of_same_name_attributes() {
+        assert_eq!(
+            normalize_attributes(&Pattern::optional(Pattern::choice([
+                Pattern::Attribute(["foo".into()].into(), literals(&["bar"])),
+                Pattern::Attribute(["foo".into()].into(), literals(&["baz"])),
+            ])))
+            .unwrap(),
+            vec![AttributeSet {
+                required: Default::default(),
+                optional: [("foo".into(), literals(&["bar", "baz"]))].into(),
+            }]
+        );
+    }
+
+    #[test]
+    fn keep_values_of_exclusive_attributes() {
+        // Values of attributes in distinct alternatives stay separate.
+        assert_eq!(
+            normalize_attributes(&Pattern::choice([
+                Pattern::Attribute(["foo".into()].into(), literals(&["bar"])),
+                Pattern::Attribute(["baz".into()].into(), literals(&["qux"])),
+            ]))
+            .unwrap(),
+            vec![
+                AttributeSet {
+                    required: [("baz".into(), literals(&["qux"]))].into(),
+                    optional: Default::default(),
+                },
+                AttributeSet {
+                    required: [("foo".into(), literals(&["bar"]))].into(),
+                    optional: Default::default(),
+                },
+            ]
         );
     }
 
