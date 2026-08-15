@@ -82,8 +82,6 @@ impl<'a> Visitor<'a> for UrlVisitor {
     type Error = Infallible;
 
     fn visit_types(&self) -> VisitTypes {
-        // Rules cover imported style sheet URLs invisible to URL visits, and
-        // resolutions keep image sets visited.
         visit_types!(URLS | RULES | RESOLUTIONS)
     }
 
