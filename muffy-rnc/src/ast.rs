@@ -75,12 +75,7 @@ pub enum GrammarContent {
     /// An include block.
     Include(Include),
     /// A start.
-    Start {
-        /// A combine operator.
-        combine: Option<Combine>,
-        /// A pattern.
-        pattern: Pattern,
-    },
+    Start(Start),
 }
 
 /// An include content.
@@ -93,12 +88,7 @@ pub enum IncludeContent {
     /// A div block.
     Div(Vec<Self>),
     /// A start.
-    Start {
-        /// A combine operator.
-        combine: Option<Combine>,
-        /// A pattern.
-        pattern: Pattern,
-    },
+    Start(Start),
 }
 
 /// A definition.
@@ -128,6 +118,15 @@ pub struct Include {
 pub struct Inherit {
     /// A prefix.
     pub prefix: Identifier,
+}
+
+/// A start.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Start {
+    /// A combine operator.
+    pub combine: Option<Combine>,
+    /// A pattern.
+    pub pattern: Pattern,
 }
 
 /// A combine operator.

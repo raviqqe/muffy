@@ -4,7 +4,7 @@ use crate::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
         Declaration, DefaultNamespaceDeclaration, Definition, Grammar, GrammarContent, Include,
         IncludeContent, Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema,
-        SchemaBody,
+        SchemaBody, Start,
     },
 };
 use nom::{
@@ -87,10 +87,7 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     annotated(alt((
         map(annotation_element, GrammarContent::Annotation),
-        map(start, |(combine, pattern)| GrammarContent::Start {
-            combine,
-            pattern,
-        }),
+        map(start, GrammarContent::Start),
         map(definition, GrammarContent::Definition),
         map(div(grammar), GrammarContent::Div),
         include,
@@ -101,20 +98,17 @@ fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
 fn include_content(input: &str) -> ParserResult<'_, IncludeContent> {
     annotated(alt((
         map(annotation_element, IncludeContent::Annotation),
-        map(start, |(combine, pattern)| IncludeContent::Start {
-            combine,
-            pattern,
-        }),
+        map(start, IncludeContent::Start),
         map(definition, IncludeContent::Definition),
         map(div(many0(include_content)), IncludeContent::Div),
     )))
     .parse(input)
 }
 
-fn start(input: &str) -> ParserResult<'_, (Option<Combine>, Pattern)> {
+fn start(input: &str) -> ParserResult<'_, Start> {
     map(
         (keyword("start"), assignment_operator, pattern),
-        |(_, combine, pattern)| (combine, pattern),
+        |(_, combine, pattern)| Start { combine, pattern },
     )
     .parse(input)
 }
