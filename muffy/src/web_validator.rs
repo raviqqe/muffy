@@ -3,7 +3,6 @@ mod context;
 use self::context::Context;
 use crate::{
     config::Config,
-    css,
     document_output::DocumentOutput,
     document_parser::DocumentParser,
     document_type::DocumentType,
@@ -333,7 +332,7 @@ impl WebValidator {
         response: &Arc<Response>,
         site: &Arc<Url>,
     ) -> Vec<ElementFuture> {
-        let (entries, errors) = css::parse(response.body());
+        let (entries, errors) = muffy_css::parse(response.body());
         let base = Arc::new(response.url().clone());
 
         errors
@@ -346,8 +345,8 @@ impl WebValidator {
             })
             .chain(entries.into_iter().map(|entry| {
                 let (name, url, document_type) = match entry {
-                    css::Entry::Import(url) => ("@import", url, Some(DocumentType::Css)),
-                    css::Entry::Url(url) => ("url", url, None),
+                    muffy_css::Entry::Import(url) => ("@import", url, Some(DocumentType::Css)),
+                    muffy_css::Entry::Url(url) => ("url", url, None),
                 };
 
                 (

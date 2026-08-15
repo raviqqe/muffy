@@ -1,0 +1,20 @@
+[package]
+name = "muffy-css"
+version.workspace = true
+edition.workspace = true
+description = "CSS document parsing for Muffy"
+readme.workspace = true
+repository.workspace = true
+license.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+itertools = "0.15.0"
+lightningcss = { version = "1.0.0-alpha.72", default-features = false, features = ["visitor"] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+
+[lints]
+workspace = true
