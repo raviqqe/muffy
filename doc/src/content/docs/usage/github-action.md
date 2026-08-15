@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # Build and/or deploy your website here.
-      - uses: raviqqe/muffy@v0.4.1
+      - uses: raviqqe/muffy@v0.5.0
 ```
 
 ## Inputs
