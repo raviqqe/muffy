@@ -25,6 +25,7 @@ pub enum Entry {
 pub fn parse(source: &[u8]) -> (Vec<Entry>, Vec<String>) {
     // Decode the source lossily and strip a byte order mark as browsers do.
     let source = String::from_utf8_lossy(source);
+    // cspell: disable-next-line
     let source = source.strip_prefix('\u{feff}').unwrap_or(&source);
     let warnings = Arc::new(RwLock::new(vec![]));
     let mut stylesheet = match StyleSheet::parse(
