@@ -27,7 +27,6 @@ pub enum Entry {
 /// Extracts URL entries from a style sheet together with syntax error
 /// messages.
 pub fn parse(source: &[u8]) -> (Vec<Entry>, Vec<String>) {
-    // Decode the source lossily and strip a byte order mark as browsers do.
     let source = String::from_utf8_lossy(source);
     // cspell: disable-next-line
     let source = source.strip_prefix('\u{feff}').unwrap_or(&source);
