@@ -14,21 +14,23 @@ Schema {
     body: Grammar(
         Grammar {
             contents: [
-                Start {
-                    combine: None,
-                    pattern: Name(
-                        Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "normal",
-                                sub_components: [
-                                    "elem",
-                                    "all-inclusive",
-                                ],
+                Start(
+                    Start {
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "normal",
+                                    sub_components: [
+                                        "elem",
+                                        "all-inclusive",
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                },
+                        ),
+                    },
+                ),
                 Definition(
                     Definition {
                         name: Identifier {

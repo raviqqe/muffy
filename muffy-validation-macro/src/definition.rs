@@ -72,7 +72,7 @@ pub fn load_grammar(
 
                 load_include_contents(&include.contents, overridden, definitions)?;
             }
-            GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
+            GrammarContent::Annotation(_) | GrammarContent::Start(_) => {}
         }
     }
 
@@ -94,7 +94,7 @@ fn load_include_contents(
             IncludeContent::Div(contents) => {
                 load_include_contents(contents, overridden, definitions)?
             }
-            IncludeContent::Annotation(_) | IncludeContent::Start { .. } => {}
+            IncludeContent::Annotation(_) | IncludeContent::Start(_) => {}
         }
     }
 

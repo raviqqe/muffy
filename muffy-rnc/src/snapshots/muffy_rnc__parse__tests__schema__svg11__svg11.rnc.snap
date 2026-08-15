@@ -50,18 +50,20 @@ Schema {
                             contents: [],
                         },
                     ),
-                    Start {
-                        combine: None,
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "svg",
-                                    sub_components: [],
+                    Start(
+                        Start {
+                            combine: None,
+                            pattern: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "svg",
+                                        sub_components: [],
+                                    },
                                 },
-                            },
-                        ),
-                    },
+                            ),
+                        },
+                    ),
                 ],
             },
         ),

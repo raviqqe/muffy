@@ -1154,7 +1154,7 @@ mod tests {
                 Ok((
                     "",
                     Grammar {
-                        contents: vec![GrammarContent::Start {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Element {
                                 name_class: NameClass::Name(Name {
@@ -1166,7 +1166,7 @@ mod tests {
                                 }),
                                 pattern: Box::new(Pattern::Empty),
                             }
-                        }]
+                        })]
                     }
                 ))
             );
@@ -1226,10 +1226,10 @@ mod tests {
                     "",
                     Grammar {
                         contents: vec![GrammarContent::Div(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })]
                     }
                 ))
@@ -1273,10 +1273,10 @@ mod tests {
                     Schema {
                         declarations: vec![],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1292,10 +1292,10 @@ mod tests {
                     Schema {
                         declarations: vec![],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Empty,
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1320,7 +1320,7 @@ mod tests {
                             uri: "http://www.w3.org/1999/xhtml".into(),
                         })],
                         body: SchemaBody::Grammar(Grammar {
-                            contents: vec![GrammarContent::Start {
+                            contents: vec![GrammarContent::Start(Start {
                                 combine: None,
                                 pattern: Pattern::Element {
                                     name_class: NameClass::Name(Name {
@@ -1335,7 +1335,7 @@ mod tests {
                                     }),
                                     pattern: Box::new(Pattern::Empty),
                                 }
-                            }]
+                            })]
                         })
                     }
                 ))
@@ -1704,10 +1704,10 @@ mod tests {
                 Ok((
                     "",
                     Pattern::Grammar(Grammar {
-                        contents: vec![GrammarContent::Start {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }]
+                        })]
                     })
                 ))
             );
@@ -1764,14 +1764,29 @@ mod tests {
 
         #[test]
         fn parse_start() {
-            assert_eq!(start("start = empty"), Ok(("", (None, Pattern::Empty))));
+            assert_eq!(
+                start("start = empty"),
+                Ok((
+                    "",
+                    Start {
+                        combine: None,
+                        pattern: Pattern::Empty,
+                    }
+                ))
+            );
         }
 
         #[test]
         fn parse_start_with_choice_assignment() {
             assert_eq!(
                 start("start |= empty"),
-                Ok(("", (Some(Combine::Choice), Pattern::Empty)))
+                Ok((
+                    "",
+                    Start {
+                        combine: Some(Combine::Choice),
+                        pattern: Pattern::Empty,
+                    }
+                ))
             );
         }
     }
@@ -1811,10 +1826,10 @@ mod tests {
                 Ok((
                     "",
                     Grammar {
-                        contents: vec![GrammarContent::Start {
+                        contents: vec![GrammarContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }]
+                        })]
                     }
                 ))
             );
@@ -1950,10 +1965,10 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        contents: vec![IncludeContent::Start {
+                        contents: vec![IncludeContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }],
+                        })],
                     })
                 ))
             );
@@ -1968,10 +1983,10 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        contents: vec![IncludeContent::Div(vec![IncludeContent::Start {
+                        contents: vec![IncludeContent::Div(vec![IncludeContent::Start(Start {
                             combine: None,
                             pattern: Pattern::Empty,
-                        }])],
+                        })])],
                     })
                 ))
             );

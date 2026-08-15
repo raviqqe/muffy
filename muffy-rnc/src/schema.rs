@@ -56,7 +56,7 @@ pub fn defined_names(contents: &[IncludeContent]) -> BTreeSet<Identifier> {
         .flat_map(|content| match content {
             IncludeContent::Definition(definition) => [definition.name.clone()].into(),
             IncludeContent::Div(contents) => defined_names(contents),
-            IncludeContent::Annotation(_) | IncludeContent::Start { .. } => Default::default(),
+            IncludeContent::Annotation(_) | IncludeContent::Start(_) => Default::default(),
         })
         .collect()
 }

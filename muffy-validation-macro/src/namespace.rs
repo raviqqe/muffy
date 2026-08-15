@@ -2,7 +2,7 @@ use alloc::collections::BTreeMap;
 use muffy_document::document::namespace_prefix;
 use muffy_rnc::{
     Declaration, Grammar, GrammarContent, Identifier, Include, IncludeContent, Name, NameClass,
-    Pattern, Schema, SchemaBody,
+    Pattern, Schema, SchemaBody, Start,
 };
 
 pub fn resolve_namespaces(schema: Schema) -> Schema {
@@ -54,10 +54,10 @@ fn resolve_grammar(grammar: Grammar, namespaces: &BTreeMap<Identifier, String>) 
                     contents: resolve_include_contents(include.contents, namespaces),
                     ..include
                 }),
-                GrammarContent::Start { combine, pattern } => GrammarContent::Start {
-                    combine,
-                    pattern: resolve_pattern(pattern, namespaces),
-                },
+                GrammarContent::Start(start) => GrammarContent::Start(Start {
+                    pattern: resolve_pattern(start.pattern, namespaces),
+                    ..start
+                }),
             })
             .collect(),
     }
@@ -80,10 +80,10 @@ fn resolve_include_contents(
             IncludeContent::Div(contents) => {
                 IncludeContent::Div(resolve_include_contents(contents, namespaces))
             }
-            IncludeContent::Start { combine, pattern } => IncludeContent::Start {
-                combine,
-                pattern: resolve_pattern(pattern, namespaces),
-            },
+            IncludeContent::Start(start) => IncludeContent::Start(Start {
+                pattern: resolve_pattern(start.pattern, namespaces),
+                ..start
+            }),
         })
         .collect()
 }

@@ -52,20 +52,22 @@ Schema {
                         ],
                     },
                 ),
-                Start {
-                    combine: None,
-                    pattern: Name(
-                        Name {
-                            prefix: None,
-                            local: Identifier {
-                                component: "html",
-                                sub_components: [
-                                    "elem",
-                                ],
+                Start(
+                    Start {
+                        combine: None,
+                        pattern: Name(
+                            Name {
+                                prefix: None,
+                                local: Identifier {
+                                    component: "html",
+                                    sub_components: [
+                                        "elem",
+                                    ],
+                                },
                             },
-                        },
-                    ),
-                },
+                        ),
+                    },
+                ),
                 Include(
                     Include {
                         uri: "meta.rnc",
