@@ -23,11 +23,10 @@ use std::sync::RwLock;
 /// messages.
 pub fn parse(source: &[u8]) -> Result<(Vec<Entry>, Vec<String>), CssError> {
     let source = str::from_utf8(source)?;
-    // cspell: disable-next-line
-    let source = source.strip_prefix('\u{feff}').unwrap_or(source);
     let warnings = Arc::new(RwLock::new(vec![]));
     let mut stylesheet = StyleSheet::parse(
-        source,
+        // cspell: disable-next-line
+        source.strip_prefix('\u{feff}').unwrap_or(source),
         ParserOptions {
             error_recovery: true,
             warnings: Some(warnings.clone()),
