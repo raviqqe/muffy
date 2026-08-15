@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -30,12 +30,12 @@ Schema {
                     Include {
                         uri: "mathml3-content.rnc",
                         inherit: Some(
-                            Prefix(
-                                Identifier {
+                            Inherit {
+                                prefix: Identifier {
                                     component: "m",
                                     sub_components: [],
                                 },
-                            ),
+                            },
                         ),
                         grammar: None,
                     },
@@ -44,12 +44,12 @@ Schema {
                     Include {
                         uri: "mathml3-presentation.rnc",
                         inherit: Some(
-                            Prefix(
-                                Identifier {
+                            Inherit {
+                                prefix: Identifier {
                                     component: "m",
                                     sub_components: [],
                                 },
-                            ),
+                            },
                         ),
                         grammar: None,
                     },
@@ -58,12 +58,12 @@ Schema {
                     Include {
                         uri: "mathml3-common.rnc",
                         inherit: Some(
-                            Prefix(
-                                Identifier {
+                            Inherit {
+                                prefix: Identifier {
                                     component: "m",
                                     sub_components: [],
                                 },
-                            ),
+                            },
                         ),
                         grammar: None,
                     },
