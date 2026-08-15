@@ -79,7 +79,7 @@ struct UrlVisitor {
     entries: Vec<Entry>,
 }
 
-impl<'i> Visitor<'i> for UrlVisitor {
+impl<'a> Visitor<'a> for UrlVisitor {
     type Error = Infallible;
 
     fn visit_types(&self) -> VisitTypes {
@@ -88,7 +88,7 @@ impl<'i> Visitor<'i> for UrlVisitor {
         visit_types!(URLS | RULES | RESOLUTIONS)
     }
 
-    fn visit_rule(&mut self, rule: &mut CssRule<'i>) -> Result<(), Self::Error> {
+    fn visit_rule(&mut self, rule: &mut CssRule<'a>) -> Result<(), Self::Error> {
         if let CssRule::Import(import) = rule {
             self.entries.push(Entry::Import(import.url.to_string()));
         }
@@ -96,7 +96,7 @@ impl<'i> Visitor<'i> for UrlVisitor {
         rule.visit_children(self)
     }
 
-    fn visit_url(&mut self, url: &mut Url<'i>) -> Result<(), Self::Error> {
+    fn visit_url(&mut self, url: &mut Url<'a>) -> Result<(), Self::Error> {
         self.entries.push(Entry::Url(url.url.to_string()));
 
         Ok(())
