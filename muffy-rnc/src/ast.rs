@@ -83,7 +83,30 @@ pub enum GrammarContent {
     },
 }
 
-// TODO Add `LocalGrammarContent`.
+/// A local grammar of an include block.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LocalGrammar {
+    /// Contents.
+    pub contents: Vec<LocalGrammarContent>,
+}
+
+/// A local grammar content.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LocalGrammarContent {
+    /// An annotation.
+    Annotation(AnnotationElement),
+    /// A definition.
+    Definition(Definition),
+    /// A div block containing nested local grammar contents.
+    Div(LocalGrammar),
+    /// A start.
+    Start {
+        /// A combine operator.
+        combine: Option<Combine>,
+        /// A pattern.
+        pattern: Pattern,
+    },
+}
 
 /// A definition.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -103,9 +126,8 @@ pub struct Include {
     pub uri: String,
     /// An inherit modifier.
     pub inherit: Option<Inherit>,
-    /// A grammar.
-    // TODO Use `LocalGrammar`.
-    pub grammar: Option<Grammar>,
+    /// A local grammar.
+    pub grammar: Option<LocalGrammar>,
 }
 
 /// An inherit modifier.

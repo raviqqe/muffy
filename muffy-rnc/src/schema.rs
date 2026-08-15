@@ -1,7 +1,7 @@
 mod error;
 
 pub use self::error::SchemaError;
-use crate::ast::{Combine, Definition, Grammar, GrammarContent, Identifier, Pattern};
+use crate::ast::{Combine, Definition, Identifier, LocalGrammar, LocalGrammarContent, Pattern};
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
 
@@ -49,17 +49,17 @@ impl DefinitionSet {
     }
 }
 
-/// Collects names defined in a grammar, descending into div blocks.
-pub fn defined_names(grammar: &Grammar) -> BTreeSet<Identifier> {
+/// Collects names defined in a local grammar, descending into div blocks.
+pub fn defined_names(grammar: &LocalGrammar) -> BTreeSet<Identifier> {
     grammar
         .contents
         .iter()
         .flat_map(|content| match content {
-            GrammarContent::Definition(definition) => [definition.name.clone()].into(),
-            GrammarContent::Div(grammar) => defined_names(grammar),
-            GrammarContent::Annotation(_)
-            | GrammarContent::Include(_)
-            | GrammarContent::Start { .. } => Default::default(),
+            LocalGrammarContent::Definition(definition) => [definition.name.clone()].into(),
+            LocalGrammarContent::Div(grammar) => defined_names(grammar),
+            LocalGrammarContent::Annotation(_) | LocalGrammarContent::Start { .. } => {
+                Default::default()
+            }
         })
         .collect()
 }
@@ -241,18 +241,25 @@ mod tests {
         assert_eq!(patterns(definitions), vec![Pattern::NotAllowed]);
     }
 
-    #[test]
-    fn collect_defined_names() {
+    fn local_grammar(source: &str) -> LocalGrammar {
         let SchemaBody::Grammar(grammar) =
-            parse_schema("foo = empty\nbar = empty\nstart = foo\ninclude \"baz.rnc\"")
+            parse_schema(&format!("include \"baz.rnc\" {{ {source} }}"))
                 .unwrap()
                 .body
         else {
             panic!("grammar expected");
         };
+        let GrammarContent::Include(include) = &grammar.contents[0] else {
+            panic!("include expected");
+        };
 
+        include.grammar.clone().unwrap()
+    }
+
+    #[test]
+    fn collect_defined_names() {
         assert_eq!(
-            defined_names(&grammar)
+            defined_names(&local_grammar("foo = empty\nbar = empty\nstart = foo"))
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>(),
@@ -262,12 +269,8 @@ mod tests {
 
     #[test]
     fn collect_defined_names_in_div() {
-        let SchemaBody::Grammar(grammar) = parse_schema("div { foo = empty }").unwrap().body else {
-            panic!("grammar expected");
-        };
-
         assert_eq!(
-            defined_names(&grammar)
+            defined_names(&local_grammar("div { foo = empty }"))
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>(),

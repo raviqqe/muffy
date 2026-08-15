@@ -3,7 +3,8 @@ use crate::{
     ast::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
         Declaration, DefaultNamespaceDeclaration, Definition, Grammar, GrammarContent, Include,
-        Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema, SchemaBody,
+        Inherit, LocalGrammar, LocalGrammarContent, Name, NameClass, NamespaceDeclaration,
+        Parameter, Pattern, Schema, SchemaBody,
     },
 };
 use nom::{
@@ -86,42 +87,61 @@ fn grammar(input: &str) -> ParserResult<'_, Grammar> {
 fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     annotated(alt((
         map(annotation_element, GrammarContent::Annotation),
-        start,
-        definition,
-        div,
+        map(start, |(combine, pattern)| GrammarContent::Start {
+            combine,
+            pattern,
+        }),
+        map(definition, GrammarContent::Definition),
+        map(div(grammar), GrammarContent::Div),
         include,
     )))
     .parse(input)
 }
 
-fn start(input: &str) -> ParserResult<'_, GrammarContent> {
+fn local_grammar(input: &str) -> ParserResult<'_, LocalGrammar> {
+    map(many0(local_grammar_content), |contents| LocalGrammar {
+        contents,
+    })
+    .parse(input)
+}
+
+fn local_grammar_content(input: &str) -> ParserResult<'_, LocalGrammarContent> {
+    annotated(alt((
+        map(annotation_element, LocalGrammarContent::Annotation),
+        map(start, |(combine, pattern)| LocalGrammarContent::Start {
+            combine,
+            pattern,
+        }),
+        map(definition, LocalGrammarContent::Definition),
+        map(div(local_grammar), LocalGrammarContent::Div),
+    )))
+    .parse(input)
+}
+
+fn start(input: &str) -> ParserResult<'_, (Option<Combine>, Pattern)> {
     map(
         (keyword("start"), assignment_operator, pattern),
-        |(_, combine, pattern)| GrammarContent::Start { combine, pattern },
+        |(_, combine, pattern)| (combine, pattern),
     )
     .parse(input)
 }
 
-fn definition(input: &str) -> ParserResult<'_, GrammarContent> {
+fn definition(input: &str) -> ParserResult<'_, Definition> {
     map(
         (identifier, assignment_operator, pattern),
-        |(name, combine, pattern)| {
-            GrammarContent::Definition(Definition {
-                name,
-                combine,
-                pattern,
-            })
+        |(name, combine, pattern)| Definition {
+            name,
+            combine,
+            pattern,
         },
     )
     .parse(input)
 }
 
-fn div(input: &str) -> ParserResult<'_, GrammarContent> {
-    map(
-        preceded(keyword("div"), braced(grammar)),
-        GrammarContent::Div,
-    )
-    .parse(input)
+fn div<'a, T>(
+    contents: impl Parser<&'a str, Output = T, Error = ParserError<'a>>,
+) -> impl Parser<&'a str, Output = T, Error = ParserError<'a>> {
+    preceded(keyword("div"), braced(contents))
 }
 
 fn include(input: &str) -> ParserResult<'_, GrammarContent> {
@@ -130,7 +150,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
             keyword("include"),
             literal,
             opt(inherit),
-            opt(braced(grammar)),
+            opt(braced(local_grammar)),
         ),
         |(_, uri, inherit, grammar)| {
             GrammarContent::Include(Include {
@@ -1757,29 +1777,14 @@ mod tests {
 
         #[test]
         fn parse_start() {
-            assert_eq!(
-                start("start = empty"),
-                Ok((
-                    "",
-                    GrammarContent::Start {
-                        combine: None,
-                        pattern: Pattern::Empty,
-                    }
-                ))
-            );
+            assert_eq!(start("start = empty"), Ok(("", (None, Pattern::Empty))));
         }
 
         #[test]
         fn parse_start_with_choice_assignment() {
             assert_eq!(
                 start("start |= empty"),
-                Ok((
-                    "",
-                    GrammarContent::Start {
-                        combine: Some(Combine::Choice),
-                        pattern: Pattern::Empty,
-                    }
-                ))
+                Ok(("", (Some(Combine::Choice), Pattern::Empty)))
             );
         }
     }
@@ -1794,14 +1799,14 @@ mod tests {
                 definition("foo = text"),
                 Ok((
                     "",
-                    GrammarContent::Definition(Definition {
+                    Definition {
                         name: Identifier {
                             component: "foo".into(),
                             sub_components: vec![],
                         },
                         combine: None,
                         pattern: Pattern::Text,
-                    })
+                    }
                 ))
             );
         }
@@ -1809,20 +1814,21 @@ mod tests {
 
     mod div {
         use super::*;
+        use nom::Parser;
         use pretty_assertions::assert_eq;
 
         #[test]
         fn parse_div() {
             assert_eq!(
-                div("div { start = empty }"),
+                div(grammar).parse("div { start = empty }"),
                 Ok((
                     "",
-                    GrammarContent::Div(Grammar {
+                    Grammar {
                         contents: vec![GrammarContent::Start {
                             combine: None,
                             pattern: Pattern::Empty,
                         }]
-                    })
+                    }
                 ))
             );
         }
@@ -1924,6 +1930,81 @@ mod tests {
                     })
                 ))
             );
+        }
+
+        #[test]
+        fn parse_include_with_definition() {
+            assert_eq!(
+                include("include \"foo.rnc\" { bar = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        grammar: Some(LocalGrammar {
+                            contents: vec![LocalGrammarContent::Definition(Definition {
+                                name: Identifier {
+                                    component: "bar".into(),
+                                    sub_components: vec![],
+                                },
+                                combine: None,
+                                pattern: Pattern::Empty,
+                            })]
+                        }),
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_start() {
+            assert_eq!(
+                include("include \"foo.rnc\" { start = empty }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        grammar: Some(LocalGrammar {
+                            contents: vec![LocalGrammarContent::Start {
+                                combine: None,
+                                pattern: Pattern::Empty,
+                            }]
+                        }),
+                    })
+                ))
+            );
+        }
+
+        #[test]
+        fn parse_include_with_div() {
+            assert_eq!(
+                include("include \"foo.rnc\" { div { start = empty } }"),
+                Ok((
+                    "",
+                    GrammarContent::Include(Include {
+                        uri: "foo.rnc".into(),
+                        inherit: None,
+                        grammar: Some(LocalGrammar {
+                            contents: vec![LocalGrammarContent::Div(LocalGrammar {
+                                contents: vec![LocalGrammarContent::Start {
+                                    combine: None,
+                                    pattern: Pattern::Empty,
+                                }]
+                            })]
+                        }),
+                    })
+                ))
+            );
+        }
+    }
+
+    mod local_grammar_content {
+        use super::*;
+
+        #[test]
+        fn fail_on_include() {
+            assert!(local_grammar_content("include \"foo.rnc\"").is_err());
         }
     }
 

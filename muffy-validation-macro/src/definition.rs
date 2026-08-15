@@ -1,8 +1,8 @@
 use crate::{error::MacroError, namespace::resolve_namespaces};
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{
-    DefinitionSet, Grammar, GrammarContent, Identifier, Pattern as RncPattern, SchemaBody,
-    defined_names, parse_schema,
+    DefinitionSet, Grammar, GrammarContent, Identifier, LocalGrammar, LocalGrammarContent,
+    Pattern as RncPattern, SchemaBody, defined_names, parse_schema,
 };
 use std::{fs::read_to_string, path::Path};
 
@@ -71,10 +71,32 @@ pub fn load_grammar(
                 )?;
 
                 if let Some(grammar) = &include.grammar {
-                    load_grammar(grammar, directory, overridden, definitions)?;
+                    load_local_grammar(grammar, overridden, definitions)?;
                 }
             }
             GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
+        }
+    }
+
+    Ok(())
+}
+
+fn load_local_grammar(
+    grammar: &LocalGrammar,
+    overridden: &BTreeSet<Identifier>,
+    definitions: &mut DefinitionSet,
+) -> Result<(), MacroError> {
+    for content in &grammar.contents {
+        match content {
+            LocalGrammarContent::Definition(definition) => {
+                if !overridden.contains(&definition.name) {
+                    definitions.define(definition)?;
+                }
+            }
+            LocalGrammarContent::Div(grammar) => {
+                load_local_grammar(grammar, overridden, definitions)?
+            }
+            LocalGrammarContent::Annotation(_) | LocalGrammarContent::Start { .. } => {}
         }
     }
 

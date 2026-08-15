@@ -1,8 +1,8 @@
 use alloc::collections::BTreeMap;
 use muffy_document::document::namespace_prefix;
 use muffy_rnc::{
-    Declaration, Grammar, GrammarContent, Identifier, Include, Name, NameClass, Pattern, Schema,
-    SchemaBody,
+    Declaration, Grammar, GrammarContent, Identifier, Include, LocalGrammar, LocalGrammarContent,
+    Name, NameClass, Pattern, Schema, SchemaBody,
 };
 
 pub fn resolve_namespaces(schema: Schema) -> Schema {
@@ -53,10 +53,38 @@ fn resolve_grammar(grammar: Grammar, namespaces: &BTreeMap<Identifier, String>) 
                 GrammarContent::Include(include) => GrammarContent::Include(Include {
                     grammar: include
                         .grammar
-                        .map(|grammar| resolve_grammar(grammar, namespaces)),
+                        .map(|grammar| resolve_local_grammar(grammar, namespaces)),
                     ..include
                 }),
                 GrammarContent::Start { combine, pattern } => GrammarContent::Start {
+                    combine,
+                    pattern: resolve_pattern(pattern, namespaces),
+                },
+            })
+            .collect(),
+    }
+}
+
+fn resolve_local_grammar(
+    grammar: LocalGrammar,
+    namespaces: &BTreeMap<Identifier, String>,
+) -> LocalGrammar {
+    LocalGrammar {
+        contents: grammar
+            .contents
+            .into_iter()
+            .map(|content| match content {
+                LocalGrammarContent::Annotation(_) => content,
+                LocalGrammarContent::Definition(definition) => {
+                    LocalGrammarContent::Definition(muffy_rnc::Definition {
+                        pattern: resolve_pattern(definition.pattern, namespaces),
+                        ..definition
+                    })
+                }
+                LocalGrammarContent::Div(grammar) => {
+                    LocalGrammarContent::Div(resolve_local_grammar(grammar, namespaces))
+                }
+                LocalGrammarContent::Start { combine, pattern } => LocalGrammarContent::Start {
                     combine,
                     pattern: resolve_pattern(pattern, namespaces),
                 },
