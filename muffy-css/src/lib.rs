@@ -2,8 +2,12 @@
 
 extern crate alloc;
 
+mod entry;
+mod error;
+
+pub use self::{entry::Entry, error::CssError};
 use alloc::sync::Arc;
-use core::convert::Infallible;
+use core::{convert::Infallible, str};
 use itertools::Itertools;
 use lightningcss::{
     error::{Error, ParserError},
@@ -13,41 +17,28 @@ use lightningcss::{
     visit_types,
     visitor::{Visit, VisitTypes, Visitor},
 };
-use std::sync::{PoisonError, RwLock};
-
-/// A URL entry in a style sheet.
-#[derive(Debug, Eq, PartialEq)]
-pub enum Entry {
-    /// An imported style sheet.
-    Import(String),
-    /// A URL referenced in a rule.
-    Url(String),
-}
+use std::sync::RwLock;
 
 /// Extracts URL entries from a style sheet together with syntax error
 /// messages.
-pub fn parse(source: &[u8]) -> (Vec<Entry>, Vec<String>) {
-    // Decode the source lossily and strip a byte order mark as browsers do.
-    let source = String::from_utf8_lossy(source);
-    // cspell: disable-next-line
-    let source = source.strip_prefix('\u{feff}').unwrap_or(&source);
+pub fn parse(source: &[u8]) -> Result<(Vec<Entry>, Vec<String>), CssError> {
+    let source = str::from_utf8(source)?;
     let warnings = Arc::new(RwLock::new(vec![]));
-    let mut stylesheet = match StyleSheet::parse(
-        source,
+    let mut stylesheet = StyleSheet::parse(
+        // cspell: disable-next-line
+        source.strip_prefix('\u{feff}').unwrap_or(source),
         ParserOptions {
             error_recovery: true,
             warnings: Some(warnings.clone()),
             ..Default::default()
         },
-    ) {
-        Ok(stylesheet) => stylesheet,
-        Err(error) => return (vec![], vec![format_error(&error)]),
-    };
+    )
+    .map_err(|error| CssError::Syntax(format_error(&error)))?;
     let mut visitor = UrlVisitor::default();
 
-    let Ok(()) = stylesheet.visit(&mut visitor);
+    stylesheet.visit(&mut visitor)?;
 
-    (
+    Ok((
         visitor
             .entries
             .into_iter()
@@ -60,14 +51,13 @@ pub fn parse(source: &[u8]) -> (Vec<Entry>, Vec<String>) {
             })
             .collect(),
         warnings
-            .read()
-            .unwrap_or_else(PoisonError::into_inner)
+            .read()?
             .iter()
             .map(format_error)
             .unique()
             .sorted()
             .collect(),
-    )
+    ))
 }
 
 fn format_error(error: &Error<ParserError<'_>>) -> String {
@@ -88,16 +78,14 @@ struct UrlVisitor {
     entries: Vec<Entry>,
 }
 
-impl<'i> Visitor<'i> for UrlVisitor {
+impl<'a> Visitor<'a> for UrlVisitor {
     type Error = Infallible;
 
     fn visit_types(&self) -> VisitTypes {
-        // Rules cover imported style sheet URLs invisible to URL visits, and
-        // resolutions keep image sets visited.
         visit_types!(URLS | RULES | RESOLUTIONS)
     }
 
-    fn visit_rule(&mut self, rule: &mut CssRule<'i>) -> Result<(), Self::Error> {
+    fn visit_rule(&mut self, rule: &mut CssRule<'a>) -> Result<(), Self::Error> {
         if let CssRule::Import(import) = rule {
             self.entries.push(Entry::Import(import.url.to_string()));
         }
@@ -105,7 +93,7 @@ impl<'i> Visitor<'i> for UrlVisitor {
         rule.visit_children(self)
     }
 
-    fn visit_url(&mut self, url: &mut Url<'i>) -> Result<(), Self::Error> {
+    fn visit_url(&mut self, url: &mut Url<'a>) -> Result<(), Self::Error> {
         self.entries.push(Entry::Url(url.url.to_string()));
 
         Ok(())
@@ -118,7 +106,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn parse_entries(source: &[u8]) -> Vec<Entry> {
-        let (entries, errors) = parse(source);
+        let (entries, errors) = parse(source).unwrap();
 
         assert_eq!(errors, Vec::<String>::new());
 
@@ -204,14 +192,6 @@ mod tests {
     }
 
     #[test]
-    fn parse_url_with_invalid_utf8_comment() {
-        assert_eq!(
-            parse_entries(b"/* caf\xe9 */ a { background: url(foo.png); }"),
-            vec![Entry::Url("foo.png".into())]
-        );
-    }
-
-    #[test]
     fn parse_multiple_urls() {
         assert_eq!(
             parse_entries(
@@ -257,7 +237,7 @@ mod tests {
 
     #[test]
     fn report_syntax_error() {
-        let (entries, errors) = parse(b"} a { background: url(foo.png); }");
+        let (entries, errors) = parse(b"} a { background: url(foo.png); }").unwrap();
 
         assert_eq!(entries, vec![]);
         assert_eq!(errors, vec!["Invalid empty selector at 1:1".to_owned()]);
@@ -265,7 +245,8 @@ mod tests {
 
     #[test]
     fn report_syntax_error_with_recovered_url() {
-        let (entries, errors) = parse(b"@unknown-rule { x } a { background: url(foo.png); }");
+        let (entries, errors) =
+            parse(b"@unknown-rule { x } a { background: url(foo.png); }").unwrap();
 
         assert_eq!(entries, vec![Entry::Url("foo.png".into())]);
         assert_eq!(
@@ -276,7 +257,7 @@ mod tests {
 
     #[test]
     fn report_multiple_syntax_errors() {
-        let (entries, errors) = parse(b"@unknown-first { x } @unknown-second { x }");
+        let (entries, errors) = parse(b"@unknown-first { x } @unknown-second { x }").unwrap();
 
         assert_eq!(entries, vec![]);
         assert_eq!(
@@ -290,7 +271,7 @@ mod tests {
 
     #[test]
     fn report_misplaced_import() {
-        let (entries, errors) = parse(br#"a { color: red; } @import "foo.css";"#);
+        let (entries, errors) = parse(br#"a { color: red; } @import "foo.css";"#).unwrap();
 
         assert_eq!(entries, vec![]);
         assert_eq!(
@@ -300,6 +281,17 @@ mod tests {
                  at 1:26"
                     .to_owned()
             ]
+        );
+    }
+
+    #[test]
+    fn report_utf8_error() {
+        let error = parse(b"/* caf\xe9 */ a { background: url(foo.png); }").unwrap_err();
+
+        assert!(matches!(error, CssError::Utf8(_)));
+        assert_eq!(
+            error.to_string(),
+            "invalid utf-8 sequence of 1 bytes from index 6"
         );
     }
 }

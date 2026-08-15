@@ -332,35 +332,44 @@ impl WebValidator {
         response: &Arc<Response>,
         site: &Arc<Url>,
     ) -> Vec<ElementFuture> {
-        let (entries, errors) = muffy_css::parse(response.body());
-        let base = Arc::new(response.url().clone());
+        match muffy_css::parse(response.body()) {
+            Ok((entries, errors)) => {
+                let base = Arc::new(response.url().clone());
 
-        errors
-            .into_iter()
-            .map(|error| {
-                (
-                    Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
-                    vec![spawn(async move { Err(ItemError::CssSyntax(error)) })],
-                )
-            })
-            .chain(entries.into_iter().map(|entry| {
-                let (name, url, document_type) = match entry {
-                    muffy_css::Entry::Import(url) => ("@import", url, Some(DocumentType::Css)),
-                    muffy_css::Entry::Url(url) => ("url", url, None),
-                };
+                errors
+                    .into_iter()
+                    .map(|error| {
+                        (
+                            Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
+                            vec![spawn(async move { Err(ItemError::CssSyntax(error)) })],
+                        )
+                    })
+                    .chain(entries.into_iter().map(|entry| {
+                        let (name, url, document_type) = match entry {
+                            muffy_css::Entry::Import(url) => {
+                                ("@import", url, Some(DocumentType::Css))
+                            }
+                            muffy_css::Entry::Url(url) => ("url", url, None),
+                        };
 
-                (
-                    Element::new(name.into(), vec![("url".into(), url.clone())]),
-                    vec![spawn(self.cloned().validate_element_link(
-                        context.clone(),
-                        url,
-                        base.clone(),
-                        site.clone(),
-                        document_type,
-                    ))],
-                )
-            }))
-            .collect()
+                        (
+                            Element::new(name.into(), vec![("url".into(), url.clone())]),
+                            vec![spawn(self.cloned().validate_element_link(
+                                context.clone(),
+                                url,
+                                base.clone(),
+                                site.clone(),
+                                document_type,
+                            ))],
+                        )
+                    }))
+                    .collect()
+            }
+            Err(error) => vec![(
+                Element::new(PSEUDO_DOCUMENT_ELEMENT.into(), vec![]),
+                vec![spawn(async move { Err(ItemError::Css(error)) })],
+            )],
+        }
     }
 
     async fn validate_html(
@@ -1005,7 +1014,8 @@ mod tests {
             for element in document.unwrap().elements() {
                 for result in element.results() {
                     if let Err(
-                        error @ (ItemError::CssSyntax(_)
+                        error @ (ItemError::Css(_)
+                        | ItemError::CssSyntax(_)
                         | ItemError::Markup(_)
                         | ItemError::InvalidNamespace { .. }
                         | ItemError::InvalidRootElement { .. }
@@ -2807,6 +2817,38 @@ mod tests {
                         vec![]
                     ),
                 ]
+            );
+        }
+
+        #[tokio::test]
+        async fn report_utf8_error() {
+            let mut documents = validate(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            build_headers("text/css"),
+                            b"/* caf\xe9 */ a { background: url(bar.png); }".to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid utf-8 sequence of 1 bytes from index 6".into()].into()
             );
         }
 
