@@ -37,7 +37,7 @@ pub fn parse(source: &[u8]) -> Result<(Vec<Entry>, Vec<String>), CssError> {
     .map_err(|error| CssError::Syntax(format_error(&error)))?;
     let mut visitor = UrlVisitor::default();
 
-    let Ok(()) = stylesheet.visit(&mut visitor);
+    stylesheet.visit(&mut visitor)?;
 
     Ok((
         visitor

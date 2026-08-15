@@ -1,4 +1,5 @@
 use core::{
+    convert::Infallible,
     error::Error,
     fmt::{self, Display, Formatter},
     str::Utf8Error,
@@ -25,6 +26,12 @@ impl Display for CssError {
             Self::Syntax(message) => write!(formatter, "{message}"),
             Self::Utf8(error) => write!(formatter, "{error}"),
         }
+    }
+}
+
+impl From<Infallible> for CssError {
+    fn from(error: Infallible) -> Self {
+        match error {}
     }
 }
 
