@@ -1,8 +1,8 @@
 use crate::{error::MacroError, namespace::resolve_namespaces};
 use alloc::collections::{BTreeMap, BTreeSet};
 use muffy_rnc::{
-    DefinitionSet, Grammar, GrammarContent, Identifier, LocalGrammar, LocalGrammarContent,
-    Pattern as RncPattern, SchemaBody, defined_names, parse_schema,
+    DefinitionSet, Grammar, GrammarContent, Identifier, IncludeContent, Pattern as RncPattern,
+    SchemaBody, defined_names, parse_schema,
 };
 use std::{fs::read_to_string, path::Path};
 
@@ -65,14 +65,12 @@ pub fn load_grammar(
                     &overridden
                         .iter()
                         .cloned()
-                        .chain(include.grammar.iter().flat_map(defined_names))
+                        .chain(defined_names(&include.contents))
                         .collect(),
                     definitions,
                 )?;
 
-                if let Some(grammar) = &include.grammar {
-                    load_local_grammar(grammar, overridden, definitions)?;
-                }
+                load_include_contents(&include.contents, overridden, definitions)?;
             }
             GrammarContent::Annotation(_) | GrammarContent::Start { .. } => {}
         }
@@ -81,22 +79,22 @@ pub fn load_grammar(
     Ok(())
 }
 
-fn load_local_grammar(
-    grammar: &LocalGrammar,
+fn load_include_contents(
+    contents: &[IncludeContent],
     overridden: &BTreeSet<Identifier>,
     definitions: &mut DefinitionSet,
 ) -> Result<(), MacroError> {
-    for content in &grammar.contents {
+    for content in contents {
         match content {
-            LocalGrammarContent::Definition(definition) => {
+            IncludeContent::Definition(definition) => {
                 if !overridden.contains(&definition.name) {
                     definitions.define(definition)?;
                 }
             }
-            LocalGrammarContent::Div(grammar) => {
-                load_local_grammar(grammar, overridden, definitions)?
+            IncludeContent::Div(contents) => {
+                load_include_contents(contents, overridden, definitions)?
             }
-            LocalGrammarContent::Annotation(_) | LocalGrammarContent::Start { .. } => {}
+            IncludeContent::Annotation(_) | IncludeContent::Start { .. } => {}
         }
     }
 

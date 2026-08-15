@@ -1,7 +1,7 @@
 mod error;
 
 pub use self::error::SchemaError;
-use crate::ast::{Combine, Definition, Identifier, LocalGrammar, LocalGrammarContent, Pattern};
+use crate::ast::{Combine, Definition, Identifier, IncludeContent, Pattern};
 use alloc::collections::{BTreeMap, BTreeSet};
 use core::mem::replace;
 
@@ -49,17 +49,14 @@ impl DefinitionSet {
     }
 }
 
-/// Collects names defined in a local grammar, descending into div blocks.
-pub fn defined_names(grammar: &LocalGrammar) -> BTreeSet<Identifier> {
-    grammar
-        .contents
+/// Collects names defined in include contents, descending into div blocks.
+pub fn defined_names(contents: &[IncludeContent]) -> BTreeSet<Identifier> {
+    contents
         .iter()
         .flat_map(|content| match content {
-            LocalGrammarContent::Definition(definition) => [definition.name.clone()].into(),
-            LocalGrammarContent::Div(grammar) => defined_names(grammar),
-            LocalGrammarContent::Annotation(_) | LocalGrammarContent::Start { .. } => {
-                Default::default()
-            }
+            IncludeContent::Definition(definition) => [definition.name.clone()].into(),
+            IncludeContent::Div(contents) => defined_names(contents),
+            IncludeContent::Annotation(_) | IncludeContent::Start { .. } => Default::default(),
         })
         .collect()
 }
@@ -241,7 +238,7 @@ mod tests {
         assert_eq!(patterns(definitions), vec![Pattern::NotAllowed]);
     }
 
-    fn local_grammar(source: &str) -> LocalGrammar {
+    fn include_contents(source: &str) -> Vec<IncludeContent> {
         let SchemaBody::Grammar(grammar) =
             parse_schema(&format!("include \"baz.rnc\" {{ {source} }}"))
                 .unwrap()
@@ -253,13 +250,13 @@ mod tests {
             panic!("include expected");
         };
 
-        include.grammar.clone().unwrap()
+        include.contents.clone()
     }
 
     #[test]
     fn collect_defined_names() {
         assert_eq!(
-            defined_names(&local_grammar("foo = empty\nbar = empty\nstart = foo"))
+            defined_names(&include_contents("foo = empty\nbar = empty\nstart = foo"))
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>(),
@@ -270,7 +267,7 @@ mod tests {
     #[test]
     fn collect_defined_names_in_div() {
         assert_eq!(
-            defined_names(&local_grammar("div { foo = empty }"))
+            defined_names(&include_contents("div { foo = empty }"))
                 .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>(),

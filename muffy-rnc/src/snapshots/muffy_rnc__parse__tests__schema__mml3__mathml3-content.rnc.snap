@@ -11,233 +11,461 @@ Schema {
                     Include {
                         uri: "mathml3-strict-content.rnc",
                         inherit: None,
-                        grammar: Some(
-                            LocalGrammar {
-                                contents: [
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "cn",
-                                                sub_components: [
-                                                    "content",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Many0(
-                                                Choice(
-                                                    [
-                                                        Text,
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "mglyph",
-                                                                    sub_components: [],
-                                                                },
+                        contents: [
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "cn",
+                                        sub_components: [
+                                            "content",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Many0(
+                                        Choice(
+                                            [
+                                                Text,
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "mglyph",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "sep",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "PresentationExpression",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "cn",
+                                        sub_components: [
+                                            "attributes",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Group(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "CommonAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "DefEncAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: Identifier {
+                                                                component: "type",
+                                                                sub_components: [],
                                                             },
-                                                        ),
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "sep",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "PresentationExpression",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ],
+                                                        },
+                                                    ),
+                                                    pattern: Text,
+                                                },
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "math-base",
+                                                            sub_components: [],
+                                                        },
+                                                    },
                                                 ),
                                             ),
-                                        },
+                                        ],
                                     ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "cn",
-                                                sub_components: [
-                                                    "attributes",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Group(
-                                                [
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "CommonAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "DefEncAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                    Optional(
-                                                        Attribute {
-                                                            name_class: Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: Identifier {
-                                                                        component: "type",
-                                                                        sub_components: [],
-                                                                    },
-                                                                },
-                                                            ),
-                                                            pattern: Text,
-                                                        },
-                                                    ),
-                                                    Optional(
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "math-base",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ),
-                                                ],
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "ci",
+                                        sub_components: [
+                                            "attributes",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Group(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "CommonAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
                                             ),
-                                        },
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "DefEncAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "ci",
+                                                            sub_components: [
+                                                                "type",
+                                                            ],
+                                                        },
+                                                    },
+                                                ),
+                                            ),
+                                        ],
                                     ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "ci",
-                                                sub_components: [
-                                                    "attributes",
-                                                ],
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "ci",
+                                        sub_components: [
+                                            "type",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Attribute {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: Identifier {
+                                                    component: "type",
+                                                    sub_components: [],
+                                                },
                                             },
-                                            combine: None,
-                                            pattern: Group(
-                                                [
-                                                    Name(
+                                        ),
+                                        pattern: Text,
+                                    },
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "ci",
+                                        sub_components: [
+                                            "content",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Many0(
+                                        Choice(
+                                            [
+                                                Text,
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "mglyph",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "PresentationExpression",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "csymbol",
+                                        sub_components: [
+                                            "attributes",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Group(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "CommonAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "DefEncAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Optional(
+                                                Attribute {
+                                                    name_class: Name(
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                component: "CommonAtt",
+                                                                component: "type",
                                                                 sub_components: [],
                                                             },
                                                         },
                                                     ),
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "DefEncAtt",
-                                                                sub_components: [],
-                                                            },
+                                                    pattern: Text,
+                                                },
+                                            ),
+                                            Optional(
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "cd",
+                                                            sub_components: [],
                                                         },
-                                                    ),
-                                                    Optional(
+                                                    },
+                                                ),
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "csymbol",
+                                        sub_components: [
+                                            "content",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Many0(
+                                        Choice(
+                                            [
+                                                Text,
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "mglyph",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                                Name(
+                                                    Name {
+                                                        prefix: None,
+                                                        local: Identifier {
+                                                            component: "PresentationExpression",
+                                                            sub_components: [],
+                                                        },
+                                                    },
+                                                ),
+                                            ],
+                                        ),
+                                    ),
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "bvar",
+                                        sub_components: [],
+                                    },
+                                    combine: None,
+                                    pattern: Element {
+                                        name_class: Name(
+                                            Name {
+                                                prefix: None,
+                                                local: Identifier {
+                                                    component: "bvar",
+                                                    sub_components: [],
+                                                },
+                                            },
+                                        ),
+                                        pattern: Interleave(
+                                            [
+                                                Choice(
+                                                    [
                                                         Name(
                                                             Name {
                                                                 prefix: None,
                                                                 local: Identifier {
                                                                     component: "ci",
-                                                                    sub_components: [
-                                                                        "type",
-                                                                    ],
+                                                                    sub_components: [],
                                                                 },
                                                             },
                                                         ),
+                                                        Name(
+                                                            Name {
+                                                                prefix: None,
+                                                                local: Identifier {
+                                                                    component: "semantics-ci",
+                                                                    sub_components: [],
+                                                                },
+                                                            },
+                                                        ),
+                                                    ],
+                                                ),
+                                                Optional(
+                                                    Name(
+                                                        Name {
+                                                            prefix: None,
+                                                            local: Identifier {
+                                                                component: "degree",
+                                                                sub_components: [],
+                                                            },
+                                                        },
                                                     ),
-                                                ],
+                                                ),
+                                            ],
+                                        ),
+                                    },
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "cbytes",
+                                        sub_components: [
+                                            "attributes",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Group(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "CommonAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
                                             ),
-                                        },
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "DefEncAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ],
                                     ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "ci",
-                                                sub_components: [
-                                                    "type",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Attribute {
-                                                name_class: Name(
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "cs",
+                                        sub_components: [
+                                            "attributes",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Group(
+                                        [
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "CommonAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                            Name(
+                                                Name {
+                                                    prefix: None,
+                                                    local: Identifier {
+                                                        component: "DefEncAtt",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "apply",
+                                        sub_components: [
+                                            "content",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Choice(
+                                        [
+                                            Many1(
+                                                Name(
                                                     Name {
                                                         prefix: None,
                                                         local: Identifier {
-                                                            component: "type",
+                                                            component: "ContExp",
                                                             sub_components: [],
                                                         },
                                                     },
                                                 ),
-                                                pattern: Text,
-                                            },
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "ci",
-                                                sub_components: [
-                                                    "content",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Many0(
-                                                Choice(
-                                                    [
-                                                        Text,
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "mglyph",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "PresentationExpression",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ],
-                                                ),
                                             ),
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "csymbol",
-                                                sub_components: [
-                                                    "attributes",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Group(
+                                            Group(
                                                 [
                                                     Name(
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                component: "CommonAtt",
+                                                                component: "ContExp",
                                                                 sub_components: [],
                                                             },
                                                         },
@@ -246,211 +474,23 @@ Schema {
                                                         Name {
                                                             prefix: None,
                                                             local: Identifier {
-                                                                component: "DefEncAtt",
+                                                                component: "BvarQ",
                                                                 sub_components: [],
                                                             },
                                                         },
                                                     ),
-                                                    Optional(
-                                                        Attribute {
-                                                            name_class: Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: Identifier {
-                                                                        component: "type",
-                                                                        sub_components: [],
-                                                                    },
-                                                                },
-                                                            ),
-                                                            pattern: Text,
-                                                        },
-                                                    ),
-                                                    Optional(
+                                                    Many0(
                                                         Name(
                                                             Name {
                                                                 prefix: None,
                                                                 local: Identifier {
-                                                                    component: "cd",
+                                                                    component: "Qualifier",
                                                                     sub_components: [],
                                                                 },
                                                             },
                                                         ),
                                                     ),
-                                                ],
-                                            ),
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "csymbol",
-                                                sub_components: [
-                                                    "content",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Many0(
-                                                Choice(
-                                                    [
-                                                        Text,
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "mglyph",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                        Name(
-                                                            Name {
-                                                                prefix: None,
-                                                                local: Identifier {
-                                                                    component: "PresentationExpression",
-                                                                    sub_components: [],
-                                                                },
-                                                            },
-                                                        ),
-                                                    ],
-                                                ),
-                                            ),
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "bvar",
-                                                sub_components: [],
-                                            },
-                                            combine: None,
-                                            pattern: Element {
-                                                name_class: Name(
-                                                    Name {
-                                                        prefix: None,
-                                                        local: Identifier {
-                                                            component: "bvar",
-                                                            sub_components: [],
-                                                        },
-                                                    },
-                                                ),
-                                                pattern: Interleave(
-                                                    [
-                                                        Choice(
-                                                            [
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: Identifier {
-                                                                            component: "ci",
-                                                                            sub_components: [],
-                                                                        },
-                                                                    },
-                                                                ),
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: Identifier {
-                                                                            component: "semantics-ci",
-                                                                            sub_components: [],
-                                                                        },
-                                                                    },
-                                                                ),
-                                                            ],
-                                                        ),
-                                                        Optional(
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: Identifier {
-                                                                        component: "degree",
-                                                                        sub_components: [],
-                                                                    },
-                                                                },
-                                                            ),
-                                                        ),
-                                                    ],
-                                                ),
-                                            },
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "cbytes",
-                                                sub_components: [
-                                                    "attributes",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Group(
-                                                [
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "CommonAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "DefEncAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
-                                            ),
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "cs",
-                                                sub_components: [
-                                                    "attributes",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Group(
-                                                [
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "CommonAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                    Name(
-                                                        Name {
-                                                            prefix: None,
-                                                            local: Identifier {
-                                                                component: "DefEncAtt",
-                                                                sub_components: [],
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
-                                            ),
-                                        },
-                                    ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "apply",
-                                                sub_components: [
-                                                    "content",
-                                                ],
-                                            },
-                                            combine: None,
-                                            pattern: Choice(
-                                                [
-                                                    Many1(
+                                                    Many0(
                                                         Name(
                                                             Name {
                                                                 prefix: None,
@@ -461,79 +501,35 @@ Schema {
                                                             },
                                                         ),
                                                     ),
-                                                    Group(
-                                                        [
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: Identifier {
-                                                                        component: "ContExp",
-                                                                        sub_components: [],
-                                                                    },
-                                                                },
-                                                            ),
-                                                            Name(
-                                                                Name {
-                                                                    prefix: None,
-                                                                    local: Identifier {
-                                                                        component: "BvarQ",
-                                                                        sub_components: [],
-                                                                    },
-                                                                },
-                                                            ),
-                                                            Many0(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: Identifier {
-                                                                            component: "Qualifier",
-                                                                            sub_components: [],
-                                                                        },
-                                                                    },
-                                                                ),
-                                                            ),
-                                                            Many0(
-                                                                Name(
-                                                                    Name {
-                                                                        prefix: None,
-                                                                        local: Identifier {
-                                                                            component: "ContExp",
-                                                                            sub_components: [],
-                                                                        },
-                                                                    },
-                                                                ),
-                                                            ),
-                                                        ],
-                                                    ),
                                                 ],
                                             ),
-                                        },
+                                        ],
                                     ),
-                                    Definition(
-                                        Definition {
-                                            name: Identifier {
-                                                component: "bind",
+                                },
+                            ),
+                            Definition(
+                                Definition {
+                                    name: Identifier {
+                                        component: "bind",
+                                        sub_components: [
+                                            "content",
+                                        ],
+                                    },
+                                    combine: None,
+                                    pattern: Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "apply",
                                                 sub_components: [
                                                     "content",
                                                 ],
                                             },
-                                            combine: None,
-                                            pattern: Name(
-                                                Name {
-                                                    prefix: None,
-                                                    local: Identifier {
-                                                        component: "apply",
-                                                        sub_components: [
-                                                            "content",
-                                                        ],
-                                                    },
-                                                },
-                                            ),
                                         },
                                     ),
-                                ],
-                            },
-                        ),
+                                },
+                            ),
+                        ],
                     },
                 ),
                 Definition(

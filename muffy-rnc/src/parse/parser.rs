@@ -1217,7 +1217,7 @@ mod tests {
                         contents: vec![GrammarContent::Include(Include {
                             uri: "common.rnc".into(),
                             inherit: None,
-                            grammar: None,
+                            contents: vec![],
                         })]
                     }
                 ))
