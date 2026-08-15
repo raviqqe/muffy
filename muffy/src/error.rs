@@ -9,6 +9,7 @@ use core::{
 };
 use data_url::{DataUrlError, forgiving_base64::InvalidBase64};
 use http::StatusCode;
+use muffy_css::CssError;
 use muffy_validation::MarkupError;
 use serde::{Serialize, Serializer};
 use std::io;
@@ -125,6 +126,8 @@ pub enum ItemError {
         /// An expected content type.
         expected: &'static str,
     },
+    /// A CSS parse error.
+    Css(CssError),
     /// A CSS syntax error.
     CssSyntax(String),
     /// A data URL error.
@@ -177,6 +180,7 @@ impl Display for ItemError {
                     "content type expected {expected} but got {actual}"
                 )
             }
+            Self::Css(error) => write!(formatter, "{error}"),
             Self::CssSyntax(message) => write!(formatter, "invalid CSS: {message}"),
             Self::DataUrl(error) => write!(formatter, "{error}"),
             Self::DocumentParse(error) => write!(formatter, "{error}"),
