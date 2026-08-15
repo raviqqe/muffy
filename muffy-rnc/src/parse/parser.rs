@@ -3,8 +3,8 @@ use crate::{
     ast::{
         AnnotationAttribute, AnnotationElement, Combine, DatatypeName, DatatypesDeclaration,
         Declaration, DefaultNamespaceDeclaration, Definition, Grammar, GrammarContent, Include,
-        Inherit, LocalGrammar, LocalGrammarContent, Name, NameClass, NamespaceDeclaration,
-        Parameter, Pattern, Schema, SchemaBody,
+        IncludeContent, Inherit, Name, NameClass, NamespaceDeclaration, Parameter, Pattern, Schema,
+        SchemaBody,
     },
 };
 use nom::{
@@ -98,22 +98,15 @@ fn grammar_content(input: &str) -> ParserResult<'_, GrammarContent> {
     .parse(input)
 }
 
-fn local_grammar(input: &str) -> ParserResult<'_, LocalGrammar> {
-    map(many0(local_grammar_content), |contents| LocalGrammar {
-        contents,
-    })
-    .parse(input)
-}
-
-fn local_grammar_content(input: &str) -> ParserResult<'_, LocalGrammarContent> {
+fn include_content(input: &str) -> ParserResult<'_, IncludeContent> {
     annotated(alt((
-        map(annotation_element, LocalGrammarContent::Annotation),
-        map(start, |(combine, pattern)| LocalGrammarContent::Start {
+        map(annotation_element, IncludeContent::Annotation),
+        map(start, |(combine, pattern)| IncludeContent::Start {
             combine,
             pattern,
         }),
-        map(definition, LocalGrammarContent::Definition),
-        map(div(local_grammar), LocalGrammarContent::Div),
+        map(definition, IncludeContent::Definition),
+        map(div(many0(include_content)), IncludeContent::Div),
     )))
     .parse(input)
 }
@@ -150,13 +143,13 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
             keyword("include"),
             literal,
             opt(inherit),
-            opt(braced(local_grammar)),
+            opt(braced(many0(include_content))),
         ),
-        |(_, uri, inherit, grammar)| {
+        |(_, uri, inherit, contents)| {
             GrammarContent::Include(Include {
                 uri,
                 inherit,
-                grammar,
+                contents: contents.unwrap_or_default(),
             })
         },
     )
@@ -1906,7 +1899,7 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        grammar: None,
+                        contents: vec![],
                     })
                 ))
             );
@@ -1926,7 +1919,7 @@ mod tests {
                                 sub_components: vec![],
                             }
                         }),
-                        grammar: None,
+                        contents: vec![],
                     })
                 ))
             );
@@ -1941,16 +1934,14 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        grammar: Some(LocalGrammar {
-                            contents: vec![LocalGrammarContent::Definition(Definition {
-                                name: Identifier {
-                                    component: "bar".into(),
-                                    sub_components: vec![],
-                                },
-                                combine: None,
-                                pattern: Pattern::Empty,
-                            })]
-                        }),
+                        contents: vec![IncludeContent::Definition(Definition {
+                            name: Identifier {
+                                component: "bar".into(),
+                                sub_components: vec![],
+                            },
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        })],
                     })
                 ))
             );
@@ -1965,12 +1956,10 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        grammar: Some(LocalGrammar {
-                            contents: vec![LocalGrammarContent::Start {
-                                combine: None,
-                                pattern: Pattern::Empty,
-                            }]
-                        }),
+                        contents: vec![IncludeContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }],
                     })
                 ))
             );
@@ -1985,26 +1974,22 @@ mod tests {
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
                         inherit: None,
-                        grammar: Some(LocalGrammar {
-                            contents: vec![LocalGrammarContent::Div(LocalGrammar {
-                                contents: vec![LocalGrammarContent::Start {
-                                    combine: None,
-                                    pattern: Pattern::Empty,
-                                }]
-                            })]
-                        }),
+                        contents: vec![IncludeContent::Div(vec![IncludeContent::Start {
+                            combine: None,
+                            pattern: Pattern::Empty,
+                        }])],
                     })
                 ))
             );
         }
     }
 
-    mod local_grammar_content {
+    mod include_content {
         use super::*;
 
         #[test]
         fn fail_on_include() {
-            assert!(local_grammar_content("include \"foo.rnc\"").is_err());
+            assert!(include_content("include \"foo.rnc\"").is_err());
         }
     }
 
