@@ -340,8 +340,6 @@ impl RetryDurationConfig {
 pub fn compile_config(config: SerializableConfig) -> Result<super::Config, ConfigError> {
     let names = sort_site_configs(&config.sites)?;
 
-    // TODO Should we prevent the `ignore = true` option for default site
-    // configuration?
     let default_name = match &config
         .sites
         .iter()
