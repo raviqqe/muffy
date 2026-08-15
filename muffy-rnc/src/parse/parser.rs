@@ -146,7 +146,7 @@ fn include(input: &str) -> ParserResult<'_, GrammarContent> {
 fn inherit(input: &str) -> ParserResult<'_, Inherit> {
     map(
         preceded((keyword("inherit"), symbol("=")), identifier),
-        Inherit::Prefix,
+        |prefix| Inherit { prefix },
     )
     .parse(input)
 }
@@ -1541,10 +1541,12 @@ mod tests {
                 inherit("inherit = xhtml"),
                 Ok((
                     "",
-                    Inherit::Prefix(Identifier {
-                        component: "xhtml".into(),
-                        sub_components: vec![],
-                    })
+                    Inherit {
+                        prefix: Identifier {
+                            component: "xhtml".into(),
+                            sub_components: vec![],
+                        }
+                    }
                 ))
             );
         }
@@ -1912,10 +1914,12 @@ mod tests {
                     "",
                     GrammarContent::Include(Include {
                         uri: "foo.rnc".into(),
-                        inherit: Some(Inherit::Prefix(Identifier {
-                            component: "bar".into(),
-                            sub_components: vec![],
-                        })),
+                        inherit: Some(Inherit {
+                            prefix: Identifier {
+                                component: "bar".into(),
+                                sub_components: vec![],
+                            }
+                        }),
                         grammar: None,
                     })
                 ))

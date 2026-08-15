@@ -108,12 +108,11 @@ pub struct Include {
     pub grammar: Option<Grammar>,
 }
 
-// TODO Make this `struct`.
 /// An inherit modifier.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Inherit {
-    /// Inherits a namespace.
-    Prefix(Identifier),
+pub struct Inherit {
+    /// A prefix.
+    pub prefix: Identifier,
 }
 
 /// A combine operator.

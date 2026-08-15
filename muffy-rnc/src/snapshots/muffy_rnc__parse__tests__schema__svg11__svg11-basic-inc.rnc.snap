@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -40,12 +40,12 @@ Schema {
                         Include {
                             uri: "svg-viewport-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -54,12 +54,12 @@ Schema {
                         Include {
                             uri: "svg-paint-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -68,12 +68,12 @@ Schema {
                         Include {
                             uri: "svg-opacity-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -82,12 +82,12 @@ Schema {
                         Include {
                             uri: "svg-graphics-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -96,12 +96,12 @@ Schema {
                         Include {
                             uri: "svg-docevents-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -110,12 +110,12 @@ Schema {
                         Include {
                             uri: "svg-graphevents-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -124,12 +124,12 @@ Schema {
                         Include {
                             uri: "svg-animevents-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -138,12 +138,12 @@ Schema {
                         Include {
                             uri: "svg-xlink-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -152,12 +152,12 @@ Schema {
                         Include {
                             uri: "svg-extresources-attrib.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -166,12 +166,12 @@ Schema {
                         Include {
                             uri: "svg-structure.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -180,12 +180,12 @@ Schema {
                         Include {
                             uri: "svg-conditional.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -194,12 +194,12 @@ Schema {
                         Include {
                             uri: "svg-image.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -208,12 +208,12 @@ Schema {
                         Include {
                             uri: "svg-style.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -222,12 +222,12 @@ Schema {
                         Include {
                             uri: "svg-shape.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -236,12 +236,12 @@ Schema {
                         Include {
                             uri: "svg-text.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -250,12 +250,12 @@ Schema {
                         Include {
                             uri: "svg-profile.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -264,12 +264,12 @@ Schema {
                         Include {
                             uri: "svg-gradient.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -278,12 +278,12 @@ Schema {
                         Include {
                             uri: "svg-pattern.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -292,12 +292,12 @@ Schema {
                         Include {
                             uri: "svg-basic-clip.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -306,12 +306,12 @@ Schema {
                         Include {
                             uri: "svg-mask.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -320,12 +320,12 @@ Schema {
                         Include {
                             uri: "svg-basic-filter.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -334,12 +334,12 @@ Schema {
                         Include {
                             uri: "svg-cursor.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -348,12 +348,12 @@ Schema {
                         Include {
                             uri: "svg-hyperlink.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -362,12 +362,12 @@ Schema {
                         Include {
                             uri: "svg-view.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -376,12 +376,12 @@ Schema {
                         Include {
                             uri: "svg-script.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -390,12 +390,12 @@ Schema {
                         Include {
                             uri: "svg-animation.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -404,12 +404,12 @@ Schema {
                         Include {
                             uri: "svg-font.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
@@ -418,12 +418,12 @@ Schema {
                         Include {
                             uri: "svg-extensibility.rnc",
                             inherit: Some(
-                                Prefix(
-                                    Identifier {
+                                Inherit {
+                                    prefix: Identifier {
                                         component: "svg",
                                         sub_components: [],
                                     },
-                                ),
+                                },
                             ),
                             grammar: None,
                         },
