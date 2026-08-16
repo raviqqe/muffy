@@ -59,16 +59,18 @@ impl<'a> Compiler<'a> {
                     Pattern::NotAllowed
                 } else {
                     let value = self.resolve_value(pattern)?;
-                    let value = if names
-                        .iter()
-                        .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()))
-                    {
-                        value.into_token_list()
-                    } else {
-                        value
-                    };
 
-                    Pattern::Attribute(names, value)
+                    Pattern::Attribute(
+                        names,
+                        if names
+                            .iter()
+                            .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()))
+                        {
+                            value.into_token_list()
+                        } else {
+                            value
+                        },
+                    )
                 }
             }
             RncPattern::Choice(patterns) => Pattern::choice(
