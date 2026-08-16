@@ -86,7 +86,7 @@ fn name_choice(names: &BTreeMap<String, Value>) -> Vec<AttributeSet> {
             optional: names
                 .iter()
                 .filter(|(other, _)| *other != name)
-                .map(|(other, value)| (other.clone(), value.clone()))
+                .map(|(name, value)| (name.clone(), value.clone()))
                 .collect(),
         })
         .collect()
