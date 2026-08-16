@@ -58,19 +58,17 @@ impl<'a> Compiler<'a> {
                 if names.is_empty() {
                     Pattern::NotAllowed
                 } else {
-                    let token_list = names
-                        .iter()
-                        .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()));
                     let value = self.resolve_value(pattern)?;
+                    let value = if names
+                        .iter()
+                        .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()))
+                    {
+                        value.into_token_list()
+                    } else {
+                        value
+                    };
 
-                    Pattern::Attribute(
-                        names,
-                        if token_list {
-                            value.into_token_list()
-                        } else {
-                            value
-                        },
-                    )
+                    Pattern::Attribute(names, value)
                 }
             }
             RncPattern::Choice(patterns) => Pattern::choice(
