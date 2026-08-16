@@ -110,8 +110,6 @@ impl<'a> Compiler<'a> {
         })
     }
 
-    // Attribute values are validated against enumerations of literals, and
-    // other value patterns accept any values conservatively.
     // TODO Validate attribute values against data patterns.
     // TODO Validate attribute values against list patterns.
     fn resolve_value(&self, pattern: &RncPattern) -> Result<Value, MacroError> {
