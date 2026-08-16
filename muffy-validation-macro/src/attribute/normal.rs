@@ -62,8 +62,6 @@ fn optional(sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
     }
 }
 
-// Sets with the same attribute names are merged by unioning their value
-// schemas, over-approximating value combinations across alternatives.
 fn merge_sets(sets: Vec<AttributeSet>) -> Vec<AttributeSet> {
     let mut merged = BTreeMap::<_, AttributeSet>::new();
 
