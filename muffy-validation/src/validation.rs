@@ -342,10 +342,7 @@ fn evaluate_attribute_set(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        attribute::Attribute,
-        value::{Literal, Value},
-    };
+    use crate::{attribute::Attribute, literal::Literal, value::Value};
     use alloc::sync::Arc;
     use pretty_assertions::assert_eq;
 

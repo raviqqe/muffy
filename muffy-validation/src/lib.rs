@@ -6,6 +6,7 @@ mod attribute;
 mod attribute_set;
 mod content;
 mod error;
+mod literal;
 mod rule;
 mod validation;
 mod value;
@@ -16,9 +17,10 @@ use self::{
     attribute::Attribute,
     attribute_set::AttributeSet,
     content::Content,
+    literal::Literal,
     rule::Rule,
     validation::{matches_wildcard, validate_rule},
-    value::{Literal, Value},
+    value::Value,
     variant::Variant,
 };
 use muffy_document::document::Element;
