@@ -95,7 +95,7 @@ fn name_choice(names: &BTreeMap<String, Value>) -> Vec<AttributeSet> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::value::Literal;
+    use crate::literal::Literal;
     use pretty_assertions::assert_eq;
 
     fn attribute(name: &str) -> Pattern {

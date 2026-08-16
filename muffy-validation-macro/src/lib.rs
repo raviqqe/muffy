@@ -7,6 +7,7 @@ mod compiler;
 mod content;
 mod definition;
 mod error;
+mod literal;
 mod name;
 mod namespace;
 mod pattern;

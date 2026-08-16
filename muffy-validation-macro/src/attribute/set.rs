@@ -35,7 +35,7 @@ pub fn merge_attributes(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::value::Literal;
+    use crate::literal::Literal;
     use pretty_assertions::assert_eq;
 
     fn attributes(names: &[&str]) -> BTreeMap<String, Value> {

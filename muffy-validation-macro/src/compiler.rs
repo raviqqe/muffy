@@ -1,9 +1,10 @@
 use crate::{
     attribute::{AttributeSet, normalize_attributes},
     error::MacroError,
+    literal::Literal,
     name::class_names,
     pattern::{Pattern, normalize_pattern},
-    value::{Literal, Value},
+    value::Value,
 };
 use alloc::collections::BTreeMap;
 use muffy_rnc::{Identifier, Pattern as RncPattern};
