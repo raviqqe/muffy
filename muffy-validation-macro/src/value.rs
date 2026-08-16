@@ -11,14 +11,14 @@ const WHATTF_DATATYPE_PREFIX: &str = "w";
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Value {
     Any,
-    Literals(BTreeSet<Literal>),
+    LiteralSet(BTreeSet<Literal>),
 }
 
 impl Value {
     pub fn merge(&self, other: &Self) -> Self {
         match (self, other) {
-            (Self::Literals(literals), Self::Literals(others)) => {
-                Self::Literals(literals.union(others).cloned().collect())
+            (Self::LiteralSet(literals), Self::LiteralSet(others)) => {
+                Self::LiteralSet(literals.union(others).cloned().collect())
             }
             _ => Self::Any,
         }
@@ -48,14 +48,14 @@ impl Literal {
 pub fn generate_value(value: &Value) -> TokenStream {
     match value {
         Value::Any => quote!(Value::Any),
-        Value::Literals(literals) => {
+        Value::LiteralSet(literals) => {
             let literals = literals.iter().map(|literal| match literal {
                 Literal::CaseInsensitive(value) => quote!(Literal::CaseInsensitive(#value)),
                 Literal::Exact(value) => quote!(Literal::Exact(#value)),
                 Literal::Token(value) => quote!(Literal::Token(#value)),
             });
 
-            quote!(Value::Literals(&[#(#literals),*]))
+            quote!(Value::LiteralSet(&[#(#literals),*]))
         }
     }
 }
@@ -129,9 +129,9 @@ mod tests {
         #[test]
         fn merge_literals() {
             assert_eq!(
-                Value::Literals([Literal::Token("foo".into())].into())
-                    .merge(&Value::Literals([Literal::Token("bar".into())].into())),
-                Value::Literals(
+                Value::LiteralSet([Literal::Token("foo".into())].into())
+                    .merge(&Value::LiteralSet([Literal::Token("bar".into())].into())),
+                Value::LiteralSet(
                     [Literal::Token("bar".into()), Literal::Token("foo".into())].into()
                 )
             );
@@ -140,11 +140,11 @@ mod tests {
         #[test]
         fn merge_any_value() {
             assert_eq!(
-                Value::Literals([Literal::Token("foo".into())].into()).merge(&Value::Any),
+                Value::LiteralSet([Literal::Token("foo".into())].into()).merge(&Value::Any),
                 Value::Any
             );
             assert_eq!(
-                Value::Any.merge(&Value::Literals([Literal::Token("foo".into())].into())),
+                Value::Any.merge(&Value::LiteralSet([Literal::Token("foo".into())].into())),
                 Value::Any
             );
         }
@@ -153,7 +153,7 @@ mod tests {
     #[test]
     fn generate_literals() {
         assert_eq!(
-            generate_value(&Value::Literals(
+            generate_value(&Value::LiteralSet(
                 [
                     Literal::CaseInsensitive("foo".into()),
                     Literal::Token("bar".into())
@@ -161,7 +161,7 @@ mod tests {
                 .into()
             ))
             .to_string(),
-            quote!(Value::Literals(&[
+            quote!(Value::LiteralSet(&[
                 Literal::CaseInsensitive("foo"),
                 Literal::Token("bar")
             ]))

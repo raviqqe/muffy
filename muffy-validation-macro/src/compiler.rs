@@ -118,18 +118,18 @@ impl<'a> Compiler<'a> {
         Ok(match pattern {
             RncPattern::Choice(patterns) => patterns
                 .iter()
-                .try_fold(Value::Literals(Default::default()), |value, pattern| {
+                .try_fold(Value::LiteralSet(Default::default()), |value, pattern| {
                     Ok::<_, MacroError>(value.merge(&self.resolve_value(pattern)?))
                 })?,
-            RncPattern::Empty => Value::Literals([Literal::Exact(String::new())].into()),
+            RncPattern::Empty => Value::LiteralSet([Literal::Exact(String::new())].into()),
             RncPattern::Name(name) => self.resolve_value(
                 self.definitions
                     .get(&name.local)
                     .ok_or_else(|| MacroError::UndefinedReference(name.local.to_string()))?,
             )?,
-            RncPattern::NotAllowed => Value::Literals(Default::default()),
+            RncPattern::NotAllowed => Value::LiteralSet(Default::default()),
             RncPattern::Value { name, value } => match Literal::new(name.as_ref(), value) {
-                Some(literal) => Value::Literals([literal].into()),
+                Some(literal) => Value::LiteralSet([literal].into()),
                 None => Value::Any,
             },
             RncPattern::Attribute { .. }
@@ -299,7 +299,7 @@ mod tests {
                     .unwrap(),
                 Pattern::Attribute(
                     ["foo".into()].into(),
-                    Value::Literals(
+                    Value::LiteralSet(
                         [
                             Literal::CaseInsensitive("qux".into()),
                             Literal::Exact("baz".into()),
@@ -317,7 +317,7 @@ mod tests {
                 resolve("root = attribute foo { empty }").unwrap(),
                 Pattern::Attribute(
                     ["foo".into()].into(),
-                    Value::Literals([Literal::Exact(String::new())].into())
+                    Value::LiteralSet([Literal::Exact(String::new())].into())
                 )
             );
         }
@@ -328,7 +328,7 @@ mod tests {
                 resolve("root = attribute foo { bar }\nbar = \"baz\"").unwrap(),
                 Pattern::Attribute(
                     ["foo".into()].into(),
-                    Value::Literals([Literal::Token("baz".into())].into())
+                    Value::LiteralSet([Literal::Token("baz".into())].into())
                 )
             );
         }

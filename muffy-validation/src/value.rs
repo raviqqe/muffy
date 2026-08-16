@@ -1,13 +1,13 @@
 pub enum Value {
     Any,
-    Literals(&'static [Literal]),
+    LiteralSet(&'static [Literal]),
 }
 
 impl Value {
     pub fn matches(&self, value: &str) -> bool {
         match self {
             Self::Any => true,
-            Self::Literals(literals) => literals.iter().any(|literal| literal.matches(value)),
+            Self::LiteralSet(literals) => literals.iter().any(|literal| literal.matches(value)),
         }
     }
 }
@@ -42,13 +42,13 @@ mod tests {
 
     #[test]
     fn match_no_literal() {
-        assert!(!Value::Literals(&[]).matches(""));
-        assert!(!Value::Literals(&[]).matches("foo"));
+        assert!(!Value::LiteralSet(&[]).matches(""));
+        assert!(!Value::LiteralSet(&[]).matches("foo"));
     }
 
     #[test]
     fn match_alternative_literals() {
-        const VALUE: Value = Value::Literals(&[Literal::Exact("foo"), Literal::Exact("bar")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::Exact("foo"), Literal::Exact("bar")]);
 
         assert!(VALUE.matches("foo"));
         assert!(VALUE.matches("bar"));
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn match_exact_literal() {
-        const VALUE: Value = Value::Literals(&[Literal::Exact("foo")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::Exact("foo")]);
 
         assert!(VALUE.matches("foo"));
         assert!(!VALUE.matches("FOO"));
@@ -66,7 +66,7 @@ mod tests {
 
     #[test]
     fn match_empty_exact_literal() {
-        const VALUE: Value = Value::Literals(&[Literal::Exact("")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::Exact("")]);
 
         assert!(VALUE.matches(""));
         assert!(!VALUE.matches("foo"));
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn match_case_insensitive_literal() {
-        const VALUE: Value = Value::Literals(&[Literal::CaseInsensitive("foo")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::CaseInsensitive("foo")]);
 
         assert!(VALUE.matches("foo"));
         assert!(VALUE.matches("FOO"));
@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn match_token_literal() {
-        const VALUE: Value = Value::Literals(&[Literal::Token("foo")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::Token("foo")]);
 
         assert!(VALUE.matches("foo"));
         assert!(VALUE.matches(" foo "));
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn match_multi_token_literal() {
-        const VALUE: Value = Value::Literals(&[Literal::Token("foo bar")]);
+        const VALUE: Value = Value::LiteralSet(&[Literal::Token("foo bar")]);
 
         assert!(VALUE.matches("foo bar"));
         assert!(VALUE.matches(" foo  bar "));

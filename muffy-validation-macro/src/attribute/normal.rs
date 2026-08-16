@@ -105,7 +105,7 @@ mod tests {
     }
 
     fn literals(values: &[&str]) -> Value {
-        Value::Literals(
+        Value::LiteralSet(
             values
                 .iter()
                 .map(|&value| Literal::Token(value.into()))

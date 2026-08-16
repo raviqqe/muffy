@@ -885,7 +885,7 @@ mod tests {
                     required: &[],
                     optional: &[Attribute {
                         name: "kind",
-                        value: &Value::Literals(&[Literal::Exact("one"), Literal::Exact("two")]),
+                        value: &Value::LiteralSet(&[Literal::Exact("one"), Literal::Exact("two")]),
                     }],
                 }],
                 content: &EMPTY_CONTENT,
@@ -949,7 +949,7 @@ mod tests {
                         attributes: &[AttributeSet {
                             required: &[Attribute {
                                 name: "kind",
-                                value: &Value::Literals(&[Literal::Exact("one")]),
+                                value: &Value::LiteralSet(&[Literal::Exact("one")]),
                             }],
                             optional: &[],
                         }],
@@ -959,7 +959,7 @@ mod tests {
                         attributes: &[AttributeSet {
                             required: &[Attribute {
                                 name: "kind",
-                                value: &Value::Literals(&[Literal::Exact("two")]),
+                                value: &Value::LiteralSet(&[Literal::Exact("two")]),
                             }],
                             optional: &[],
                         }],

@@ -69,7 +69,7 @@ mod tests {
             AttributeSet {
                 required: [(
                     "foo".into(),
-                    Value::Literals([Literal::Token("bar".into())].into())
+                    Value::LiteralSet([Literal::Token("bar".into())].into())
                 )]
                 .into(),
                 optional: Default::default(),
@@ -77,7 +77,7 @@ mod tests {
             .merge(&AttributeSet {
                 required: [(
                     "foo".into(),
-                    Value::Literals([Literal::Token("baz".into())].into())
+                    Value::LiteralSet([Literal::Token("baz".into())].into())
                 )]
                 .into(),
                 optional: Default::default(),
@@ -85,7 +85,7 @@ mod tests {
             AttributeSet {
                 required: [(
                     "foo".into(),
-                    Value::Literals(
+                    Value::LiteralSet(
                         [Literal::Token("bar".into()), Literal::Token("baz".into())].into()
                     )
                 )]
