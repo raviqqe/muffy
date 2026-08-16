@@ -123,8 +123,47 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_surrounded_role_value() {
+            let element = create_element("div", vec![("role", " img ")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_fallback_role_values() {
+            // Browsers process only the first known role, so the other ones
+            // are fallbacks for user agents not knowing it.
+            let element = create_element("div", vec![("role", "none presentation")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_trailing_role_value() {
+            let element = create_element("div", vec![("role", "unknown button")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_invalid_case_sensitive_role_value() {
             let element = create_element("div", vec![("role", "IMG")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("role".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+
+        #[test]
+        fn validate_invalid_role_values() {
+            let element = create_element("div", vec![("role", "unknown other")], vec![]);
 
             assert_eq!(
                 validate_html_element(&element, &[], &[]),

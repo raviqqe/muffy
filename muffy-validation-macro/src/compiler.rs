@@ -8,6 +8,12 @@ use crate::{
 use alloc::collections::BTreeMap;
 use muffy_rnc::{Identifier, Pattern as RncPattern};
 
+// Browsers process only the first token of these attributes naming a known
+// role, and the Nu Html Checker validates that token alone. Tokens are matched
+// against the roles allowed on each element rather than all known roles, which
+// accepts a few documents the checker rejects but never rejects a valid one.
+const TOKEN_LIST_ATTRIBUTES: &[&str] = &["role"];
+
 pub struct Compiler<'a> {
     definitions: &'a BTreeMap<Identifier, RncPattern>,
     cache: BTreeMap<Identifier, Pattern>,
@@ -52,7 +58,17 @@ impl<'a> Compiler<'a> {
                 if names.is_empty() {
                     Pattern::NotAllowed
                 } else {
-                    Pattern::Attribute(names, self.resolve_value(pattern)?)
+                    let value = self.resolve_value(pattern)?;
+                    let value = if names
+                        .iter()
+                        .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()))
+                    {
+                        value.into_token_list()
+                    } else {
+                        value
+                    };
+
+                    Pattern::Attribute(names, value)
                 }
             }
             RncPattern::Choice(patterns) => Pattern::choice(
@@ -352,6 +368,25 @@ mod tests {
             assert_eq!(
                 resolve(r#"root = attribute foo { list { w:string "bar" } }"#).unwrap(),
                 Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_token_list_of_role_attribute() {
+            assert_eq!(
+                resolve(r#"root = attribute role { string "button" }"#).unwrap(),
+                Pattern::Attribute(
+                    ["role".into()].into(),
+                    Value::TokenList([Literal::Exact("button".into())].into())
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_any_token_list_of_role_attribute() {
+            assert_eq!(
+                resolve("root = attribute role { text }").unwrap(),
+                Pattern::Attribute(["role".into()].into(), Value::Any)
             );
         }
 
