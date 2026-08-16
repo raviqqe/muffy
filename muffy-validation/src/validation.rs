@@ -312,13 +312,12 @@ fn evaluate_attribute_set(
     let mut mismatch_count = 0;
 
     for (name, value) in attributes {
-        match set.find(name) {
-            Some(attribute) => {
-                if !attribute.value.matches(value) {
-                    mismatch_count += 1;
-                }
+        if let Some(attribute) = set.find(name) {
+            if !attribute.value.matches(value) {
+                mismatch_count += 1;
             }
-            None => conflict_count += 1,
+        } else {
+            conflict_count += 1;
         }
     }
 
