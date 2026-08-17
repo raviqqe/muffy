@@ -2,8 +2,6 @@ use muffy_rnc::DatatypeName;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-// The datatype library of the Nu Html Checker whose `string` datatype matches
-// strings case-insensitively.
 // TODO Resolve datatype prefixes against datatypes declarations.
 const WHATTF_DATATYPE_PREFIX: &str = "w";
 
@@ -19,6 +17,7 @@ impl Literal {
         match name {
             None | Some(DatatypeName::Token) => Some(Self::Token(value.into())),
             Some(DatatypeName::String) => Some(Self::Exact(value.into())),
+            // `w:string` in vnu matches strings case-insensitively.
             Some(DatatypeName::Name(name)) => (name.prefix.as_ref().map(ToString::to_string)
                 == Some(WHATTF_DATATYPE_PREFIX.into())
                 && name.local.to_string() == "string")
