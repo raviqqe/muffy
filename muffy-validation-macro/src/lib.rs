@@ -5,6 +5,7 @@ extern crate alloc;
 mod attribute;
 mod compiler;
 mod content;
+mod data;
 mod definition;
 mod error;
 mod literal;

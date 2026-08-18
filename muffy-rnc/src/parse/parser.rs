@@ -7,14 +7,15 @@ use crate::{
         SchemaBody, Start,
     },
 };
+use alloc::borrow::Cow;
 use nom::{
     IResult, Parser,
     branch::alt,
-    bytes::complete::{escaped_transform, is_not, tag, take, take_till},
-    character::complete::{alpha1, char, multispace1, satisfy},
-    combinator::{map, not, opt, peek, recognize, success, value, verify},
+    bytes::complete::{is_not, tag, take_till},
+    character::complete::{alpha1, char, hex_digit1, multispace1, satisfy},
+    combinator::{map, map_opt, not, opt, peek, recognize, success, value, verify},
     error::Error,
-    multi::{many0, many1, separated_list0, separated_list1},
+    multi::{fold_many0, many0, many1, separated_list0, separated_list1},
     sequence::{delimited, preceded, terminated},
 };
 
@@ -458,13 +459,23 @@ fn quoted<'a>(
     delimiter: char,
     not: &'static str,
 ) -> impl Parser<&'a str, Output = String, Error = ParserError<'a>> {
-    map(
-        delimited(
-            char(delimiter),
-            opt(escaped_transform(is_not(not), '\\', string_escape)),
-            char(delimiter),
+    delimited(
+        char(delimiter),
+        fold_many0(
+            alt((
+                map(escape_sequence, |character| {
+                    Cow::Owned(String::from(character))
+                }),
+                map(tag("\\"), Cow::Borrowed),
+                map(is_not(not), Cow::Borrowed),
+            )),
+            String::new,
+            |mut string, piece: Cow<str>| {
+                string.push_str(&piece);
+                string
+            },
         ),
-        |string| string.unwrap_or_default(),
+        char(delimiter),
     )
 }
 
@@ -524,16 +535,11 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
     .parse(input)
 }
 
-fn string_escape(input: &str) -> ParserResult<'_, &str> {
-    alt((
-        value("\\", tag("\\")),
-        value("\"", tag("\"")),
-        value("'", tag("'")),
-        value("\n", tag("n")),
-        value("\r", tag("r")),
-        value("\t", tag("t")),
-        take(1usize),
-    ))
+fn escape_sequence(input: &str) -> ParserResult<'_, char> {
+    map_opt(
+        delimited(tag("\\x{"), hex_digit1, char('}')),
+        |digits| char::from_u32(u32::from_str_radix(digits, 16).ok()?),
+    )
     .parse(input)
 }
 
@@ -648,11 +654,19 @@ mod tests {
         }
 
         #[test]
-        fn parse_escaped_characters() {
-            assert_eq!(
-                literal("\"\\\"\\\\\\n\\r\\t\""),
-                Ok(("", "\"\\\n\r\t".into()))
-            );
+        fn parse_escape_sequence() {
+            assert_eq!(literal("\"\\x{A}\""), Ok(("", "\n".into())));
+        }
+
+        #[test]
+        fn keep_backslash() {
+            assert_eq!(literal(r#""\s*\S\s*""#), Ok(("", r"\s*\S\s*".into())));
+        }
+
+        #[test]
+        fn parse_quote_in_other_quotes() {
+            assert_eq!(literal("'\"'"), Ok(("", "\"".into())));
+            assert_eq!(literal("\"'\""), Ok(("", "'".into())));
         }
     }
 
@@ -2165,28 +2179,43 @@ mod tests {
         fn parse_empty_quoted_string() {
             assert_eq!(quoted('"', "\\\"").parse("\"\""), Ok(("", "".into())));
         }
+
+        #[test]
+        fn keep_trailing_backslash() {
+            assert_eq!(
+                quoted('"', "\\\"").parse("\"foo\\\""),
+                Ok(("", "foo\\".into()))
+            );
+        }
     }
 
-    mod string_escape {
+    mod escape_sequence {
         use super::*;
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn parse_escapes() {
-            assert_eq!(string_escape("n"), Ok(("", "\n")));
-            assert_eq!(string_escape("r"), Ok(("", "\r")));
-            assert_eq!(string_escape("t"), Ok(("", "\t")));
-            assert_eq!(string_escape("\""), Ok(("", "\"")));
-            assert_eq!(string_escape("'"), Ok(("", "'")));
-            assert_eq!(string_escape("\\"), Ok(("", "\\")));
+        fn parse_short_escape() {
+            assert_eq!(escape_sequence("\\x{A}"), Ok(("", '\n')));
         }
 
         #[test]
-        fn parse_hex_escape() {
-            // hex escapes are just take(1) for now in the parser,
-            // but let's see how it works.
-            // actually string_escape is the part AFTER \
-            assert_eq!(string_escape("x{a}"), Ok(("{a}", "x")));
+        fn parse_long_escape() {
+            assert_eq!(escape_sequence("\\x{1F600}"), Ok(("", '\u{1F600}')));
+        }
+
+        #[test]
+        fn fail_on_empty_escape() {
+            assert!(escape_sequence("\\x{}").is_err());
+        }
+
+        #[test]
+        fn fail_on_invalid_code_point() {
+            assert!(escape_sequence("\\x{110000}").is_err());
+        }
+
+        #[test]
+        fn fail_on_code_point_overflow() {
+            assert!(escape_sequence("\\x{FFFFFFFFF}").is_err());
         }
     }
 

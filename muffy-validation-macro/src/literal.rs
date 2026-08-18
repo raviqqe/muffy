@@ -9,6 +9,7 @@ const WHATTF_DATATYPE_PREFIX: &str = "w";
 pub enum Literal {
     CaseInsensitive(String),
     Exact(String),
+    Pattern(String),
     Token(String),
 }
 
@@ -30,6 +31,7 @@ pub fn generate_literal(literal: &Literal) -> TokenStream {
     match literal {
         Literal::CaseInsensitive(value) => quote!(Literal::CaseInsensitive(#value)),
         Literal::Exact(value) => quote!(Literal::Exact(#value)),
+        Literal::Pattern(value) => quote!(Literal::Pattern(#value)),
         Literal::Token(value) => quote!(Literal::Token(#value)),
     }
 }
