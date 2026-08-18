@@ -46,13 +46,28 @@ fn translate_pattern(pattern: &str) -> Option<String> {
     let mut characters = pattern.chars();
     let mut class = false;
     let mut dash = false;
+    let mut expansion = false;
 
     while let Some(character) = characters.next() {
         let range = dash;
+        let expanded = expansion;
         dash = false;
+        expansion = false;
 
         match (character, class) {
-            ('\\', _) => translate_escape(characters.next()?, class, &mut translated)?,
+            ('\\', _) => {
+                let escaped = characters.next()?;
+
+                // Whitespace escapes expand into class members that must not
+                // become range endpoints.
+                expansion = class && escaped == 's';
+
+                if expansion && range {
+                    return None;
+                }
+
+                translate_escape(escaped, class, &mut translated)?;
+            }
             ('[', false) => {
                 class = true;
                 translated.push(character);
@@ -72,7 +87,7 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 translated.push(character);
             }
             // Adjacent dashes mean class difference.
-            ('-', true) if range => return None,
+            ('-', true) if range || expanded => return None,
             ('-', true) => {
                 dash = true;
                 translated.push(character);
@@ -331,6 +346,16 @@ mod tests {
         #[test]
         fn translate_no_negated_whitespace_escape_in_class() {
             assert_eq!(translate_pattern(r"[\S]"), None);
+        }
+
+        #[test]
+        fn translate_no_whitespace_escape_starting_range() {
+            assert_eq!(translate_pattern(r"[\s-x]"), None);
+        }
+
+        #[test]
+        fn translate_no_whitespace_escape_ending_range() {
+            assert_eq!(translate_pattern(r"[a-\s]"), None);
         }
 
         #[test]
