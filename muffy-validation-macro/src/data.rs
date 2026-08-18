@@ -36,7 +36,7 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
 
     Regex::new(&pattern)
         .is_ok()
-        .then(|| Literal::Pattern(pattern))
+        .then_some(Literal::Pattern(pattern))
 }
 
 // Translates an XSD pattern into a regular expression, or gives up on

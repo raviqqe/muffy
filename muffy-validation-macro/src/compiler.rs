@@ -377,8 +377,10 @@ mod tests {
         #[test]
         fn resolve_data_pattern_alternative_to_literal() {
             assert_eq!(
-                resolve(r#"root = attribute foo { w:string "bar" | xsd:string { pattern = "." } }"#)
-                    .unwrap(),
+                resolve(
+                    r#"root = attribute foo { w:string "bar" | xsd:string { pattern = "." } }"#
+                )
+                .unwrap(),
                 Pattern::Attribute(
                     ["foo".into()].into(),
                     Value::LiteralSet(

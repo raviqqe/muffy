@@ -536,10 +536,9 @@ fn comment(input: &str) -> ParserResult<'_, ()> {
 }
 
 fn escape_sequence(input: &str) -> ParserResult<'_, char> {
-    map_opt(
-        delimited(tag("\\x{"), hex_digit1, char('}')),
-        |digits| char::from_u32(u32::from_str_radix(digits, 16).ok()?),
-    )
+    map_opt(delimited(tag("\\x{"), hex_digit1, char('}')), |digits| {
+        char::from_u32(u32::from_str_radix(digits, 16).ok()?)
+    })
     .parse(input)
 }
 
