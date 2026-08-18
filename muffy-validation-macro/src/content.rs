@@ -7,7 +7,7 @@ const TEXT_TOKEN: &str = "#text";
 
 pub fn generate_content(pattern: &Pattern) -> Result<TokenStream, MacroError> {
     Ok(match pattern {
-        Pattern::Attribute(_) => {
+        Pattern::Attribute(..) => {
             return Err(MacroError::RncPattern("attribute in content pattern"));
         }
         Pattern::NotAllowed => {
@@ -70,7 +70,9 @@ pub fn children(pattern: &Pattern) -> BTreeSet<String> {
 fn contains_text(pattern: &Pattern) -> bool {
     match pattern {
         Pattern::Text => true,
-        Pattern::Attribute(_) | Pattern::Element(_) | Pattern::Empty | Pattern::NotAllowed => false,
+        Pattern::Attribute(..) | Pattern::Element(_) | Pattern::Empty | Pattern::NotAllowed => {
+            false
+        }
         Pattern::Choice(patterns) | Pattern::Group(patterns) | Pattern::Interleave(patterns) => {
             patterns.iter().any(contains_text)
         }
@@ -89,7 +91,7 @@ fn element_names(pattern: &Pattern) -> BTreeSet<String> {
         Pattern::Many0(pattern) | Pattern::Many1(pattern) | Pattern::Optional(pattern) => {
             element_names(pattern)
         }
-        Pattern::Attribute(_) | Pattern::Empty | Pattern::NotAllowed | Pattern::Text => {
+        Pattern::Attribute(..) | Pattern::Empty | Pattern::NotAllowed | Pattern::Text => {
             Default::default()
         }
     }
@@ -98,6 +100,7 @@ fn element_names(pattern: &Pattern) -> BTreeSet<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::value::Value;
     use pretty_assertions::assert_eq;
 
     fn element(name: &str) -> Pattern {
@@ -142,7 +145,7 @@ mod tests {
     #[test]
     fn fail_on_attribute() {
         assert!(matches!(
-            generate_content(&Pattern::Attribute(["foo".into()].into())),
+            generate_content(&Pattern::Attribute(["foo".into()].into(), Value::Any)),
             Err(MacroError::RncPattern(_))
         ));
     }

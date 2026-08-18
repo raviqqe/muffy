@@ -3,7 +3,7 @@ use crate::error::MacroError;
 
 pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, MacroError> {
     Ok(match pattern {
-        Pattern::Attribute(_) => vec![(pattern.clone(), Pattern::Empty)],
+        Pattern::Attribute(..) => vec![(pattern.clone(), Pattern::Empty)],
         Pattern::Element(_) | Pattern::Text => {
             vec![(Pattern::Empty, pattern.clone())]
         }
@@ -141,10 +141,11 @@ pub fn normalize_pattern(pattern: &Pattern) -> Result<Vec<(Pattern, Pattern)>, M
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::value::Value;
     use pretty_assertions::assert_eq;
 
     fn attribute(name: &str) -> Pattern {
-        Pattern::Attribute([name.into()].into())
+        Pattern::Attribute([name.into()].into(), Value::Any)
     }
 
     fn element(name: &str) -> Pattern {

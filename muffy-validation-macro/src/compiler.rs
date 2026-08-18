@@ -1,11 +1,19 @@
 use crate::{
     attribute::{AttributeSet, normalize_attributes},
     error::MacroError,
+    literal::Literal,
     name::class_names,
     pattern::{Pattern, normalize_pattern},
+    value::Value,
 };
 use alloc::collections::BTreeMap;
 use muffy_rnc::{Identifier, Pattern as RncPattern};
+
+// Browsers process only the first token of these attributes naming a known
+// role, and the Nu Html Checker validates that token alone. Tokens are matched
+// against the roles allowed on each element rather than all known roles, which
+// accepts a few documents the checker rejects but never rejects a valid one.
+const TOKEN_LIST_ATTRIBUTES: &[&str] = &["role"];
 
 pub struct Compiler<'a> {
     definitions: &'a BTreeMap<Identifier, RncPattern>,
@@ -42,13 +50,26 @@ impl<'a> Compiler<'a> {
 
     fn resolve(&mut self, pattern: &RncPattern) -> Result<Pattern, MacroError> {
         Ok(match pattern {
-            RncPattern::Attribute { name_class, .. } => {
+            RncPattern::Attribute {
+                name_class,
+                pattern,
+            } => {
                 let names = class_names(name_class);
 
                 if names.is_empty() {
                     Pattern::NotAllowed
                 } else {
-                    Pattern::Attribute(names)
+                    let value = self.resolve_value(pattern)?;
+                    let value = if names
+                        .iter()
+                        .any(|name| TOKEN_LIST_ATTRIBUTES.contains(&name.as_str()))
+                    {
+                        value.into_token_list()
+                    } else {
+                        value
+                    };
+
+                    Pattern::Attribute(names, value)
                 }
             }
             RncPattern::Choice(patterns) => Pattern::choice(
@@ -98,11 +119,46 @@ impl<'a> Compiler<'a> {
                     pattern
                 }
             }
-            // TODO Validate texts and attribute values against data and value patterns.
+            // TODO Validate texts against data and value patterns.
             RncPattern::Text
             | RncPattern::Data { .. }
             | RncPattern::List(_)
             | RncPattern::Value { .. } => Pattern::Text,
+        })
+    }
+
+    // TODO Validate attribute values against data patterns.
+    // TODO Validate attribute values against list patterns.
+    fn resolve_value(&self, pattern: &RncPattern) -> Result<Value, MacroError> {
+        Ok(match pattern {
+            RncPattern::Choice(patterns) => patterns
+                .iter()
+                .try_fold(Value::LiteralSet(Default::default()), |value, pattern| {
+                    Ok::<_, MacroError>(value.merge(&self.resolve_value(pattern)?))
+                })?,
+            RncPattern::Empty => Value::LiteralSet([Literal::Exact(String::new())].into()),
+            RncPattern::Name(name) => self.resolve_value(
+                self.definitions
+                    .get(&name.local)
+                    .ok_or_else(|| MacroError::UndefinedReference(name.local.to_string()))?,
+            )?,
+            RncPattern::NotAllowed => Value::LiteralSet(Default::default()),
+            RncPattern::Value { name, value } => match Literal::new(name.as_ref(), value) {
+                Some(literal) => Value::LiteralSet([literal].into()),
+                None => Value::Any,
+            },
+            RncPattern::Attribute { .. }
+            | RncPattern::Data { .. }
+            | RncPattern::Element { .. }
+            | RncPattern::External(_)
+            | RncPattern::Grammar(_)
+            | RncPattern::Group(_)
+            | RncPattern::Interleave(_)
+            | RncPattern::List(_)
+            | RncPattern::Many0(_)
+            | RncPattern::Many1(_)
+            | RncPattern::Optional(_)
+            | RncPattern::Text => Value::Any,
         })
     }
 }
@@ -116,7 +172,7 @@ mod tests {
     use std::path::Path;
 
     fn attribute(name: &str) -> Pattern {
-        Pattern::Attribute([name.into()].into())
+        Pattern::Attribute([name.into()].into(), Value::Any)
     }
 
     fn resolve(source: &str) -> Result<Pattern, MacroError> {
@@ -155,7 +211,7 @@ mod tests {
     fn resolve_prefixed_attribute_names() {
         assert_eq!(
             resolve("root = attribute xml:lang { text }").unwrap(),
-            Pattern::Attribute(["xml:lang".into()].into())
+            Pattern::Attribute(["xml:lang".into()].into(), Value::Any)
         );
     }
 
@@ -245,5 +301,102 @@ mod tests {
             resolve("root = foo"),
             Err(MacroError::UndefinedReference(_))
         ));
+    }
+
+    mod value {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn resolve_literals() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { "bar" | string "baz" | w:string "qux" }"#)
+                    .unwrap(),
+                Pattern::Attribute(
+                    ["foo".into()].into(),
+                    Value::LiteralSet(
+                        [
+                            Literal::CaseInsensitive("qux".into()),
+                            Literal::Exact("baz".into()),
+                            Literal::Token("bar".into()),
+                        ]
+                        .into()
+                    )
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_empty_value() {
+            assert_eq!(
+                resolve("root = attribute foo { empty }").unwrap(),
+                Pattern::Attribute(
+                    ["foo".into()].into(),
+                    Value::LiteralSet([Literal::Exact(String::new())].into())
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_reference() {
+            assert_eq!(
+                resolve("root = attribute foo { bar }\nbar = \"baz\"").unwrap(),
+                Pattern::Attribute(
+                    ["foo".into()].into(),
+                    Value::LiteralSet([Literal::Token("baz".into())].into())
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_datatype() {
+            assert_eq!(
+                resolve("root = attribute foo { w:language }").unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_literal_alternative_to_datatype() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { w:string "" | w:language }"#).unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_list() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { list { w:string "bar" } }"#).unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_token_list_of_role_attribute() {
+            assert_eq!(
+                resolve(r#"root = attribute role { string "button" }"#).unwrap(),
+                Pattern::Attribute(
+                    ["role".into()].into(),
+                    Value::TokenList([Literal::Exact("button".into())].into())
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_any_token_list_of_role_attribute() {
+            assert_eq!(
+                resolve("root = attribute role { text }").unwrap(),
+                Pattern::Attribute(["role".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn fail_on_undefined_reference() {
+            assert!(matches!(
+                resolve("root = attribute foo { bar }"),
+                Err(MacroError::UndefinedReference(_))
+            ));
+        }
     }
 }
