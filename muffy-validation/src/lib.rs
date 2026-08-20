@@ -783,6 +783,13 @@ mod tests {
         }
 
         #[test]
+        fn validate_valid_case_insensitive_command_value() {
+            let element = create_element("button", vec![("command", "Toggle-Popover")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
         fn validate_valid_custom_command_value() {
             let element = create_element("button", vec![("command", "--my-command")], vec![]);
 
