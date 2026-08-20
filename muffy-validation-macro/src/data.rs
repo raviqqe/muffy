@@ -360,6 +360,7 @@ mod tests {
 
         #[test]
         fn translate_no_class_subtraction() {
+            // cspell: ignore aeiou
             assert_eq!(translate_pattern("[a-z-[aeiou]]"), None);
         }
 
