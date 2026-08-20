@@ -1,4 +1,5 @@
 use crate::literal::Literal;
+use core::str::Chars;
 use muffy_rnc::{DatatypeName, Parameter};
 use regex::Regex;
 
@@ -34,6 +35,8 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
     // XSD patterns match whole values.
     let pattern = format!(r"\A(?:{})\z", translate_pattern(&parameter.value)?);
 
+    // Generated code compiles patterns with the same crate, so validity here
+    // makes the runtime construction infallible.
     Regex::new(&pattern)
         .is_ok()
         .then_some(Literal::Pattern(pattern))
@@ -47,6 +50,8 @@ fn translate_pattern(pattern: &str) -> Option<String> {
     let mut class = false;
     let mut dash = false;
     let mut expansion = false;
+    let mut atom = false;
+    let mut groups = 0usize;
 
     while let Some(character) = characters.next() {
         let range = dash;
@@ -67,25 +72,57 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 }
 
                 translate_escape(escaped, class, &mut translated)?;
+                atom = true;
             }
             ('[', false) => {
                 class = true;
+                atom = false;
                 translated.push(character);
             }
             // Nested classes mean class subtraction.
             ('[', true) => return None,
             (']', true) => {
                 class = false;
+                atom = true;
                 translated.push(character);
             }
-            (']', false) => translated.push_str(r"\]"),
+            (']', false) => return None,
             // A dot matches any character but line breaks.
-            ('.', false) => translated.push_str(r"[^\n\r]"),
+            ('.', false) => {
+                atom = true;
+                translated.push_str(r"[^\n\r]");
+            }
             // Anchors are ordinary characters.
             ('^' | '$', false) => {
+                atom = true;
                 translated.push('\\');
                 translated.push(character);
             }
+            ('(', false) => {
+                groups += 1;
+                atom = false;
+                translated.push(character);
+            }
+            (')', false) => {
+                groups = groups.checked_sub(1)?;
+                atom = true;
+                translated.push(character);
+            }
+            ('|', false) => {
+                atom = false;
+                translated.push(character);
+            }
+            // Quantifiers apply only to unquantified atoms.
+            ('?' | '*' | '+', false) if atom => {
+                atom = false;
+                translated.push(character);
+            }
+            ('{', false) if atom => {
+                atom = false;
+                translated.push(character);
+                translate_quantifier(&mut characters, &mut translated)?;
+            }
+            ('?' | '*' | '+' | '{' | '}', false) => return None,
             // Adjacent dashes mean class difference.
             ('-', true) if range || expanded => return None,
             ('-', true) => {
@@ -98,11 +135,41 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 translated.push('\\');
                 translated.push(character);
             }
-            _ => translated.push(character),
+            _ => {
+                atom = true;
+                translated.push(character);
+            }
         }
     }
 
-    (!class).then_some(translated)
+    (!class && groups == 0).then_some(translated)
+}
+
+// XSD quantifiers contain only digits and a comma while regular expression
+// crates accept looser syntax like whitespace.
+fn translate_quantifier(characters: &mut Chars<'_>, translated: &mut String) -> Option<()> {
+    let mut digits = false;
+    let mut comma = false;
+
+    loop {
+        let character = characters.next()?;
+
+        match character {
+            '0'..='9' => digits = true,
+            ',' if digits && !comma => {
+                digits = false;
+                comma = true;
+            }
+            '}' if digits || comma => {}
+            _ => return None,
+        }
+
+        translated.push(character);
+
+        if character == '}' {
+            return Some(());
+        }
+    }
 }
 
 fn translate_escape(character: char, class: bool, translated: &mut String) -> Option<()> {
@@ -258,6 +325,66 @@ mod tests {
                 translate_pattern("(very){0,2}(thin|thick)+x?"),
                 Some("(very){0,2}(thin|thick)+x?".into())
             );
+        }
+
+        #[test]
+        fn translate_quantifier_ranges() {
+            assert_eq!(
+                translate_pattern("a{2}b{3,}c{4,5}"),
+                Some("a{2}b{3,}c{4,5}".into())
+            );
+        }
+
+        #[test]
+        fn translate_no_stacked_quantifiers() {
+            assert_eq!(translate_pattern("x{2}{3}"), None);
+            assert_eq!(translate_pattern("a**"), None);
+            assert_eq!(translate_pattern("a{2}?"), None);
+        }
+
+        #[test]
+        fn translate_no_spaced_quantifier() {
+            assert_eq!(translate_pattern("a{ 2}"), None);
+            assert_eq!(translate_pattern("a{2, 3}"), None);
+            assert_eq!(translate_pattern("a{2 }"), None);
+        }
+
+        #[test]
+        fn translate_no_malformed_quantifier() {
+            assert_eq!(translate_pattern("a{}"), None);
+            assert_eq!(translate_pattern("a{,2}"), None);
+            assert_eq!(translate_pattern("a{2,3,4}"), None);
+            assert_eq!(translate_pattern("a{2"), None);
+        }
+
+        #[test]
+        fn translate_no_bare_braces() {
+            assert_eq!(translate_pattern("{2}"), None);
+            assert_eq!(translate_pattern("a}"), None);
+        }
+
+        #[test]
+        fn translate_no_leading_quantifier() {
+            assert_eq!(translate_pattern("?a"), None);
+            assert_eq!(translate_pattern("(*a)"), None);
+            assert_eq!(translate_pattern("a|+b"), None);
+        }
+
+        #[test]
+        fn translate_no_group_options() {
+            assert_eq!(translate_pattern("(?i)x"), None);
+        }
+
+        #[test]
+        fn translate_no_unbalanced_parentheses() {
+            assert_eq!(translate_pattern("(a"), None);
+            assert_eq!(translate_pattern("a)b"), None);
+            assert_eq!(translate_pattern("i)x|(y"), None);
+        }
+
+        #[test]
+        fn translate_no_bare_closing_bracket() {
+            assert_eq!(translate_pattern("a]"), None);
         }
 
         #[test]

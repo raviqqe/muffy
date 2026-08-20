@@ -17,7 +17,7 @@ use self::{
     attribute::Attribute,
     attribute_set::AttributeSet,
     content::Content,
-    literal::Literal,
+    literal::{Literal, pattern},
     rule::Rule,
     validation::{matches_wildcard, validate_rule},
     value::Value,

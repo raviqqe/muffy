@@ -31,7 +31,7 @@ pub fn generate_literal(literal: &Literal) -> TokenStream {
     match literal {
         Literal::CaseInsensitive(value) => quote!(Literal::CaseInsensitive(#value)),
         Literal::Exact(value) => quote!(Literal::Exact(#value)),
-        Literal::Pattern(value) => quote!(Literal::Pattern(#value)),
+        Literal::Pattern(value) => quote!(pattern!(#value)),
         Literal::Token(value) => quote!(Literal::Token(#value)),
     }
 }
@@ -114,6 +114,14 @@ mod tests {
             assert_eq!(
                 generate_literal(&Literal::Exact("foo".into())).to_string(),
                 quote!(Literal::Exact("foo")).to_string()
+            );
+        }
+
+        #[test]
+        fn generate_pattern_literal() {
+            assert_eq!(
+                generate_literal(&Literal::Pattern("a+".into())).to_string(),
+                quote!(pattern!("a+")).to_string()
             );
         }
 
