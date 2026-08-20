@@ -28,8 +28,8 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
             parameter.name.prefix.is_none() && parameter.name.local.to_string() == "pattern"
         })
         .collect::<Vec<_>>();
-    // XSD conjoins multiple patterns, which a single translated pattern cannot
-    // express.
+    // TODO Validate attribute values against multiple patterns that XSD
+    // conjoins.
     let [parameter] = patterns.as_slice() else {
         return None;
     };
