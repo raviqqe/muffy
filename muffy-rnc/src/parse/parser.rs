@@ -464,6 +464,8 @@ fn quoted<'a>(
         fold_many0(
             alt((
                 map(escape_sequence, |character| Cow::Owned(character.into())),
+                // TODO Reject malformed escape sequences instead of keeping
+                // them as literal text.
                 map(tag("\\"), Cow::Borrowed),
                 map(is_not(not), Cow::Borrowed),
             )),
