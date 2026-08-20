@@ -7,8 +7,10 @@ use regex::Regex;
 const XSD_DATATYPE_PREFIX: &str = "xsd";
 
 // Data patterns of string datatypes restricted by single XSD patterns compile
-// into pattern literals. All other datatype semantics, like value spaces of
-// non-string datatypes or length facets, are approximated as any values.
+// into pattern literals.
+//
+// TODO Validate other datatype semantics, like value spaces of non-string
+// datatypes and length facets.
 pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Literal> {
     let DatatypeName::Name(name) = name else {
         return None;
