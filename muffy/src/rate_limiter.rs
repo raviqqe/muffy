@@ -4,8 +4,6 @@ use core::{
 };
 use tokio::time::{Instant, sleep};
 
-// TODO Optimize the ordering.
-
 /// A token bucket rate limiter.
 pub struct RateLimiter {
     token_count: AtomicU64,
@@ -33,7 +31,7 @@ impl RateLimiter {
             self.add_supply();
 
             self.token_count
-                .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |count| {
+                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
                     if count == 0 { None } else { Some(count - 1) }
                 })
                 .is_err()
@@ -57,10 +55,10 @@ impl RateLimiter {
         if new > old
             && self
                 .window_count
-                .compare_exchange(old, new, Ordering::SeqCst, Ordering::SeqCst)
+                .compare_exchange(old, new, Ordering::Relaxed, Ordering::Relaxed)
                 .is_ok()
         {
-            self.token_count.store(self.supply, Ordering::SeqCst);
+            self.token_count.store(self.supply, Ordering::Relaxed);
         }
     }
 }
