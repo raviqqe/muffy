@@ -470,7 +470,7 @@ fn quoted<'a>(
                 map(is_not(not), Cow::Borrowed),
             )),
             String::new,
-            |mut string, piece: Cow<str>| {
+            |mut string, piece| {
                 string.push_str(&piece);
                 string
             },
