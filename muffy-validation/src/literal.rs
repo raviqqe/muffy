@@ -1,7 +1,6 @@
 use regex::Regex;
 
-// Compiles a verified pattern into a lazily initialized static regular
-// expression.
+// Compiles a pattern literal verified already.
 macro_rules! pattern {
     ($pattern:literal) => {
         $crate::literal::Literal::Pattern(|| {
