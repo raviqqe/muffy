@@ -14,6 +14,7 @@ pub enum Literal {
 }
 
 impl Literal {
+    // TODO Create literals of other datatypes like XSD strings and tokens.
     pub fn new(name: Option<&DatatypeName>, value: &str) -> Option<Self> {
         match name {
             None | Some(DatatypeName::Token) => Some(Self::Token(value.into())),

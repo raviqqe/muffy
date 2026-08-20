@@ -156,6 +156,8 @@ impl<'a> Compiler<'a> {
                 Some(literal) => Value::LiteralSet([literal].into()),
                 None => Value::Any,
             },
+            // TODO Validate attribute values against composite patterns like
+            // groups, interleaves, optionals, and repetitions.
             RncPattern::Attribute { .. }
             | RncPattern::Element { .. }
             | RncPattern::External(_)

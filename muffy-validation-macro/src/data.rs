@@ -45,7 +45,10 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
 }
 
 // Translates an XSD pattern into a regular expression, or gives up on
-// constructs that have no faithful counterpart.
+// constructs it does not translate faithfully.
+//
+// TODO Translate more constructs like name-character escapes, category
+// escapes, and class subtractions.
 fn translate_pattern(pattern: &str) -> Option<String> {
     let mut translated = String::new();
     let mut characters = pattern.chars();
