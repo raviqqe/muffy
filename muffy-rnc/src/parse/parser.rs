@@ -463,9 +463,7 @@ fn quoted<'a>(
         char(delimiter),
         fold_many0(
             alt((
-                map(escape_sequence, |character| {
-                    Cow::Owned(String::from(character))
-                }),
+                map(escape_sequence, |character| Cow::Owned(character.into())),
                 map(tag("\\"), Cow::Borrowed),
                 map(is_not(not), Cow::Borrowed),
             )),
