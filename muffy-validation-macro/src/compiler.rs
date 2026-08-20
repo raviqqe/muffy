@@ -142,6 +142,7 @@ impl<'a> Compiler<'a> {
                 except,
             } => match (resolve_data(name, parameters), except) {
                 (Some(literal), None) => Value::LiteralSet([literal].into()),
+                // TODO Validate attribute values against exception patterns.
                 _ => Value::Any,
             },
             RncPattern::Empty => Value::LiteralSet([Literal::Exact(String::new())].into()),
