@@ -1,5 +1,4 @@
 use crate::literal::Literal;
-use core::str::Chars;
 use muffy_rnc::{DatatypeName, Parameter};
 use regex::Regex;
 
@@ -47,10 +46,12 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
 }
 
 // Translates an XSD pattern into a regular expression, or gives up on
-// constructs it does not translate faithfully.
+// constructs it does not translate faithfully. Braces pass through verbatim
+// as the Nu Html Checker rejects schemas with quantifiers invalid in XSD.
 //
 // TODO Translate more constructs like name-character escapes, category
 // escapes, and class subtractions.
+// TODO Validate quantifier syntax against the XSD grammar.
 fn translate_pattern(pattern: &str) -> Option<String> {
     let mut translated = String::new();
     let mut characters = pattern.chars();
@@ -124,12 +125,7 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 atom = false;
                 translated.push(character);
             }
-            ('{', false) if atom => {
-                atom = false;
-                translated.push(character);
-                translate_quantifier(&mut characters, &mut translated)?;
-            }
-            ('?' | '*' | '+' | '{' | '}', false) => return None,
+            ('?' | '*' | '+', false) => return None,
             // Adjacent dashes mean class difference.
             ('-', true) if range || expanded => return None,
             ('-', true) => {
@@ -150,33 +146,6 @@ fn translate_pattern(pattern: &str) -> Option<String> {
     }
 
     (!class && groups == 0).then_some(translated)
-}
-
-// XSD quantifiers contain only digits and a comma while regular expression
-// crates accept looser syntax like whitespace.
-fn translate_quantifier(characters: &mut Chars<'_>, translated: &mut String) -> Option<()> {
-    let mut digits = false;
-    let mut comma = false;
-
-    loop {
-        let character = characters.next()?;
-
-        match character {
-            '0'..='9' => digits = true,
-            ',' if digits && !comma => {
-                digits = false;
-                comma = true;
-            }
-            '}' if digits || comma => {}
-            _ => return None,
-        }
-
-        translated.push(character);
-
-        if character == '}' {
-            return Some(());
-        }
-    }
 }
 
 fn translate_escape(character: char, class: bool, translated: &mut String) -> Option<()> {
@@ -304,9 +273,21 @@ mod tests {
         }
 
         #[test]
+        fn resolve_pattern_with_literal_brace() {
+            assert_eq!(
+                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "a}")]),
+                Some(Literal::Pattern(r"\A(?:a})\z".into()))
+            );
+        }
+
+        #[test]
         fn resolve_no_invalid_pattern() {
             assert_eq!(
                 resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "a)")]),
+                None
+            );
+            assert_eq!(
+                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "{2}")]),
                 None
             );
         }
@@ -343,31 +324,17 @@ mod tests {
         }
 
         #[test]
+        fn keep_braces() {
+            assert_eq!(translate_pattern("a}"), Some("a}".into()));
+            assert_eq!(translate_pattern("x{2}{3}"), Some("x{2}{3}".into()));
+            assert_eq!(translate_pattern("a{ 2}"), Some("a{ 2}".into()));
+            assert_eq!(translate_pattern("a{2"), Some("a{2".into()));
+        }
+
+        #[test]
         fn translate_no_stacked_quantifiers() {
-            assert_eq!(translate_pattern("x{2}{3}"), None);
             assert_eq!(translate_pattern("a**"), None);
-            assert_eq!(translate_pattern("a{2}?"), None);
-        }
-
-        #[test]
-        fn translate_no_spaced_quantifier() {
-            assert_eq!(translate_pattern("a{ 2}"), None);
-            assert_eq!(translate_pattern("a{2, 3}"), None);
-            assert_eq!(translate_pattern("a{2 }"), None);
-        }
-
-        #[test]
-        fn translate_no_malformed_quantifier() {
-            assert_eq!(translate_pattern("a{}"), None);
-            assert_eq!(translate_pattern("a{,2}"), None);
-            assert_eq!(translate_pattern("a{2,3,4}"), None);
-            assert_eq!(translate_pattern("a{2"), None);
-        }
-
-        #[test]
-        fn translate_no_bare_braces() {
-            assert_eq!(translate_pattern("{2}"), None);
-            assert_eq!(translate_pattern("a}"), None);
+            assert_eq!(translate_pattern("a+?"), None);
         }
 
         #[test]
