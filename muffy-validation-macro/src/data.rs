@@ -46,8 +46,9 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
 }
 
 // Translates an XSD pattern into a regular expression, or gives up on
-// constructs it does not translate faithfully. Braces pass through verbatim
-// as the Nu Html Checker rejects schemas with quantifiers invalid in XSD.
+// constructs it does not translate faithfully. Quantifiers and stray closing
+// brackets pass through verbatim as the Nu Html Checker rejects schemas with
+// those invalid in XSD.
 //
 // TODO Translate more constructs like name-character escapes, category
 // escapes, and class subtractions.
@@ -58,7 +59,6 @@ fn translate_pattern(pattern: &str) -> Option<String> {
     let mut class = false;
     let mut dash = false;
     let mut expansion = false;
-    let mut atom = false;
     let mut groups = 0usize;
 
     while let Some(character) = characters.next() {
@@ -80,52 +80,32 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 }
 
                 translate_escape(escaped, class, &mut translated)?;
-                atom = true;
             }
             ('[', false) => {
                 class = true;
-                atom = false;
                 translated.push(character);
             }
             // Nested classes mean class subtraction.
             ('[', true) => return None,
             (']', true) => {
                 class = false;
-                atom = true;
                 translated.push(character);
             }
-            (']', false) => return None,
             // A dot matches any character but line breaks.
-            ('.', false) => {
-                atom = true;
-                translated.push_str(r"[^\n\r]");
-            }
+            ('.', false) => translated.push_str(r"[^\n\r]"),
             // Anchors are ordinary characters.
             ('^' | '$', false) => {
-                atom = true;
                 translated.push('\\');
                 translated.push(character);
             }
             ('(', false) => {
                 groups += 1;
-                atom = false;
                 translated.push(character);
             }
             (')', false) => {
                 groups = groups.checked_sub(1)?;
-                atom = true;
                 translated.push(character);
             }
-            ('|', false) => {
-                atom = false;
-                translated.push(character);
-            }
-            // Quantifiers apply only to unquantified atoms.
-            ('?' | '*' | '+', false) if atom => {
-                atom = false;
-                translated.push(character);
-            }
-            ('?' | '*' | '+', false) => return None,
             // Adjacent dashes mean class difference.
             ('-', true) if range || expanded => return None,
             ('-', true) => {
@@ -138,10 +118,7 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 translated.push('\\');
                 translated.push(character);
             }
-            _ => {
-                atom = true;
-                translated.push(character);
-            }
+            _ => translated.push(character),
         }
     }
 
@@ -332,21 +309,17 @@ mod tests {
         }
 
         #[test]
-        fn translate_no_stacked_quantifiers() {
-            assert_eq!(translate_pattern("a**"), None);
-            assert_eq!(translate_pattern("a+?"), None);
+        fn keep_misplaced_quantifiers() {
+            assert_eq!(translate_pattern("a**"), Some("a**".into()));
+            assert_eq!(translate_pattern("a+?"), Some("a+?".into()));
+            assert_eq!(translate_pattern("?a"), Some("?a".into()));
+            assert_eq!(translate_pattern("a|+b"), Some("a|+b".into()));
+            assert_eq!(translate_pattern("(?i)x"), Some("(?i)x".into()));
         }
 
         #[test]
-        fn translate_no_leading_quantifier() {
-            assert_eq!(translate_pattern("?a"), None);
-            assert_eq!(translate_pattern("(*a)"), None);
-            assert_eq!(translate_pattern("a|+b"), None);
-        }
-
-        #[test]
-        fn translate_no_group_options() {
-            assert_eq!(translate_pattern("(?i)x"), None);
+        fn keep_closing_bracket() {
+            assert_eq!(translate_pattern("a]"), Some("a]".into()));
         }
 
         #[test]
@@ -354,11 +327,6 @@ mod tests {
             assert_eq!(translate_pattern("(a"), None);
             assert_eq!(translate_pattern("a)b"), None);
             assert_eq!(translate_pattern("i)x|(y"), None);
-        }
-
-        #[test]
-        fn translate_no_bare_closing_bracket() {
-            assert_eq!(translate_pattern("a]"), None);
         }
 
         #[test]
