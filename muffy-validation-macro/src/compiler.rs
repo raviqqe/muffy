@@ -1,5 +1,6 @@
 use crate::{
     attribute::{AttributeSet, normalize_attributes},
+    data::resolve_data,
     error::MacroError,
     literal::Literal,
     name::class_names,
@@ -127,7 +128,6 @@ impl<'a> Compiler<'a> {
         })
     }
 
-    // TODO Validate attribute values against data patterns.
     // TODO Validate attribute values against list patterns.
     fn resolve_value(&self, pattern: &RncPattern) -> Result<Value, MacroError> {
         Ok(match pattern {
@@ -136,6 +136,15 @@ impl<'a> Compiler<'a> {
                 .try_fold(Value::LiteralSet(Default::default()), |value, pattern| {
                     Ok::<_, MacroError>(value.merge(&self.resolve_value(pattern)?))
                 })?,
+            RncPattern::Data {
+                name,
+                parameters,
+                except,
+            } => match (resolve_data(name, parameters), except) {
+                (Some(literal), None) => Value::LiteralSet([literal].into()),
+                // TODO Validate attribute values against exception patterns.
+                _ => Value::Any,
+            },
             RncPattern::Empty => Value::LiteralSet([Literal::Exact(String::new())].into()),
             RncPattern::Name(name) => self.resolve_value(
                 self.definitions
@@ -147,8 +156,9 @@ impl<'a> Compiler<'a> {
                 Some(literal) => Value::LiteralSet([literal].into()),
                 None => Value::Any,
             },
+            // TODO Validate attribute values against composite patterns like
+            // groups, interleaves, optionals, and repetitions.
             RncPattern::Attribute { .. }
-            | RncPattern::Data { .. }
             | RncPattern::Element { .. }
             | RncPattern::External(_)
             | RncPattern::Grammar(_)
@@ -352,6 +362,61 @@ mod tests {
         fn resolve_any_value_of_datatype() {
             assert_eq!(
                 resolve("root = attribute foo { w:language }").unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_data_pattern() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { xsd:string { pattern = "--.*" } }"#).unwrap(),
+                Pattern::Attribute(
+                    ["foo".into()].into(),
+                    Value::LiteralSet([Literal::Pattern(r"\A(?:--[^\n\r]*)\z".into())].into())
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_data_pattern_alternative_to_literal() {
+            assert_eq!(
+                resolve(
+                    r#"root = attribute foo { w:string "bar" | xsd:string { pattern = "." } }"#
+                )
+                .unwrap(),
+                Pattern::Attribute(
+                    ["foo".into()].into(),
+                    Value::LiteralSet(
+                        [
+                            Literal::CaseInsensitive("bar".into()),
+                            Literal::Pattern(r"\A(?:[^\n\r])\z".into())
+                        ]
+                        .into()
+                    )
+                )
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_data_pattern_with_exception() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { xsd:string { pattern = "." } - "x" }"#).unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_untranslatable_data_pattern() {
+            assert_eq!(
+                resolve(r#"root = attribute foo { xsd:string { pattern = "[\i-[:]]" } }"#).unwrap(),
+                Pattern::Attribute(["foo".into()].into(), Value::Any)
+            );
+        }
+
+        #[test]
+        fn resolve_any_value_of_string_datatype_without_pattern() {
+            assert_eq!(
+                resolve("root = attribute foo { xsd:string }").unwrap(),
                 Pattern::Attribute(["foo".into()].into(), Value::Any)
             );
         }

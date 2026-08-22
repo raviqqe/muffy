@@ -23,6 +23,8 @@ impl Value {
         }
     }
 
+    // TODO Handle pattern literals in token lists as they match whole values
+    // rather than tokens.
     pub fn into_token_list(self) -> Self {
         match self {
             Self::LiteralSet(literals) => Self::TokenList(literals),

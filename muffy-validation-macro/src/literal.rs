@@ -9,10 +9,12 @@ const WHATTF_DATATYPE_PREFIX: &str = "w";
 pub enum Literal {
     CaseInsensitive(String),
     Exact(String),
+    Pattern(String),
     Token(String),
 }
 
 impl Literal {
+    // TODO Create literals of other datatypes like XSD strings and tokens.
     pub fn new(name: Option<&DatatypeName>, value: &str) -> Option<Self> {
         match name {
             None | Some(DatatypeName::Token) => Some(Self::Token(value.into())),
@@ -30,6 +32,7 @@ pub fn generate_literal(literal: &Literal) -> TokenStream {
     match literal {
         Literal::CaseInsensitive(value) => quote!(Literal::CaseInsensitive(#value)),
         Literal::Exact(value) => quote!(Literal::Exact(#value)),
+        Literal::Pattern(value) => quote!(pattern!(#value)),
         Literal::Token(value) => quote!(Literal::Token(#value)),
     }
 }
@@ -112,6 +115,14 @@ mod tests {
             assert_eq!(
                 generate_literal(&Literal::Exact("foo".into())).to_string(),
                 quote!(Literal::Exact("foo")).to_string()
+            );
+        }
+
+        #[test]
+        fn generate_pattern_literal() {
+            assert_eq!(
+                generate_literal(&Literal::Pattern("a+".into())).to_string(),
+                quote!(pattern!("a+")).to_string()
             );
         }
 

@@ -1,6 +1,23 @@
+use regex::Regex;
+
+// Compiles a pattern literal verified already.
+macro_rules! pattern {
+    ($pattern:literal) => {
+        $crate::literal::Literal::Pattern(|| {
+            static REGEX: ::std::sync::LazyLock<::regex::Regex> =
+                ::std::sync::LazyLock::new(|| ::regex::Regex::new($pattern).unwrap());
+
+            &REGEX
+        })
+    };
+}
+
+pub(crate) use pattern;
+
 pub enum Literal {
     CaseInsensitive(&'static str),
     Exact(&'static str),
+    Pattern(fn() -> &'static Regex),
     Token(&'static str),
 }
 
@@ -9,6 +26,7 @@ impl Literal {
         match self {
             Self::CaseInsensitive(literal) => value.eq_ignore_ascii_case(literal),
             Self::Exact(literal) => value == *literal,
+            Self::Pattern(pattern) => pattern().is_match(value),
             // Whitespace around and within tokens is insignificant.
             Self::Token(literal) => value
                 .split_ascii_whitespace()
@@ -48,6 +66,26 @@ mod tests {
         assert!(LITERAL.matches("Foo"));
         assert!(!LITERAL.matches(" foo"));
         assert!(!LITERAL.matches("bar"));
+    }
+
+    #[test]
+    fn match_pattern_literal() {
+        const LITERAL: Literal = pattern!(r"\A(?:--[^\n\r]*)\z");
+
+        assert!(LITERAL.matches("--"));
+        assert!(LITERAL.matches("--foo"));
+        assert!(!LITERAL.matches(""));
+        assert!(!LITERAL.matches("foo"));
+        assert!(!LITERAL.matches(" --foo"));
+    }
+
+    #[test]
+    fn match_pattern_literal_repeatedly() {
+        const LITERAL: Literal = pattern!(r"\A(?:a+)\z");
+
+        assert!(LITERAL.matches("aa"));
+        assert!(LITERAL.matches("a"));
+        assert!(!LITERAL.matches("b"));
     }
 
     #[test]

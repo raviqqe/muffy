@@ -17,7 +17,7 @@ use self::{
     attribute::Attribute,
     attribute_set::AttributeSet,
     content::Content,
-    literal::Literal,
+    literal::{Literal, pattern},
     rule::Rule,
     validation::{matches_wildcard, validate_rule},
     value::Value,
@@ -772,6 +772,47 @@ mod tests {
         }
     }
 
+    mod button {
+        use super::*;
+
+        #[test]
+        fn validate_valid_command_value() {
+            let element = create_element("button", vec![("command", "close")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_case_insensitive_command_value() {
+            let element = create_element("button", vec![("command", "Toggle-Popover")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_custom_command_value() {
+            let element = create_element("button", vec![("command", "--my-command")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_command_value() {
+            let element = create_element("button", vec![("command", "my-command")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("command".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
+        }
+    }
+
     mod img {
         use super::*;
 
@@ -1064,6 +1105,36 @@ mod tests {
             let element = create_element("svg", vec![("zoomAndPan", "magnify")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_pattern_attribute_value() {
+            let element = create_element(
+                "svg",
+                vec![("preserveAspectRatio", "xMidYMid meet")],
+                vec![],
+            );
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_pattern_attribute_value() {
+            let element = create_element("svg", vec![("preserveAspectRatio", "stretch")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [(
+                        "preserveAspectRatio".into(),
+                        [AttributeError::InvalidValue].into()
+                    )]
+                    .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
 
         #[test]
@@ -1364,6 +1435,29 @@ mod tests {
             let element = create_element("math", vec![("display", " block ")], vec![]);
 
             assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_valid_length_attribute_value() {
+            let element = create_element("mspace", vec![("width", " 1.5em ")], vec![]);
+
+            assert_eq!(validate_html_element(&element, &[], &[]), Ok(()));
+        }
+
+        #[test]
+        fn validate_invalid_length_attribute_value() {
+            let element = create_element("mspace", vec![("width", "wide")], vec![]);
+
+            assert_eq!(
+                validate_html_element(&element, &[], &[]),
+                Err(MarkupError::InvalidElement {
+                    invalid_attributes: [("width".into(), [AttributeError::InvalidValue].into())]
+                        .into(),
+                    invalid_children: Default::default(),
+                    missing_attributes: Default::default(),
+                    missing_children: Default::default(),
+                })
+            );
         }
 
         #[test]
