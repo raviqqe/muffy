@@ -13,4 +13,4 @@ git config user.name 'GitHub Action'
 git commit -m release
 
 cargo install cargo-workspaces
-cargo workspaces publish -y --from-git "$@"
+cargo workspaces publish -y --publish-as-is "$@"
