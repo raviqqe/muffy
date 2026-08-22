@@ -5,6 +5,9 @@ use regex::Regex;
 // TODO Resolve datatype prefixes against datatypes declarations.
 const XSD_DATATYPE_PREFIX: &str = "xsd";
 
+// TODO Return `Result::Err` if any unexpected patterns are found instead of
+// falling back to `None`.
+
 // Data patterns of string datatypes restricted by single XSD patterns compile
 // into pattern literals.
 //
