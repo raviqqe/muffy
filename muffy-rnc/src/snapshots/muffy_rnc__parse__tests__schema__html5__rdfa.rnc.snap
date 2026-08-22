@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -52,7 +52,7 @@ Schema {
                                             sub_components: [],
                                         },
                                     },
-                                    value: "[(([i-[:]][c-[:]]*)?:?)[^s]*]",
+                                    value: "\\[(([\\i-[:]][\\c-[:]]*)?:?)[^\\s]*\\]",
                                 },
                                 Parameter {
                                     name: Name {
@@ -104,7 +104,7 @@ Schema {
                                             sub_components: [],
                                         },
                                     },
-                                    value: "(([i-[:]][c-[:]]*)?:)[^s]*",
+                                    value: "(([\\i-[:]][\\c-[:]]*)?:)[^\\s]*",
                                 },
                                 Parameter {
                                     name: Name {
@@ -156,7 +156,7 @@ Schema {
                                             sub_components: [],
                                         },
                                     },
-                                    value: "[i-[:]][/c-[:]]*",
+                                    value: "[\\i-[:]][/\\c-[:]]*",
                                 },
                             ],
                             except: None,
@@ -393,7 +393,7 @@ Schema {
                                                         sub_components: [],
                                                     },
                                                 },
-                                                value: "s*([i-[:]][c-[:]]*: [^ ]+)(s+[i-[:]][c-[:]]*: [^ ]+)*s*",
+                                                value: "\\s*([\\i-[:]][\\c-[:]]*: [^ ]+)(\\s+[\\i-[:]][\\c-[:]]*: [^ ]+)*\\s*",
                                             },
                                         ],
                                         except: None,
