@@ -36,9 +36,6 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
     // XSD patterns match whole values.
     let pattern = format!(r"\A(?:{})\z", translate_pattern(&parameter.value)?);
 
-    // Generated code compiles patterns with the same crate, so validity here
-    // makes the runtime construction infallible.
-    //
     // TODO Report invalid patterns rather than skipping validation.
     Regex::new(&pattern)
         .is_ok()
