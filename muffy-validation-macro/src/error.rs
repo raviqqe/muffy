@@ -1,3 +1,4 @@
+use crate::data::XsdPatternError;
 use core::{
     error::Error,
     fmt::{self, Display, Formatter},
@@ -15,6 +16,7 @@ pub enum MacroError {
     RncSchema(SchemaError),
     RncSyntax(&'static str),
     UndefinedReference(String),
+    XsdPattern(String, XsdPatternError),
 }
 
 impl Display for MacroError {
@@ -27,6 +29,9 @@ impl Display for MacroError {
             Self::RncSchema(error) => write!(formatter, "{error}"),
             Self::RncSyntax(name) => write!(formatter, "unexpected RNC syntax: {name}"),
             Self::UndefinedReference(name) => write!(formatter, "undefined reference: {name}"),
+            Self::XsdPattern(pattern, error) => {
+                write!(formatter, "invalid XSD pattern \"{pattern}\": {error}")
+            }
         }
     }
 }
@@ -48,5 +53,21 @@ impl From<SchemaError> for MacroError {
 impl From<ParseError> for MacroError {
     fn from(error: ParseError) -> Self {
         Self::RncParse(error)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_xsd_pattern_error() {
+        assert_eq!(
+            format!(
+                "{}",
+                MacroError::XsdPattern("(".into(), XsdPatternError::UnbalancedParentheses)
+            ),
+            "invalid XSD pattern \"(\": unbalanced parentheses"
+        );
     }
 }

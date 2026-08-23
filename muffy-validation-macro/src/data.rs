@@ -1,27 +1,31 @@
-use crate::literal::Literal;
+mod error;
+
+pub use self::error::XsdPatternError;
+use crate::{error::MacroError, literal::Literal};
 use muffy_rnc::{DatatypeName, Parameter};
 use regex::Regex;
 
 // TODO Resolve datatype prefixes against datatypes declarations.
 const XSD_DATATYPE_PREFIX: &str = "xsd";
 
-// TODO Return `Result::Err` if any unexpected patterns are found instead of
-// falling back to `None`.
-
 // Data patterns of string datatypes restricted by single XSD patterns compile
-// into pattern literals.
+// into pattern literals. Invalid XSD patterns are errors while untranslatable
+// ones leave values unrestricted.
 //
 // TODO Validate other datatype semantics, like value spaces of non-string
 // datatypes and length facets.
-pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Literal> {
+pub fn resolve_data(
+    name: &DatatypeName,
+    parameters: &[Parameter],
+) -> Result<Option<Literal>, MacroError> {
     let DatatypeName::Name(name) = name else {
-        return None;
+        return Ok(None);
     };
 
     if name.prefix.as_ref().map(ToString::to_string) != Some(XSD_DATATYPE_PREFIX.into())
         || name.local.to_string() != "string"
     {
-        return None;
+        return Ok(None);
     }
 
     let patterns = parameters
@@ -33,29 +37,37 @@ pub fn resolve_data(name: &DatatypeName, parameters: &[Parameter]) -> Option<Lit
     // TODO Validate attribute values against multiple patterns that XSD
     // conjoins.
     let [parameter] = patterns.as_slice() else {
-        return None;
+        return Ok(None);
     };
 
-    // XSD patterns match whole values.
-    let pattern = format!(r"\A(?:{})\z", translate_pattern(&parameter.value)?);
-
-    // TODO Report invalid patterns rather than skipping validation.
-    Regex::new(&pattern)
-        .is_ok()
-        .then_some(Literal::Pattern(pattern))
+    resolve_pattern(&parameter.value)
+        .map_err(|error| MacroError::XsdPattern(parameter.value.clone(), error))
 }
 
-// Translates an XSD pattern into a regular expression, or gives up on
-// constructs it does not translate faithfully. Quantifiers and stray closing
-// brackets pass through verbatim as the Nu Html Checker rejects schemas with
-// those invalid in XSD.
+// Translated patterns are anchored as XSD patterns match whole values, and
+// compiled to verify their syntax.
+fn resolve_pattern(pattern: &str) -> Result<Option<Literal>, XsdPatternError> {
+    let Some(pattern) = translate_pattern(pattern)? else {
+        return Ok(None);
+    };
+    let pattern = format!(r"\A(?:{pattern})\z");
+
+    Regex::new(&pattern)?;
+
+    Ok(Some(Literal::Pattern(pattern)))
+}
+
+// Translates an XSD pattern into a regular expression, fails on invalid
+// patterns, or gives up on constructs it does not translate faithfully.
+// Quantifiers and stray closing brackets pass through verbatim as the Nu Html
+// Checker rejects schemas with those invalid in XSD.
 //
 // TODO Translate more constructs like name-character escapes, category
 // escapes, and class subtractions.
 // TODO Validate quantifier syntax against the XSD grammar.
-fn translate_pattern(pattern: &str) -> Option<String> {
+fn translate_pattern(pattern: &str) -> Result<Option<String>, XsdPatternError> {
     let mut translated = String::new();
-    let mut characters = pattern.chars();
+    let mut characters = pattern.chars().peekable();
     let mut class = false;
     let mut dash = false;
     let mut expansion = false;
@@ -69,24 +81,31 @@ fn translate_pattern(pattern: &str) -> Option<String> {
 
         match (character, class) {
             ('\\', _) => {
-                let escaped = characters.next()?;
+                let escaped = characters
+                    .next()
+                    .ok_or(XsdPatternError::TrailingBackslash)?;
 
                 // Whitespace escapes expand into class members that must not
                 // become range endpoints.
                 expansion = class && escaped == 's';
 
                 if expansion && range {
-                    return None;
+                    return Err(XsdPatternError::InvalidRange);
                 }
 
-                translate_escape(escaped, class, &mut translated)?;
+                let Some(escape) = translate_escape(escaped, class)? else {
+                    return Ok(None);
+                };
+
+                translated.push_str(&escape);
             }
             ('[', false) => {
                 class = true;
                 translated.push(character);
             }
-            // Nested classes mean class subtraction.
-            ('[', true) => return None,
+            // Nested classes after dashes mean class subtraction.
+            ('[', true) if range => return Ok(None),
+            ('[', true) => return Err(XsdPatternError::UnescapedBracket),
             (']', true) => {
                 class = false;
                 translated.push(character);
@@ -103,11 +122,19 @@ fn translate_pattern(pattern: &str) -> Option<String> {
                 translated.push(character);
             }
             (')', false) => {
-                groups = groups.checked_sub(1)?;
+                groups = groups
+                    .checked_sub(1)
+                    .ok_or(XsdPatternError::UnbalancedParentheses)?;
                 translated.push(character);
             }
-            // Adjacent dashes mean class difference.
-            ('-', true) if range || expanded => return None,
+            ('-', true) if range => return Err(XsdPatternError::UnescapedDash),
+            ('-', true) if expanded => {
+                return if characters.peek() == Some(&'[') {
+                    Ok(None)
+                } else {
+                    Err(XsdPatternError::InvalidRange)
+                };
+            }
             ('-', true) => {
                 dash = true;
                 translated.push(character);
@@ -122,26 +149,30 @@ fn translate_pattern(pattern: &str) -> Option<String> {
         }
     }
 
-    (!class && groups == 0).then_some(translated)
+    if class {
+        Err(XsdPatternError::UnclosedClass)
+    } else if groups > 0 {
+        Err(XsdPatternError::UnbalancedParentheses)
+    } else {
+        Ok(Some(translated))
+    }
 }
 
-fn translate_escape(character: char, class: bool, translated: &mut String) -> Option<()> {
-    match (character, class) {
+fn translate_escape(character: char, class: bool) -> Result<Option<String>, XsdPatternError> {
+    Ok(match (character, class) {
         (
             'n' | 'r' | 't' | 'd' | 'D' | '\\' | '|' | '.' | '?' | '*' | '+' | '(' | ')' | '{'
             | '}' | '-' | '[' | ']' | '^',
             _,
-        ) => {
-            translated.push('\\');
-            translated.push(character);
-        }
-        ('s', false) => translated.push_str(r"[ \t\n\r]"),
-        ('S', false) => translated.push_str(r"[^ \t\n\r]"),
-        ('s', true) => translated.push_str(r" \t\n\r"),
-        _ => return None,
-    }
-
-    Some(())
+        ) => Some(format!("\\{character}")),
+        ('s', false) => Some(r"[ \t\n\r]".into()),
+        ('S', false) => Some(r"[^ \t\n\r]".into()),
+        ('s', true) => Some(r" \t\n\r".into()),
+        // Name-character, word-character, and category escapes have no
+        // faithful translation, nor do negated whitespace escapes in classes.
+        ('i' | 'I' | 'c' | 'C' | 'w' | 'W' | 'p' | 'P', _) | ('S', true) => None,
+        _ => return Err(XsdPatternError::UnknownEscape(character)),
+    })
 }
 
 #[cfg(test)]
@@ -182,7 +213,7 @@ mod tests {
         #[test]
         fn resolve_pattern() {
             assert_eq!(
-                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "--.*")]),
+                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "--.*")]).unwrap(),
                 Some(Literal::Pattern(r"\A(?:--[^\n\r]*)\z".into()))
             );
         }
@@ -193,20 +224,29 @@ mod tests {
                 resolve_data(
                     &datatype("xsd", "string"),
                     &[parameter("pattern", "a"), parameter("minLength", "1")]
-                ),
+                )
+                .unwrap(),
                 Some(Literal::Pattern(r"\A(?:a)\z".into()))
             );
         }
 
         #[test]
+        fn resolve_pattern_with_literal_brace() {
+            assert_eq!(
+                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "a}")]).unwrap(),
+                Some(Literal::Pattern(r"\A(?:a})\z".into()))
+            );
+        }
+
+        #[test]
         fn resolve_no_string_without_parameter() {
-            assert_eq!(resolve_data(&datatype("xsd", "string"), &[]), None);
+            assert_eq!(resolve_data(&datatype("xsd", "string"), &[]).unwrap(), None);
         }
 
         #[test]
         fn resolve_no_token_datatype() {
             assert_eq!(
-                resolve_data(&datatype("xsd", "token"), &[parameter("pattern", "a")]),
+                resolve_data(&datatype("xsd", "token"), &[parameter("pattern", "a")]).unwrap(),
                 None
             );
         }
@@ -214,7 +254,7 @@ mod tests {
         #[test]
         fn resolve_no_unknown_prefix() {
             assert_eq!(
-                resolve_data(&datatype("w", "string"), &[parameter("pattern", "a")]),
+                resolve_data(&datatype("w", "string"), &[parameter("pattern", "a")]).unwrap(),
                 None
             );
         }
@@ -222,7 +262,7 @@ mod tests {
         #[test]
         fn resolve_no_built_in_datatype() {
             assert_eq!(
-                resolve_data(&DatatypeName::String, &[parameter("pattern", "a")]),
+                resolve_data(&DatatypeName::String, &[parameter("pattern", "a")]).unwrap(),
                 None
             );
         }
@@ -233,7 +273,8 @@ mod tests {
                 resolve_data(
                     &datatype("xsd", "string"),
                     &[parameter("pattern", "a"), parameter("pattern", "b")]
-                ),
+                )
+                .unwrap(),
                 None
             );
         }
@@ -244,29 +285,27 @@ mod tests {
                 resolve_data(
                     &datatype("xsd", "string"),
                     &[parameter("pattern", r"[\i-[:]]")]
-                ),
+                )
+                .unwrap(),
                 None
             );
         }
 
         #[test]
-        fn resolve_pattern_with_literal_brace() {
-            assert_eq!(
-                resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "a}")]),
-                Some(Literal::Pattern(r"\A(?:a})\z".into()))
-            );
-        }
-
-        #[test]
-        fn resolve_no_invalid_pattern() {
-            assert_eq!(
+        fn fail_on_invalid_pattern() {
+            assert!(matches!(
                 resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "a)")]),
-                None
-            );
-            assert_eq!(
+                Err(MacroError::XsdPattern(pattern, XsdPatternError::UnbalancedParentheses))
+                    if pattern == "a)"
+            ));
+        }
+
+        #[test]
+        fn fail_on_invalid_regex() {
+            assert!(matches!(
                 resolve_data(&datatype("xsd", "string"), &[parameter("pattern", "{2}")]),
-                None
-            );
+                Err(MacroError::XsdPattern(pattern, XsdPatternError::Regex(_))) if pattern == "{2}"
+            ));
         }
     }
 
@@ -276,19 +315,19 @@ mod tests {
 
         #[test]
         fn translate_characters() {
-            assert_eq!(translate_pattern("foo"), Some("foo".into()));
+            assert_eq!(translate_pattern("foo"), Ok(Some("foo".into())));
         }
 
         #[test]
         fn translate_empty_pattern() {
-            assert_eq!(translate_pattern(""), Some("".into()));
+            assert_eq!(translate_pattern(""), Ok(Some("".into())));
         }
 
         #[test]
         fn translate_alternatives_with_quantifiers() {
             assert_eq!(
                 translate_pattern("(very){0,2}(thin|thick)+x?"),
-                Some("(very){0,2}(thin|thick)+x?".into())
+                Ok(Some("(very){0,2}(thin|thick)+x?".into()))
             );
         }
 
@@ -296,156 +335,212 @@ mod tests {
         fn translate_quantifier_ranges() {
             assert_eq!(
                 translate_pattern("a{2}b{3,}c{4,5}"),
-                Some("a{2}b{3,}c{4,5}".into())
+                Ok(Some("a{2}b{3,}c{4,5}".into()))
             );
         }
 
         #[test]
         fn keep_braces() {
-            assert_eq!(translate_pattern("a}"), Some("a}".into()));
-            assert_eq!(translate_pattern("x{2}{3}"), Some("x{2}{3}".into()));
-            assert_eq!(translate_pattern("a{ 2}"), Some("a{ 2}".into()));
-            assert_eq!(translate_pattern("a{2"), Some("a{2".into()));
+            assert_eq!(translate_pattern("a}"), Ok(Some("a}".into())));
+            assert_eq!(translate_pattern("x{2}{3}"), Ok(Some("x{2}{3}".into())));
+            assert_eq!(translate_pattern("a{ 2}"), Ok(Some("a{ 2}".into())));
+            assert_eq!(translate_pattern("a{2"), Ok(Some("a{2".into())));
         }
 
         #[test]
         fn keep_misplaced_quantifiers() {
-            assert_eq!(translate_pattern("a**"), Some("a**".into()));
-            assert_eq!(translate_pattern("a+?"), Some("a+?".into()));
-            assert_eq!(translate_pattern("?a"), Some("?a".into()));
-            assert_eq!(translate_pattern("a|+b"), Some("a|+b".into()));
-            assert_eq!(translate_pattern("(?i)x"), Some("(?i)x".into()));
+            assert_eq!(translate_pattern("a**"), Ok(Some("a**".into())));
+            assert_eq!(translate_pattern("a+?"), Ok(Some("a+?".into())));
+            assert_eq!(translate_pattern("?a"), Ok(Some("?a".into())));
+            assert_eq!(translate_pattern("a|+b"), Ok(Some("a|+b".into())));
+            assert_eq!(translate_pattern("(?i)x"), Ok(Some("(?i)x".into())));
         }
 
         #[test]
         fn keep_closing_bracket() {
-            assert_eq!(translate_pattern("a]"), Some("a]".into()));
-        }
-
-        #[test]
-        fn translate_no_unbalanced_parentheses() {
-            assert_eq!(translate_pattern("(a"), None);
-            assert_eq!(translate_pattern("a)b"), None);
-            assert_eq!(translate_pattern("i)x|(y"), None);
+            assert_eq!(translate_pattern("a]"), Ok(Some("a]".into())));
         }
 
         #[test]
         fn translate_dot() {
-            assert_eq!(translate_pattern("."), Some(r"[^\n\r]".into()));
+            assert_eq!(translate_pattern("."), Ok(Some(r"[^\n\r]".into())));
         }
 
         #[test]
         fn translate_dot_in_class() {
-            assert_eq!(translate_pattern("[.]"), Some("[.]".into()));
+            assert_eq!(translate_pattern("[.]"), Ok(Some("[.]".into())));
         }
 
         #[test]
         fn translate_anchor_characters() {
-            assert_eq!(translate_pattern("a^b$"), Some(r"a\^b\$".into()));
+            assert_eq!(translate_pattern("a^b$"), Ok(Some(r"a\^b\$".into())));
         }
 
         #[test]
         fn translate_class() {
             assert_eq!(
                 translate_pattern("[0-9a-fA-F]{6}"),
-                Some("[0-9a-fA-F]{6}".into())
+                Ok(Some("[0-9a-fA-F]{6}".into()))
             );
         }
 
         #[test]
         fn translate_negated_class() {
-            assert_eq!(translate_pattern("[^ ]+"), Some("[^ ]+".into()));
+            assert_eq!(translate_pattern("[^ ]+"), Ok(Some("[^ ]+".into())));
         }
 
         #[test]
         fn translate_escaped_characters() {
             assert_eq!(
                 translate_pattern(r"\.\{\}\(\)\[\]\-\+\*\?\|\\\^"),
-                Some(r"\.\{\}\(\)\[\]\-\+\*\?\|\\\^".into())
+                Ok(Some(r"\.\{\}\(\)\[\]\-\+\*\?\|\\\^".into()))
             );
         }
 
         #[test]
         fn translate_control_character_escapes() {
-            assert_eq!(translate_pattern(r"\n\r\t"), Some(r"\n\r\t".into()));
+            assert_eq!(translate_pattern(r"\n\r\t"), Ok(Some(r"\n\r\t".into())));
         }
 
         #[test]
         fn translate_digit_escapes() {
-            assert_eq!(translate_pattern(r"\d[\d]\D"), Some(r"\d[\d]\D".into()));
+            assert_eq!(translate_pattern(r"\d[\d]\D"), Ok(Some(r"\d[\d]\D".into())));
         }
 
         #[test]
         fn translate_whitespace_escapes() {
             assert_eq!(
                 translate_pattern(r"\s*\S+"),
-                Some(r"[ \t\n\r]*[^ \t\n\r]+".into())
+                Ok(Some(r"[ \t\n\r]*[^ \t\n\r]+".into()))
             );
         }
 
         #[test]
         fn translate_whitespace_escape_in_class() {
-            assert_eq!(translate_pattern(r"[x\s]"), Some(r"[x \t\n\r]".into()));
+            assert_eq!(translate_pattern(r"[x\s]"), Ok(Some(r"[x \t\n\r]".into())));
         }
 
         #[test]
         fn translate_ampersand_and_tilde_in_class() {
-            assert_eq!(translate_pattern("[&~]"), Some(r"[\&\~]".into()));
+            assert_eq!(translate_pattern("[&~]"), Ok(Some(r"[\&\~]".into())));
         }
 
         #[test]
         fn translate_no_name_character_escapes() {
-            assert_eq!(translate_pattern(r"\i"), None);
-            assert_eq!(translate_pattern(r"\c"), None);
-            assert_eq!(translate_pattern(r"\I"), None);
-            assert_eq!(translate_pattern(r"\C"), None);
+            assert_eq!(translate_pattern(r"\i"), Ok(None));
+            assert_eq!(translate_pattern(r"\c"), Ok(None));
+            assert_eq!(translate_pattern(r"\I"), Ok(None));
+            assert_eq!(translate_pattern(r"\C"), Ok(None));
         }
 
         #[test]
         fn translate_no_word_character_escapes() {
-            assert_eq!(translate_pattern(r"\w"), None);
-            assert_eq!(translate_pattern(r"\W"), None);
+            assert_eq!(translate_pattern(r"\w"), Ok(None));
+            assert_eq!(translate_pattern(r"\W"), Ok(None));
         }
 
         #[test]
-        fn translate_no_category_escape() {
-            assert_eq!(translate_pattern(r"\p{Lu}"), None);
+        fn translate_no_category_escapes() {
+            assert_eq!(translate_pattern(r"\p{Lu}"), Ok(None));
+            assert_eq!(translate_pattern(r"\P{Lu}"), Ok(None));
         }
 
         #[test]
         fn translate_no_negated_whitespace_escape_in_class() {
-            assert_eq!(translate_pattern(r"[\S]"), None);
-        }
-
-        #[test]
-        fn translate_no_whitespace_escape_starting_range() {
-            assert_eq!(translate_pattern(r"[\s-x]"), None);
-        }
-
-        #[test]
-        fn translate_no_whitespace_escape_ending_range() {
-            assert_eq!(translate_pattern(r"[a-\s]"), None);
+            assert_eq!(translate_pattern(r"[\S]"), Ok(None));
         }
 
         #[test]
         fn translate_no_class_subtraction() {
             // cspell: ignore aeiou
-            assert_eq!(translate_pattern("[a-z-[aeiou]]"), None);
+            assert_eq!(translate_pattern("[a-z-[aeiou]]"), Ok(None));
+            assert_eq!(translate_pattern("[a-[b]]"), Ok(None));
         }
 
         #[test]
-        fn translate_no_class_difference() {
-            assert_eq!(translate_pattern("[a-z--a]"), None);
+        fn translate_no_class_subtraction_from_whitespace_escape() {
+            assert_eq!(translate_pattern(r"[\s-[x]]"), Ok(None));
         }
 
         #[test]
-        fn translate_no_trailing_backslash() {
-            assert_eq!(translate_pattern("\\"), None);
+        fn fail_on_unknown_escape() {
+            assert_eq!(
+                translate_pattern(r"\a"),
+                Err(XsdPatternError::UnknownEscape('a'))
+            );
+            assert_eq!(
+                translate_pattern(r"[\a]"),
+                Err(XsdPatternError::UnknownEscape('a'))
+            );
         }
 
         #[test]
-        fn translate_no_unclosed_class() {
-            assert_eq!(translate_pattern("[a"), None);
+        fn fail_on_trailing_backslash() {
+            assert_eq!(
+                translate_pattern("\\"),
+                Err(XsdPatternError::TrailingBackslash)
+            );
+        }
+
+        #[test]
+        fn fail_on_unbalanced_parentheses() {
+            assert_eq!(
+                translate_pattern("(a"),
+                Err(XsdPatternError::UnbalancedParentheses)
+            );
+            assert_eq!(
+                translate_pattern("a)b"),
+                Err(XsdPatternError::UnbalancedParentheses)
+            );
+            assert_eq!(
+                translate_pattern("i)x|(y"),
+                Err(XsdPatternError::UnbalancedParentheses)
+            );
+        }
+
+        #[test]
+        fn fail_on_unclosed_class() {
+            assert_eq!(translate_pattern("[a"), Err(XsdPatternError::UnclosedClass));
+        }
+
+        #[test]
+        fn fail_on_unescaped_bracket_in_class() {
+            assert_eq!(
+                translate_pattern("[[a]]"),
+                Err(XsdPatternError::UnescapedBracket)
+            );
+            assert_eq!(
+                translate_pattern("[a[b]]"),
+                Err(XsdPatternError::UnescapedBracket)
+            );
+        }
+
+        #[test]
+        fn fail_on_class_difference() {
+            assert_eq!(
+                translate_pattern("[a-z--a]"),
+                Err(XsdPatternError::UnescapedDash)
+            );
+            assert_eq!(
+                translate_pattern("[a--b]"),
+                Err(XsdPatternError::UnescapedDash)
+            );
+        }
+
+        #[test]
+        fn fail_on_whitespace_escape_starting_range() {
+            assert_eq!(
+                translate_pattern(r"[\s-x]"),
+                Err(XsdPatternError::InvalidRange)
+            );
+        }
+
+        #[test]
+        fn fail_on_whitespace_escape_ending_range() {
+            assert_eq!(
+                translate_pattern(r"[a-\s]"),
+                Err(XsdPatternError::InvalidRange)
+            );
         }
     }
 }
