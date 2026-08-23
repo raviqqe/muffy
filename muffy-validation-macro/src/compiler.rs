@@ -140,7 +140,7 @@ impl<'a> Compiler<'a> {
                 name,
                 parameters,
                 except,
-            } => match (resolve_data(name, parameters), except) {
+            } => match (resolve_data(name, parameters)?, except) {
                 (Some(literal), None) => Value::LiteralSet([literal].into()),
                 // TODO Validate attribute values against exception patterns.
                 _ => Value::Any,
@@ -176,7 +176,7 @@ impl<'a> Compiler<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::definition::load_grammar;
+    use crate::{data::XsdPatternError, definition::load_grammar};
     use muffy_rnc::{DefinitionSet, Identifier, SchemaBody, parse_schema};
     use pretty_assertions::assert_eq;
     use std::path::Path;
@@ -461,6 +461,15 @@ mod tests {
             assert!(matches!(
                 resolve("root = attribute foo { bar }"),
                 Err(MacroError::UndefinedReference(_))
+            ));
+        }
+
+        #[test]
+        fn fail_on_invalid_data_pattern() {
+            assert!(matches!(
+                resolve(r#"root = attribute foo { xsd:string { pattern = "(" } }"#),
+                Err(MacroError::XsdPattern(pattern, XsdPatternError::UnbalancedParentheses))
+                    if pattern == "("
             ));
         }
     }
