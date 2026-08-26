@@ -106,6 +106,20 @@ Schema {
                                                 component: "template",
                                                 sub_components: [
                                                     "attrs",
+                                                    "for",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "template",
+                                                sub_components: [
+                                                    "attrs",
                                                     "shadowrootmode",
                                                 ],
                                             },
@@ -184,6 +198,30 @@ Schema {
                                 ),
                             ],
                         ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: Identifier {
+                            component: "template",
+                            sub_components: [
+                                "attrs",
+                                "for",
+                            ],
+                        },
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "for",
+                                        sub_components: [],
+                                    },
+                                },
+                            ),
+                            pattern: Text,
+                        },
                     },
                 ),
                 Definition(
