@@ -1,12 +1,11 @@
 mod error;
 
 pub use self::error::SitemapError;
-use core::str;
 use quick_xml::{Reader, escape::unescape, events::Event};
 
-const LOCATION_ELEMENT: &[u8] = b"loc";
-const SITEMAP_ELEMENT: &[u8] = b"sitemap";
-const URL_ELEMENT: &[u8] = b"url";
+const LOCATION_ELEMENT: &str = "loc";
+const SITEMAP_ELEMENT: &str = "sitemap";
+const URL_ELEMENT: &str = "url";
 
 /// A sitemap location entry.
 #[derive(Debug, Eq, PartialEq)]
@@ -23,14 +22,14 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
     reader.config_mut().trim_text(true);
 
     let mut buffer = vec![];
-    let mut elements = Vec::<Vec<u8>>::new();
+    let mut elements = Vec::<String>::new();
     let mut entries = vec![];
     let mut location = None;
 
     loop {
         match reader.read_event_into(&mut buffer)? {
             Event::Start(element) => {
-                let name = element.local_name().as_ref().to_vec();
+                let name = element.local_name().as_ref().to_owned();
 
                 if name == LOCATION_ELEMENT
                     && elements
@@ -46,27 +45,27 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                 if let Some(location) = &mut location
                     && elements
                         .last()
-                        .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
+                        .is_some_and(|element| element == LOCATION_ELEMENT)
                 {
-                    location.push_str(&text.decode()?);
+                    location.push_str(&text.into_inner());
                 }
             }
             Event::CData(data) => {
                 if let Some(location) = &mut location
                     && elements
                         .last()
-                        .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
+                        .is_some_and(|element| element == LOCATION_ELEMENT)
                 {
-                    location.push_str(str::from_utf8(&data.into_inner())?);
+                    location.push_str(&data.into_inner());
                 }
             }
             Event::GeneralRef(reference) => {
                 if let Some(location) = &mut location
                     && elements
                         .last()
-                        .is_some_and(|element| element.as_slice() == LOCATION_ELEMENT)
+                        .is_some_and(|element| element == LOCATION_ELEMENT)
                 {
-                    location.push_str(&unescape(&format!("&{};", reference.decode()?))?);
+                    location.push_str(&unescape(&format!("&{};", reference.into_inner()))?);
                 }
             }
             Event::End(_) => {
@@ -79,7 +78,7 @@ pub fn parse(source: &[u8]) -> Result<Vec<Entry>, SitemapError> {
                         entries.push(
                             if elements
                                 .last()
-                                .is_some_and(|parent| parent.as_slice() == SITEMAP_ELEMENT)
+                                .is_some_and(|parent| parent == SITEMAP_ELEMENT)
                             {
                                 Entry::Sitemap(location.to_owned())
                             } else {
