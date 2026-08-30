@@ -387,7 +387,7 @@ impl WebValidator {
             .into();
 
         for node in document.children() {
-            self.validate_html_element(context, &base, node, &mut futures)?;
+            self.validate_html_element(context, &base, node, true, &mut futures)?;
         }
 
         Ok(futures)
@@ -398,15 +398,21 @@ impl WebValidator {
         context: &Arc<Context>,
         base: &Arc<Url>,
         node: &Node,
+        validated: bool,
         futures: &mut Vec<ElementFuture>,
     ) -> Result<(), Error> {
         if let Node::Element(element) = &node {
-            if let Some(future) = self.validate_html_element_content(context, base, element) {
+            if let Some(future) =
+                self.validate_html_element_content(context, base, element, validated)
+            {
                 futures.push(future);
             }
 
+            let validated =
+                validated && !muffy_validation::is_unconstrained_html_element(element.name());
+
             for node in element.children() {
-                self.validate_html_element(context, base, node, futures)?;
+                self.validate_html_element(context, base, node, validated, futures)?;
             }
         }
 
@@ -418,6 +424,7 @@ impl WebValidator {
         context: &Arc<Context>,
         base: &Arc<Url>,
         element: &document::Element,
+        validated: bool,
     ) -> Option<ElementFuture> {
         let attributes = HashMap::<_, _>::from_iter(element.attributes());
         let mut links = vec![];
@@ -478,7 +485,7 @@ impl WebValidator {
         }
 
         let validation_result =
-            if let Some(config) = context.config().site(base).validation().html() {
+            if validated && let Some(config) = context.config().site(base).validation().html() {
                 muffy_validation::validate_html_element(
                     element,
                     config.ignored_attributes(),
@@ -595,12 +602,13 @@ impl WebValidator {
         }
 
         for node in document.children() {
-            self.validate_svg_element(context, &base, site, node, true, &mut futures);
+            self.validate_svg_element(context, &base, site, node, true, true, &mut futures);
         }
 
         Ok(futures)
     }
 
+    #[expect(clippy::too_many_arguments)]
     fn validate_svg_element(
         &self,
         context: &Arc<Context>,
@@ -608,6 +616,7 @@ impl WebValidator {
         site: &Arc<Url>,
         node: &Node,
         root: bool,
+        validated: bool,
         futures: &mut Vec<ElementFuture>,
     ) {
         let Node::Element(element) = node else { return };
@@ -657,7 +666,7 @@ impl WebValidator {
             }
         }
 
-        let validation_result = if let Some(config) = config {
+        let validation_result = if validated && let Some(config) = config {
             muffy_validation::validate_html_element(
                 element,
                 config.ignored_attributes(),
@@ -683,8 +692,11 @@ impl WebValidator {
             ));
         }
 
+        let validated =
+            validated && !muffy_validation::is_unconstrained_html_element(element.name());
+
         for node in element.children() {
-            self.validate_svg_element(context, base, site, node, false, futures);
+            self.validate_svg_element(context, base, site, node, false, validated, futures);
         }
     }
 
@@ -1388,6 +1400,120 @@ mod tests {
         assert_eq!(
             collect_metrics(&mut documents).await,
             (Metrics::new(2, 0), Metrics::new(0, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_descendants_of_element_with_unconstrained_content() {
+        let mut documents = validate_html_content(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <title>foo</title>
+                                </head>
+                                <body>
+                                    <svg>
+                                        <desc>
+                                            <a href="https://foo.com/bar"><foo-bar></foo-bar></a>
+                                        </desc>
+                                    </svg>
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <title>bar</title>
+                                </head>
+                                <body></body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(3, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_element_with_unconstrained_content() {
+        let mut documents = validate_html_content(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    build_stub_response(
+                        "https://foo.com",
+                        StatusCode::OK,
+                        HeaderMap::from_iter([(
+                            HeaderName::from_static("content-type"),
+                            HeaderValue::from_static("text/html"),
+                        )]),
+                        indoc! {r#"
+                            <html>
+                                <head>
+                                    <title>foo</title>
+                                </head>
+                                <body>
+                                    <svg><desc foo="bar"><foo-bar></foo-bar></desc></svg>
+                                </body>
+                            </html>
+                        "#}
+                        .as_bytes()
+                        .to_vec(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            "https://foo.com",
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_errors(&mut documents).await,
+            ["invalid attributes: foo (not allowed)".into()].into()
         );
     }
 
@@ -3216,6 +3342,155 @@ mod tests {
                                 r#"
                                 <svg xmlns="http://www.w3.org/2000/svg">
                                     <a href="https://foo.com/bar"><rect /></a>
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/bar",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(3, 0), Metrics::new(1, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_descendants_of_element_with_unconstrained_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <metadata>
+                                        <rdf:RDF
+                                            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                                            xmlns:cc="http://creativecommons.org/ns#"
+                                            xmlns:dc="http://purl.org/dc/elements/1.1/">
+                                            <cc:Work rdf:about="">
+                                                <dc:format>image/svg+xml</dc:format>
+                                            </cc:Work>
+                                        </rdf:RDF>
+                                    </metadata>
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_metrics(&mut documents).await,
+                (Metrics::new(2, 0), Metrics::new(0, 0))
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_element_with_unconstrained_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <desc foo="bar"><foo-bar/></desc>
+                                </svg>
+                                "#
+                            )
+                            .as_bytes()
+                            .to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                "https://foo.com",
+            )
+            .await
+            .unwrap();
+
+            assert_eq!(
+                collect_errors(&mut documents).await,
+                ["invalid attributes: foo (not allowed)".into()].into()
+            );
+        }
+
+        #[tokio::test]
+        async fn validate_link_in_element_with_unconstrained_content() {
+            let mut documents = validate_svg_content(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("image/svg+xml"),
+                            )]),
+                            indoc!(
+                                r#"
+                                <svg xmlns="http://www.w3.org/2000/svg">
+                                    <desc>
+                                        <a data-foo="bar" href="https://foo.com/bar"><rect /></a>
+                                    </desc>
                                 </svg>
                                 "#
                             )
