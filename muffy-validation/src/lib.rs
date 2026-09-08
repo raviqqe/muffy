@@ -63,6 +63,23 @@ mod tests {
         );
     }
 
+    #[test]
+    fn detect_elements_with_unconstrained_content() {
+        for name in ["desc", "rdf:RDF", "script", "style"] {
+            assert!(is_unconstrained_html_element(name), "{name}");
+        }
+    }
+
+    #[test]
+    fn detect_elements_with_constrained_content() {
+        for name in [
+            "canvas", "div", "iframe", "metadata", "noscript", "object", "svg", "template",
+            "title", "unknown",
+        ] {
+            assert!(!is_unconstrained_html_element(name), "{name}");
+        }
+    }
+
     mod div {
         use super::*;
 
