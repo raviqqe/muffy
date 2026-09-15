@@ -1,20 +1,21 @@
-use super::{
-    Document, Element, Node,
-    namespace::{qualify_attribute_name, qualify_element_name},
+mod tree;
+mod tree_element;
+mod tree_node;
+mod tree_node_data;
+
+use self::{
+    tree::{DOCUMENT_HANDLE, Tree},
+    tree_element::TreeElement,
+    tree_node_data::TreeNodeData,
 };
-use alloc::{borrow::Cow, sync::Arc};
-use core::{
-    cell::{Ref, RefCell},
-    mem,
-};
+use super::Document;
+use alloc::borrow::Cow;
+use core::cell::{Ref, RefCell};
 use markup5ever::{
     Attribute, QualName,
     interface::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
-    ns,
     tendril::StrTendril,
 };
-
-const DOCUMENT_HANDLE: usize = 0;
 
 /// A tree sink building a document.
 #[derive(Default)]
@@ -89,7 +90,7 @@ impl TreeSink for DocumentSink {
     ) {
         let mut tree = self.tree.borrow_mut();
 
-        if tree.nodes[*element].parent.is_some() {
+        if tree.parent(*element).is_some() {
             tree.insert_before(*element, child);
         } else {
             tree.append(*previous_element, child);
@@ -145,14 +146,7 @@ impl TreeSink for DocumentSink {
 
     // spell-checker: disable-next-line
     fn reparent_children(&self, node: &usize, new_parent: &usize) {
-        let mut tree = self.tree.borrow_mut();
-        let children = mem::take(&mut tree.nodes[*node].children);
-
-        for &child in &children {
-            tree.nodes[child].parent = Some(*new_parent);
-        }
-
-        tree.nodes[*new_parent].children.extend(children);
+        self.tree.borrow_mut().move_children(*node, *new_parent);
     }
 
     fn is_mathml_annotation_xml_integration_point(&self, handle: &usize) -> bool {
@@ -161,162 +155,4 @@ impl TreeSink for DocumentSink {
             .element(*handle)
             .mathml_annotation_xml_integration_point
     }
-}
-
-struct Tree {
-    nodes: Vec<TreeNode>,
-}
-
-impl Tree {
-    fn create(&mut self, data: TreeNodeData) -> usize {
-        self.nodes.push(TreeNode::new(data));
-        self.nodes.len() - 1
-    }
-
-    fn element(&self, handle: usize) -> &TreeElement {
-        match &self.nodes[handle].data {
-            TreeNodeData::Element(element) => element,
-            _ => panic!("element expected"),
-        }
-    }
-
-    fn element_mut(&mut self, handle: usize) -> &mut TreeElement {
-        match &mut self.nodes[handle].data {
-            TreeNodeData::Element(element) => element,
-            _ => panic!("element expected"),
-        }
-    }
-
-    fn append(&mut self, parent: usize, child: NodeOrText<usize>) {
-        self.insert(parent, self.nodes[parent].children.len(), child);
-    }
-
-    fn insert_before(&mut self, sibling: usize, child: NodeOrText<usize>) {
-        if let NodeOrText::AppendNode(node) = &child {
-            self.detach(*node);
-        }
-
-        let parent = self.nodes[sibling].parent.expect("parent node");
-
-        self.insert(
-            parent,
-            self.nodes[parent]
-                .children
-                .iter()
-                .position(|&node| node == sibling)
-                .expect("sibling node"),
-            child,
-        );
-    }
-
-    fn insert(&mut self, parent: usize, index: usize, child: NodeOrText<usize>) {
-        let child = match child {
-            NodeOrText::AppendNode(node) => node,
-            NodeOrText::AppendText(text) => {
-                if let Some(previous) = index
-                    .checked_sub(1)
-                    .map(|index| self.nodes[parent].children[index])
-                    && let TreeNodeData::Text(previous) = &mut self.nodes[previous].data
-                {
-                    previous.push_tendril(&text);
-                    return;
-                }
-
-                self.create(TreeNodeData::Text(text))
-            }
-        };
-
-        self.nodes[child].parent = Some(parent);
-        self.nodes[parent].children.insert(index, child);
-    }
-
-    fn detach(&mut self, handle: usize) {
-        if let Some(parent) = self.nodes[handle].parent.take() {
-            self.nodes[parent].children.retain(|&child| child != handle);
-        }
-    }
-
-    fn build_document(&self) -> Document {
-        Document::new(self.build_nodes(&self.nodes[DOCUMENT_HANDLE].children))
-    }
-
-    fn build_nodes(&self, handles: &[usize]) -> Vec<Arc<Node>> {
-        handles
-            .iter()
-            .flat_map(|&handle| self.build_node(handle))
-            .map(Arc::new)
-            .collect()
-    }
-
-    fn build_node(&self, handle: usize) -> Option<Node> {
-        let node = &self.nodes[handle];
-
-        match &node.data {
-            TreeNodeData::Element(element) => Some(Node::Element(
-                Element::new(
-                    qualify_element_name(&element.name),
-                    element
-                        .attributes
-                        .iter()
-                        // Namespace declarations on foreign elements are not
-                        // semantic attributes.
-                        .filter(|attribute| attribute.name.ns != ns!(xmlns))
-                        .map(|attribute| {
-                            (
-                                qualify_attribute_name(&attribute.name),
-                                attribute.value.to_string(),
-                            )
-                        })
-                        .collect(),
-                    self.build_nodes(&node.children),
-                )
-                .set_namespace((!element.name.ns.is_empty()).then(|| element.name.ns.to_string())),
-            )),
-            TreeNodeData::Text(text) => Some(Node::Text(text.to_string())),
-            TreeNodeData::Comment
-            | TreeNodeData::Doctype
-            | TreeNodeData::Document
-            | TreeNodeData::ProcessingInstruction => None,
-        }
-    }
-}
-
-impl Default for Tree {
-    fn default() -> Self {
-        Self {
-            nodes: vec![TreeNode::new(TreeNodeData::Document)],
-        }
-    }
-}
-
-struct TreeNode {
-    data: TreeNodeData,
-    parent: Option<usize>,
-    children: Vec<usize>,
-}
-
-impl TreeNode {
-    const fn new(data: TreeNodeData) -> Self {
-        Self {
-            data,
-            parent: None,
-            children: vec![],
-        }
-    }
-}
-
-enum TreeNodeData {
-    Comment,
-    Doctype,
-    Document,
-    Element(TreeElement),
-    ProcessingInstruction,
-    Text(StrTendril),
-}
-
-struct TreeElement {
-    name: QualName,
-    attributes: Vec<Attribute>,
-    template_contents: Option<usize>,
-    mathml_annotation_xml_integration_point: bool,
 }
