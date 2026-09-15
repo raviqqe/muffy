@@ -143,6 +143,7 @@ impl TreeSink for DocumentSink {
         self.tree.borrow_mut().detach(*target);
     }
 
+    // spell-checker: disable-next-line
     fn reparent_children(&self, node: &usize, new_parent: &usize) {
         let mut tree = self.tree.borrow_mut();
         let children = mem::take(&mut tree.nodes[*node].children);

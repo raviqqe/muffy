@@ -276,7 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_misnested_formatting_element() {
+    fn split_formatting_element_across_paragraph() {
         assert_eq!(
             parse("<b>foo<p>bar</b>baz</p>").unwrap(),
             Document::new(vec![element(
