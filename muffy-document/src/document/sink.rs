@@ -1,39 +1,67 @@
-mod tree;
 mod tree_element;
 mod tree_node;
 mod tree_node_data;
 
-use self::{
-    tree::{DOCUMENT_HANDLE, Tree},
-    tree_element::TreeElement,
-    tree_node_data::TreeNodeData,
-};
+use self::{tree_element::TreeElement, tree_node::TreeNode, tree_node_data::TreeNodeData};
 use super::Document;
 use alloc::borrow::Cow;
-use core::cell::{Ref, RefCell};
+use core::{cell::RefCell, ptr};
 use markup5ever::{
     Attribute, QualName,
     interface::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
     tendril::StrTendril,
 };
+use typed_arena::Arena;
 
-#[derive(Default)]
-pub(crate) struct DocumentSink {
-    tree: RefCell<Tree>,
+pub(crate) struct DocumentSink<'a> {
+    arena: &'a Arena<TreeNode<'a>>,
+    document: &'a TreeNode<'a>,
     errors: RefCell<Vec<Cow<'static, str>>>,
 }
 
-impl TreeSink for DocumentSink {
-    type Handle = usize;
+impl<'a> DocumentSink<'a> {
+    pub fn new(arena: &'a Arena<TreeNode<'a>>) -> Self {
+        Self {
+            arena,
+            document: arena.alloc(TreeNode::new(TreeNodeData::Document)),
+            errors: Default::default(),
+        }
+    }
+
+    fn create(&self, data: TreeNodeData<'a>) -> &'a TreeNode<'a> {
+        self.arena.alloc(TreeNode::new(data))
+    }
+
+    fn insert(
+        &self,
+        previous: Option<&'a TreeNode<'a>>,
+        child: NodeOrText<&'a TreeNode<'a>>,
+        attach: impl FnOnce(&'a TreeNode<'a>),
+    ) {
+        match child {
+            NodeOrText::AppendNode(node) => attach(node),
+            NodeOrText::AppendText(text) => {
+                if let Some(TreeNodeData::Text(previous)) = previous.map(|node| &node.data) {
+                    previous.borrow_mut().push_tendril(&text);
+                } else {
+                    attach(self.create(TreeNodeData::Text(text.into())));
+                }
+            }
+        }
+    }
+}
+
+impl<'a> TreeSink for DocumentSink<'a> {
+    type Handle = &'a TreeNode<'a>;
     type Output = (Document, Vec<Cow<'static, str>>);
-    type ElemName<'a>
-        = Ref<'a, QualName>
+    type ElemName<'b>
+        = &'b QualName
     where
-        Self: 'a;
+        Self: 'b;
 
     fn finish(self) -> Self::Output {
         (
-            self.tree.into_inner().build_document(),
+            Document::new(self.document.build_children()),
             self.errors.into_inner(),
         )
     }
@@ -42,12 +70,12 @@ impl TreeSink for DocumentSink {
         self.errors.borrow_mut().push(message);
     }
 
-    fn get_document(&self) -> usize {
-        DOCUMENT_HANDLE
+    fn get_document(&self) -> Self::Handle {
+        self.document
     }
 
-    fn elem_name<'a>(&'a self, target: &'a usize) -> Ref<'a, QualName> {
-        Ref::map(self.tree.borrow(), |tree| &tree.element(*target).name)
+    fn elem_name(&self, target: &Self::Handle) -> Self::ElemName<'_> {
+        &target.element().name
     }
 
     fn create_element(
@@ -55,44 +83,37 @@ impl TreeSink for DocumentSink {
         name: QualName,
         attributes: Vec<Attribute>,
         flags: ElementFlags,
-    ) -> usize {
-        let mut tree = self.tree.borrow_mut();
-        let template_contents = flags.template.then(|| tree.create(TreeNodeData::Document));
-
-        tree.create(TreeNodeData::Element(TreeElement {
+    ) -> Self::Handle {
+        self.create(TreeNodeData::Element(TreeElement {
             name,
-            attributes,
-            template_contents,
+            attributes: attributes.into(),
+            template_contents: flags.template.then(|| self.create(TreeNodeData::Document)),
             mathml_annotation_xml_integration_point: flags.mathml_annotation_xml_integration_point,
         }))
     }
 
-    fn create_comment(&self, _text: StrTendril) -> usize {
-        self.tree.borrow_mut().create(TreeNodeData::Comment)
+    fn create_comment(&self, _text: StrTendril) -> Self::Handle {
+        self.create(TreeNodeData::Comment)
     }
 
-    fn create_pi(&self, _target: StrTendril, _data: StrTendril) -> usize {
-        self.tree
-            .borrow_mut()
-            .create(TreeNodeData::ProcessingInstruction)
+    fn create_pi(&self, _target: StrTendril, _data: StrTendril) -> Self::Handle {
+        self.create(TreeNodeData::ProcessingInstruction)
     }
 
-    fn append(&self, parent: &usize, child: NodeOrText<usize>) {
-        self.tree.borrow_mut().append(*parent, child);
+    fn append(&self, parent: &Self::Handle, child: NodeOrText<Self::Handle>) {
+        self.insert(parent.last_child(), child, |node| parent.append(node));
     }
 
     fn append_based_on_parent_node(
         &self,
-        element: &usize,
-        previous_element: &usize,
-        child: NodeOrText<usize>,
+        element: &Self::Handle,
+        previous_element: &Self::Handle,
+        child: NodeOrText<Self::Handle>,
     ) {
-        let mut tree = self.tree.borrow_mut();
-
-        if tree.parent(*element).is_some() {
-            tree.insert_before(*element, child);
+        if element.parent().is_some() {
+            self.append_before_sibling(element, child);
         } else {
-            tree.append(*previous_element, child);
+            self.append(previous_element, child);
         }
     }
 
@@ -102,56 +123,49 @@ impl TreeSink for DocumentSink {
         _public_id: StrTendril,
         _system_id: StrTendril,
     ) {
-        let mut tree = self.tree.borrow_mut();
-        let doctype = tree.create(TreeNodeData::Doctype);
-
-        tree.append(DOCUMENT_HANDLE, NodeOrText::AppendNode(doctype));
+        self.document.append(self.create(TreeNodeData::Doctype));
     }
 
-    fn get_template_contents(&self, target: &usize) -> usize {
-        self.tree
-            .borrow()
-            .element(*target)
+    fn get_template_contents(&self, target: &Self::Handle) -> Self::Handle {
+        target
+            .element()
             .template_contents
             .expect("template contents")
     }
 
-    fn same_node(&self, one: &usize, other: &usize) -> bool {
-        one == other
+    fn same_node(&self, one: &Self::Handle, other: &Self::Handle) -> bool {
+        ptr::eq(*one, *other)
     }
 
     fn set_quirks_mode(&self, _mode: QuirksMode) {}
 
-    fn append_before_sibling(&self, sibling: &usize, child: NodeOrText<usize>) {
-        self.tree.borrow_mut().insert_before(*sibling, child);
+    fn append_before_sibling(&self, sibling: &Self::Handle, child: NodeOrText<Self::Handle>) {
+        self.insert(sibling.previous_sibling(), child, |node| {
+            node.insert_before(sibling)
+        });
     }
 
-    fn add_attrs_if_missing(&self, target: &usize, mut attributes: Vec<Attribute>) {
-        let mut tree = self.tree.borrow_mut();
-        let element = tree.element_mut(*target);
+    fn add_attrs_if_missing(&self, target: &Self::Handle, mut attributes: Vec<Attribute>) {
+        let mut existing_attributes = target.element().attributes.borrow_mut();
 
         attributes.retain(|attribute| {
-            element
-                .attributes
+            existing_attributes
                 .iter()
                 .all(|other| other.name != attribute.name)
         });
-        element.attributes.extend(attributes);
+        existing_attributes.extend(attributes);
     }
 
-    fn remove_from_parent(&self, target: &usize) {
-        self.tree.borrow_mut().detach(*target);
+    fn remove_from_parent(&self, target: &Self::Handle) {
+        target.detach();
     }
 
     // spell-checker: disable-next-line
-    fn reparent_children(&self, node: &usize, new_parent: &usize) {
-        self.tree.borrow_mut().move_children(*node, *new_parent);
+    fn reparent_children(&self, node: &Self::Handle, new_parent: &Self::Handle) {
+        node.move_children(new_parent);
     }
 
-    fn is_mathml_annotation_xml_integration_point(&self, handle: &usize) -> bool {
-        self.tree
-            .borrow()
-            .element(*handle)
-            .mathml_annotation_xml_integration_point
+    fn is_mathml_annotation_xml_integration_point(&self, handle: &Self::Handle) -> bool {
+        handle.element().mathml_annotation_xml_integration_point
     }
 }

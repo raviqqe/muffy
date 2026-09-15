@@ -11,7 +11,7 @@ pub fn parse(source: &str) -> Result<Document, io::Error> {
 
 /// Parses an HTML document from bytes.
 pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
-    parse_document(DocumentSink::default(), Default::default())
+    parse_document(DocumentSink::new(&Default::default()), Default::default())
         .from_utf8()
         .read_from(&mut source)
         .map(|(document, _)| document)
