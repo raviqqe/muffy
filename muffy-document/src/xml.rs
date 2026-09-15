@@ -1,7 +1,6 @@
 //! XML documents.
 
-use crate::document::Document;
-use markup5ever_rcdom::RcDom;
+use crate::document::{Document, DocumentSink};
 use std::io;
 use xml5ever::{driver::parse_document, tendril::TendrilSink};
 
@@ -12,18 +11,10 @@ pub fn parse(source: &str) -> Result<Document, io::Error> {
 
 /// Parses an XML document from bytes.
 pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
-    parse_document(RcDom::default(), Default::default())
+    parse_document(DocumentSink::default(), Default::default())
         .from_utf8()
         .read_from(&mut source)
-        .map(|dom| {
-            Document::from_markup5ever(&dom.document).set_errors(
-                dom.errors
-                    .borrow()
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect(),
-            )
-        })
+        .map(|(document, errors)| document.set_errors(errors.into_iter().map(Into::into).collect()))
 }
 
 #[cfg(test)]
@@ -260,9 +251,46 @@ mod tests {
     }
 
     #[test]
+    fn merge_character_data_into_text() {
+        assert_eq!(
+            parse("<svg>foo<![CDATA[bar]]></svg>").unwrap(),
+            Document::new(vec![element(
+                None,
+                "svg",
+                vec![],
+                vec![Arc::new(Node::Text("foobar".into()))],
+            )])
+        );
+    }
+
+    #[test]
+    fn keep_texts_separated_by_comment() {
+        assert_eq!(
+            parse("<svg>foo<!-- comment -->bar</svg>").unwrap(),
+            Document::new(vec![element(
+                None,
+                "svg",
+                vec![],
+                vec![
+                    Arc::new(Node::Text("foo".into())),
+                    Arc::new(Node::Text("bar".into())),
+                ],
+            )])
+        );
+    }
+
+    #[test]
     fn ignore_processing_instructions() {
         assert_eq!(
             parse(r#"<?xml version="1.0"?><svg/>"#).unwrap(),
+            Document::new(vec![element(None, "svg", vec![], vec![])])
+        );
+    }
+
+    #[test]
+    fn ignore_doctype() {
+        assert_eq!(
+            parse("<!DOCTYPE svg><svg/>").unwrap(),
             Document::new(vec![element(None, "svg", vec![], vec![])])
         );
     }

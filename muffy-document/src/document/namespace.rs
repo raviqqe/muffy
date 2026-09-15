@@ -1,4 +1,4 @@
-use html5ever::QualName;
+use markup5ever::QualName;
 
 // TODO Is it valid to handle all markup languages with a single driver schema?
 const DEFAULT_NAMESPACES: &[&str] = &[
