@@ -3,11 +3,12 @@
 mod element;
 mod namespace;
 mod node;
+mod sink;
 
+pub(crate) use self::sink::DocumentSink;
 pub use self::{element::*, namespace::*, node::*};
 use alloc::sync::Arc;
 use core::ops::Deref;
-use markup5ever_rcdom::NodeData;
 
 /// A document.
 #[derive(Debug, Eq, PartialEq)]
@@ -59,18 +60,5 @@ impl Document {
             Node::Element(element) => element.children().find_map(|node| Self::find_base(node)),
             _ => None,
         }
-    }
-
-    pub(crate) fn from_markup5ever(node: &markup5ever_rcdom::Node) -> Self {
-        debug_assert!(matches!(node.data, NodeData::Document));
-
-        Self::new(
-            node.children
-                .borrow()
-                .iter()
-                .flat_map(|node| Node::from_markup5ever(node))
-                .map(Arc::new)
-                .collect(),
-        )
     }
 }
