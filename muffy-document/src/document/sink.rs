@@ -4,7 +4,7 @@ mod tree_node_data;
 
 use self::{tree_element::TreeElement, tree_node::TreeNode, tree_node_data::TreeNodeData};
 use super::Document;
-use alloc::borrow::Cow;
+use alloc::{borrow::Cow, collections::BTreeSet};
 use core::{cell::RefCell, ptr};
 use markup5ever::{
     Attribute, QualName,
@@ -16,7 +16,7 @@ use typed_arena::Arena;
 pub(crate) struct DocumentSink<'a> {
     arena: &'a Arena<TreeNode<'a>>,
     document: &'a TreeNode<'a>,
-    errors: RefCell<Vec<Cow<'static, str>>>,
+    errors: Option<RefCell<BTreeSet<Cow<'static, str>>>>,
 }
 
 impl<'a> DocumentSink<'a> {
@@ -24,8 +24,13 @@ impl<'a> DocumentSink<'a> {
         Self {
             arena,
             document: arena.alloc(TreeNode::new(TreeNodeData::Document)),
-            errors: Default::default(),
+            errors: None,
         }
+    }
+
+    pub fn set_errors_collected(mut self, collected: bool) -> Self {
+        self.errors = collected.then(Default::default);
+        self
     }
 
     fn create(&self, data: TreeNodeData<'a>) -> &'a TreeNode<'a> {
@@ -53,21 +58,24 @@ impl<'a> DocumentSink<'a> {
 
 impl<'a> TreeSink for DocumentSink<'a> {
     type Handle = &'a TreeNode<'a>;
-    type Output = (Document, Vec<Cow<'static, str>>);
+    type Output = Document;
     type ElemName<'b>
         = &'b QualName
     where
         Self: 'b;
 
     fn finish(self) -> Self::Output {
-        (
-            Document::new(self.document.build_children()),
-            self.errors.into_inner(),
+        Document::new(self.document.build_children()).set_errors(
+            self.errors
+                .map(|errors| errors.into_inner().into_iter().map(Into::into).collect())
+                .unwrap_or_default(),
         )
     }
 
     fn parse_error(&self, message: Cow<'static, str>) {
-        self.errors.borrow_mut().push(message);
+        if let Some(errors) = &self.errors {
+            errors.borrow_mut().insert(message);
+        }
     }
 
     fn get_document(&self) -> Self::Handle {
@@ -167,5 +175,49 @@ impl<'a> TreeSink for DocumentSink<'a> {
 
     fn is_mathml_annotation_xml_integration_point(&self, handle: &Self::Handle) -> bool {
         handle.element().mathml_annotation_xml_integration_point
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn ignore_errors() {
+        let arena = Arena::new();
+        let sink = DocumentSink::new(&arena);
+
+        sink.parse_error("foo".into());
+
+        assert_eq!(sink.finish(), Document::new(vec![]));
+    }
+
+    #[test]
+    fn collect_errors() {
+        let arena = Arena::new();
+        let sink = DocumentSink::new(&arena).set_errors_collected(true);
+
+        sink.parse_error("foo".into());
+        sink.parse_error("bar".into());
+
+        assert_eq!(
+            sink.finish(),
+            Document::new(vec![]).set_errors(vec!["bar".into(), "foo".into()])
+        );
+    }
+
+    #[test]
+    fn deduplicate_errors() {
+        let arena = Arena::new();
+        let sink = DocumentSink::new(&arena).set_errors_collected(true);
+
+        sink.parse_error("foo".into());
+        sink.parse_error(String::from("foo").into());
+
+        assert_eq!(
+            sink.finish(),
+            Document::new(vec![]).set_errors(vec!["foo".into()])
+        );
     }
 }
