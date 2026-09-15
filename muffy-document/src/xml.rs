@@ -11,10 +11,12 @@ pub fn parse(source: &str) -> Result<Document, io::Error> {
 
 /// Parses an XML document from bytes.
 pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
-    parse_document(DocumentSink::new(&Default::default()), Default::default())
-        .from_utf8()
-        .read_from(&mut source)
-        .map(|(document, errors)| document.set_errors(errors.into_iter().map(Into::into).collect()))
+    parse_document(
+        DocumentSink::new(&Default::default()).set_errors_collected(true),
+        Default::default(),
+    )
+    .from_utf8()
+    .read_from(&mut source)
 }
 
 #[cfg(test)]
@@ -92,6 +94,17 @@ mod tests {
         assert_eq!(document.children().count(), 1);
         assert_eq!(
             document.errors().collect::<Vec<_>>(),
+            vec!["Unexpected element in end phase"]
+        );
+    }
+
+    #[test]
+    fn deduplicate_errors() {
+        assert_eq!(
+            parse("<svg/><svg/><svg/>")
+                .unwrap()
+                .errors()
+                .collect::<Vec<_>>(),
             vec!["Unexpected element in end phase"]
         );
     }

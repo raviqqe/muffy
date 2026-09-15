@@ -14,7 +14,6 @@ pub fn parse_bytes(mut source: &[u8]) -> Result<Document, io::Error> {
     parse_document(DocumentSink::new(&Default::default()), Default::default())
         .from_utf8()
         .read_from(&mut source)
-        .map(|(document, _)| document)
 }
 
 #[cfg(test)]
