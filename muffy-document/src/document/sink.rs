@@ -17,7 +17,6 @@ use markup5ever::{
     tendril::StrTendril,
 };
 
-/// A document sink.
 #[derive(Default)]
 pub(crate) struct DocumentSink {
     tree: RefCell<Tree>,
