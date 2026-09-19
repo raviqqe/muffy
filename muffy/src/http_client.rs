@@ -614,6 +614,160 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn redirect_from_robots_txt_to_page() {
+        let page_response = BareResponse {
+            url: Url::parse("https://foo.com/page").unwrap(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+
+        let client = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::MOVED_PERMANENTLY,
+                        [(
+                            HeaderName::from_static("location"),
+                            HeaderValue::from_static("https://foo.com/page"),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        vec![],
+                    ),
+                    (page_response.url.clone().into(), Ok(page_response.clone())),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(10),
+            client.get(
+                &Request::new(page_response.url.clone(), Default::default()).set_max_redirects(1),
+            ),
+        )
+        .await
+        .expect("following a redirect from a robots.txt URL to a requested page must not deadlock");
+
+        assert_eq!(
+            result.unwrap(),
+            Some(Response::from_bare(page_response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn redirect_in_cycle() {
+        let client = HttpClient::new(
+            StubHttpClient::new(
+                [
+                    build_stub_response(
+                        "https://foo.com/robots.txt",
+                        StatusCode::OK,
+                        Default::default(),
+                        vec![],
+                    ),
+                    build_stub_response(
+                        "https://foo.com/foo",
+                        StatusCode::MOVED_PERMANENTLY,
+                        [(
+                            HeaderName::from_static("location"),
+                            HeaderValue::from_static("https://foo.com/bar"),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        vec![],
+                    ),
+                    build_stub_response(
+                        "https://foo.com/bar",
+                        StatusCode::MOVED_PERMANENTLY,
+                        [(
+                            HeaderName::from_static("location"),
+                            HeaderValue::from_static("https://foo.com/foo"),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        vec![],
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+            ),
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        assert_eq!(
+            tokio::time::timeout(
+                Duration::from_secs(10),
+                client.get(
+                    &Request::new(
+                        Url::parse("https://foo.com/foo").unwrap(),
+                        Default::default()
+                    )
+                    .set_max_redirects(8),
+                ),
+            )
+            .await
+            .expect("following a redirect cycle must not deadlock"),
+            Err(HttpClientError::TooManyRedirects)
+        );
+    }
+
+    #[tokio::test]
+    async fn redirect_to_page_disallowed_by_robots_txt() {
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        build_stub_response(
+                            "https://foo.com/page",
+                            StatusCode::MOVED_PERMANENTLY,
+                            [(
+                                HeaderName::from_static("location"),
+                                HeaderValue::from_static("https://bar.com/page"),
+                            )]
+                            .into_iter()
+                            .collect(),
+                            vec![],
+                        ),
+                        build_stub_response(
+                            "https://bar.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            b"User-agent: *\nDisallow: /page\n".to_vec(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(MemoryCache::new(CACHE_CAPACITY)),
+            )
+            .get(
+                &Request::new(
+                    Url::parse("https://foo.com/page").unwrap(),
+                    Default::default()
+                )
+                .set_max_redirects(1)
+            )
+            .await
+            .unwrap(),
+            None
+        );
+    }
+
     #[derive(Debug)]
     struct RecordingHttpClient {
         responses: HashMap<String, BareResponse>,
@@ -903,6 +1057,87 @@ mod tests {
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
+    async fn update_redirected_cache() {
+        let foo_response = BareResponse {
+            url: Url::parse("https://foo.com").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://bar.com"),
+            )]
+            .into_iter()
+            .collect(),
+            body: vec![],
+        };
+        let bar_response = BareResponse {
+            url: Url::parse("https://bar.com").unwrap(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let cache = Arc::new(MemoryCache::new(CACHE_CAPACITY));
+
+        cache
+            .set(
+                foo_response.url.as_str().into(),
+                Ok(Arc::new(
+                    Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..bar_response.clone()
+                        },
+                        Duration::default(),
+                    )
+                    .into(),
+                )),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            foo_response.url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        build_stub_response(
+                            bar_response.url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (foo_response.url.clone().into(), Ok(foo_response.clone())),
+                        (bar_response.url.clone().into(), Ok(bar_response.clone())),
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache.clone()),
+            )
+            .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
+            .await
+            .unwrap(),
+            Some(Response::from_bare(bar_response.clone(), Duration::from_millis(0)).into())
+        );
+        assert_eq!(
+            cache
+                .get(foo_response.url.as_str())
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+                .response()
+                .clone(),
+            Response::from_bare(bar_response, Duration::from_millis(0)).into()
         );
     }
 
