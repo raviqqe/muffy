@@ -7,7 +7,7 @@ use http::{
 };
 use url::Url;
 
-pub type RequestResolver = dyn Fn(&Url) -> Request + Send + Sync;
+pub type RequestResolver<'a> = dyn Fn(&Url) -> Request + Send + Sync + 'a;
 
 #[derive(Clone, Debug)]
 pub struct Request {

@@ -102,7 +102,7 @@ impl HttpClient {
     pub(crate) async fn get(
         &self,
         url: &Url,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
     ) -> Result<Option<Arc<Response>>, HttpClientError> {
         match self.get_inner(&resolve(url), resolve, true).await {
             Ok(response) => Ok(Some(response)),
@@ -114,7 +114,7 @@ impl HttpClient {
     async fn get_inner(
         &self,
         request: &Request,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
         mut robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut request = request.clone();
@@ -144,7 +144,7 @@ impl HttpClient {
     async fn get_cached_locally(
         &self,
         request: &Request,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         self.local_cache
@@ -158,7 +158,7 @@ impl HttpClient {
     async fn get_cached_globally(
         &self,
         request: &Request,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || async {
@@ -217,7 +217,7 @@ impl HttpClient {
     async fn get_filtered(
         &self,
         request: &Request,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<CachedResponse>, HttpClientError> {
         if robots
@@ -294,7 +294,7 @@ impl HttpClient {
     async fn get_robot(
         &self,
         request: &Request,
-        resolve: &RequestResolver,
+        resolve: &RequestResolver<'_>,
     ) -> Result<Option<RobotList>, HttpClientError> {
         let response = self
             .get_inner(
@@ -327,7 +327,10 @@ mod tests {
         sync::atomic::{AtomicUsize, Ordering},
         time::Duration,
     };
-    use http::{HeaderName, HeaderValue, StatusCode, header::AUTHORIZATION};
+    use http::{
+        HeaderName, HeaderValue, StatusCode,
+        header::{ACCEPT, AUTHORIZATION},
+    };
     use pretty_assertions::assert_eq;
     use std::{collections::HashSet, sync::Mutex};
     use tokio::spawn;
@@ -737,6 +740,138 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn resolve_headers_for_redirect() {
+        let requests = Arc::new(Mutex::new(vec![]));
+        let client = HttpClient::new(
+            RecordingHttpClient {
+                responses: [
+                    stub_response("https://foo.com/robots.txt", None),
+                    stub_response("https://foo.com/page", Some("https://bar.com/page")),
+                    stub_response("https://bar.com/robots.txt", None),
+                    stub_response("https://bar.com/page", None),
+                ]
+                .into_iter()
+                .collect(),
+                requests: requests.clone(),
+            },
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        client
+            .get(&Url::parse("https://foo.com/page").unwrap(), &|url| {
+                Request::new(
+                    url.clone(),
+                    [(
+                        ACCEPT,
+                        HeaderValue::from_str(url.host_str().unwrap()).unwrap(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                )
+                .set_max_redirects(1)
+            })
+            .await
+            .unwrap();
+
+        let requests = requests.lock().unwrap();
+
+        assert_eq!(
+            requests
+                .iter()
+                .map(|request| (
+                    request.url.as_str(),
+                    request.headers[ACCEPT].to_str().unwrap()
+                ))
+                .collect::<Vec<_>>(),
+            [
+                ("https://foo.com/robots.txt", "foo.com"),
+                ("https://foo.com/page", "foo.com"),
+                ("https://bar.com/robots.txt", "bar.com"),
+                ("https://bar.com/page", "bar.com"),
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn resolve_max_age_for_redirect() {
+        let foo_response = BareResponse {
+            url: Url::parse("https://foo.com").unwrap(),
+            status: StatusCode::MOVED_PERMANENTLY,
+            headers: [(
+                HeaderName::from_static("location"),
+                HeaderValue::from_static("https://bar.com"),
+            )]
+            .into_iter()
+            .collect(),
+            body: vec![],
+        };
+        let bar_response = BareResponse {
+            url: Url::parse("https://bar.com").unwrap(),
+            status: StatusCode::OK,
+            headers: Default::default(),
+            body: vec![],
+        };
+        let cache = MemoryCache::new(CACHE_CAPACITY);
+
+        cache
+            .set(
+                bar_response.url.as_str().into(),
+                Ok(Arc::new(
+                    Response::from_bare(
+                        BareResponse {
+                            body: b"stale".to_vec(),
+                            ..bar_response.clone()
+                        },
+                        Duration::default(),
+                    )
+                    .into(),
+                )),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            foo_response.url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        build_stub_response(
+                            bar_response.url.join("/robots.txt").unwrap().as_str(),
+                            StatusCode::OK,
+                            Default::default(),
+                            vec![],
+                        ),
+                        (foo_response.url.clone().into(), Ok(foo_response.clone())),
+                        (bar_response.url.clone().into(), Ok(bar_response.clone())),
+                    ]
+                    .into_iter()
+                    .collect()
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+            )
+            .get(&foo_response.url, &|url| {
+                Request::new(url.clone(), Default::default())
+                    .set_max_age(if url.host_str() == Some("foo.com") {
+                        CACHE_MAX_AGE
+                    } else {
+                        Default::default()
+                    })
+                    .set_max_redirects(1)
+            })
+            .await
+            .unwrap(),
+            Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
+        );
+    }
+
+    #[tokio::test]
     async fn get_cache() {
         let url = Url::parse("https://foo.com").unwrap();
         let response = BareResponse {
@@ -1005,7 +1140,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(&request)
+            .get(&url, &|url| request.clone().set_url(url.clone()))
             .await
             .unwrap(),
             Some(Response::from_bare(fresh_response, Duration::default()).into())
@@ -1069,7 +1204,7 @@ mod tests {
                     StubTimer::new(),
                     Box::new(cache.clone()),
                 )
-                .get(&request)
+                .get(&url, &|url| request.clone().set_url(url.clone()))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(cached_response.clone(), Duration::default()).into())

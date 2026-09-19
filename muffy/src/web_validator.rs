@@ -907,8 +907,8 @@ impl WebValidator {
 mod tests {
     use super::*;
     use crate::{
-        Metrics, MokaCache, SchemeConfig,
-        config::{Config, MarkupConfig, SiteConfig},
+        GlobalCache, MemoryCache, Metrics, MokaCache, SchemeConfig,
+        config::{CacheConfig, Config, MarkupConfig, SiteConfig},
         document_parser::DocumentParser,
         http_client::{BareHttpClient, StubHttpClient, build_stub_response},
         timer::StubTimer,
@@ -1842,6 +1842,97 @@ mod tests {
             ),
             "https://foo.com",
         )
+        .await
+        .unwrap();
+
+        assert_eq!(
+            collect_metrics(&mut documents).await,
+            (Metrics::new(2, 0), Metrics::new(1, 0))
+        );
+    }
+
+    #[tokio::test]
+    async fn validate_link_redirected_to_another_site() {
+        let cache = MemoryCache::new(1 << 8);
+
+        cache
+            .set(
+                "https://foo.com/page".into(),
+                Ok(Arc::new(
+                    Response::new(
+                        Url::parse("https://foo.com/page").unwrap(),
+                        StatusCode::NOT_FOUND,
+                        Default::default(),
+                        Default::default(),
+                        Default::default(),
+                    )
+                    .into(),
+                )),
+            )
+            .await
+            .unwrap();
+
+        let mut documents = WebValidator::new(
+            HttpClient::new(
+                StubHttpClient::new(
+                    [
+                        build_stub_response(
+                            "https://foo.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com",
+                            StatusCode::OK,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("content-type"),
+                                HeaderValue::from_static("text/html"),
+                            )]),
+                            r#"<a href="https://bar.com" />"#.as_bytes().into(),
+                        ),
+                        build_stub_response(
+                            "https://bar.com/robots.txt",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://bar.com",
+                            StatusCode::MOVED_PERMANENTLY,
+                            HeaderMap::from_iter([(
+                                HeaderName::from_static("location"),
+                                HeaderValue::from_static("https://foo.com/page"),
+                            )]),
+                            Default::default(),
+                        ),
+                        build_stub_response(
+                            "https://foo.com/page",
+                            StatusCode::OK,
+                            Default::default(),
+                            Default::default(),
+                        ),
+                    ]
+                    .into_iter()
+                    .collect(),
+                ),
+                StubTimer::new(),
+                Box::new(cache),
+            ),
+            DocumentParser::new(MokaCache::new(0)),
+        )
+        .validate(&Config::new(
+            vec!["https://foo.com".into()],
+            SiteConfig::default()
+                .set_cache(CacheConfig::default().set_max_age(Duration::from_hours(1)))
+                .set_max_redirects(1)
+                .into(),
+            [(
+                "foo.com".into(),
+                [("".into(), SiteConfig::default().set_recursive(true).into())].into(),
+            )]
+            .into(),
+        ))
         .await
         .unwrap();
 
