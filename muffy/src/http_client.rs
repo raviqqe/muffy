@@ -17,7 +17,7 @@ use crate::{
     cache::{GlobalCache, LocalCache},
     default_concurrency,
     rate_limiter::RateLimiter,
-    request::Request,
+    request::{Request, RequestResolver},
     response::Response,
     robot_list::RobotList,
     timer::Timer,
@@ -32,6 +32,7 @@ use tokio::{
     sync::Semaphore,
     time::{sleep, timeout},
 };
+use url::Url;
 
 pub(crate) const ROBOTS_PATH: &str = "/robots.txt";
 const INITIAL_CACHE_CAPACITY: usize = 1 << 8;
@@ -100,9 +101,10 @@ impl HttpClient {
 
     pub(crate) async fn get(
         &self,
-        request: &Request,
+        url: &Url,
+        resolve: &RequestResolver,
     ) -> Result<Option<Arc<Response>>, HttpClientError> {
-        match self.get_inner(request, true).await {
+        match self.get_inner(&resolve(url), resolve, true).await {
             Ok(response) => Ok(Some(response)),
             Err(HttpClientError::RobotsTxt) => Ok(None),
             Err(error) => Err(error),
@@ -112,26 +114,28 @@ impl HttpClient {
     async fn get_inner(
         &self,
         request: &Request,
+        resolve: &RequestResolver,
         mut robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let mut request = request.clone();
 
         for _ in 0..request.max_redirects() + 1 {
             robots = robots && request.url().path() != ROBOTS_PATH;
-            let response = self.get_cached_locally(&request, robots).await?;
+            let response = self.get_cached_locally(&request, resolve, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
             }
 
-            let url = request.url().join(str::from_utf8(
-                response
-                    .headers()
-                    .get("location")
-                    .ok_or(HttpClientError::RedirectLocation)?
-                    .as_bytes(),
-            )?)?;
-            request = request.redirect(url);
+            request = request.redirect(resolve(
+                &request.url().join(str::from_utf8(
+                    response
+                        .headers()
+                        .get("location")
+                        .ok_or(HttpClientError::RedirectLocation)?
+                        .as_bytes(),
+                )?)?,
+            ));
         }
 
         Err(HttpClientError::TooManyRedirects)
@@ -140,12 +144,13 @@ impl HttpClient {
     async fn get_cached_locally(
         &self,
         request: &Request,
+        resolve: &RequestResolver,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         self.local_cache
             .get_with(
                 request.url().to_string(),
-                Box::new(self.get_cached_globally(request, robots)),
+                Box::new(self.get_cached_globally(request, resolve, robots)),
             )
             .await?
     }
@@ -153,10 +158,11 @@ impl HttpClient {
     async fn get_cached_globally(
         &self,
         request: &Request,
+        resolve: &RequestResolver,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || async {
-            let result = self.get_filtered(request, robots).await;
+            let result = self.get_filtered(request, resolve, robots).await;
 
             self.global_cache
                 .set(request.url().to_string(), result.clone())
@@ -211,10 +217,11 @@ impl HttpClient {
     async fn get_filtered(
         &self,
         request: &Request,
+        resolve: &RequestResolver,
         robots: bool,
     ) -> Result<Arc<CachedResponse>, HttpClientError> {
         if robots
-            && let Some(robot) = self.get_robot(request).await?
+            && let Some(robot) = self.get_robot(request, resolve).await?
             && !robot.is_allowed(request.url().path())
         {
             Err(HttpClientError::RobotsTxt)
@@ -284,10 +291,15 @@ impl HttpClient {
     }
 
     #[async_recursion]
-    async fn get_robot(&self, request: &Request) -> Result<Option<RobotList>, HttpClientError> {
+    async fn get_robot(
+        &self,
+        request: &Request,
+        resolve: &RequestResolver,
+    ) -> Result<Option<RobotList>, HttpClientError> {
         let response = self
             .get_inner(
                 &request.clone().set_url(request.url().join(ROBOTS_PATH)?),
+                resolve,
                 false,
             )
             .await?;
@@ -360,7 +372,10 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
             )
-            .get(&Request::new(response.url.clone(), Default::default()))
+            .get(&response.url, &|url| Request::new(
+                url.clone(),
+                Default::default()
+            ))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -394,7 +409,10 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
             )
-            .get(&Request::new(response.url.clone(), Default::default()))
+            .get(&response.url, &|url| Request::new(
+                url.clone(),
+                Default::default()
+            ))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -445,7 +463,11 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
             )
-            .get(&Request::new(foo_response.url.clone(), Default::default()).set_max_redirects(1))
+            .get(&foo_response.url, &|url| Request::new(
+                url.clone(),
+                Default::default()
+            )
+            .set_max_redirects(1))
             .await
             .unwrap(),
             Some(Response::from_bare(bar_response, Duration::from_millis(0)).into())
@@ -496,7 +518,10 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
             )
-            .get(&Request::new(foo_response.url.clone(), Default::default()))
+            .get(&foo_response.url, &|url| Request::new(
+                url.clone(),
+                Default::default()
+            ))
             .await,
             Err(HttpClientError::TooManyRedirects)
         );
@@ -546,9 +571,9 @@ mod tests {
 
         let result = tokio::time::timeout(
             Duration::from_secs(10),
-            client.get(
-                &Request::new(page_response.url.clone(), Default::default()).set_max_redirects(1),
-            ),
+            client.get(&page_response.url, &|url| {
+                Request::new(url.clone(), Default::default()).set_max_redirects(1)
+            }),
         )
         .await
         .expect("following a redirect to a robots.txt URL must not deadlock");
@@ -597,9 +622,9 @@ mod tests {
 
         let result = tokio::time::timeout(
             Duration::from_secs(10),
-            client.get(
-                &Request::new(robots_response.url.clone(), Default::default()).set_max_redirects(1),
-            ),
+            client.get(&robots_response.url, &|url| {
+                Request::new(url.clone(), Default::default()).set_max_redirects(1)
+            }),
         )
         .await
         .expect("following a redirect from a robots.txt URL must not deadlock");
@@ -676,15 +701,15 @@ mod tests {
         );
 
         client
-            .get(
-                &Request::new(
-                    Url::parse("https://foo.com/page").unwrap(),
+            .get(&Url::parse("https://foo.com/page").unwrap(), &|url| {
+                Request::new(
+                    url.clone(),
                     [(AUTHORIZATION, HeaderValue::from_static("secret"))]
                         .into_iter()
                         .collect(),
                 )
-                .set_max_redirects(1),
-            )
+                .set_max_redirects(1)
+            })
             .await
             .unwrap();
 
@@ -758,7 +783,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(&Request::new(url, Default::default()).set_max_age(CACHE_MAX_AGE))
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_max_age(CACHE_MAX_AGE))
             .await
             .unwrap(),
             Some(
@@ -821,7 +847,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&url, &|url| Request::new(url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -856,7 +882,7 @@ mod tests {
             StubTimer::new(),
             Box::new(cache.clone()),
         )
-        .get(&Request::new(url.clone(), Default::default()))
+        .get(&url, &|url| Request::new(url.clone(), Default::default()))
         .await
         .unwrap();
 
@@ -906,7 +932,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache.clone()),
             )
-            .get(&Request::new(url.clone(), Default::default()))
+            .get(&url, &|url| Request::new(url.clone(), Default::default()))
             .await
             .is_err()
         );
@@ -921,7 +947,7 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(&Request::new(url, Default::default()))
+            .get(&url, &|url| Request::new(url.clone(), Default::default()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -1094,10 +1120,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache.clone()),
             )
-            .get(
-                &Request::new(url.clone(), Default::default())
-                    .set_stale_while_revalidate(CACHE_MAX_AGE),
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_stale_while_revalidate(CACHE_MAX_AGE),)
             .await
             .unwrap(),
             Some(Response::from_bare(stale_response, Duration::from_millis(0)).into())
@@ -1165,10 +1189,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(
-                &Request::new(url, Default::default())
-                    .set_stale_while_revalidate(Duration::from_nanos(1))
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_stale_while_revalidate(Duration::from_nanos(1)))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -1224,10 +1246,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache),
             )
-            .get(
-                &Request::new(url, Default::default())
-                    .set_stale_while_revalidate(Duration::from_millis(100)),
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_stale_while_revalidate(Duration::from_millis(100)),)
             .await
             .unwrap(),
             Some(Response::from_bare(stale_response, Duration::from_millis(0)).into())
@@ -1279,10 +1299,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache.clone()),
             )
-            .get(
-                &Request::new(url.clone(), Default::default())
-                    .set_stale_while_revalidate(CACHE_MAX_AGE),
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_stale_while_revalidate(CACHE_MAX_AGE),)
             .await
             .unwrap(),
             Some(Response::from_bare(stale_response.clone(), Duration::from_millis(0)).into())
@@ -1349,10 +1367,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(cache.clone()),
             )
-            .get(
-                &Request::new(url.clone(), Default::default())
-                    .set_stale_while_revalidate(Duration::from_nanos(1)),
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_stale_while_revalidate(Duration::from_nanos(1)),)
             .await
             .is_err()
         );
@@ -1390,10 +1406,8 @@ mod tests {
                 StubTimer::new(),
                 Box::new(MemoryCache::new(CACHE_CAPACITY)),
             )
-            .get(
-                &Request::new(url, Default::default())
-                    .set_timeout(Duration::from_millis(100).into())
-            )
+            .get(&url, &|url| Request::new(url.clone(), Default::default())
+                .set_timeout(Duration::from_millis(100).into()))
             .await
             .unwrap(),
             Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -1428,7 +1442,10 @@ mod tests {
             StubTimer::new(),
             Box::new(MemoryCache::new(CACHE_CAPACITY)),
         )
-        .get(&Request::new(url, Default::default()).set_timeout(Duration::from_millis(1).into()))
+        .get(&url, &|url| {
+            Request::new(url.clone(), Default::default())
+                .set_timeout(Duration::from_millis(1).into())
+        })
         .await;
 
         assert!(matches!(result, Err(HttpClientError::Timeout(_))));
@@ -1608,16 +1625,14 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(
-                            RetryConfig::default()
-                                .set_count(1)
-                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
-                                .into()
-                        )
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(
+                        RetryConfig::default()
+                            .set_count(1)
+                            .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                            .into()
+                    ))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -1652,11 +1667,9 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(1).into())
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(RetryConfig::default().set_count(1).into()))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(response, Duration::from_millis(0)).into())
@@ -1695,11 +1708,9 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(RetryConfig::default().set_count(1).into())
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(RetryConfig::default().set_count(1).into()))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(failed_response, Duration::from_millis(0)).into())
@@ -1738,16 +1749,14 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(
-                            RetryConfig::default()
-                                .set_count(2)
-                                .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
-                                .into()
-                        )
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(
+                        RetryConfig::default()
+                            .set_count(2)
+                            .set_statuses([StatusCode::INTERNAL_SERVER_ERROR].into())
+                            .into()
+                    ))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
@@ -1785,16 +1794,14 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(
-                            RetryConfig::default()
-                                .set_count(1)
-                                .set_statuses(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
-                                .into()
-                        )
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(
+                        RetryConfig::default()
+                            .set_count(1)
+                            .set_statuses(HashSet::from([StatusCode::TOO_MANY_REQUESTS]))
+                            .into()
+                    ))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(successful_response, Duration::from_millis(0)).into())
@@ -1826,16 +1833,14 @@ mod tests {
                     StubTimer::new(),
                     Box::new(MemoryCache::new(CACHE_CAPACITY)),
                 )
-                .get(
-                    &Request::new(url, Default::default())
-                        .set_max_age(CACHE_MAX_AGE)
-                        .set_retry(
-                            RetryConfig::default()
-                                .set_count(1)
-                                .set_statuses([StatusCode::TOO_MANY_REQUESTS].into())
-                                .into()
-                        )
-                )
+                .get(&url, &|url| Request::new(url.clone(), Default::default())
+                    .set_max_age(CACHE_MAX_AGE)
+                    .set_retry(
+                        RetryConfig::default()
+                            .set_count(1)
+                            .set_statuses([StatusCode::TOO_MANY_REQUESTS].into())
+                            .into()
+                    ))
                 .await
                 .unwrap(),
                 Some(Response::from_bare(retry_response, Duration::from_millis(0)).into())

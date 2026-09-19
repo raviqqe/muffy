@@ -7,6 +7,8 @@ use http::{
 };
 use url::Url;
 
+pub type RequestResolver = dyn Fn(&Url) -> Request + Send + Sync;
+
 #[derive(Clone, Debug)]
 pub struct Request {
     bare: BareRequest,
@@ -98,14 +100,14 @@ impl Request {
         self
     }
 
-    pub fn redirect(mut self, url: Url) -> Self {
-        if url.origin() != self.bare.url.origin() {
+    pub fn redirect(&self, mut request: Self) -> Self {
+        if request.url().origin() != self.url().origin() {
             for name in [AUTHORIZATION, COOKIE, PROXY_AUTHORIZATION] {
-                self.bare.headers.remove(name);
+                request.bare.headers.remove(name);
             }
         }
 
-        self.set_url(url)
+        request
     }
 }
 
@@ -131,7 +133,7 @@ mod tests {
     #[test]
     fn strip_credentials_on_cross_origin_redirect() {
         let request = credentialed_request("https://foo.com/page")
-            .redirect(Url::parse("https://bar.com/page").unwrap());
+            .redirect(credentialed_request("https://bar.com/page"));
 
         assert_eq!(request.url().as_str(), "https://bar.com/page");
         assert_eq!(request.as_bare().headers.get(AUTHORIZATION), None);
@@ -141,7 +143,7 @@ mod tests {
     #[test]
     fn keep_credentials_on_same_origin_redirect() {
         let request = credentialed_request("https://foo.com/page")
-            .redirect(Url::parse("https://foo.com/other").unwrap());
+            .redirect(credentialed_request("https://foo.com/other"));
 
         assert_eq!(
             request.as_bare().headers.get(AUTHORIZATION),
@@ -156,7 +158,7 @@ mod tests {
     #[test]
     fn strip_credentials_on_scheme_downgrade() {
         let request = credentialed_request("https://foo.com/page")
-            .redirect(Url::parse("http://foo.com/page").unwrap());
+            .redirect(credentialed_request("http://foo.com/page"));
 
         assert_eq!(request.as_bare().headers.get(AUTHORIZATION), None);
     }
@@ -164,7 +166,7 @@ mod tests {
     #[test]
     fn strip_credentials_on_port_change() {
         let request = credentialed_request("https://foo.com/page")
-            .redirect(Url::parse("https://foo.com:8443/page").unwrap());
+            .redirect(credentialed_request("https://foo.com:8443/page"));
 
         assert_eq!(request.as_bare().headers.get(AUTHORIZATION), None);
     }
@@ -172,7 +174,7 @@ mod tests {
     #[test]
     fn keep_other_header_on_cross_origin_redirect() {
         let request = credentialed_request("https://foo.com/page")
-            .redirect(Url::parse("https://bar.com/page").unwrap());
+            .redirect(credentialed_request("https://bar.com/page"));
 
         assert_eq!(
             request.as_bare().headers.get(ACCEPT),

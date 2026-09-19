@@ -131,15 +131,17 @@ impl WebValidator {
         let Some(response) = self
             .0
             .http_client
-            .get(
-                &Request::new(document_url, site.headers().clone())
+            .get(&document_url, &|url| {
+                let site = context.config().site(url);
+
+                Request::new(url.clone(), site.headers().clone())
                     .set_max_age(site.cache().max_age())
                     .set_max_redirects(site.max_redirects())
                     .set_retry(site.retry().clone())
                     .set_site_id(site.id().cloned())
                     .set_stale_while_revalidate(site.cache().stale_while_revalidate())
-                    .set_timeout(site.timeout()),
-            )
+                    .set_timeout(site.timeout())
+            })
             .await?
         else {
             return Ok(ItemOutput::default());
