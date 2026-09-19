@@ -121,7 +121,7 @@ impl HttpClient {
 
         for _ in 0..request.max_redirects() + 1 {
             robots = robots && request.url().path() != ROBOTS_PATH;
-            let response = self.get_cached_locally(&request, resolve, robots).await?;
+            let response = self.get_cached_locally(&request, robots).await?;
 
             if !response.status().is_redirection() {
                 return Ok(response);
@@ -144,13 +144,12 @@ impl HttpClient {
     async fn get_cached_locally(
         &self,
         request: &Request,
-        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         self.local_cache
             .get_with(
                 request.url().to_string(),
-                Box::new(self.get_cached_globally(request, resolve, robots)),
+                Box::new(self.get_cached_globally(request, robots)),
             )
             .await?
     }
@@ -158,11 +157,10 @@ impl HttpClient {
     async fn get_cached_globally(
         &self,
         request: &Request,
-        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<Response>, HttpClientError> {
         let get = || async {
-            let result = self.get_filtered(request, resolve, robots).await;
+            let result = self.get_filtered(request, robots).await;
 
             self.global_cache
                 .set(request.url().to_string(), result.clone())
@@ -217,11 +215,10 @@ impl HttpClient {
     async fn get_filtered(
         &self,
         request: &Request,
-        resolve: &RequestResolver<'_>,
         robots: bool,
     ) -> Result<Arc<CachedResponse>, HttpClientError> {
         if robots
-            && let Some(robot) = self.get_robot(request, resolve).await?
+            && let Some(robot) = self.get_robot(request).await?
             && !robot.is_allowed(request.url().path())
         {
             Err(HttpClientError::RobotsTxt)
@@ -291,15 +288,11 @@ impl HttpClient {
     }
 
     #[async_recursion]
-    async fn get_robot(
-        &self,
-        request: &Request,
-        resolve: &RequestResolver<'_>,
-    ) -> Result<Option<RobotList>, HttpClientError> {
+    async fn get_robot(&self, request: &Request) -> Result<Option<RobotList>, HttpClientError> {
         let response = self
             .get_inner(
                 &request.clone().set_url(request.url().join(ROBOTS_PATH)?),
-                resolve,
+                &|url| request.clone().set_url(url.clone()),
                 false,
             )
             .await?;
@@ -789,6 +782,61 @@ mod tests {
                 ("https://foo.com/page", "foo.com"),
                 ("https://bar.com/robots.txt", "bar.com"),
                 ("https://bar.com/page", "bar.com"),
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn keep_headers_for_redirected_robots_txt() {
+        let requests = Arc::new(Mutex::new(vec![]));
+        let client = HttpClient::new(
+            RecordingHttpClient {
+                responses: [
+                    stub_response(
+                        "https://foo.com/robots.txt",
+                        Some("https://bar.com/robots.txt"),
+                    ),
+                    stub_response("https://bar.com/robots.txt", None),
+                    stub_response("https://foo.com/page", None),
+                ]
+                .into_iter()
+                .collect(),
+                requests: requests.clone(),
+            },
+            StubTimer::new(),
+            Box::new(MemoryCache::new(CACHE_CAPACITY)),
+        );
+
+        client
+            .get(&Url::parse("https://foo.com/page").unwrap(), &|url| {
+                Request::new(
+                    url.clone(),
+                    [(
+                        ACCEPT,
+                        HeaderValue::from_str(url.host_str().unwrap()).unwrap(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                )
+                .set_max_redirects(1)
+            })
+            .await
+            .unwrap();
+
+        let requests = requests.lock().unwrap();
+
+        assert_eq!(
+            requests
+                .iter()
+                .map(|request| (
+                    request.url.as_str(),
+                    request.headers[ACCEPT].to_str().unwrap()
+                ))
+                .collect::<Vec<_>>(),
+            [
+                ("https://foo.com/robots.txt", "foo.com"),
+                ("https://bar.com/robots.txt", "foo.com"),
+                ("https://foo.com/page", "foo.com"),
             ]
         );
     }
