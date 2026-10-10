@@ -49,8 +49,8 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
     for definition in definitions.values() {
         for (name_class, pattern) in collect_elements(definition) {
             // Elements of any names constrain only content models of their parents.
-            // TODO Support position-aware validation to exempt descendants of
-            // elements with unconstrained content models from name validation.
+            // Descendants of elements with such unconstrained content models are
+            // exempted from validation via the generated predicate function.
             let names = class_names(name_class)
                 .into_iter()
                 .filter(|name| name != "*")
@@ -131,6 +131,16 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
         }
     }
 
+    let unconstrained_names = element_rules
+        .iter()
+        .filter(|(_, variants)| {
+            variants
+                .iter()
+                .any(|(_, content)| children(content).contains("*"))
+        })
+        .map(|(name, _)| quote!(#name))
+        .collect::<Vec<_>>();
+
     let mut value_indexes = BTreeMap::<Value, usize>::new();
     let attribute_set_definitions = sort_by_index(attribute_set_indexes)
         .map(|(sets, index)| {
@@ -168,6 +178,11 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
 
     let function_name = format_ident!("validate_{language}_element");
     let documentation = format!("Validates an {} element.", language.to_uppercase());
+    let predicate_name = format_ident!("is_unconstrained_{language}_element");
+    let predicate_documentation = format!(
+        "Returns whether an {} element has an unconstrained content model.",
+        language.to_uppercase()
+    );
 
     Ok(quote! {
         #[doc = #documentation]
@@ -186,6 +201,14 @@ fn generate_validation(language: &str, files: &[&str]) -> Result<TokenStream, Ma
                 #(#wildcard_matches)*
                 _ => Err(MarkupError::UnknownTag(element.name().to_string())),
             }
+        }
+
+        #[doc = #predicate_documentation]
+        pub fn #predicate_name(name: &str) -> bool {
+            const NAMES: &[&str] = &[#(#unconstrained_names),*];
+
+            NAMES.binary_search(&name).is_ok()
+                || NAMES.iter().any(|pattern| matches_wildcard(pattern, name))
         }
     }
     .into())
