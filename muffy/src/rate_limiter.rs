@@ -31,7 +31,7 @@ impl RateLimiter {
             self.add_supply();
 
             self.token_count
-                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
+                .try_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
                     if count == 0 { None } else { Some(count - 1) }
                 })
                 .is_err()
