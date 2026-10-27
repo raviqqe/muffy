@@ -1,4 +1,4 @@
-use robotxt::Robots;
+use robotxt::{Agent, Robots};
 use url::Url;
 
 const USER_AGENT: &str = "MuffyBot";
@@ -10,12 +10,12 @@ pub struct RobotList {
 impl RobotList {
     pub fn parse(source: &str) -> Self {
         Self {
-            db: Robots::from_bytes(source.as_bytes(), USER_AGENT),
+            db: Robots::parse(source.as_bytes(), Agent::Prefix(USER_AGENT)),
         }
     }
 
     pub fn is_allowed(&self, path: &str) -> bool {
-        self.db.is_relative_allowed(path)
+        self.db.is_allowed(path)
     }
 
     pub fn sitemaps(&self) -> impl Iterator<Item = &str> {
@@ -93,5 +93,20 @@ mod tests {
 
         assert!(list.is_allowed("/private/public"));
         assert!(!list.is_allowed("/private/secret"));
+    }
+
+    #[test]
+    fn disallow_path_for_user_agent_prefix() {
+        let source = indoc! {"
+            user-agent: *
+            allow: /
+
+            user-agent: muffy
+            disallow: /private
+        "};
+        let list = RobotList::parse(source);
+
+        assert!(list.is_allowed("/public"));
+        assert!(!list.is_allowed("/private"));
     }
 }
