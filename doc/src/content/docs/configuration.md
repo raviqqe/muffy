@@ -24,30 +24,30 @@ With this configuration, Muffy crawls pages under `https://example.com/` recursi
 
 ## Global options
 
-| Name          | Description                                                                                    | Default                           |
-| ------------- | ---------------------------------------------------------------------------------------------- | --------------------------------- |
-| `extend`      | A path to another configuration file to inherit options from, relative to the current file.    | None                              |
-| `concurrency` | A maximum number of concurrent HTTP requests.                                                  | A half of the open file limit     |
-| `cache`       | [Cache options](#cache)                                                                        |                                   |
-| `rate_limit`  | [Rate limit options](#rate_limit) applied to all requests.                                     | None                              |
-| `sites`       | [Site options](#site-options)                                                                  |                                   |
+| Name          | Description                                                                                 | Default                       |
+| ------------- | ------------------------------------------------------------------------------------------- | ----------------------------- |
+| `extend`      | A path to another configuration file to inherit options from, relative to the current file. | None                          |
+| `concurrency` | A maximum number of concurrent HTTP requests.                                               | A half of the open file limit |
+| `cache`       | [Cache options](#cache)                                                                     |                               |
+| `rate_limit`  | [Rate limit options](#rate_limit) applied to all requests.                                  | None                          |
+| `sites`       | [Site options](#site-options)                                                               |                               |
 
 Options set in a configuration file override ones in another file it extends.
 
 ### `cache`
 
-| Name         | Description                                                       | Default |
-| ------------ | ----------------------------------------------------------------- | ------- |
-| `persistent` | Whether to cache responses on the file system across runs.        | `false` |
+| Name         | Description                                                | Default |
+| ------------ | ---------------------------------------------------------- | ------- |
+| `persistent` | Whether to cache responses on the file system across runs. | `false` |
 
 ### `rate_limit`
 
 A rate limit allows only a given number of requests in each time window. Both fields are required.
 
-| Name     | Description                                        |
-| -------- | -------------------------------------------------- |
-| `supply` | A number of requests allowed in each time window.  |
-| `window` | A [duration](#durations) of a time window.         |
+| Name     | Description                                       |
+| -------- | ------------------------------------------------- |
+| `supply` | A number of requests allowed in each time window. |
+| `window` | A [duration](#durations) of a time window.        |
 
 ## Site options
 
@@ -59,42 +59,42 @@ Muffy also validates SVG images embedded as `data` URLs (e.g. `data:image/svg+xm
 
 Muffy checks that fragments of link URLs (e.g. `#foo`) exist in target documents. The `ignored_fragments` option is a list of regular expressions that must match full fragments to skip such checks.
 
-| Name                | Description                                                                                        | Default              |
-| ------------------- | -------------------------------------------------------------------------------------------------- | -------------------- |
-| `cache`             | [Cache options](#sitesnamecache)                                                                    |                      |
-| `concurrency`       | A maximum number of concurrent HTTP requests to a site.                                             | None                 |
-| `extend`            | A name of another site to inherit options from.                                                     | None                 |
-| `headers`           | A table of HTTP header names to values sent in requests.                                            | `{}`                 |
-| `ignore`            | Whether to skip checking links that match root URLs of a site.                                      | `false`              |
-| `ignored_fragments` | Patterns of fragments of link URLs to ignore.                                                       | `[]`                 |
-| `max_redirects`     | A maximum number of redirects to follow.                                                            | `16`                 |
-| `rate_limit`        | [Rate limit options](#rate_limit) applied to requests to a site.                                    | None                 |
-| `recurse`           | Whether to crawl pages under root URLs recursively.                                                 | `false`              |
-| `retry`             | [Retry options](#sitesnameretry)                                                                    |                      |
-| `roots`             | Root URLs of a site.                                                                                | None                 |
-| `schemes`           | URL schemes to accept.                                                                              | `["http", "https"]`  |
-| `statuses`          | Response status codes to accept.                                                                    | `[200]`              |
-| `timeout`           | A [duration](#durations) of a request timeout.                                                      | `"30s"`              |
-| `validation`        | [Validation options](#sitesnamevalidation)                                                          |                      |
+| Name                | Description                                                      | Default             |
+| ------------------- | ---------------------------------------------------------------- | ------------------- |
+| `cache`             | [Cache options](#sitesnamecache)                                 |                     |
+| `concurrency`       | A maximum number of concurrent HTTP requests to a site.          | None                |
+| `extend`            | A name of another site to inherit options from.                  | None                |
+| `headers`           | A table of HTTP header names to values sent in requests.         | `{}`                |
+| `ignore`            | Whether to skip checking links that match root URLs of a site.   | `false`             |
+| `ignored_fragments` | Patterns of fragments of link URLs to ignore.                    | `[]`                |
+| `max_redirects`     | A maximum number of redirects to follow.                         | `16`                |
+| `rate_limit`        | [Rate limit options](#rate_limit) applied to requests to a site. | None                |
+| `recurse`           | Whether to crawl pages under root URLs recursively.              | `false`             |
+| `retry`             | [Retry options](#sitesnameretry)                                 |                     |
+| `roots`             | Root URLs of a site.                                             | None                |
+| `schemes`           | URL schemes to accept.                                           | `["http", "https"]` |
+| `statuses`          | Response status codes to accept.                                 | `[200]`             |
+| `timeout`           | A [duration](#durations) of a request timeout.                   | `"30s"`             |
+| `validation`        | [Validation options](#sitesnamevalidation)                       |                     |
 
 ### `sites.<name>.cache`
 
-| Name                     | Description                                                                                        | Default |
-| ------------------------ | -------------------------------------------------------------------------------------------------- | ------- |
-| `max_age`                | A [duration](#durations) for which cached responses are considered fresh.                          | `"0s"`  |
-| `stale_while_revalidate` | An additional [duration](#durations) for which stale cached responses are used while revalidated.  | `"0s"`  |
+| Name                     | Description                                                                                       | Default |
+| ------------------------ | ------------------------------------------------------------------------------------------------- | ------- |
+| `max_age`                | A [duration](#durations) for which cached responses are considered fresh.                         | `"0s"`  |
+| `stale_while_revalidate` | An additional [duration](#durations) for which stale cached responses are used while revalidated. | `"0s"`  |
 
 ### `sites.<name>.retry`
 
 Requests failing with errors are always retried up to the given count while responses are retried only if their status codes are listed in the `statuses` field. An interval between attempts starts at the `interval.initial` duration, is multiplied by the `factor` value after every attempt, and never exceeds the `interval.cap` duration.
 
-| Name               | Description                                                     | Default |
-| ------------------ | --------------------------------------------------------------- | ------- |
-| `count`            | A maximum number of retries.                                    | `0`     |
-| `factor`           | A multiplier applied to an interval after every retry.          | `0`     |
-| `interval.initial` | An initial [duration](#durations) of an interval.               | `"0s"`  |
-| `interval.cap`     | A maximum [duration](#durations) of an interval.                | None    |
-| `statuses`         | Response status codes to retry.                                 | `[]`    |
+| Name               | Description                                            | Default |
+| ------------------ | ------------------------------------------------------ | ------- |
+| `count`            | A maximum number of retries.                           | `0`     |
+| `factor`           | A multiplier applied to an interval after every retry. | `0`     |
+| `interval.initial` | An initial [duration](#durations) of an interval.      | `"0s"`  |
+| `interval.cap`     | A maximum [duration](#durations) of an interval.       | None    |
+| `statuses`         | Response status codes to retry.                        | `[]`    |
 
 ### `sites.<name>.validation`
 
@@ -109,10 +109,10 @@ Markup validation is experimental. HTML and SVG documents are validated only if 
 
 The patterns are regular expressions that must match full element or attribute names.
 
-| Name                 | Description                                | Default |
-| -------------------- | ------------------------------------------ | ------- |
-| `ignored_attributes` | Patterns of attribute names to ignore.     | `[]`    |
-| `ignored_elements`   | Patterns of element names to ignore.       | `[]`    |
+| Name                 | Description                            | Default |
+| -------------------- | -------------------------------------- | ------- |
+| `ignored_attributes` | Patterns of attribute names to ignore. | `[]`    |
+| `ignored_elements`   | Patterns of element names to ignore.   | `[]`    |
 
 ## Durations
 
