@@ -36,7 +36,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - uses: ./.github/actions/setup
-      - uses: homebrew/actions/setup-homebrew@c262868c096d909fc278daa87ed9772967331ea3 # main
+      - uses: homebrew/actions/setup-homebrew@63a2d4d8d4193eab3e62b1b782ff3ab8408f5b29 # main
       - run: brew install zig
       # spell-checker: ignore zigbuild
       - run: cargo install --locked cargo-zigbuild
