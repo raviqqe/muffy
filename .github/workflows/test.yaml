@@ -11,38 +11,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - run: cargo build
   unit_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - run: cargo test
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
       - run: tools/coverage.sh
-      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+      - uses: codecov/codecov-action@v7.1.1
         with:
           fail_ci_if_error: true
           files: lcov.info
   check_command_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/muffy-cache
+      - uses: $/.github/actions/setup
+      - uses: $/.github/actions/muffy-cache
       - run: cargo run
   check_site_command_test:
     strategy:
@@ -70,11 +70,11 @@ jobs:
             - https://raviqqe.com/muffet
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
-      - uses: ./.github/actions/muffy-cache
+      - uses: $/.github/actions/setup
+      - uses: $/.github/actions/muffy-cache
       - run: >
           cargo run -- check-site
           --accept-status 200
@@ -95,16 +95,16 @@ jobs:
   docker_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - id: version
         run: tools/github/version.sh
-      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      - uses: docker/build-push-action@v7.4.0
         with:
           tags: raviqqe/muffy:${{ steps.version.outputs.version }}
-      - uses: ./.
+      - uses: $/.
   test:
     needs:
       - build

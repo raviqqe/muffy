@@ -13,22 +13,22 @@ jobs:
   cargo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - run: cargo bench $CARGO_OPTIONS --features muffy/integration-bench
   codspeed:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           submodules: true
-      - uses: ./.github/actions/setup
+      - uses: $/.github/actions/setup
       - run: cargo install --features vendored-openssl cargo-codspeed
       - run: cargo codspeed build $CARGO_OPTIONS
         # cspell: ignore codspeedhq
-      - uses: codspeedhq/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
+      - uses: codspeedhq/action@v5.6.3
         with:
           mode: simulation
           run: cargo codspeed run
