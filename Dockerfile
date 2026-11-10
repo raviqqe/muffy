@@ -6,5 +6,6 @@ RUN cargo build --release --locked --target $(uname -m)-unknown-linux-musl
 
 FROM scratch
 COPY --from=build /src/target/*-unknown-linux-musl/release/muffy /muffy
+USER 65534:65534
 RUN ["/muffy", "--version"]
 ENTRYPOINT ["/muffy"]
