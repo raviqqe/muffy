@@ -1,5 +1,5 @@
 ---
-source: rnc/src/parse.rs
+source: muffy-rnc/src/parse.rs
 expression: parse_schema(&read_to_string(&path).unwrap()).unwrap()
 ---
 Schema {
@@ -1619,17 +1619,102 @@ Schema {
                         combine: Some(
                             Interleave,
                         ),
-                        pattern: Name(
-                            Name {
-                                prefix: None,
-                                local: Identifier {
-                                    component: "shared-input",
-                                    sub_components: [
-                                        "attrs",
-                                    ],
-                                },
-                            },
+                        pattern: Interleave(
+                            [
+                                Name(
+                                    Name {
+                                        prefix: None,
+                                        local: Identifier {
+                                            component: "shared-input",
+                                            sub_components: [
+                                                "attrs",
+                                            ],
+                                        },
+                                    },
+                                ),
+                                Optional(
+                                    Name(
+                                        Name {
+                                            prefix: None,
+                                            local: Identifier {
+                                                component: "input",
+                                                sub_components: [
+                                                    "checkbox",
+                                                    "attrs",
+                                                    "switch",
+                                                ],
+                                            },
+                                        },
+                                    ),
+                                ),
+                            ],
                         ),
+                    },
+                ),
+                Definition(
+                    Definition {
+                        name: Identifier {
+                            component: "input",
+                            sub_components: [
+                                "checkbox",
+                                "attrs",
+                                "switch",
+                            ],
+                        },
+                        combine: None,
+                        pattern: Attribute {
+                            name_class: Name(
+                                Name {
+                                    prefix: None,
+                                    local: Identifier {
+                                        component: "switch",
+                                        sub_components: [],
+                                    },
+                                },
+                            ),
+                            pattern: Choice(
+                                [
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "switch",
+                                    },
+                                    Value {
+                                        name: Some(
+                                            Name(
+                                                Name {
+                                                    prefix: Some(
+                                                        Identifier {
+                                                            component: "w",
+                                                            sub_components: [],
+                                                        },
+                                                    ),
+                                                    local: Identifier {
+                                                        component: "string",
+                                                        sub_components: [],
+                                                    },
+                                                },
+                                            ),
+                                        ),
+                                        value: "",
+                                    },
+                                ],
+                            ),
+                        },
                     },
                 ),
                 Definition(
